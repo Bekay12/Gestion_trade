@@ -109,6 +109,20 @@ def backtest_signals(prices, volumes, montant=50):
     Un 'trade' correspond ici à un cycle complet ACHAT puis VENTE (entrée puis sortie).
     Le gain est calculé pour chaque cycle achat-vente.
     """
+
+    # Correction : refuse les scalaires et séries trop courtes
+    if not isinstance(prices, (pd.Series, pd.DataFrame)) or len(prices) < 2:
+        return {
+            "trades": 0,
+            "gagnants": 0,
+            "taux_reussite": 0,
+            "gain_total": 0.0
+        }
+    if isinstance(prices, pd.DataFrame):
+        prices = prices.squeeze()
+    if isinstance(volumes, pd.DataFrame):
+        volumes = volumes.squeeze()
+        
     positions = []
     for i in range(1, len(prices)):
         signal, *_ = get_trading_signal(prices[:i], volumes[:i])
