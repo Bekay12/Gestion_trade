@@ -6,6 +6,7 @@ import pandas as pd
 import numpy as np
 import ta
 import time
+import csv
 from matplotlib import dates as mdates
 
 def calculate_macd(prices, fast=12, slow=26, signal=9):
@@ -16,8 +17,13 @@ def calculate_macd(prices, fast=12, slow=26, signal=9):
     signal_line = macd.ewm(span=signal, adjust=False).mean()
     return macd, signal_line
 
-def get_trading_signal(prices):
+def get_trading_signal(prices, volumes, variation_seuil=-20, volume_seuil=100000):
     """Détermine les signaux de trading avec validation des données"""
+    # Correction : assure que prices et volumes sont bien des Series 1D
+    if isinstance(prices, pd.DataFrame):
+        prices = prices.squeeze()
+    if isinstance(volumes, pd.DataFrame):
+        volumes = volumes.squeeze()
     if len(prices) < 50:
         return "Données insuffisantes", None, None, None
     
@@ -33,6 +39,19 @@ def get_trading_signal(prices):
     # Détection des signaux
     last_close = prices.iloc[-1]
     ema20 = prices.ewm(span=20, adjust=False).mean().iloc[-1]
+    ema50 = prices.ewm(span=50, adjust=False).mean().iloc[-1]
+    
+    # Calcul de la variation sur 30 jours
+    if len(prices) >= 30:
+        variation_30j = (last_close - prices.iloc[-30]) / prices.iloc[-30] * 100
+    else:
+        variation_30j = None
+    
+    # Calcul du volume moyen sur 20 jours
+    if len(volumes) >= 20:
+        volume_mean = volumes.rolling(window=20).mean().iloc[-1]
+    else:
+        volume_mean = None
     
     if macd.iloc[-2] < signal_line.iloc[-2] and macd.iloc[-1] > signal_line.iloc[-1] and rsi.iloc[-1] < 70:
         signal = "ACHAT"
@@ -56,30 +75,35 @@ def download_stock_data(symbols, period):
                 continue
                 
             # Vérification de la colonne Close
-            if 'Close' not in data.columns:
-                print(f"⚠️ Colonne 'Close' manquante pour {symbol}")
+            if 'Close' not in data.columns or 'Volume' not in data.columns:
+                print(f"⚠️ Colonne 'Close' ou 'Volume' manquante pour {symbol}")
                 continue
                 
-            # Conversion en Series 1D
-            close_prices = data['Close'].squeeze()
+            # # Conversion en Series 1D
+            # close_prices = data['Close'].squeeze()
             
-            if close_prices.empty:
-                print(f"⚠️ Données 'Close' vides pour {symbol}")
-                continue
+            # if close_prices.empty:
+            #     print(f"⚠️ Données 'Close' vides pour {symbol}")
+            #     continue
                 
-            # Vérification du format 1D
-            if isinstance(close_prices, pd.Series):
-                valid_data[symbol] = close_prices
-            else:
-                # Conversion forcée en Series si nécessaire
-                valid_data[symbol] = pd.Series(close_prices, name=symbol)
+            # # Vérification du format 1D
+            # if isinstance(close_prices, pd.Series):
+            #     valid_data[symbol] = close_prices
+            # else:
+            #     # Conversion forcée en Series si nécessaire
+            #     valid_data[symbol] = pd.Series(close_prices, name=symbol)
+
+            valid_data[symbol] = {
+                'Close': data['Close'],
+                'Volume': data['Volume']}
+            
             
         except Exception as e:
             print(f"🚨 Erreur sur {symbol}: {str(e)}")
     
     return valid_data
 
-def backtest_signals(prices, montant=50):
+def backtest_signals(prices, volumes, montant=50):
     """
     Effectue un backtest sur la série de prix.
     Un 'trade' correspond ici à un cycle complet ACHAT puis VENTE (entrée puis sortie).
@@ -87,7 +111,7 @@ def backtest_signals(prices, montant=50):
     """
     positions = []
     for i in range(1, len(prices)):
-        signal, _, _, _ = get_trading_signal(prices[:i])
+        signal, *_ = get_trading_signal(prices[:i], volumes[:i])
         if signal == "ACHAT":
             positions.append({"entry": prices.iloc[i], "entry_idx": i, "type": "buy"})
         elif signal == "VENTE" and positions and "exit" not in positions[-1]:
@@ -116,14 +140,17 @@ def backtest_signals(prices, montant=50):
         "gain_total": gain_total
     }
 
-def plot_unified_chart(symbol, prices, ax):
+def plot_unified_chart(symbol, prices,volumes, ax):
     """Trace un graphique unifié avec prix, MACD et RSI intégré"""
     # Vérification du format des prix
+    if isinstance(prices, pd.DataFrame):
+        prices = prices.squeeze()
     if not isinstance(prices, pd.Series):
         prices = pd.Series(prices, name=symbol)
     
     # Calcul des indicateurs
     ema20 = prices.ewm(span=20, adjust=False).mean()
+    ema50 = prices.ewm(span=50, adjust=False).mean()
     sma50 = prices.rolling(window=50).mean() if len(prices) >= 50 else pd.Series()
     macd, signal_line = calculate_macd(prices)
     
@@ -138,6 +165,7 @@ def plot_unified_chart(symbol, prices, ax):
     color = 'tab:blue'
     ax.plot(prices.index, prices, label='Prix', color=color, linewidth=1.8)
     ax.plot(ema20.index, ema20, label='EMA20', linestyle='--', color='orange', linewidth=1.4)
+    ax.plot(ema50.index, ema50, label='EMA50', linestyle='-.', color='purple', linewidth=1.4)
     
     if not sma50.empty:
         ax.plot(sma50.index, sma50, label='SMA50', linestyle=':', color='green', linewidth=1.4)
@@ -188,7 +216,7 @@ def plot_unified_chart(symbol, prices, ax):
     ax.legend(lines1 + lines2, labels1 + labels2, loc='best', fontsize=9)
     
     # Ajout des signaux trading
-    signal, last_price, trend, last_rsi = get_trading_signal(prices)
+    signal, last_price, trend, last_rsi = get_trading_signal(prices,volumes)
     
     # Calcul de la progression en pourcentage
     if len(prices) > 1:
@@ -235,14 +263,20 @@ elif num_plots == 0:
     print("❌ Aucun symbole valide à afficher")
     exit()
 
+achat_signals = []
+vente_signals = []
+all_signals = []
+
 # plt.suptitle("Analyse Technique Unifiée - Prix, MACD et RSI", fontsize=16, y=0.98)
 
 # Traitement de chaque symbole
-for i, (symbol, prices) in enumerate(data.items()):
+for i, (symbol, stock_data) in enumerate(data.items()):
+    prices = stock_data['Close']
+    volumes = stock_data['Volume']
     print(f"📊 Traitement de {symbol}...")
     
     # Analyse technique sur un seul graphique
-    ax2 = plot_unified_chart(symbol, prices, axes[i])
+    ax2 = plot_unified_chart(symbol, prices,volumes, axes[i])
 
 plt.tight_layout()
 plt.subplots_adjust(top=0.95, hspace=0.4)
@@ -282,11 +316,13 @@ for i in range(0, len(popular_symbols), CHUNK_SIZE):
         # chunk_data = download_stock_data(chunk, period="6mo")
         chunk_data = download_stock_data(chunk, period)
         
-        for symbol, prices in chunk_data.items():
-            if len(prices) < 50: 
+        for symbol, stock_data in chunk_data.items():
+            prices = stock_data['Close']
+            volumes = stock_data['Volume']
+            if len(prices) < 50:
                 continue
 
-            signal, last_price, trend, last_rsi = get_trading_signal(prices)
+            signal, last_price, trend, last_rsi = get_trading_signal(prices, volumes)
 
             if signal != "NEUTRE":
                 # Récupération du secteur via yfinance
@@ -357,8 +393,12 @@ if signals:
 
     for s in signals:
         try:
-            prices = download_stock_data([s['Symbole']], period)[s['Symbole']]
-            resultats = backtest_signals(prices, montant=50)
+            stock_data = download_stock_data([s['Symbole']], period)[s['Symbole']]
+            prices = stock_data['Close']
+            if not isinstance(prices, (pd.Series, pd.DataFrame)) or len(prices) < 2:
+                print(f"{s['Symbole']:<8} : Données insuffisantes pour le backtest")
+                continue
+            resultats = backtest_signals(prices, volumes, montant=50)
             backtest_results.append({
                 "Symbole": s['Symbole'],
                 "trades": resultats['trades'],
