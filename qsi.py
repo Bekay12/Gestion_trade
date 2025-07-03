@@ -122,7 +122,7 @@ def backtest_signals(prices, volumes, montant=50):
         prices = prices.squeeze()
     if isinstance(volumes, pd.DataFrame):
         volumes = volumes.squeeze()
-        
+
     positions = []
     for i in range(1, len(prices)):
         signal, *_ = get_trading_signal(prices[:i], volumes[:i])
@@ -255,7 +255,7 @@ def plot_unified_chart(symbol, prices,volumes, ax):
 # ======================================================================
 # CONFIGURATION PRINCIPALE
 # ======================================================================
-symbols = ["HSBA.L", "ALDX", "INGA.AS", "GLD", "OKTA"]
+symbols = ["SYM", "LHA.DE", "INGA.AS", "FLEX", "ALDX"]
 period = "12mo"  # Periode de telechargement des donnees obligatoirement au moins de 6 mois
 
 
@@ -317,6 +317,11 @@ popular_symbols = list(dict.fromkeys([
     "LTC", "SOL", "DOGE", "LINK", "ATOM", "TRX", "COMP",
     "GLD", "SLV", "GDX", "GDXJ", "SPY", "QQQ", "IWM", "DIA", "XLF", "XLC", "XLI", "XLB", "XLC", "XLV", "XLI", "XLP", "XLY","XLK", "XBI", "XHB", "XRT"
 ]))
+
+mes_symbols = ["QSI", "GLD","SYM","INGA.AS", "FLEX", "ALDX", "TSM", "02020.HK", "ARCT", "CACI", "ERJ", "PYPL", "GLW", "MSFT",
+               "TMDX", "GILT", "ENR.DE", "META", "AMD", "ASML.NV", "TBLA", "VOOG", "WELL", "SMSN.L", "BMRN", "GS", "BABA",
+               "SMTC", "AFX.DE", "ABBN.ZU", "QCOM", "MP", "TM", "SGMT", "AMZN", "INOD", "SMCI", "GOOGL", "MU", "ETOR", 
+               "DDOG", "OKTA", "AXSM", "EEM", "SPY", "HMY", "2318.HK", "RHM.DE", "NVDA", "QBTS", "SAP.DE", "V"]
 
 print("\n🔍 Analyse des signaux pour actions populaires...")
 signals = []
@@ -518,6 +523,99 @@ for signal_type in ["ACHAT", "VENTE"]:
 
 print("=" * 105)
 
+# Affichage des graphiques pour les 5 premiers signaux d'achat et de vente FIABLES
+top_achats_fiables = []
+top_ventes_fiables = []
+
+for signal_type in ["ACHAT", "VENTE"]:
+    for tendance in ["Hausse", "Baisse"]:
+        filtered = [
+            s for s in signaux_tries[signal_type][tendance]
+            if s['Symbole'] in fiables_ou_non_eval
+        ]
+        if signal_type == "ACHAT":
+            top_achats_fiables.extend(filtered)
+        else:
+            top_ventes_fiables.extend(filtered)
+
+# On limite à 5 chaque type
+top_achats_fiables = top_achats_fiables[:5]
+top_ventes_fiables = top_ventes_fiables[:5]
+
+# Affichage des graphiques pour les 5 premiers signaux d'ACHAT FIABLES sur une même figure
+if top_achats_fiables:
+    print("\nAffichage des graphiques pour les 5 premiers signaux d'ACHAT FIABLES détectés (sur une même figure)...")
+    fig, axes = plt.subplots(len(top_achats_fiables), 1, figsize=(14, 5 * len(top_achats_fiables)), sharex=False)
+    if len(top_achats_fiables) == 1:
+        axes = [axes]
+    for i, s in enumerate(top_achats_fiables):
+        stock_data = download_stock_data([s['Symbole']], period)[s['Symbole']]
+        prices = stock_data['Close']
+        volumes = stock_data['Volume']
+        plot_unified_chart(s['Symbole'], prices, volumes, axes[i])
+
+        # Calcul de la progression en pourcentage
+        if len(prices) > 1:
+            progression = ((prices.iloc[-1] - prices.iloc[0]) / prices.iloc[0]) * 100
+            if isinstance(progression, pd.Series):
+                progression = float(progression.iloc[0])
+        else:
+            progression = 0.0
+
+        # Récupération des signaux pour l'affichage du titre
+        signal, last_price, trend, last_rsi = get_trading_signal(prices, volumes)
+
+        if last_price is not None:
+            trend_symbol = "Haussière" if trend else "Baissière"
+            rsi_status = "SURACH" if last_rsi > 70 else "SURVENTE" if last_rsi < 30 else "NEUTRE"
+            signal_color = 'green' if signal == "ACHAT" else 'red' if signal == "VENTE" else 'black'
+            title = (
+                f"{s['Symbole']} | Prix: {last_price:.2f} | Signal: {signal} (FIABLE) | "
+                f"Tendance: {trend_symbol} | RSI: {last_rsi:.1f} ({rsi_status}) | "
+                f"Progression: {progression:+.2f}%"
+            )
+            axes[i].set_title(title, fontsize=12, fontweight='bold', color=signal_color)
+    plt.tight_layout()
+    plt.subplots_adjust(top=0.95, hspace=0.4)
+    plt.show()
+
+# Affichage des graphiques pour les 5 premiers signaux de VENTE FIABLES sur une même figure
+if top_ventes_fiables:
+    print("\nAffichage des graphiques pour les 5 premiers signaux de VENTE FIABLES détectés (sur une même figure)...")
+    fig, axes = plt.subplots(len(top_ventes_fiables), 1, figsize=(14, 5 * len(top_ventes_fiables)), sharex=False)
+    if len(top_ventes_fiables) == 1:
+        axes = [axes]
+    for i, s in enumerate(top_ventes_fiables):
+        stock_data = download_stock_data([s['Symbole']], period)[s['Symbole']]
+        prices = stock_data['Close']
+        volumes = stock_data['Volume']
+        plot_unified_chart(s['Symbole'], prices, volumes, axes[i])
+
+        # Calcul de la progression en pourcentage
+        if len(prices) > 1:
+            progression = ((prices.iloc[-1] - prices.iloc[0]) / prices.iloc[0]) * 100
+            if isinstance(progression, pd.Series):
+                progression = float(progression.iloc[0])
+        else:
+            progression = 0.0
+
+        # Récupération des signaux pour l'affichage du titre
+        signal, last_price, trend, last_rsi = get_trading_signal(prices, volumes)
+
+        if last_price is not None:
+            trend_symbol = "Haussière" if trend else "Baissière"
+            rsi_status = "SURACH" if last_rsi > 70 else "SURVENTE" if last_rsi < 30 else "NEUTRE"
+            signal_color = 'green' if signal == "ACHAT" else 'red' if signal == "VENTE" else 'black'
+            title = (
+                f"{s['Symbole']} | Prix: {last_price:.2f} | Signal: {signal} (FIABLE) | "
+                f"Tendance: {trend_symbol} | RSI: {last_rsi:.1f} ({rsi_status}) | "
+                f"Progression: {progression:+.2f}%"
+            )
+            axes[i].set_title(title, fontsize=12, fontweight='bold', color=signal_color)
+    plt.tight_layout()
+    plt.subplots_adjust(top=0.95, hspace=0.4)
+    plt.show()
+
 
 
 # # ======================================================================
@@ -540,17 +638,19 @@ print("=" * 105)
 #         positions = []
 #         for i in range(50, len(prices)):  # Commence après 50 points pour avoir un historique suffisant
 #             past_prices = prices[:i]
+#             past_volumes = Volume[:i]
+#             # On effectue le backtest sur les 50 derniers points
 #             stats = backtest_signals(past_prices, montant=50)
 #             # On vérifie la fiabilité à ce moment précis
 #             # if stats['trades'] > 0 and stats['taux_reussite'] > 70 and stats['gain_total'] > 0:
 #             if stats['trades'] > 0 and stats['taux_reussite'] > 60 and stats['gain_total'] > 0:
-#                 signal, _, _, _ = get_trading_signal(past_prices)
+#                 signal, _, _, _ = get_trading_signal(past_prices, past_volumes)
 #                 if signal == "ACHAT":
 #                     entry = prices.iloc[i]
 #                     entry_idx = i
 #                     # Cherche la prochaine sortie (VENTE)
 #                     for j in range(i+1, len(prices)):
-#                         next_signal, _, _, _ = get_trading_signal(prices[:j])
+#                         next_signal, _, _, _ = get_trading_signal(prices[:j], volumes[:j])
 #                         if next_signal == "VENTE":
 #                             exit = prices.iloc[j]
 #                             rendement = (exit - entry) / entry
@@ -580,3 +680,8 @@ print("=" * 105)
 # print(f"  - Gain total brut = {total_dyn_gain:.2f} $")
 # print(f"  - Gain total net (après frais) = {gain_total_reel_dyn:.2f} $")
 # print("="*105)
+
+
+
+#todo :# 1. Ajouter une option pour sauvegarder les signaux dans un fichier CSV
+# 2. Ajouter une option pour afficher les graphiques des 5 premiers signaux d'achat et de vente finalement détectés
