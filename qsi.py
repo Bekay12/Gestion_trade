@@ -314,8 +314,8 @@ popular_symbols = list(dict.fromkeys([
     "DDOG", "CRL", "EXAS", "ILMN", "INCY", "MELI", "MRNA", "NTLA", "REGN", "ROKU", "QSI", "SYM", "IONQ", "QBTS", "RGTI", "SMCI", "TSM", "ALDX", "CSX", "LRCX", 
     "BIIB", "CDNS", "CTSH", "EA", "FTNT", "GILD", "IDXX", "MP", "MTCH", "MRVL", "PAYX", "PTON", "AAL", "UAL", "DAL", "LUV", "JBLU", "ALK", "FLEX", "CACI",  
     "CRIS", "CYTK", "EXEL", "FATE", "INSM", "KPTI", "NBIX", "NTRA", "PGEN", "RGEN", "SAGE", "SNY", "TGTX", "VYGR", "ARCT", "AXSM", "BMRN", "KTOS","BTC", "ETH",
-    "LTC", "SOL", "DOGE", "LINK", "ATOM", "TRX", "COMP",
-    "GLD", "SLV", "GDX", "GDXJ", "SPY", "QQQ", "IWM", "DIA", "XLF", "XLC", "XLI", "XLB", "XLC", "XLV", "XLI", "XLP", "XLY","XLK", "XBI", "XHB", "XRT"
+    "LTC", "SOL", "DOGE", "LINK", "ATOM", "TRX", "COMP","VEEV", "LEN", "PHM", "DHI", "KBH", "TOL", "NVR", "RMAX", "BURL", "TJX", "ROST", "KSS", "GPS", "LB",
+    "GLD", "SLV", "GDX", "GDXJ", "SPY", "QQQ", "IWM", "DIA", "XLF", "XLC", "XLI", "XLB", "XLC", "XLV", "XLI", "XLP", "XLY","XLK", "XBI", "XHB", "URBN", "ANF", "AEO", "XRT"
 ]))
 
 mes_symbols = ["QSI", "GLD","SYM","INGA.AS", "FLEX", "ALDX", "TSM", "02020.HK", "ARCT", "CACI", "ERJ", "PYPL", "GLW", "MSFT",
@@ -542,6 +542,11 @@ for signal_type in ["ACHAT", "VENTE"]:
 top_achats_fiables = top_achats_fiables[:5]
 top_ventes_fiables = top_ventes_fiables[:5]
 
+# Création d'un dictionnaire pour retrouver le taux de fiabilité par symbole
+fiabilite_dict = {}
+for res in backtest_results:
+    fiabilite_dict[res['Symbole']] = res['taux_reussite']
+
 # Affichage des graphiques pour les 5 premiers signaux d'ACHAT FIABLES sur une même figure
 if top_achats_fiables:
     print("\nAffichage des graphiques pour les 5 premiers signaux d'ACHAT FIABLES détectés (sur une même figure)...")
@@ -565,12 +570,16 @@ if top_achats_fiables:
         # Récupération des signaux pour l'affichage du titre
         signal, last_price, trend, last_rsi = get_trading_signal(prices, volumes)
 
+        # Récupération du taux de fiabilité
+        taux_fiabilite = fiabilite_dict.get(s['Symbole'], None)
+        fiabilite_str = f" | Fiabilité: {taux_fiabilite:.0f}%" if taux_fiabilite is not None else ""
+
         if last_price is not None:
             trend_symbol = "Haussière" if trend else "Baissière"
             rsi_status = "SURACH" if last_rsi > 70 else "SURVENTE" if last_rsi < 30 else "NEUTRE"
             signal_color = 'green' if signal == "ACHAT" else 'red' if signal == "VENTE" else 'black'
             title = (
-                f"{s['Symbole']} | Prix: {last_price:.2f} | Signal: {signal} (FIABLE) | "
+                f"{s['Symbole']} | Prix: {last_price:.2f} | Signal: {signal} {fiabilite_str} | "
                 f"Tendance: {trend_symbol} | RSI: {last_rsi:.1f} ({rsi_status}) | "
                 f"Progression: {progression:+.2f}%"
             )
@@ -602,12 +611,16 @@ if top_ventes_fiables:
         # Récupération des signaux pour l'affichage du titre
         signal, last_price, trend, last_rsi = get_trading_signal(prices, volumes)
 
+        # Récupération du taux de fiabilité
+        taux_fiabilite = fiabilite_dict.get(s['Symbole'], None)
+        fiabilite_str = f" | Fiabilité: {taux_fiabilite:.0f}%" if taux_fiabilite is not None else ""
+
         if last_price is not None:
             trend_symbol = "Haussière" if trend else "Baissière"
             rsi_status = "SURACH" if last_rsi > 70 else "SURVENTE" if last_rsi < 30 else "NEUTRE"
             signal_color = 'green' if signal == "ACHAT" else 'red' if signal == "VENTE" else 'black'
             title = (
-                f"{s['Symbole']} | Prix: {last_price:.2f} | Signal: {signal} (FIABLE) | "
+                f"{s['Symbole']} | Prix: {last_price:.2f} | Signal: {signal} {fiabilite_str} | "
                 f"Tendance: {trend_symbol} | RSI: {last_rsi:.1f} ({rsi_status}) | "
                 f"Progression: {progression:+.2f}%"
             )
