@@ -252,49 +252,47 @@ def plot_unified_chart(symbol, prices,volumes, ax):
     
     return ax2
 
+
+def analyse_et_affiche(symbols, period="12mo"):
+    """
+    Télécharge les données pour les symboles donnés et affiche les graphiques d'analyse technique.
+    """
+    print("⏳ Téléchargement des données...")
+    data = download_stock_data(symbols, period)
+
+    if not data:
+        print("❌ Aucune donnée valide disponible. Vérifiez les symboles ou la connexion internet.")
+        return
+
+    num_plots = len(data)
+    fig, axes = plt.subplots(num_plots, 1, figsize=(14, 5 * num_plots), sharex=False)
+
+    if num_plots == 1:
+        axes = [axes]
+    elif num_plots == 0:
+        print("❌ Aucun symbole valide à afficher")
+        return
+
+    for i, (symbol, stock_data) in enumerate(data.items()):
+        prices = stock_data['Close']
+        volumes = stock_data['Volume']
+        print(f"📊 Traitement de {symbol}...")
+        plot_unified_chart(symbol, prices, volumes, axes[i])
+
+    plt.tight_layout()
+    plt.subplots_adjust(top=0.95, hspace=0.4)
+    plt.show()
+
 # ======================================================================
 # CONFIGURATION PRINCIPALE
 # ======================================================================
-symbols = ["SYM", "LHA.DE", "INGA.AS", "FLEX", "ALDX"]
-period = "12mo"  # Periode de telechargement des donnees obligatoirement au moins de 6 mois
 
+period = "12mo"  #variable globale pour la période d'analyse ne pas commenter 
 
-# Téléchargement des données
-print("⏳ Téléchargement des données...")
-data = download_stock_data(symbols, period)
+# Exemple d'utilisation (décommente pour exécuter) :
+# symbols = ["SYM", "LHA.DE", "INGA.AS", "FLEX", "ALDX"]
 
-if not data:
-    print("❌ Aucune donnée valide disponible. Vérifiez les symboles ou la connexion internet.")
-    exit()
-
-# Configuration des graphiques - un par symbole
-num_plots = len(data)
-fig, axes = plt.subplots(num_plots, 1, figsize=(14, 5 * num_plots), sharex=False)
-
-if num_plots == 1:
-    axes = [axes]  # Pour gérer le cas d'un seul symbole
-elif num_plots == 0:
-    print("❌ Aucun symbole valide à afficher")
-    exit()
-
-achat_signals = []
-vente_signals = []
-all_signals = []
-
-# plt.suptitle("Analyse Technique Unifiée - Prix, MACD et RSI", fontsize=16, y=0.98)
-
-# Traitement de chaque symbole
-for i, (symbol, stock_data) in enumerate(data.items()):
-    prices = stock_data['Close']
-    volumes = stock_data['Volume']
-    print(f"📊 Traitement de {symbol}...")
-    
-    # Analyse technique sur un seul graphique
-    ax2 = plot_unified_chart(symbol, prices,volumes, axes[i])
-
-plt.tight_layout()
-plt.subplots_adjust(top=0.95, hspace=0.4)
-plt.show()
+# analyse_et_affiche(symbols, period)
 
 # ======================================================================
 # SIGNEAUX POUR ACTIONS POPULAIRES (version simplifiée)
@@ -322,6 +320,8 @@ mes_symbols = ["QSI", "GLD","SYM","INGA.AS", "FLEX", "ALDX", "TSM", "02020.HK", 
                "TMDX", "GILT", "ENR.DE", "META", "AMD", "ASML.NV", "TBLA", "VOOG", "WELL", "SMSN.L", "BMRN", "GS", "BABA",
                "SMTC", "AFX.DE", "ABBN.ZU", "QCOM", "MP", "TM", "SGMT", "AMZN", "INOD", "SMCI", "GOOGL", "MU", "ETOR", 
                "DDOG", "OKTA", "AXSM", "EEM", "SPY", "HMY", "2318.HK", "RHM.DE", "NVDA", "QBTS", "SAP.DE", "V"]
+
+#popular_symbols = list(set(mes_symbols))
 
 print("\n🔍 Analyse des signaux pour actions populaires...")
 signals = []
@@ -578,10 +578,12 @@ if top_achats_fiables:
             trend_symbol = "Haussière" if trend else "Baissière"
             rsi_status = "SURACH" if last_rsi > 70 else "SURVENTE" if last_rsi < 30 else "NEUTRE"
             signal_color = 'green' if signal == "ACHAT" else 'red' if signal == "VENTE" else 'black'
+            # Ajout d'un indicateur spécial si le symbole est dans mes_symbols
+            special_marker = " ‼️" if s['Symbole'] in mes_symbols else ""
             title = (
-                f"{s['Symbole']} | Prix: {last_price:.2f} | Signal: {signal} {fiabilite_str} | "
-                f"Tendance: {trend_symbol} | RSI: {last_rsi:.1f} ({rsi_status}) | "
-                f"Progression: {progression:+.2f}%"
+            f"{special_marker} {s['Symbole']} | Prix: {last_price:.2f} | Signal: {signal} {fiabilite_str} | "
+            f"Tendance: {trend_symbol} | RSI: {last_rsi:.1f} ({rsi_status}) | "
+            f"Progression: {progression:+.2f}% {special_marker}"
             )
             axes[i].set_title(title, fontsize=12, fontweight='bold', color=signal_color)
     plt.tight_layout()
@@ -619,10 +621,12 @@ if top_ventes_fiables:
             trend_symbol = "Haussière" if trend else "Baissière"
             rsi_status = "SURACH" if last_rsi > 70 else "SURVENTE" if last_rsi < 30 else "NEUTRE"
             signal_color = 'green' if signal == "ACHAT" else 'red' if signal == "VENTE" else 'black'
+            # Ajout d'un indicateur spécial si le symbole est dans mes_symbols
+            special_marker = " ‼️" if s['Symbole'] in mes_symbols else ""
             title = (
-                f"{s['Symbole']} | Prix: {last_price:.2f} | Signal: {signal} {fiabilite_str} | "
-                f"Tendance: {trend_symbol} | RSI: {last_rsi:.1f} ({rsi_status}) | "
-                f"Progression: {progression:+.2f}%"
+            f"{special_marker} {s['Symbole']} | Prix: {last_price:.2f} | Signal: {signal} {fiabilite_str} | "
+            f"Tendance: {trend_symbol} | RSI: {last_rsi:.1f} ({rsi_status}) | "
+            f"Progression: {progression:+.2f}% {special_marker}"
             )
             axes[i].set_title(title, fontsize=12, fontweight='bold', color=signal_color)
     plt.tight_layout()
