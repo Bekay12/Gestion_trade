@@ -1,6 +1,8 @@
 from PyQt5.QtWidgets import QApplication, QMainWindow, QVBoxLayout, QWidget, QPushButton, QLabel, QLineEdit, QInputDialog
 import sys
 import os
+import math
+import matplotlib.pyplot as plt
 sys.path.append(os.path.abspath(os.path.join(os.path.dirname(__file__), '..', '..')))
 from qsi import analyse_et_affiche, analyse_signaux_populaires, popular_symbols, mes_symbols
 
@@ -48,12 +50,24 @@ class MainWindow(QMainWindow):
         self.layout.addWidget(self.result_label)
 
     def analyze_stock(self):
-        symbol = self.symbol_input.text().strip()
-        if symbol:
-            result = analyse_et_affiche([symbol], period="12mo")  # <-- Passe une liste ici
-            self.result_label.setText(f"Analyzing stock: {symbol} (functionality to be implemented)")
-        else:
-            self.result_label.setText("Please enter a stock symbol.")
+        # Permet d'entrer plusieurs symboles séparés par des virgules
+        symbols = [s.strip().upper() for s in self.symbol_input.text().split(",") if s.strip()]
+        if not symbols:
+            self.result_label.setText("Please enter at least one stock symbol.")
+            return
+
+        group_size = 5
+        n_groups = math.ceil(len(symbols) / group_size)
+        for i in range(n_groups):
+            group = symbols[i*group_size:(i+1)*group_size]
+            # analyse_et_affiche doit accepter une liste de symboles
+            # et afficher les graphiques sur une même figure
+            plt.figure(figsize=(14, 5))
+            analyse_et_affiche(group, period="12mo")
+            plt.suptitle(f"Stocks {', '.join(group)}")
+            plt.show()
+
+        self.result_label.setText(f"Analyzed {len(symbols)} stock(s) in {n_groups} window(s).")
 
     def analyze_popular_signals(self):
         popular_symbols = [s.strip().upper() for s in self.popular_symbols_input.text().split(",") if s.strip()]

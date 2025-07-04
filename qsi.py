@@ -144,7 +144,7 @@ def backtest_signals(prices, volumes, montant=50):
         "gain_total": gain_total
     }
 
-def plot_unified_chart(symbol, prices,volumes, ax):
+def plot_unified_chart(symbol, prices, volumes, ax, show_xaxis=False):
     """Trace un graphique unifié avec prix, MACD et RSI intégré"""
     # Vérification du format des prix
     if isinstance(prices, pd.DataFrame):
@@ -220,7 +220,7 @@ def plot_unified_chart(symbol, prices,volumes, ax):
     ax.legend(lines1 + lines2, labels1 + labels2, loc='best', fontsize=9)
     
     # Ajout des signaux trading
-    signal, last_price, trend, last_rsi, volume_moyen = get_trading_signal(prices,volumes)
+    signal, last_price, trend, last_rsi, volume_moyen = get_trading_signal(prices, volumes)
     
     # Calcul de la progression en pourcentage
     if len(prices) > 1:
@@ -236,10 +236,20 @@ def plot_unified_chart(symbol, prices,volumes, ax):
         title = (
             f"{symbol} | Prix: {last_price:.2f} | Signal: {signal} | "
             f"Tendance: {trend_symbol} | RSI: {last_rsi:.1f} ({rsi_status}) | "
-            f"Progression: {progression:+.2f}% | Vol. moyen: {volume_moyen:,.0f} (unité) "
+            f"Progression: {progression:+.2f}% | Vol. moyen: {volume_moyen:,.0f} units "
         )
         ax.set_title(title, fontsize=12, fontweight='bold', color=signal_color)
     
+    # Affichage de l'axe du temps uniquement sur le dernier plot
+    if not show_xaxis:
+        ax.set_xticklabels([])
+        ax2.set_xticklabels([])
+        ax.tick_params(axis='x', which='both', bottom=False, top=False, labelbottom=False)
+        ax2.tick_params(axis='x', which='both', bottom=False, top=False, labelbottom=False)
+    else:
+        ax.tick_params(axis='x', which='both', labelbottom=True)
+        ax2.tick_params(axis='x', which='both', labelbottom=True)
+
     return ax2
 
 
@@ -267,10 +277,11 @@ def analyse_et_affiche(symbols, period="12mo"):
         prices = stock_data['Close']
         volumes = stock_data['Volume']
         print(f"📊 Traitement de {symbol}...")
-        plot_unified_chart(symbol, prices, volumes, axes[i])
+        show_xaxis = (i == len(data) - 1)  # True seulement pour le dernier subplot
+        plot_unified_chart(symbol, prices, volumes, axes[i], show_xaxis=show_xaxis)
 
     plt.tight_layout()
-    plt.subplots_adjust(top=0.95, hspace=0.4)
+    plt.subplots_adjust(top=0.92, hspace=0.152,bottom=0.032)
     plt.show()
 
 # ======================================================================
@@ -531,7 +542,8 @@ def analyse_signaux_populaires(
             stock_data = download_stock_data([s['Symbole']], period)[s['Symbole']]
             prices = stock_data['Close']
             volumes = stock_data['Volume']
-            plot_unified_chart(s['Symbole'], prices, volumes, axes[i])
+            show_xaxis = (i == len(top_achats_fiables) - 1)  # True seulement pour le dernier subplot
+            plot_unified_chart(s['Symbole'], prices, volumes, axes[i], show_xaxis=show_xaxis)
             if len(prices) > 1:
                 progression = ((prices.iloc[-1] - prices.iloc[0]) / prices.iloc[0]) * 100
                 if isinstance(progression, pd.Series):
@@ -548,12 +560,12 @@ def analyse_signaux_populaires(
                 special_marker = " ‼️" if s['Symbole'] in mes_symbols else ""
                 title = (
                     f"{special_marker} {s['Symbole']} | Prix: {last_price:.2f} | Signal: {signal} {fiabilite_str} | "
-                    f"Tendance: {trend_symbol} | RSI: {last_rsi:.1f} ({rsi_status}) | Vol. moyen: {volume_mean:,.0f} (unité) | "
-                    f"Progression: {progression:+.2f}% {special_marker}"
+                    f"Tendance: {trend_symbol} | RSI: {last_rsi:.1f} ({rsi_status}) | "
+                    f"Progression: {progression:+.2f}% {special_marker} | Vol. moyen: {s['Volume moyen']:,.0f} units {special_marker}"
                 )
                 axes[i].set_title(title, fontsize=12, fontweight='bold', color=signal_color)
         plt.tight_layout()
-        plt.subplots_adjust(top=0.95, hspace=0.4)
+        plt.subplots_adjust(top=0.96, hspace=0.152,bottom=0.032)
         plt.show()
 
     if afficher_graphiques and top_ventes_fiables:
@@ -565,7 +577,9 @@ def analyse_signaux_populaires(
             stock_data = download_stock_data([s['Symbole']], period)[s['Symbole']]
             prices = stock_data['Close']
             volumes = stock_data['Volume']
-            plot_unified_chart(s['Symbole'], prices, volumes, axes[i])
+            show_xaxis = (i == len(top_ventes_fiables) - 1)  # True seulement pour le dernier subplot
+            plot_unified_chart(s['Symbole'], prices, volumes, axes[i], show_xaxis=show_xaxis)
+
             if len(prices) > 1:
                 progression = ((prices.iloc[-1] - prices.iloc[0]) / prices.iloc[0]) * 100
                 if isinstance(progression, pd.Series):
@@ -582,12 +596,12 @@ def analyse_signaux_populaires(
                 special_marker = " ‼️" if s['Symbole'] in mes_symbols else ""
                 title = (
                     f"{special_marker} {s['Symbole']} | Prix: {last_price:.2f} | Signal: {signal} {fiabilite_str} | "
-                    f"Tendance: {trend_symbol} | RSI: {last_rsi:.1f} ({rsi_status}) | Vol. moyen: {s['Volume moyen']:.0f} (unité) | "
-                    f"Progression: {progression:+.2f}% {special_marker}"
+                    f"Tendance: {trend_symbol} | RSI: {last_rsi:.1f} ({rsi_status})  | "
+                    f"Progression: {progression:+.2f}% {special_marker} | Vol. moyen: {s['Volume moyen']:,.0f} units {special_marker}"
                 )
                 axes[i].set_title(title, fontsize=12, fontweight='bold', color=signal_color)
         plt.tight_layout()
-        plt.subplots_adjust(top=0.95, hspace=0.4)
+        plt.subplots_adjust(top=0.96, hspace=0.152,bottom=0.032)
         plt.show()
 
     # Retourne les résultats pour usage ultérieur
@@ -601,7 +615,7 @@ def analyse_signaux_populaires(
     }
 
 # Pour utiliser la fonction sans exécution automatique :
-resultats = analyse_signaux_populaires(popular_symbols, mes_symbols, period="12mo", afficher_graphiques=True)
+# resultats = analyse_signaux_populaires(popular_symbols, mes_symbols, period="12mo", afficher_graphiques=True)
 
 
 
