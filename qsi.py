@@ -323,99 +323,104 @@ mes_symbols = ["QSI", "GLD","SYM","INGA.AS", "FLEX", "ALDX", "TSM", "02020.HK", 
 
 #popular_symbols = list(set(mes_symbols))
 
-print("\n🔍 Analyse des signaux pour actions populaires...")
-signals = []
+def analyse_signaux_populaires(
+    popular_symbols,
+    mes_symbols,
+    period="12mo",
+    afficher_graphiques=True,
+    chunk_size=15,
+    verbose=True
+):
+    """
+    Analyse les signaux pour les actions populaires, affiche les résultats, effectue le backtest,
+    et affiche les graphiques pour les signaux fiables si demandé.
+    Retourne un dictionnaire contenant les résultats principaux.
+    """
+    import matplotlib.pyplot as plt
 
-CHUNK_SIZE = 15
-for i in range(0, len(popular_symbols), CHUNK_SIZE):
-    chunk = popular_symbols[i:i+CHUNK_SIZE]
-    print(f"\n🔎 Lot {i//CHUNK_SIZE + 1}: {', '.join(chunk)}")
-    
-    try:
-        # chunk_data = download_stock_data(chunk, period="6mo")
-        chunk_data = download_stock_data(chunk, period)
-        
-        for symbol, stock_data in chunk_data.items():
-            prices = stock_data['Close']
-            volumes = stock_data['Volume']
-            if len(prices) < 50:
-                continue
+    if verbose:
+        print("\n🔍 Analyse des signaux pour actions populaires...")
+    signals = []
 
-            signal, last_price, trend, last_rsi = get_trading_signal(prices, volumes)
+    for i in range(0, len(popular_symbols), chunk_size):
+        chunk = popular_symbols[i:i+chunk_size]
+        if verbose:
+            print(f"\n🔎 Lot {i//chunk_size + 1}: {', '.join(chunk)}")
+        try:
+            chunk_data = download_stock_data(chunk, period)
+            for symbol, stock_data in chunk_data.items():
+                prices = stock_data['Close']
+                volumes = stock_data['Volume']
+                if len(prices) < 50:
+                    continue
+                signal, last_price, trend, last_rsi = get_trading_signal(prices, volumes)
+                if signal != "NEUTRE":
+                    try:
+                        info = yf.Ticker(symbol).info
+                        domaine = info.get("sector", "Inconnu")
+                    except Exception:
+                        domaine = "Inconnu"
+                    signals.append({
+                        'Symbole': symbol,
+                        'Signal': signal,
+                        'Prix': last_price,
+                        'Tendance': "Hausse" if trend else "Baisse",
+                        'RSI': last_rsi,
+                        'Domaine': domaine
+                    })
+        except Exception as e:
+            if verbose:
+                print(f"⚠️ Erreur: {str(e)}")
+        time.sleep(1)
 
-            if signal != "NEUTRE":
-                # Récupération du secteur via yfinance
-                try:
-                    info = yf.Ticker(symbol).info
-                    domaine = info.get("sector", "Inconnu")
-                except Exception:
-                    domaine = "Inconnu"
-                signals.append({
-                    'Symbole': symbol,
-                    'Signal': signal,
-                    'Prix': last_price,
-                    'Tendance': "Hausse" if trend else "Baisse",
-                    'RSI': last_rsi,
-                    'Domaine': domaine
-                })
-    
-    except Exception as e:
-        print(f"⚠️ Erreur: {str(e)}")
-    
-    time.sleep(1)  # Pause courte
-
-# Affichage des résultats
-if signals:
-    print("\n" + "=" * 105)
-    print("RÉSULTATS DES SIGNEAUX")
-    print("=" * 105)
-    print(f"{'Symbole':<8} {'Signal':<8} {'Prix':<10} {'Tendance':<10} {'RSI':<6} {'Domaine':<24} Analyse")
-    print("-" * 105)
-
-    # Trier les signaux par type de signal puis par tendance
+    # Affichage des résultats
     signaux_tries = {"ACHAT": {"Hausse": [], "Baisse": []}, "VENTE": {"Hausse": [], "Baisse": []}}
-    for s in signals:
-        if s['Signal'] in signaux_tries and s['Tendance'] in signaux_tries[s['Signal']]:
-            signaux_tries[s['Signal']][s['Tendance']].append(s)
+    if signals:
+        if verbose:
+            print("\n" + "=" * 105)
+            print("RÉSULTATS DES SIGNEAUX")
+            print("=" * 105)
+            print(f"{'Symbole':<8} {'Signal':<8} {'Prix':<10} {'Tendance':<10} {'RSI':<6} {'Domaine':<24} Analyse")
+            print("-" * 105)
+        for s in signals:
+            if s['Signal'] in signaux_tries and s['Tendance'] in signaux_tries[s['Signal']]:
+                signaux_tries[s['Signal']][s['Tendance']].append(s)
+        for signal_type in ["ACHAT", "VENTE"]:
+            for tendance in ["Hausse", "Baisse"]:
+                if signaux_tries[signal_type][tendance]:
+                    signaux_tries[signal_type][tendance].sort(key=lambda x: x['Prix'])
+                    if verbose:
+                        print(f"\n--- Signal {signal_type} | Tendance {tendance} ---")
+                        for s in signaux_tries[signal_type][tendance]:
+                            analysis = ""
+                            if s['Signal'] == "ACHAT":
+                                analysis += "RSI bas" if s['RSI'] < 40 else ""
+                                analysis += " + Tendance haussière" if s['Tendance'] == "Hausse" else ""
+                            else:
+                                analysis += "RSI élevé" if s['RSI'] > 60 else ""
+                                analysis += " + Tendance baissière" if s['Tendance'] == "Baisse" else ""
+                            print(f"{s['Symbole']:<8} {s['Signal']:<8} {s['Prix']:<10.2f} {s['Tendance']:<10} {s['RSI']:<6.1f} {s['Domaine']:<24} {analysis} ")
+        if verbose:
+            print("=" * 105)
+    else:
+        if verbose:
+            print("\nℹ️ Aucun signal fort détecté parmi les actions populaires")
+        return {}
 
-    for signal_type in ["ACHAT", "VENTE"]:
-        for tendance in ["Hausse", "Baisse"]:
-            if signaux_tries[signal_type][tendance]:
-                # Tri par prix croissant
-                signaux_tries[signal_type][tendance].sort(key=lambda x: x['Prix'])
-                print(f"\n--- Signal {signal_type} | Tendance {tendance} ---")
-                for s in signaux_tries[signal_type][tendance]:
-                    analysis = ""
-                    if s['Signal'] == "ACHAT":
-                        analysis += "RSI bas" if s['RSI'] < 40 else ""
-                        analysis += " + Tendance haussière" if s['Tendance'] == "Hausse" else ""
-                    else:
-                        analysis += "RSI élevé" if s['RSI'] > 60 else ""
-                        analysis += " + Tendance baissière" if s['Tendance'] == "Baisse" else ""
-
-                    print(f"{s['Symbole']:<8} {s['Signal']:<8} {s['Prix']:<10.2f} {s['Tendance']:<10} {s['RSI']:<6.1f} {s['Domaine']:<24} {analysis} ")
-
-    print("=" * 105)
-else:
-    print("\nℹ️ Aucun signal fort détecté parmi les actions populaires")
-
-# Résumé du backtest sur les signaux détectés
-if signals:
-    print("\n📈 Résultats du backtest sur les signaux détectés :")
+    # Résumé du backtest sur les signaux détectés
     total_trades = 0
     total_gagnants = 0
     total_gain = 0.0
-    number = 0
-    cout_par_trade = 1.0  # À adapter selon la réglementation ou ton courtier
-
+    cout_par_trade = 1.0
     backtest_results = []
-
     for s in signals:
         try:
             stock_data = download_stock_data([s['Symbole']], period)[s['Symbole']]
             prices = stock_data['Close']
+            volumes = stock_data['Volume']
             if not isinstance(prices, (pd.Series, pd.DataFrame)) or len(prices) < 2:
-                print(f"{s['Symbole']:<8} : Données insuffisantes pour le backtest")
+                if verbose:
+                    print(f"{s['Symbole']:<8} : Données insuffisantes pour le backtest")
                 continue
             resultats = backtest_signals(prices, volumes, montant=50)
             backtest_results.append({
@@ -428,46 +433,35 @@ if signals:
             total_trades += resultats['trades']
             total_gagnants += resultats['gagnants']
             total_gain += resultats['gain_total']
-            number += 1
         except Exception as e:
-            print(f"{s['Symbole']:<8} : Erreur backtest ({e})")
-
-    # Tri par taux de réussite décroissant
+            if verbose:
+                print(f"{s['Symbole']:<8} : Erreur backtest ({e})")
     backtest_results.sort(key=lambda x: x['taux_reussite'], reverse=True)
+    if verbose:
+        for res in backtest_results:
+            print(
+                f"{res['Symbole']:<8} | Trades: {res['trades']:<2} | "
+                f"Gagnants: {res['gagnants']:<2} | "
+                f"Taux réussite: {res['taux_reussite']:.0f}% | "
+                f"Gain total: {res['gain_total']:.2f} $"
+            )
+        cout_total_trades = total_trades * cout_par_trade
+        total_investi_reel = len(backtest_results) * 50
+        gain_total_reel = total_gain - cout_total_trades
+        if total_trades > 0:
+            taux_global = total_gagnants / total_trades * 100
+            print("\n" + "="*105)
+            print(f"🌍 Résultat global :")
+            print(f"  - Taux de réussite = {taux_global:.1f}%")
+            print(f"  - Nombre de trades = {total_trades}")
+            print(f"  - Total investi réel = {total_investi_reel:.2f} $ (50 $ par action analysée)")
+            print(f"  - Coût total des trades = {cout_total_trades:.2f} $ (à {cout_par_trade:.2f} $ par trade)")
+            print(f"  - Gain total brut = {total_gain:.2f} $")
+            print(f"  - Gain total net (après frais) = {gain_total_reel:.2f} $")
+            print("="*105)
+        else:
+            print("\nAucun trade détecté pour le calcul global.")
 
-    for res in backtest_results:
-        print(
-            f"{res['Symbole']:<8} | Trades: {res['trades']:<2} | "
-            f"Gagnants: {res['gagnants']:<2} | "
-            f"Taux réussite: {res['taux_reussite']:.0f}% | "
-            f"Gain total: {res['gain_total']:.2f} $"
-        )
-
-    # Calculs des coûts et gains réels
-    cout_total_trades = total_trades * cout_par_trade
-    # Correction : on investit 50$ par action, pas par trade
-    total_investi_reel = len(backtest_results) * 50
-    gain_total_reel = total_gain - cout_total_trades
-
-    # Résumé global
-    if total_trades > 0:
-        taux_global = total_gagnants / total_trades * 100
-        print("\n" + "="*105)
-        print(f"🌍 Résultat global :")
-        print(f"  - Taux de réussite = {taux_global:.1f}%")
-        print(f"  - Nombre de trades = {total_trades}")
-        print(f"  - Total investi réel = {total_investi_reel:.2f} $ (50 $ par action analysée)")
-        print(f"  - Coût total des trades = {cout_total_trades:.2f} $ (à {cout_par_trade:.2f} $ par trade)")
-        print(f"  - Gain total brut = {total_gain:.2f} $")
-        print(f"  - Gain total net (après frais) = {gain_total_reel:.2f} $")
-        print("="*105)
-    else:
-
-        print("\nAucun trade détecté pour le calcul global.")   
-
-# todo: essayer d'evaluer la rentabilité de la stratégie si dans le passe je n'avais investi que dans les actions
-# avec un taux der réussite supérieur à 50% et un gain total positif 
-# ======================================================================
     # Évaluation supplémentaire : stratégie filtrée
     filtres = [res for res in backtest_results if res['taux_reussite'] >= 60 and res['gain_total'] > 0]
     nb_actions_filtrees = len(filtres)
@@ -477,161 +471,146 @@ if signals:
     cout_total_trades_filtre = total_trades_filtre * cout_par_trade
     total_investi_filtre = nb_actions_filtrees * 50
     gain_total_reel_filtre = total_gain_filtre - cout_total_trades_filtre
+    if verbose:
+        print("\n" + "="*105)
+        print("🔎 Évaluation si investissement SEULEMENT sur les actions à taux de réussite >= 60% ET gain total positif :")
+        print(f"  - Nombre d'actions sélectionnées = {nb_actions_filtrees}")
+        print(f"  - Nombre de trades = {total_trades_filtre}")
+        print(f"  - Taux de réussite global = {(total_gagnants_filtre / total_trades_filtre * 100) if total_trades_filtre else 0:.1f}%")
+        print(f"  - Total investi réel = {total_investi_filtre:.2f} $ (50 $ par action sélectionnée)")
+        print(f"  - Coût total des trades = {cout_total_trades_filtre:.2f} $ (à {cout_par_trade:.2f} $ par trade)")
+        print(f"  - Gain total brut = {total_gain_filtre:.2f} $")
+        print(f"  - Gain total net (après frais) = {gain_total_reel_filtre:.2f} $")
+        print("="*105)
 
-    print("\n" + "="*105)
-    print("🔎 Évaluation si investissement SEULEMENT sur les actions à taux de réussite >= 60% ET gain total positif :")
-    print(f"  - Nombre d'actions sélectionnées = {nb_actions_filtrees}")
-    print(f"  - Nombre de trades = {total_trades_filtre}")
-    print(f"  - Taux de réussite global = {(total_gagnants_filtre / total_trades_filtre * 100) if total_trades_filtre else 0:.1f}%")
-    print(f"  - Total investi réel = {total_investi_filtre:.2f} $ (50 $ par action sélectionnée)")
-    print(f"  - Coût total des trades = {cout_total_trades_filtre:.2f} $ (à {cout_par_trade:.2f} $ par trade)")
-    print(f"  - Gain total brut = {total_gain_filtre:.2f} $")
-    print(f"  - Gain total net (après frais) = {gain_total_reel_filtre:.2f} $")
-    print("="*105)
+    # Tableau des signaux pour actions fiables (>=60% taux de réussite) ou non encore évaluables
+    fiables_ou_non_eval = set()
+    for res in backtest_results:
+        if res['taux_reussite'] >= 60 or res['trades'] == 0:
+            fiables_ou_non_eval.add(res['Symbole'])
+    if verbose:
+        print("\n" + "=" * 105)
+        print("SIGNES UNIQUEMENT POUR ACTIONS FIABLES (>=60% taux de réussite) OU NON ÉVALUÉES")
+        print("=" * 105)
+        print(f"{'Symbole':<8} {'Signal':<8} {'Prix':<10} {'Tendance':<10} {'RSI':<6} {'Domaine':<24} Analyse")
+        print("-" * 105)
+    for signal_type in ["ACHAT", "VENTE"]:
+        for tendance in ["Hausse", "Baisse"]:
+            filtered = [
+                s for s in signaux_tries[signal_type][tendance]
+                if s['Symbole'] in fiables_ou_non_eval
+            ]
+            if filtered and verbose:
+                print(f"\n--- Signal {signal_type} | Tendance {tendance} ---")
+                for s in filtered:
+                    analysis = ""
+                    if s['Signal'] == "ACHAT":
+                        analysis += "RSI bas" if s['RSI'] < 40 else ""
+                        analysis += " + Tendance haussière" if s['Tendance'] == "Hausse" else ""
+                    else:
+                        analysis += "RSI élevé" if s['RSI'] > 60 else ""
+                        analysis += " + Tendance baissière" if s['Tendance'] == "Baisse" else ""
+                    print(f"{s['Symbole']:<8} {s['Signal']:<8} {s['Prix']:<10.2f} {s['Tendance']:<10} {s['RSI']:<6.1f} {s['Domaine']:<24} {analysis} ")
+    if verbose:
+        print("=" * 105)
 
-# Tableau des signaux pour actions fiables (>=60% taux de réussite) ou non encore évaluables
+    # Affichage des graphiques pour les 5 premiers signaux d'achat et de vente FIABLES
+    top_achats_fiables = []
+    top_ventes_fiables = []
+    for signal_type in ["ACHAT", "VENTE"]:
+        for tendance in ["Hausse", "Baisse"]:
+            filtered = [
+                s for s in signaux_tries[signal_type][tendance]
+                if s['Symbole'] in fiables_ou_non_eval
+            ]
+            if signal_type == "ACHAT":
+                top_achats_fiables.extend(filtered)
+            else:
+                top_ventes_fiables.extend(filtered)
+    top_achats_fiables = top_achats_fiables[:5]
+    top_ventes_fiables = top_ventes_fiables[:5]
+    fiabilite_dict = {res['Symbole']: res['taux_reussite'] for res in backtest_results}
 
-# Récupère la liste des symboles fiables ou non évaluables
-fiables_ou_non_eval = set()
-for res in backtest_results:
-    if res['taux_reussite'] >= 60 or res['trades'] == 0:
-        fiables_ou_non_eval.add(res['Symbole'])
+    if afficher_graphiques and top_achats_fiables:
+        print("\nAffichage des graphiques pour les 5 premiers signaux d'ACHAT FIABLES détectés (sur une même figure)...")
+        fig, axes = plt.subplots(len(top_achats_fiables), 1, figsize=(14, 5 * len(top_achats_fiables)), sharex=False)
+        if len(top_achats_fiables) == 1:
+            axes = [axes]
+        for i, s in enumerate(top_achats_fiables):
+            stock_data = download_stock_data([s['Symbole']], period)[s['Symbole']]
+            prices = stock_data['Close']
+            volumes = stock_data['Volume']
+            plot_unified_chart(s['Symbole'], prices, volumes, axes[i])
+            if len(prices) > 1:
+                progression = ((prices.iloc[-1] - prices.iloc[0]) / prices.iloc[0]) * 100
+                if isinstance(progression, pd.Series):
+                    progression = float(progression.iloc[0])
+            else:
+                progression = 0.0
+            signal, last_price, trend, last_rsi = get_trading_signal(prices, volumes)
+            taux_fiabilite = fiabilite_dict.get(s['Symbole'], None)
+            fiabilite_str = f" | Fiabilité: {taux_fiabilite:.0f}%" if taux_fiabilite is not None else ""
+            if last_price is not None:
+                trend_symbol = "Haussière" if trend else "Baissière"
+                rsi_status = "SURACH" if last_rsi > 70 else "SURVENTE" if last_rsi < 30 else "NEUTRE"
+                signal_color = 'green' if signal == "ACHAT" else 'red' if signal == "VENTE" else 'black'
+                special_marker = " ‼️" if s['Symbole'] in mes_symbols else ""
+                title = (
+                    f"{special_marker} {s['Symbole']} | Prix: {last_price:.2f} | Signal: {signal} {fiabilite_str} | "
+                    f"Tendance: {trend_symbol} | RSI: {last_rsi:.1f} ({rsi_status}) | "
+                    f"Progression: {progression:+.2f}% {special_marker}"
+                )
+                axes[i].set_title(title, fontsize=12, fontweight='bold', color=signal_color)
+        plt.tight_layout()
+        plt.subplots_adjust(top=0.95, hspace=0.4)
+        plt.show()
 
-print("\n" + "=" * 105)
-print("SIGNES UNIQUEMENT POUR ACTIONS FIABLES (>=60% taux de réussite) OU NON ÉVALUÉES")
-print("=" * 105)
-print(f"{'Symbole':<8} {'Signal':<8} {'Prix':<10} {'Tendance':<10} {'RSI':<6} {'Domaine':<24} Analyse")
-print("-" * 105)
+    if afficher_graphiques and top_ventes_fiables:
+        print("\nAffichage des graphiques pour les 5 premiers signaux de VENTE FIABLES détectés (sur une même figure)...")
+        fig, axes = plt.subplots(len(top_ventes_fiables), 1, figsize=(14, 5 * len(top_ventes_fiables)), sharex=False)
+        if len(top_ventes_fiables) == 1:
+            axes = [axes]
+        for i, s in enumerate(top_ventes_fiables):
+            stock_data = download_stock_data([s['Symbole']], period)[s['Symbole']]
+            prices = stock_data['Close']
+            volumes = stock_data['Volume']
+            plot_unified_chart(s['Symbole'], prices, volumes, axes[i])
+            if len(prices) > 1:
+                progression = ((prices.iloc[-1] - prices.iloc[0]) / prices.iloc[0]) * 100
+                if isinstance(progression, pd.Series):
+                    progression = float(progression.iloc[0])
+            else:
+                progression = 0.0
+            signal, last_price, trend, last_rsi = get_trading_signal(prices, volumes)
+            taux_fiabilite = fiabilite_dict.get(s['Symbole'], None)
+            fiabilite_str = f" | Fiabilité: {taux_fiabilite:.0f}%" if taux_fiabilite is not None else ""
+            if last_price is not None:
+                trend_symbol = "Haussière" if trend else "Baissière"
+                rsi_status = "SURACH" if last_rsi > 70 else "SURVENTE" if last_rsi < 30 else "NEUTRE"
+                signal_color = 'green' if signal == "ACHAT" else 'red' if signal == "VENTE" else 'black'
+                special_marker = " ‼️" if s['Symbole'] in mes_symbols else ""
+                title = (
+                    f"{special_marker} {s['Symbole']} | Prix: {last_price:.2f} | Signal: {signal} {fiabilite_str} | "
+                    f"Tendance: {trend_symbol} | RSI: {last_rsi:.1f} ({rsi_status}) | "
+                    f"Progression: {progression:+.2f}% {special_marker}"
+                )
+                axes[i].set_title(title, fontsize=12, fontweight='bold', color=signal_color)
+        plt.tight_layout()
+        plt.subplots_adjust(top=0.95, hspace=0.4)
+        plt.show()
 
-for signal_type in ["ACHAT", "VENTE"]:
-    for tendance in ["Hausse", "Baisse"]:
-        filtered = [
-            s for s in signaux_tries[signal_type][tendance]
-            if s['Symbole'] in fiables_ou_non_eval
-        ]
-        if filtered:
-            print(f"\n--- Signal {signal_type} | Tendance {tendance} ---")
-            for s in filtered:
-                analysis = ""
-                if s['Signal'] == "ACHAT":
-                    analysis += "RSI bas" if s['RSI'] < 40 else ""
-                    analysis += " + Tendance haussière" if s['Tendance'] == "Hausse" else ""
-                else:
-                    analysis += "RSI élevé" if s['RSI'] > 60 else ""
-                    analysis += " + Tendance baissière" if s['Tendance'] == "Baisse" else ""
-                print(f"{s['Symbole']:<8} {s['Signal']:<8} {s['Prix']:<10.2f} {s['Tendance']:<10} {s['RSI']:<6.1f} {s['Domaine']:<24} {analysis} ")
+    # Retourne les résultats pour usage ultérieur
+    return {
+        "signals": signals,
+        "signaux_tries": signaux_tries,
+        "backtest_results": backtest_results,
+        "fiables_ou_non_eval": fiables_ou_non_eval,
+        "top_achats_fiables": top_achats_fiables,
+        "top_ventes_fiables": top_ventes_fiables
+    }
 
-print("=" * 105)
-
-# Affichage des graphiques pour les 5 premiers signaux d'achat et de vente FIABLES
-top_achats_fiables = []
-top_ventes_fiables = []
-
-for signal_type in ["ACHAT", "VENTE"]:
-    for tendance in ["Hausse", "Baisse"]:
-        filtered = [
-            s for s in signaux_tries[signal_type][tendance]
-            if s['Symbole'] in fiables_ou_non_eval
-        ]
-        if signal_type == "ACHAT":
-            top_achats_fiables.extend(filtered)
-        else:
-            top_ventes_fiables.extend(filtered)
-
-# On limite à 5 chaque type
-top_achats_fiables = top_achats_fiables[:5]
-top_ventes_fiables = top_ventes_fiables[:5]
-
-# Création d'un dictionnaire pour retrouver le taux de fiabilité par symbole
-fiabilite_dict = {}
-for res in backtest_results:
-    fiabilite_dict[res['Symbole']] = res['taux_reussite']
-
-# Affichage des graphiques pour les 5 premiers signaux d'ACHAT FIABLES sur une même figure
-if top_achats_fiables:
-    print("\nAffichage des graphiques pour les 5 premiers signaux d'ACHAT FIABLES détectés (sur une même figure)...")
-    fig, axes = plt.subplots(len(top_achats_fiables), 1, figsize=(14, 5 * len(top_achats_fiables)), sharex=False)
-    if len(top_achats_fiables) == 1:
-        axes = [axes]
-    for i, s in enumerate(top_achats_fiables):
-        stock_data = download_stock_data([s['Symbole']], period)[s['Symbole']]
-        prices = stock_data['Close']
-        volumes = stock_data['Volume']
-        plot_unified_chart(s['Symbole'], prices, volumes, axes[i])
-
-        # Calcul de la progression en pourcentage
-        if len(prices) > 1:
-            progression = ((prices.iloc[-1] - prices.iloc[0]) / prices.iloc[0]) * 100
-            if isinstance(progression, pd.Series):
-                progression = float(progression.iloc[0])
-        else:
-            progression = 0.0
-
-        # Récupération des signaux pour l'affichage du titre
-        signal, last_price, trend, last_rsi = get_trading_signal(prices, volumes)
-
-        # Récupération du taux de fiabilité
-        taux_fiabilite = fiabilite_dict.get(s['Symbole'], None)
-        fiabilite_str = f" | Fiabilité: {taux_fiabilite:.0f}%" if taux_fiabilite is not None else ""
-
-        if last_price is not None:
-            trend_symbol = "Haussière" if trend else "Baissière"
-            rsi_status = "SURACH" if last_rsi > 70 else "SURVENTE" if last_rsi < 30 else "NEUTRE"
-            signal_color = 'green' if signal == "ACHAT" else 'red' if signal == "VENTE" else 'black'
-            # Ajout d'un indicateur spécial si le symbole est dans mes_symbols
-            special_marker = " ‼️" if s['Symbole'] in mes_symbols else ""
-            title = (
-            f"{special_marker} {s['Symbole']} | Prix: {last_price:.2f} | Signal: {signal} {fiabilite_str} | "
-            f"Tendance: {trend_symbol} | RSI: {last_rsi:.1f} ({rsi_status}) | "
-            f"Progression: {progression:+.2f}% {special_marker}"
-            )
-            axes[i].set_title(title, fontsize=12, fontweight='bold', color=signal_color)
-    plt.tight_layout()
-    plt.subplots_adjust(top=0.95, hspace=0.4)
-    plt.show()
-
-# Affichage des graphiques pour les 5 premiers signaux de VENTE FIABLES sur une même figure
-if top_ventes_fiables:
-    print("\nAffichage des graphiques pour les 5 premiers signaux de VENTE FIABLES détectés (sur une même figure)...")
-    fig, axes = plt.subplots(len(top_ventes_fiables), 1, figsize=(14, 5 * len(top_ventes_fiables)), sharex=False)
-    if len(top_ventes_fiables) == 1:
-        axes = [axes]
-    for i, s in enumerate(top_ventes_fiables):
-        stock_data = download_stock_data([s['Symbole']], period)[s['Symbole']]
-        prices = stock_data['Close']
-        volumes = stock_data['Volume']
-        plot_unified_chart(s['Symbole'], prices, volumes, axes[i])
-
-        # Calcul de la progression en pourcentage
-        if len(prices) > 1:
-            progression = ((prices.iloc[-1] - prices.iloc[0]) / prices.iloc[0]) * 100
-            if isinstance(progression, pd.Series):
-                progression = float(progression.iloc[0])
-        else:
-            progression = 0.0
-
-        # Récupération des signaux pour l'affichage du titre
-        signal, last_price, trend, last_rsi = get_trading_signal(prices, volumes)
-
-        # Récupération du taux de fiabilité
-        taux_fiabilite = fiabilite_dict.get(s['Symbole'], None)
-        fiabilite_str = f" | Fiabilité: {taux_fiabilite:.0f}%" if taux_fiabilite is not None else ""
-
-        if last_price is not None:
-            trend_symbol = "Haussière" if trend else "Baissière"
-            rsi_status = "SURACH" if last_rsi > 70 else "SURVENTE" if last_rsi < 30 else "NEUTRE"
-            signal_color = 'green' if signal == "ACHAT" else 'red' if signal == "VENTE" else 'black'
-            # Ajout d'un indicateur spécial si le symbole est dans mes_symbols
-            special_marker = " ‼️" if s['Symbole'] in mes_symbols else ""
-            title = (
-            f"{special_marker} {s['Symbole']} | Prix: {last_price:.2f} | Signal: {signal} {fiabilite_str} | "
-            f"Tendance: {trend_symbol} | RSI: {last_rsi:.1f} ({rsi_status}) | "
-            f"Progression: {progression:+.2f}% {special_marker}"
-            )
-            axes[i].set_title(title, fontsize=12, fontweight='bold', color=signal_color)
-    plt.tight_layout()
-    plt.subplots_adjust(top=0.95, hspace=0.4)
-    plt.show()
+# Pour utiliser la fonction sans exécution automatique :
+resultats = analyse_signaux_populaires(popular_symbols, mes_symbols, period="12mo", afficher_graphiques=True)
 
 
 

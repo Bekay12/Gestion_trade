@@ -1,5 +1,8 @@
 from PyQt5.QtWidgets import QApplication, QMainWindow, QVBoxLayout, QWidget, QPushButton, QLabel, QLineEdit
 import sys
+import os
+sys.path.append(os.path.abspath(os.path.join(os.path.dirname(__file__), '..', '..')))
+from qsi import analyse_et_affiche
 
 class MainWindow(QMainWindow):
     def __init__(self):
@@ -31,7 +34,8 @@ class MainWindow(QMainWindow):
         symbol = self.symbol_input.text()
         if symbol:
             # Here you would call the stock analysis functions from qsi.py
-            # For example: result = analyze_stock(symbol)
+            result = analyse_et_affiche(symbol, period="12mo")
+            self.result_label.setText(f"Analysis result for {symbol}: {result}")
             # self.result_label.setText(f"Analysis result for {symbol}: {result}")
             self.result_label.setText(f"Analyzing stock: {symbol} (functionality to be implemented)")
         else:
