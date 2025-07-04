@@ -20,3 +20,38 @@
 2025-07-04 15:47:38,526 - ERROR - 
 1 Failed download:
 2025-07-04 15:47:38,526 - ERROR - ['ABBN.ZU']: YFPricesMissingError('possibly delisted; no price data found  (period=12mo) (Yahoo error = "No data found, symbol may be delisted")')
+2025-07-04 15:52:52,540 - ERROR - 
+1 Failed download:
+2025-07-04 15:52:52,541 - ERROR - ['02020.HK']: YFPricesMissingError('possibly delisted; no price data found  (period=12mo)')
+2025-07-04 15:53:04,849 - ERROR - 
+1 Failed download:
+2025-07-04 15:53:04,849 - ERROR - ['LVMH.PA']: YFPricesMissingError('possibly delisted; no price data found  (period=12mo)')
+2025-07-04 15:53:27,072 - ERROR - HTTP Error 404: 
+2025-07-04 15:53:27,445 - ERROR - 
+1 Failed download:
+2025-07-04 15:53:27,445 - ERROR - ['DOGE']: YFPricesMissingError('possibly delisted; no price data found  (period=12mo) (Yahoo error = "No data found, symbol may be delisted")')
+2025-07-04 15:53:32,281 - ERROR - 
+1 Failed download:
+2025-07-04 15:53:32,281 - ERROR - ['GPS']: YFPricesMissingError('possibly delisted; no price data found  (period=12mo) (Yahoo error = "No data found, symbol may be delisted")')
+2025-07-04 16:19:45,163 - ERROR - 
+1 Failed download:
+2025-07-04 16:19:45,163 - ERROR - ['02020.HK']: YFPricesMissingError('possibly delisted; no price data found  (period=12mo)')
+2025-07-04 16:19:58,197 - ERROR - 
+1 Failed download:
+2025-07-04 16:19:58,197 - ERROR - ['LVMH.PA']: YFPricesMissingError('possibly delisted; no price data found  (period=12mo)')
+2025-07-04 16:20:24,806 - ERROR - HTTP Error 404: 
+2025-07-04 16:20:25,150 - ERROR - 
+1 Failed download:
+2025-07-04 16:20:25,150 - ERROR - ['DOGE']: YFPricesMissingError('possibly delisted; no price data found  (period=12mo) (Yahoo error = "No data found, symbol may be delisted")')
+2025-07-04 16:20:30,854 - ERROR - 
+1 Failed download:
+2025-07-04 16:20:30,854 - ERROR - ['GPS']: YFPricesMissingError('possibly delisted; no price data found  (period=12mo) (Yahoo error = "No data found, symbol may be delisted")')
+2025-07-04 16:22:29,647 - ERROR - 
+1 Failed download:
+2025-07-04 16:22:29,647 - ERROR - ['GPS']: YFPricesMissingError('possibly delisted; no price data found  (period=3mo) (Yahoo error = "No data found, symbol may be delisted")')
+2025-07-04 16:24:34,004 - ERROR - 
+1 Failed download:
+2025-07-04 16:24:34,004 - ERROR - ['GPS']: YFPricesMissingError('possibly delisted; no price data found  (period=6mo) (Yahoo error = "No data found, symbol may be delisted")')
+2025-07-04 16:26:19,121 - ERROR - 
+1 Failed download:
+2025-07-04 16:26:19,121 - ERROR - ['GPS']: YFPricesMissingError('possibly delisted; no price data found  (period=18mo) (Yahoo error = "No data found, symbol may be delisted")')

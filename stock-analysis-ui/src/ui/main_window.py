@@ -4,7 +4,7 @@ import os
 import math
 import matplotlib.pyplot as plt
 sys.path.append(os.path.abspath(os.path.join(os.path.dirname(__file__), '..', '..')))
-from qsi import analyse_et_affiche, analyse_signaux_populaires, popular_symbols, mes_symbols
+from qsi import analyse_et_affiche, analyse_signaux_populaires, popular_symbols, mes_symbols, period
 
 class MainWindow(QMainWindow):
     def __init__(self):
@@ -46,6 +46,12 @@ class MainWindow(QMainWindow):
         self.layout.addWidget(QLabel("Mes symboles :"))
         self.layout.addWidget(self.mes_symbols_input)
 
+        # champ pour la période d'analyse
+        self.period_input = QLineEdit(period)
+        self.period_input.setPlaceholderText("Période d'analyse (ex: 12mo)")
+        self.layout.addWidget(QLabel("Période d'analyse :"))
+        self.layout.addWidget(self.period_input)
+
         self.result_label = QLabel("")
         self.layout.addWidget(self.result_label)
 
@@ -55,6 +61,18 @@ class MainWindow(QMainWindow):
         if not symbols:
             self.result_label.setText("Please enter at least one stock symbol.")
             return
+        
+        # Récupérer la période saisie par l'utilisateur
+        period = self.period_input.text().strip()
+        if not period:
+            self.result_label.setText("Please enter a valid period (e.g., 12mo).")
+            return
+        
+        # Liste des périodes valides pour yfinance
+        valid_periods = ["3mo", "6mo", "12mo", "1y", "18mo", "24mo", "2y", "5y", "10y", "ytd", "max"]
+        if period not in valid_periods:
+            self.result_label.setText(f"Invalid period. Choose from: {', '.join(valid_periods)}")
+            return
 
         group_size = 5
         n_groups = math.ceil(len(symbols) / group_size)
@@ -62,8 +80,7 @@ class MainWindow(QMainWindow):
             group = symbols[i*group_size:(i+1)*group_size]
             # analyse_et_affiche doit accepter une liste de symboles
             # et afficher les graphiques sur une même figure
-            plt.figure(figsize=(14, 5))
-            analyse_et_affiche(group, period="12mo")
+            analyse_et_affiche(group, period)
             plt.suptitle(f"Stocks {', '.join(group)}")
             plt.show()
 
@@ -72,7 +89,8 @@ class MainWindow(QMainWindow):
     def analyze_popular_signals(self):
         popular_symbols = [s.strip().upper() for s in self.popular_symbols_input.text().split(",") if s.strip()]
         mes_symbols = [s.strip().upper() for s in self.mes_symbols_input.text().split(",") if s.strip()]
-        result = analyse_signaux_populaires(popular_symbols, mes_symbols)
+        period=self.period_input.text().strip()
+        result = analyse_signaux_populaires(popular_symbols, mes_symbols, period=period)
         self.result_label.setText(str(result))
 
 if __name__ == "__main__":
