@@ -273,6 +273,7 @@ def analyse_et_affiche(symbols, period="12mo"):
     plt.subplots_adjust(top=0.95, hspace=0.4)
     plt.show()
 
+
 # ======================================================================
 # CONFIGURATION PRINCIPALE
 # ======================================================================
@@ -326,7 +327,6 @@ def analyse_signaux_populaires(
     et affiche les graphiques pour les signaux fiables si demandé.
     Retourne un dictionnaire contenant les résultats principaux.
     """
-    import matplotlib.pyplot as plt
 
     if verbose:
         print("\n🔍 Analyse des signaux pour actions populaires...")
@@ -572,7 +572,7 @@ def analyse_signaux_populaires(
                     progression = float(progression.iloc[0])
             else:
                 progression = 0.0
-            signal, last_price, trend, last_rsi = get_trading_signal(prices, volumes)
+            signal, last_price, trend, last_rsi, volume_mean = get_trading_signal(prices, volumes)
             taux_fiabilite = fiabilite_dict.get(s['Symbole'], None)
             fiabilite_str = f" | Fiabilité: {taux_fiabilite:.0f}%" if taux_fiabilite is not None else ""
             if last_price is not None:
