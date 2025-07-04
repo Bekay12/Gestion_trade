@@ -47,20 +47,24 @@ def get_trading_signal(prices, volumes, variation_seuil=-20, volume_seuil=100000
     else:
         variation_30j = None
     
-    # Calcul du volume moyen sur 20 jours
-    if len(volumes) >= 20:
-        volume_mean = volumes.rolling(window=20).mean().iloc[-1]
+    # Calcul du volume moyen sur 30 jours
+    if len(volumes) >= 30:
+        volume_mean = volumes.rolling(window=30).mean().iloc[-1]
+        if isinstance(volume_mean, pd.Series):
+            volume_mean = float(volume_mean.iloc[0])
+        else:
+            volume_mean = float(volume_mean)
     else:
         volume_mean = None
     
-    if macd.iloc[-2] < signal_line.iloc[-2] and macd.iloc[-1] > signal_line.iloc[-1] and rsi.iloc[-1] < 70:
+    if macd.iloc[-2] < signal_line.iloc[-2] and macd.iloc[-1] > signal_line.iloc[-1] and rsi.iloc[-1] < 70 and volume_mean > volume_seuil:
         signal = "ACHAT"
     elif macd.iloc[-2] > signal_line.iloc[-2] and macd.iloc[-1] < signal_line.iloc[-1] and rsi.iloc[-1] > 30:
         signal = "VENTE"
     else:
         signal = "NEUTRE"
     
-    return signal, last_close, last_close > ema20, rsi.iloc[-1]
+    return signal, last_close, last_close > ema20, rsi.iloc[-1], volume_mean
 
 def download_stock_data(symbols, period):
     """Télécharge les données avec gestion des erreurs"""
@@ -78,20 +82,6 @@ def download_stock_data(symbols, period):
             if 'Close' not in data.columns or 'Volume' not in data.columns:
                 print(f"⚠️ Colonne 'Close' ou 'Volume' manquante pour {symbol}")
                 continue
-                
-            # # Conversion en Series 1D
-            # close_prices = data['Close'].squeeze()
-            
-            # if close_prices.empty:
-            #     print(f"⚠️ Données 'Close' vides pour {symbol}")
-            #     continue
-                
-            # # Vérification du format 1D
-            # if isinstance(close_prices, pd.Series):
-            #     valid_data[symbol] = close_prices
-            # else:
-            #     # Conversion forcée en Series si nécessaire
-            #     valid_data[symbol] = pd.Series(close_prices, name=symbol)
 
             valid_data[symbol] = {
                 'Close': data['Close'],
@@ -230,7 +220,7 @@ def plot_unified_chart(symbol, prices,volumes, ax):
     ax.legend(lines1 + lines2, labels1 + labels2, loc='best', fontsize=9)
     
     # Ajout des signaux trading
-    signal, last_price, trend, last_rsi = get_trading_signal(prices,volumes)
+    signal, last_price, trend, last_rsi, volume_moyen = get_trading_signal(prices,volumes)
     
     # Calcul de la progression en pourcentage
     if len(prices) > 1:
@@ -242,11 +232,11 @@ def plot_unified_chart(symbol, prices,volumes, ax):
         trend_symbol = "Haussière" if trend else "Baissière"
         rsi_status = "SURACH" if last_rsi > 70 else "SURVENTE" if last_rsi < 30 else "NEUTRE"
         signal_color = 'green' if signal == "ACHAT" else 'red' if signal == "VENTE" else 'black'
-        
+
         title = (
             f"{symbol} | Prix: {last_price:.2f} | Signal: {signal} | "
             f"Tendance: {trend_symbol} | RSI: {last_rsi:.1f} ({rsi_status}) | "
-            f"Progression: {progression:+.2f}%"
+            f"Progression: {progression:+.2f}% | Vol. moyen: {volume_moyen:,.0f} (unité) "
         )
         ax.set_title(title, fontsize=12, fontweight='bold', color=signal_color)
     
@@ -321,7 +311,7 @@ mes_symbols = ["QSI", "GLD","SYM","INGA.AS", "FLEX", "ALDX", "TSM", "02020.HK", 
                "SMTC", "AFX.DE", "ABBN.ZU", "QCOM", "MP", "TM", "SGMT", "AMZN", "INOD", "SMCI", "GOOGL", "MU", "ETOR", 
                "DDOG", "OKTA", "AXSM", "EEM", "SPY", "HMY", "2318.HK", "RHM.DE", "NVDA", "QBTS", "SAP.DE", "V"]
 
-#popular_symbols = list(set(mes_symbols))
+# popular_symbols = list(set(mes_symbols))
 
 def analyse_signaux_populaires(
     popular_symbols,
@@ -353,7 +343,7 @@ def analyse_signaux_populaires(
                 volumes = stock_data['Volume']
                 if len(prices) < 50:
                     continue
-                signal, last_price, trend, last_rsi = get_trading_signal(prices, volumes)
+                signal, last_price, trend, last_rsi, volume_mean = get_trading_signal(prices, volumes)
                 if signal != "NEUTRE":
                     try:
                         info = yf.Ticker(symbol).info
@@ -366,7 +356,8 @@ def analyse_signaux_populaires(
                         'Prix': last_price,
                         'Tendance': "Hausse" if trend else "Baisse",
                         'RSI': last_rsi,
-                        'Domaine': domaine
+                        'Domaine': domaine,
+                        'Volume moyen': volume_mean
                     })
         except Exception as e:
             if verbose:
@@ -380,7 +371,7 @@ def analyse_signaux_populaires(
             print("\n" + "=" * 105)
             print("RÉSULTATS DES SIGNEAUX")
             print("=" * 105)
-            print(f"{'Symbole':<8} {'Signal':<8} {'Prix':<10} {'Tendance':<10} {'RSI':<6} {'Domaine':<24} Analyse")
+            print(f"{'Symbole':<8} {'Signal':<8} {'Prix':<10} {'Tendance':<10} {'RSI':<6} {'Volume moyen':<15} {'Domaine':<24} Analyse")
             print("-" * 105)
         for s in signals:
             if s['Signal'] in signaux_tries and s['Tendance'] in signaux_tries[s['Signal']]:
@@ -399,7 +390,7 @@ def analyse_signaux_populaires(
                             else:
                                 analysis += "RSI élevé" if s['RSI'] > 60 else ""
                                 analysis += " + Tendance baissière" if s['Tendance'] == "Baisse" else ""
-                            print(f"{s['Symbole']:<8} {s['Signal']:<8} {s['Prix']:<10.2f} {s['Tendance']:<10} {s['RSI']:<6.1f} {s['Domaine']:<24} {analysis} ")
+                            print(f"{s['Symbole']:<8} {s['Signal']:<8} {s['Prix']:<10.2f} {s['Tendance']:<10} {s['RSI']:<6.1f} {s['Volume moyen']:<15,.0f} {s['Domaine']:<24} {analysis} ")
         if verbose:
             print("=" * 105)
     else:
@@ -492,7 +483,7 @@ def analyse_signaux_populaires(
         print("\n" + "=" * 105)
         print("SIGNES UNIQUEMENT POUR ACTIONS FIABLES (>=60% taux de réussite) OU NON ÉVALUÉES")
         print("=" * 105)
-        print(f"{'Symbole':<8} {'Signal':<8} {'Prix':<10} {'Tendance':<10} {'RSI':<6} {'Domaine':<24} Analyse")
+        print(f"{'Symbole':<8} {'Signal':<8} {'Prix':<10} {'Tendance':<10} {'RSI':<6} {'Volume moyen':<15} {'Domaine':<24} Analyse")
         print("-" * 105)
     for signal_type in ["ACHAT", "VENTE"]:
         for tendance in ["Hausse", "Baisse"]:
@@ -510,7 +501,7 @@ def analyse_signaux_populaires(
                     else:
                         analysis += "RSI élevé" if s['RSI'] > 60 else ""
                         analysis += " + Tendance baissière" if s['Tendance'] == "Baisse" else ""
-                    print(f"{s['Symbole']:<8} {s['Signal']:<8} {s['Prix']:<10.2f} {s['Tendance']:<10} {s['RSI']:<6.1f} {s['Domaine']:<24} {analysis} ")
+                    print(f"{s['Symbole']:<8} {s['Signal']:<8} {s['Prix']:<10.2f} {s['Tendance']:<10} {s['RSI']:<6.1f} {s['Volume moyen']:<15,.0f} {s['Domaine']:<24} {analysis} ")
     if verbose:
         print("=" * 105)
 
@@ -547,7 +538,7 @@ def analyse_signaux_populaires(
                     progression = float(progression.iloc[0])
             else:
                 progression = 0.0
-            signal, last_price, trend, last_rsi = get_trading_signal(prices, volumes)
+            signal, last_price, trend, last_rsi, volume_mean = get_trading_signal(prices, volumes)
             taux_fiabilite = fiabilite_dict.get(s['Symbole'], None)
             fiabilite_str = f" | Fiabilité: {taux_fiabilite:.0f}%" if taux_fiabilite is not None else ""
             if last_price is not None:
@@ -557,7 +548,7 @@ def analyse_signaux_populaires(
                 special_marker = " ‼️" if s['Symbole'] in mes_symbols else ""
                 title = (
                     f"{special_marker} {s['Symbole']} | Prix: {last_price:.2f} | Signal: {signal} {fiabilite_str} | "
-                    f"Tendance: {trend_symbol} | RSI: {last_rsi:.1f} ({rsi_status}) | "
+                    f"Tendance: {trend_symbol} | RSI: {last_rsi:.1f} ({rsi_status}) | Vol. moyen: {volume_mean:,.0f} (unité) | "
                     f"Progression: {progression:+.2f}% {special_marker}"
                 )
                 axes[i].set_title(title, fontsize=12, fontweight='bold', color=signal_color)
@@ -591,7 +582,7 @@ def analyse_signaux_populaires(
                 special_marker = " ‼️" if s['Symbole'] in mes_symbols else ""
                 title = (
                     f"{special_marker} {s['Symbole']} | Prix: {last_price:.2f} | Signal: {signal} {fiabilite_str} | "
-                    f"Tendance: {trend_symbol} | RSI: {last_rsi:.1f} ({rsi_status}) | "
+                    f"Tendance: {trend_symbol} | RSI: {last_rsi:.1f} ({rsi_status}) | Vol. moyen: {s['Volume moyen']:.0f} (unité) | "
                     f"Progression: {progression:+.2f}% {special_marker}"
                 )
                 axes[i].set_title(title, fontsize=12, fontweight='bold', color=signal_color)
@@ -610,7 +601,7 @@ def analyse_signaux_populaires(
     }
 
 # Pour utiliser la fonction sans exécution automatique :
-resultats = analyse_signaux_populaires(popular_symbols, mes_symbols, period="12mo", afficher_graphiques=True)
+# resultats = analyse_signaux_populaires(popular_symbols, mes_symbols, period="12mo", afficher_graphiques=True)
 
 
 
