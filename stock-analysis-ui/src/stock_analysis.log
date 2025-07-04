@@ -1,0 +1,22 @@
+2025-07-04 15:44:00,003 - ERROR - 
+1 Failed download:
+2025-07-04 15:44:00,003 - ERROR - ['02020.HK']: YFPricesMissingError('possibly delisted; no price data found  (period=12mo)')
+2025-07-04 15:44:11,359 - ERROR - 
+1 Failed download:
+2025-07-04 15:44:11,359 - ERROR - ['LVMH.PA']: YFPricesMissingError('possibly delisted; no price data found  (period=12mo)')
+2025-07-04 15:44:36,293 - ERROR - HTTP Error 404: 
+2025-07-04 15:44:36,649 - ERROR - 
+1 Failed download:
+2025-07-04 15:44:36,650 - ERROR - ['DOGE']: YFPricesMissingError('possibly delisted; no price data found  (period=12mo) (Yahoo error = "No data found, symbol may be delisted")')
+2025-07-04 15:44:42,475 - ERROR - 
+1 Failed download:
+2025-07-04 15:44:42,475 - ERROR - ['GPS']: YFPricesMissingError('possibly delisted; no price data found  (period=12mo) (Yahoo error = "No data found, symbol may be delisted")')
+2025-07-04 15:47:29,356 - ERROR - 
+1 Failed download:
+2025-07-04 15:47:29,356 - ERROR - ['02020.HK']: YFPricesMissingError('possibly delisted; no price data found  (period=12mo)')
+2025-07-04 15:47:33,777 - ERROR - 
+1 Failed download:
+2025-07-04 15:47:33,777 - ERROR - ['ASML.NV']: YFPricesMissingError('possibly delisted; no price data found  (period=12mo) (Yahoo error = "No data found, symbol may be delisted")')
+2025-07-04 15:47:38,526 - ERROR - 
+1 Failed download:
+2025-07-04 15:47:38,526 - ERROR - ['ABBN.ZU']: YFPricesMissingError('possibly delisted; no price data found  (period=12mo) (Yahoo error = "No data found, symbol may be delisted")')

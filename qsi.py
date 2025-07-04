@@ -8,6 +8,14 @@ import ta
 import time
 import csv
 from matplotlib import dates as mdates
+import logging
+import warnings
+
+# Supprimer les avertissements FutureWarning de yfinance
+warnings.filterwarnings("ignore", category=FutureWarning)
+
+# Configuration du logger
+logging.basicConfig(level=logging.INFO, filename='stock_analysis.log', filemode='a', format='%(asctime)s - %(levelname)s - %(message)s')
 
 def calculate_macd(prices, fast=12, slow=26, signal=9):
     """Calcule le MACD et sa ligne de signal"""
@@ -253,7 +261,7 @@ def plot_unified_chart(symbol, prices, volumes, ax, show_xaxis=False):
     return ax2
 
 
-def analyse_et_affiche(symbols, period="12mo"):
+def analyse_et_affiche(symbols, period):
     """
     Télécharge les données pour les symboles donnés et affiche les graphiques d'analyse technique.
     """
@@ -327,7 +335,7 @@ mes_symbols = ["QSI", "GLD","SYM","INGA.AS", "FLEX", "ALDX", "TSM", "02020.HK", 
 def analyse_signaux_populaires(
     popular_symbols,
     mes_symbols,
-    period="12mo",
+    period=period,
     afficher_graphiques=True,
     chunk_size=15,
     verbose=True

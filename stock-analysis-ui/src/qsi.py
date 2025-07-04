@@ -8,6 +8,14 @@ import ta
 import time
 import csv
 from matplotlib import dates as mdates
+import logging
+import warnings
+
+# Supprimer les avertissements FutureWarning de yfinance
+warnings.filterwarnings("ignore", category=FutureWarning)
+
+# Configuration du logger
+logging.basicConfig(level=logging.INFO, filename='stock_analysis.log', filemode='a', format='%(asctime)s - %(levelname)s - %(message)s')
 
 def calculate_macd(prices, fast=12, slow=26, signal=9):
     """Calcule le MACD et sa ligne de signal"""
