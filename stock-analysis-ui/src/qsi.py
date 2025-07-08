@@ -321,7 +321,7 @@ popular_symbols = list(dict.fromkeys([
     "DDOG", "CRL", "EXAS", "ILMN", "INCY", "MELI", "MRNA", "NTLA", "REGN", "ROKU", "QSI", "SYM", "IONQ", "QBTS", "RGTI", "SMCI", "TSM", "ALDX", "CSX", "LRCX", 
     "BIIB", "CDNS", "CTSH", "EA", "FTNT", "GILD", "IDXX", "MP", "MTCH", "MRVL", "PAYX", "PTON", "AAL", "UAL", "DAL", "LUV", "JBLU", "ALK", "FLEX", "CACI",  
     "CRIS", "CYTK", "EXEL", "FATE", "INSM", "KPTI", "NBIX", "NTRA", "PGEN", "RGEN", "SAGE", "SNY", "TGTX", "VYGR", "ARCT", "AXSM", "BMRN", "KTOS","BTC", "ETH",
-    "LTC", "SOL", "DOGE", "LINK", "ATOM", "TRX", "COMP","VEEV", "LEN", "PHM", "DHI", "KBH", "TOL", "NVR", "RMAX", "BURL", "TJX", "ROST", "KSS", "GPS", "LB",
+    "LTC", "SOL", "LINK", "ATOM", "TRX", "COMP","VEEV", "LEN", "PHM", "DHI", "KBH", "TOL", "NVR", "RMAX", "BURL", "TJX", "ROST", "KSS", "LB",
     "GLD", "SLV", "GDX", "GDXJ", "SPY", "QQQ", "IWM", "DIA", "XLF", "XLC", "XLI", "XLB", "XLC", "XLV", "XLI", "XLP", "XLY","XLK", "XBI", "XHB", "URBN", "ANF", "AEO", "XRT"
 ]))
 
@@ -337,7 +337,7 @@ def analyse_signaux_populaires(
     mes_symbols,
     period="12mo",
     afficher_graphiques=True,
-    chunk_size=15,
+    chunk_size=16,
     verbose=True
 ):
     """
@@ -623,7 +623,7 @@ def analyse_signaux_populaires(
     }
 
 # Pour utiliser la fonction sans exécution automatique :
-# resultats = analyse_signaux_populaires(popular_symbols, mes_symbols, period="12mo", afficher_graphiques=True)
+resultats = analyse_signaux_populaires(popular_symbols, mes_symbols, period="12mo", afficher_graphiques=True)
 
 
 

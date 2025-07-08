@@ -80,3 +80,97 @@
 2025-07-04 16:44:51,032 - ERROR - 
 1 Failed download:
 2025-07-04 16:44:51,032 - ERROR - ['GPS']: YFPricesMissingError('possibly delisted; no price data found  (period=24mo) (Yahoo error = "No data found, symbol may be delisted")')
+2025-07-04 17:50:06,588 - ERROR - 
+1 Failed download:
+2025-07-04 17:50:06,588 - ERROR - ['02020.HK']: YFPricesMissingError('possibly delisted; no price data found  (period=12mo)')
+2025-07-04 17:50:17,925 - ERROR - 
+1 Failed download:
+2025-07-04 17:50:17,925 - ERROR - ['LVMH.PA']: YFPricesMissingError('possibly delisted; no price data found  (period=12mo)')
+2025-07-04 17:50:39,836 - ERROR - HTTP Error 404: 
+2025-07-04 17:50:40,101 - ERROR - 
+1 Failed download:
+2025-07-04 17:50:40,101 - ERROR - ['DOGE']: YFPricesMissingError('possibly delisted; no price data found  (period=12mo) (Yahoo error = "No data found, symbol may be delisted")')
+2025-07-04 17:50:44,926 - ERROR - 
+1 Failed download:
+2025-07-04 17:50:44,926 - ERROR - ['GPS']: YFPricesMissingError('possibly delisted; no price data found  (period=12mo) (Yahoo error = "No data found, symbol may be delisted")')
+2025-07-05 01:28:48,310 - ERROR - 
+1 Failed download:
+2025-07-05 01:28:48,310 - ERROR - ['02020.HK']: YFPricesMissingError('possibly delisted; no price data found  (period=12mo)')
+2025-07-05 01:29:01,239 - ERROR - 
+1 Failed download:
+2025-07-05 01:29:01,239 - ERROR - ['LVMH.PA']: YFPricesMissingError('possibly delisted; no price data found  (period=12mo)')
+2025-07-05 01:29:26,537 - ERROR - HTTP Error 404: 
+2025-07-05 01:29:26,895 - ERROR - 
+1 Failed download:
+2025-07-05 01:29:26,895 - ERROR - ['DOGE']: YFPricesMissingError('possibly delisted; no price data found  (period=12mo) (Yahoo error = "No data found, symbol may be delisted")')
+2025-07-05 01:29:32,916 - ERROR - 
+1 Failed download:
+2025-07-05 01:29:32,916 - ERROR - ['GPS']: YFPricesMissingError('possibly delisted; no price data found  (period=12mo) (Yahoo error = "No data found, symbol may be delisted")')
+2025-07-05 01:46:46,693 - ERROR - 
+1 Failed download:
+2025-07-05 01:46:46,693 - ERROR - ['02020.HK']: YFPricesMissingError('possibly delisted; no price data found  (period=12mo)')
+2025-07-05 01:46:58,563 - ERROR - 
+1 Failed download:
+2025-07-05 01:46:58,563 - ERROR - ['LVMH.PA']: YFPricesMissingError('possibly delisted; no price data found  (period=12mo)')
+2025-07-05 01:52:18,923 - ERROR - HTTP Error 404: 
+2025-07-05 01:52:19,287 - ERROR - 
+1 Failed download:
+2025-07-05 01:52:19,287 - ERROR - ['ABBN.ZU']: YFPricesMissingError('possibly delisted; no price data found  (period=18mo) (Yahoo error = "No data found, symbol may be delisted")')
+2025-07-05 01:55:30,944 - ERROR - HTTP Error 404: 
+2025-07-05 01:55:31,366 - ERROR - 
+1 Failed download:
+2025-07-05 01:55:31,366 - ERROR - ['ASML.NV']: YFPricesMissingError('possibly delisted; no price data found  (period=18mo) (Yahoo error = "No data found, symbol may be delisted")')
+2025-07-05 01:55:35,791 - ERROR - 
+1 Failed download:
+2025-07-05 01:55:35,791 - ERROR - ['SMSN.']: YFPricesMissingError('possibly delisted; no price data found  (period=18mo) (Yahoo error = "No data found, symbol may be delisted")')
+2025-07-05 11:41:16,428 - ERROR - 
+1 Failed download:
+2025-07-05 11:41:16,429 - ERROR - ['02020.HK']: YFPricesMissingError('possibly delisted; no price data found  (period=12mo)')
+2025-07-05 11:41:27,993 - ERROR - 
+1 Failed download:
+2025-07-05 11:41:27,993 - ERROR - ['LVMH.PA']: YFPricesMissingError('possibly delisted; no price data found  (period=12mo)')
+2025-07-05 14:31:22,641 - ERROR - 
+1 Failed download:
+2025-07-05 14:31:22,642 - ERROR - ['02020.HK']: YFPricesMissingError('possibly delisted; no price data found  (period=12mo)')
+2025-07-05 14:31:34,478 - ERROR - 
+1 Failed download:
+2025-07-05 14:31:34,478 - ERROR - ['LVMH.PA']: YFPricesMissingError('possibly delisted; no price data found  (period=12mo)')
+2025-07-05 16:44:21,043 - ERROR - 
+1 Failed download:
+2025-07-05 16:44:21,043 - ERROR - ['02020.HK']: YFPricesMissingError('possibly delisted; no price data found  (period=12mo)')
+2025-07-05 16:44:32,435 - ERROR - 
+1 Failed download:
+2025-07-05 16:44:32,435 - ERROR - ['LVMH.PA']: YFPricesMissingError('possibly delisted; no price data found  (period=12mo)')
+2025-07-06 02:36:06,240 - ERROR - 
+1 Failed download:
+2025-07-06 02:36:06,240 - ERROR - ['RWE.DE']: Timeout('Failed to perform, curl: (28) Connection timed out after 10004 milliseconds. See https://curl.se/libcurl/c/libcurl-errors.html first for more details.')
+2025-07-06 02:36:23,430 - ERROR - 
+1 Failed download:
+2025-07-06 02:36:23,430 - ERROR - ['02020.HK']: YFPricesMissingError('possibly delisted; no price data found  (period=12mo)')
+2025-07-06 02:36:34,381 - ERROR - 
+1 Failed download:
+2025-07-06 02:36:34,381 - ERROR - ['LVMH.PA']: YFPricesMissingError('possibly delisted; no price data found  (period=12mo)')
+2025-07-06 12:10:23,425 - ERROR - 
+1 Failed download:
+2025-07-06 12:10:23,425 - ERROR - ['02020.HK']: YFPricesMissingError('possibly delisted; no price data found  (period=12mo)')
+2025-07-06 12:10:34,340 - ERROR - 
+1 Failed download:
+2025-07-06 12:10:34,340 - ERROR - ['LVMH.PA']: YFPricesMissingError('possibly delisted; no price data found  (period=12mo)')
+2025-07-06 20:51:45,617 - ERROR - 
+1 Failed download:
+2025-07-06 20:51:45,617 - ERROR - ['02020.HK']: YFPricesMissingError('possibly delisted; no price data found  (period=12mo)')
+2025-07-06 20:51:56,689 - ERROR - 
+1 Failed download:
+2025-07-06 20:51:56,689 - ERROR - ['LVMH.PA']: YFPricesMissingError('possibly delisted; no price data found  (period=12mo)')
+2025-07-07 02:36:24,012 - ERROR - 
+1 Failed download:
+2025-07-07 02:36:24,020 - ERROR - ['02020.HK']: YFPricesMissingError('possibly delisted; no price data found  (period=12mo)')
+2025-07-07 02:36:35,612 - ERROR - 
+1 Failed download:
+2025-07-07 02:36:35,612 - ERROR - ['LVMH.PA']: YFPricesMissingError('possibly delisted; no price data found  (period=12mo)')
+2025-07-07 16:55:45,917 - ERROR - 
+1 Failed download:
+2025-07-07 16:55:45,917 - ERROR - ['02020.HK']: YFPricesMissingError('possibly delisted; no price data found  (period=12mo)')
+2025-07-07 16:56:01,953 - ERROR - 
+1 Failed download:
+2025-07-07 16:56:01,953 - ERROR - ['LVMH.PA']: YFPricesMissingError('possibly delisted; no price data found  (period=12mo)')

@@ -10,6 +10,12 @@ import csv
 from matplotlib import dates as mdates
 import logging
 import warnings
+import requests
+from vaderSentiment.vaderSentiment import SentimentIntensityAnalyzer
+import tweepy
+import os
+
+
 
 # Supprimer les avertissements FutureWarning de yfinance
 warnings.filterwarnings("ignore", category=FutureWarning)
@@ -24,6 +30,62 @@ def calculate_macd(prices, fast=12, slow=26, signal=9):
     macd = ema_fast - ema_slow
     signal_line = macd.ewm(span=signal, adjust=False).mean()
     return macd, signal_line
+
+def get_news_sentiment(symbol):
+    "API d’actualités et de sentiment (Alpha Vantage, NewsAPI) :"
+    "Alpha Vantage : Fournit une API NEWS_SENTIMENT qui inclut" 
+    "des scores de sentiment pour des symboles boursiers, couvrant des sources plus larges que yfinance"
+
+    api_key = "VOTRE_CLE_API"
+    url = f"https://www.alphavantage.co/query?function=NEWS_SENTIMENT&tickers={symbol}&apikey={api_key}"
+    try:
+        response = requests.get(url, timeout=15)
+        data = response.json()
+        sentiment_score = float(data.get("sentiment_score", 0))
+        return {
+            "score": sentiment_score,
+            "sentiment": "Positif" if sentiment_score > 0.1 else "Négatif" if sentiment_score < -0.1 else "Neutre"
+        }
+    except Exception as e:
+        print(f"Erreur Alpha Vantage pour {symbol}: {str(e)}")
+        return None
+    
+def analyze_tweet_sentiment(symbol, api_key, api_secret, access_token, access_token_secret):
+    "Analyse des réseaux sociaux (Twitter/X) :"
+    "Utilisez l’API Twitter/X ou des bibliothèques comme tweepy pour collecter des tweets"
+    "sur un symbole (par exemple, « $NVDA ») et analyser leur sentiment avec VADER"
+    "(plus adapté aux textes courts que TextBlob)."
+    # Configuration de l'API Twitter
+    auth = tweepy.OAuthHandler(api_key, api_secret)
+    auth.set_access_token(access_token, access_token_secret)
+    api = tweepy.API(auth)
+    tweets = api.search_tweets(q=f"${symbol}", lang="en", count=50)
+    analyzer = SentimentIntensityAnalyzer()
+    positive_count = 0
+    negative_count = 0
+    for tweet in tweets:
+        score = analyzer.polarity_scores(tweet.text)
+        if score['compound'] > 0.1:
+            positive_count += 1
+        elif score['compound'] < -0.1:
+            negative_count += 1
+    return "Hausse" if positive_count > negative_count else "Baisse" if negative_count > positive_count else "Neutre"
+
+def get_customer_growth(symbol):
+    "Données fondamentales via rapports trimestriels :Pour la croissance du portefeuille clients ou la fidélité,"
+    "utilisez yf.Ticker(symbol).financials ou yf.Ticker(symbol).quarterly_financials pour analyser les revenus récurrents"
+    "ou la croissance des ventes, qui peuvent refléter indirectement la fidélité ou l’expansion de la clientèle."
+    try:
+        ticker = yf.Ticker(symbol)
+        financials = ticker.quarterly_financials
+        if financials.empty:
+            return None
+        revenue = financials.loc["Total Revenue"]
+        growth = (revenue.iloc[0] - revenue.iloc[1]) / revenue.iloc[1] * 100 if len(revenue) > 1 else 0
+        return "Positif" if growth > 5 else "Neutre" if growth > -5 else "Négatif"
+    except Exception as e:
+        print(f"Erreur fondamentaux pour {symbol}: {str(e)}")
+        return None
 
 def get_trading_signal(prices, volumes, variation_seuil=-20, volume_seuil=100000):
     """Détermine les signaux de trading avec validation des données"""
