@@ -11,6 +11,8 @@ from matplotlib import dates as mdates
 import logging
 import warnings
 import requests
+from pathlib import Path
+from datetime import datetime, timedelta
 
 # Supprimer les avertissements FutureWarning de yfinance
 warnings.filterwarnings("ignore", category=FutureWarning)
@@ -89,7 +91,95 @@ def earnings_beats_majority2(symbol):
     except:
         return False
 
-def get_trading_signal(prices, volumes, variation_seuil=-20, volume_seuil=100000):
+def save_to_evolutive_csv(signals, filename="signaux_trading.csv"):
+    """
+    Sauvegarde les signaux dans un CSV évolutif qui conserve l'historique
+    - Crée le fichier s'il n'existe pas
+    - Ajoute de nouveaux signaux
+    - Met à jour les signaux existants
+    - Conserve l'historique des changements
+    """
+
+    if not signals:
+        return
+    
+    # Préparer les données avec le nouveau champ de fiabilité
+    header = [
+        'Symbole', 'Signal', 'Score', 'Prix', 'Tendance', 
+        'RSI', 'Volume moyen', 'Domaine', 'Fiabilite', 'Detection_Time'
+    ]
+    
+    rows = []
+    for s in signals:
+        # Formater la fiabilité
+        fiabilite = s.get('Fiabilite', 'N/A')
+        if isinstance(fiabilite, float):
+            fiabilite = f"{fiabilite:.1f}%"
+        
+        rows.append([
+            s['Symbole'],
+            s['Signal'],
+            f"{s['Score']:.2f}",
+            f"{s['Prix']:.4f}",
+            s['Tendance'],
+            f"{s['RSI']:.2f}",
+            f"{s['Volume moyen']:,.0f}",
+            s['Domaine'],
+            fiabilite,
+            datetime.now().strftime("%Y-%m-%d %H:%M:%S")
+        ])
+
+    # Création du DataFrame à partir des signaux actuels
+    df_new = pd.DataFrame(signals)
+    if df_new.empty:
+        return
+    
+    # Ajout d'un timestamp pour le moment de détection
+    detection_time = datetime.now().strftime("%Y-%m-%d %H:%M:%S")
+    df_new['detection_time'] = detection_time
+    
+    # Vérifier si le fichier existe déjà
+    file_path = Path(filename)
+    if file_path.exists():
+        try:
+            # Lire l'historique existant
+            df_old = pd.read_csv(file_path)
+            
+            # Fusionner les nouveaux signaux avec l'historique
+            df_combined = pd.concat([df_old, df_new], ignore_index=True)
+            
+            # Supprimer les doublons en gardant la dernière version
+            df_combined = df_combined.sort_values(
+                by=['Symbole', 'detection_time'],
+                ascending=[True, False]
+            )
+            df_clean = df_combined.drop_duplicates(
+                subset=['Symbole', 'Signal', 'Prix', 'RSI'],
+                keep='first'
+            )
+        except Exception as e:
+            print(f"⚠️ Erreur lecture CSV: {e}")
+            df_clean = df_new
+    else:
+        df_clean = df_new
+    
+    # Sauvegarde avec vérification de la structure
+    try:
+        # Créer le dossier si nécessaire
+        file_path.parent.mkdir(parents=True, exist_ok=True)
+        
+        # Sauvegarder avec date de mise à jour dans le nom
+        timestamp = datetime.now().strftime("%Y%m%d")
+        archive_file = f"signaux_trading_{timestamp}.csv"
+        df_clean.to_csv(archive_file, index=False)
+        
+        # Sauvegarde principale
+        df_clean.to_csv(filename, index=False)
+        print(f"💾 Signaux sauvegardés: {filename} (archive: {archive_file})")
+    except Exception as e:
+        print(f"🚨 Erreur sauvegarde CSV: {e}")
+
+def get_trading_signal(prices, volumes, domaine, variation_seuil=-20, volume_seuil=100000):
     """Détermine les signaux de trading avec validation des données"""
     # Correction : assure que prices et volumes sont bien des Series 1D
     if isinstance(prices, pd.DataFrame):
@@ -97,7 +187,7 @@ def get_trading_signal(prices, volumes, variation_seuil=-20, volume_seuil=100000
     if isinstance(volumes, pd.DataFrame):
         volumes = volumes.squeeze()
     if len(prices) < 50:
-        return "Données insuffisantes", None, None, None
+        return "Données insuffisantes", None, None, None, None, None  # <-- 6 valeurs
     
     # Calcul des indicateurs
     macd, signal_line = calculate_macd(prices)
@@ -109,7 +199,7 @@ def get_trading_signal(prices, volumes, variation_seuil=-20, volume_seuil=100000
     
     # Validation des derniers points
     if len(macd) < 2 or len(rsi) < 1:
-        return "Données récentes manquantes", None, None, None
+        return "Données récentes manquantes", None, None, None, None, None  # <-- 6 valeurs
     
 
     last_close = prices.iloc[-1]
@@ -131,48 +221,70 @@ def get_trading_signal(prices, volumes, variation_seuil=-20, volume_seuil=100000
     # Calcul du volume moyen sur 30 jours
     if len(volumes) >= 30:
         volume_mean = volumes.rolling(window=30).mean().iloc[-1]
+        volume_std = volumes.rolling(window=30).std().iloc[-1]
+
         if isinstance(volume_mean, pd.Series):
             volume_mean = float(volume_mean.iloc[0])
+            volume_std = float(volume_std.iloc[0]) if not volume_std.empty else 0.0
         else:
             volume_mean = float(volume_mean)
+            volume_std = float(volume_std) 
     else:
-        volume_mean = None
+        volume_mean = float(volumes.mean()) if len(volumes) > 0 else 0.0
+
+    current_volume = volumes.iloc[-1]
+
+
+
+    
+    # Nouveaux indicateurs pour confirmation
+    from ta.volatility import BollingerBands
+    from ta.trend import ADXIndicator, IchimokuIndicator
+    
+    # Bollinger Bands
+    bb = BollingerBands(close=prices, window=20, window_dev=2)
+    bb_upper = bb.bollinger_hband()
+    bb_lower = bb.bollinger_lband()
+    bb_percent = (prices - bb_lower) / (bb_upper - bb_lower)
+    last_bb_percent = bb_percent.iloc[-1] if len(bb_percent) > 0 else 0.5
+    
+    # ADX (Force de la tendance)
+    adx_indicator = ADXIndicator(high=prices, low=prices, close=prices, window=14)
+    adx = adx_indicator.adx()
+    last_adx = adx.iloc[-1] if len(adx) > 0 else 0
+    
+    # Ichimoku Cloud (Tendance globale)
+    ichimoku = IchimokuIndicator(high=prices, low=prices, window1=9, window2=26, window3=52)
+    ichimoku_base = ichimoku.ichimoku_base_line()
+    ichimoku_conversion = ichimoku.ichimoku_conversion_line()
+    last_ichimoku_base = ichimoku_base.iloc[-1] if len(ichimoku_base) > 0 else last_close
+    last_ichimoku_conversion = ichimoku_conversion.iloc[-1] if len(ichimoku_conversion) > 0 else last_close
     
      # Conditions d’achat optimisées
     is_macd_cross_up = prev_macd < prev_signal and last_macd > last_signal
     is_macd_cross_down = prev_macd > prev_signal and last_macd < last_signal
     is_volume_ok = volume_mean > volume_seuil
+
     is_variation_ok = variation_30j is not np.nan and variation_30j > variation_seuil
     tendance_haussière = last_close > last_ema20 > last_ema50 > last_ema200
 
         # RSI dynamique
     rsi_cross_up = prev_rsi < 30 and last_rsi >= 30
     rsi_cross_mid = prev_rsi < 50 and last_rsi >= 50
-    rsi_cross_down = prev_rsi > 70 and last_rsi <= 70
+    rsi_cross_down = prev_rsi > 65 and last_rsi <= 65  # Seuil abaissé
     rsi_ok = last_rsi < 75 and last_rsi > 40  # pas suracheté, mais dynamique
 
     # EMA tendance
     ema_structure_up = last_close > ema20.iloc[-1] > ema50.iloc[-1] > ema200.iloc[-1]
     ema_structure_down = last_close < ema20.iloc[-1] < ema50.iloc[-1] < ema200.iloc[-1]
+    
+    # Conditions supplémentaires pour confirmation
+    strong_uptrend = (last_close > last_ichimoku_base) and (last_close > last_ichimoku_conversion)
+    strong_downtrend = (last_close < last_ichimoku_base) and (last_close < last_ichimoku_conversion)
+    adx_strong_trend = last_adx > 25  # Tendance forte
 
-    #  ### 🟢 CONDITIONS D'ACHAT
-    # if (
-    #     (rsi_cross_up or rsi_surge or rsi_cross_mid) and
-    #     (is_macd_cross_up or ema_structure_up) and
-    #     is_volume_ok and is_variation_ok and last_rsi < 75
-    # ):
-    #     signal = "ACHAT"
+    
 
-    # ### 🔴 CONDITIONS DE VENTE
-    # elif (
-    #     (rsi_cross_down or last_rsi > 70) and
-    #     (is_macd_cross_down or ema_structure_down)
-    # ):
-    #     signal = "VENTE"
-
-    # ### ⚪ NEUTRE
-    # else:
-    #     signal = "NEUTRE"
     
     score = 0  # Initialisation du score
     ################################### Conditions d'achat et de vente optimisées ###################################
@@ -186,76 +298,188 @@ def get_trading_signal(prices, volumes, variation_seuil=-20, volume_seuil=100000
     #     signal = "NEUTRE"
 
     ########################### Methode alternative avec score de signal ###########################
+    # Définir les coefficients par domaine
+    domain_coeffs = {
+        "Technology":      (2.0, 1.7, 1.3, 1.5, 2.0, 1.5, 1.2, 1.2),   # (2.0, 1.2, 1.7, 1.5, 2.0, 1.5, 1.2, 2.0),
+        "Healthcare":      (1.8, 1.1, 1.6, 1.3, 1.8, 1.3, 1.1, 1.8),
+        "Financial Services": (1.6, 1.9, 2.3, 1.1, 1.6, 1.1, 1.1, 1.6),  #(1.6, 0.9, 1.3, 1.1, 1.6, 1.1, 0.9, 1.6),
+        "Consumer Cyclical":  (1.7, 1.0, 1.4, 1.2, 1.7, 1.2, 1.7, 1.7),  #(1.7, 1.0, 1.4, 1.2, 1.7, 1.2, 1.0, 1.7),
+        "Industrials":     (1.5, 1.2, 1.2, 1.0, 1.5, 1.0, 1.2, 1.5), #(1.5, 0.8, 1.2, 1.0, 1.5, 1.0, 0.8, 1.5),
+        "Energy":          (1.4, 1.7, 1.1, 1.1, 1.4, 0.9, 0.7, 1.4), #(1.4, 0.7, 1.1, 0.9, 1.4, 0.9, 0.7, 1.4),
+        "Basic Materials": (1.3, 1.6, 1.0, 1.8, 1.3, 0.8, 0.6, 1.3),
+        "Communication Services": (1.6, 1.0, 1.3, 1.1, 1.6, 1.1, 1.0, 1.6), #(1.6, 1.0, 1.3, 1.1, 1.6, 1.1, 1.0, 1.6),
+        "Utilities":       (1.2, 1.5, 1.1, 1.3, 1.2, 1.3, 0.5, 1.2), #(1.2, 0.5, 0.9, 0.7, 1.2, 0.7, 0.5, 1.2),
+        "Real Estate":     (1.1, 1.6, 1.2, 1.4, 1.1, 1.4, 0.4, 1.1), #(1.1, 0.4, 0.8, 0.6, 1.1, 0.6, 0.4, 1.1),
+        # Ajoutez d'autres domaines si besoin
+    }
+    # Valeurs par défaut si domaine inconnu
+    default_coeffs = (1.75, 1.0, 1.5, 1.25, 1.75, 1.25, 1.0, 1.75)
+
+    # Récupérer le domaine si disponible
+
+    # Sélectionner les coefficients selon le domaine
+    coeffs = domain_coeffs.get(domaine, default_coeffs)
+    a1, a2, a3, a4, a5, a6, a7, a8 = coeffs
+    m1, m2, m3 = 1.0, 1.0, 1.0  # Coefficients pour ajuster l'importance des conditions de volume et tendance
+
+    if adx_strong_trend: m1 = 1.5
+
+    # Vérification du volume : Mesure à quel point le volume actuel s’éloigne de sa moyenne.
+    z = (current_volume - volume_mean) / volume_std if volume_std > 0 else 0
+    if z > 1.75:
+        m2= 1.5
+    elif z < -1.75:
+        m2= 0.7
+    else:
+        m2=1.0
     
+    volume_ratio = current_volume / volume_mean if volume_mean > 0 else 0
+    if volume_ratio > 1.5:
+        m3 = 1.5 
+    elif volume_ratio < 0.5:
+        m3 = 0.7
 
     # RSI : Signaux haussiers
-    if rsi_cross_up: score += 2
-    if  delta_rsi > 2.5 : score += 1 # accélération RSI rsi_surge
-    if rsi_cross_mid: score += 1
+    if rsi_cross_up: score += a1
+    if  delta_rsi > 3 : score += m3*a2 # accélération RSI rsi_surge  # Momentum haussier
+    if rsi_cross_mid: score += a3
 
     # RSI : Signaux baissiers
-    if rsi_cross_down: score -= 2
-    if last_rsi > 70: score -= 1
-    if delta_rsi < -2: score -= 1  # RSI chute rapidement
+    if rsi_cross_down: score -= a1
+    if delta_rsi < -3: score -= m3 * a2  # RSI chute rapide # RSI chute rapidement
+ 
 
-    if rsi_ok: score += 1  # RSI dans une zone saine
-    else: score -= 1  # RSI trop extrême
+    if rsi_ok: score += a4  # RSI dans une zone saine
+    else: score -= a4  # RSI trop extrême
 
     # EMA : Structure de tendance
-    if ema_structure_up: score += 2
-    if ema_structure_down: score -= 2
+    if ema_structure_up: score += m1*a5
+    if ema_structure_down: score -= m1*a5
 
     # MACD : Croisements
-    if is_macd_cross_up: score += 1
-    if is_macd_cross_down: score -= 1
+    if is_macd_cross_up: score += a6
+    if is_macd_cross_down: score -= a6
 
     # Volume
-    if is_volume_ok: score += 1
-    else: score -= 1  # Manque de volume → faible conviction
+    if is_volume_ok: score += m2*a6
+    else: score -= m2*a6  # Manque de volume → faible conviction
 
     # Performance passée
-    if is_variation_ok: score += 1
-    else: score -= 1  # Sous-performance
+    if is_variation_ok: score += a7
+    else: score -= a7  # Sous-performance
+
+    #  ## 🟢 CONDITIONS D'ACHAT Bonus
+    # if (
+    #     (rsi_cross_up or delta_rsi > 2.5 or rsi_cross_mid) and
+    #     (is_macd_cross_up or ema_structure_up) and
+    #     is_volume_ok and is_variation_ok and last_rsi < 75
+    # ):
+    #     score += 1.5
+
+    # ### 🔴 CONDITIONS DE VENTE BONUS
+    # elif (
+    #     (rsi_cross_down or last_rsi > 70) and
+    #     (is_macd_cross_down or ema_structure_down)
+    # ):
+    #     score -= 1.5
+
+    
+
+     # Facteurs d'achat
+
+     # Conditions d'achat renforcées
+    buy_conditions = (
+        (is_macd_cross_up or ema_structure_up) and
+        (rsi_cross_up or rsi_cross_mid) and
+        (last_rsi < 65) and
+        (last_bb_percent < 0.7) and  # Pas en zone de surachat
+        (strong_uptrend or adx_strong_trend) and
+        (volume_mean > volume_seuil) and
+        (variation_30j > variation_seuil if variation_30j else True)
+    )
+    
+    # Conditions de vente renforcées
+    sell_conditions = (
+        (is_macd_cross_down or ema_structure_down) and
+        (rsi_cross_down or last_rsi > 70) and
+        (last_rsi > 35) and  # Éviter les surventes extrêmes
+        (last_bb_percent > 0.3) and  # Pas en zone de survente
+        (strong_downtrend or adx_strong_trend) and
+        (volume_mean > volume_seuil)
+    )
+
+    
+    if strong_uptrend: score += 1.5
+    if last_bb_percent < 0.4: score += 1.0  # Zone de survente
+    if buy_conditions: score += 1.75  # Conditions d'achat renforcées
+
+    
+
+    if strong_downtrend: score -= 1.5
+    if last_bb_percent > 0.6: score -= 1.0  # Zone de surachat
+    if sell_conditions: score -= 1.75  # Conditions de vente renforcées
 
     # Interprétation du score
-    if score >= 5:
+    if score >= 5.75:
         signal = "ACHAT"
-    elif score <= -1:
+    elif score <= -0.5:
         signal = "VENTE"
     else:
         signal = "NEUTRE"
-
+    
     
     return signal, last_close, last_close > last_ema20, round(last_rsi,2), round(volume_mean, 2), score
 
+CACHE_DIR = Path("data_cache")
+CACHE_DIR.mkdir(exist_ok=True)
+
+def get_cached_data(symbol, period, max_age_hours=6):
+    """Récupère les données en cache si elles existent et sont récentes"""
+    cache_file = CACHE_DIR / f"{symbol}_{period}.pkl"
+    
+    # Vérifier si le cache existe et est récent
+    if cache_file.exists():
+        mod_time = datetime.fromtimestamp(cache_file.stat().st_mtime)
+        if datetime.now() - mod_time < timedelta(hours=max_age_hours):
+            return pd.read_pickle(cache_file)
+    
+    # Télécharger et mettre en cache si nécessaire
+    data = yf.download(symbol, period=period)
+    data.to_pickle(cache_file)
+    return data
+
 def download_stock_data(symbols, period):
-    """Télécharge les données avec gestion des erreurs"""
+    """Version avec cache et téléchargement groupé"""
     valid_data = {}
+    
+    # Téléchargement groupé
+    try:
+        all_data = yf.download(
+            list(symbols), 
+            period=period, 
+            group_by='ticker',
+            progress=False
+        )
+    except:
+        all_data = None
     
     for symbol in symbols:
         try:
-            data = yf.download(symbol, period=period, interval="1d", progress=False, timeout=10)
+            # Essayer le téléchargement groupé d'abord
+            data = all_data.get(symbol, get_cached_data(symbol, period))
             
-            if data.empty:
-                print(f"⚠️ Aucune donnée pour {symbol}")
-                continue
-                
-            # Vérification de la colonne Close
-            if 'Close' not in data.columns or 'Volume' not in data.columns:
-                print(f"⚠️ Colonne 'Close' ou 'Volume' manquante pour {symbol}")
-                continue
-
-            valid_data[symbol] = {
-                'Close': data['Close'],
-                'Volume': data['Volume']}
-            
-            
+            # Validation des données
+            if not data.empty and 'Close' in data.columns and 'Volume' in data.columns:
+                valid_data[symbol] = {
+                    'Close': data['Close'],
+                    'Volume': data['Volume']
+                }
         except Exception as e:
-            print(f"🚨 Erreur sur {symbol}: {str(e)}")
+            print(f"🚨 Erreur {symbol}: {e}")
     
     return valid_data
 
-def backtest_signals(prices, volumes, montant=50):
+def backtest_signals(prices, volumes, domaine, montant=50):
     """
     Effectue un backtest sur la série de prix.
     Un 'trade' correspond ici à un cycle complet ACHAT puis VENTE (entrée puis sortie).
@@ -277,7 +501,7 @@ def backtest_signals(prices, volumes, montant=50):
 
     positions = []
     for i in range(1, len(prices)):
-        signal, *_ = get_trading_signal(prices[:i], volumes[:i])
+        signal, *_ = get_trading_signal(prices[:i], volumes[:i], domaine)
         if signal == "ACHAT":
             positions.append({"entry": prices.iloc[i], "entry_idx": i, "type": "buy"})
         elif signal == "VENTE" and positions and "exit" not in positions[-1]:
@@ -381,9 +605,13 @@ def plot_unified_chart(symbol, prices, volumes, ax, show_xaxis=False):
     lines1, labels1 = ax.get_legend_handles_labels()
     lines2, labels2 = ax2.get_legend_handles_labels()
     ax.legend(lines1 + lines2, labels1 + labels2, loc='best', fontsize=9)
+
+    info = yf.Ticker(symbol).info
+    domaine = info.get("sector", "Inconnu")
     
     # Ajout des signaux trading
-    signal, last_price, trend, last_rsi, volume_moyen, score = get_trading_signal(prices, volumes)
+    signal, last_price, trend, last_rsi, volume_moyen, score = get_trading_signal(prices, volumes, domaine=domaine)
+   
     
     # Calcul de la progression en pourcentage
     if len(prices) > 1:
@@ -463,32 +691,34 @@ period = "12mo"  #variable globale pour la période d'analyse ne pas commenter
 # ======================================================================
 popular_symbols = list(dict.fromkeys([
     "AAPL", "MSFT", "GOOGL", "AMZN", "NVDA", "TSLA", "META", "BRK-B", "JPM", "V", "BABA", "DIS", "NFLX", "PYPL", "INTC", "AMD", "CSCO", "WMT", "VZ", "KO", "SGMT",
-    "PEP", "MRK", "T", "NKE", "XOM", "CVX", "ABT", "CRM", "IBM", "ORCL", "MCD", "TMDX", "BA", "CAT", "GS", "RTX", "MMM", "HON", "LMT", "SBUX", "ADBE", "SMSN.L",
+    "PEP", "MRK", "T", "NKE", "XOM", "CVX", "ABT", "CRM", "IBM", "ORCL", "MCD", "TMDX", "BA", "CAT", "GS", "RTX", "MMM", "HON", "LMT", "SBUX", "ADBE", "SMSN.IL",
     "EEM", "INTU", "NOW", "ZM", "SHOP", "SNAP", "PFE", "TGT", "CVS", "WFC", "RHM.DE", "SAP.DE", "BAS.DE", "ALV.DE", "BMW.DE", "VOW3.DE", "SMTC", "ZS", "ZTS",
     "DTE.DE", "DBK.DE", "LHA.DE", "FME.DE", "BAYN.DE", "LIN.DE", "ENR.DE", "VNA.DE", "1COV.DE", "FRE.DE", "HEN3.DE", "HEI.DE", "RWE.DE", "VOW.DE", "GLW", "TMO",
-    "DHR", "ABB", "BAX", "MDT", "GE", "NOC", "GD", "HII", "TXT", "LHX", "TDY", "CARR", "OTIS", "JCI", "INOD", "BIDU", "JD", "PDD", "TCEHY", "NTES", "BILI", "HL",
+    "DHR", "BAX", "MDT", "GE", "NOC", "GD", "HII", "TXT", "LHX", "TDY", "CARR", "OTIS", "JCI", "INOD", "BIDU", "JD", "PDD", "TCEHY", "NTES", "BILI", "HL",
     "XPEV", "LI", "NIO", "BYDDF", "GME", "AMC", "BB", "NOK", "RBLX", "PLTR", "FSLY", "CRWD", "OKTA", "Z", "DOCU", "PINS", "SPOT", "LYFT", "UBER", "SNOW", "TTWO",
     "VRSN", "WDAY", "2318.HK", "2382.HK", "2388.HK", "2628.HK", "3328.HK", "3988.HK", "9988.HK", "2319.HK", "0700.HK", "3690.HK", "ADSK", "02020.HK", "ABG","AN",
-    "9618.HK", "1810.HK", "1211.HK", "1299.HK", "2313.HK", "2386.HK", "2623.HK", "2385.HK", "0005.HK", "0011.HK", "0027.HK", "0038.HK", "0066.HK", "0083.HK",
+    "9618.HK", "1810.HK", "1211.HK", "1299.HK", "2313.HK", "2386.HK", "2385.HK", "0005.HK", "0011.HK", "0027.HK", "0038.HK", "0066.HK", "0083.HK",
     "0101.HK", "0117.HK", "01177.HK", "0120.HK", "LSEG.L", "VOD.L", "BP.L", "HSBA.L",  "GSK.L", "ULVR.L", "AZN.L", "RIO.L", "BATS.L", "ADYEN.AS", "TM", "MU", "GILT",
-    "ASML.AS", "PHIA.AS", "INGA.AS", "MC.PA", "OR.PA", "AIR.PA", "BNP.PA", "SAN.PA", "ENGI.PA", "CAP.PA", "LVMH.PA", "WELL", "O", "VICI", "ETOR", "ABR",
-    "PLD", "PSA", "AMT", "CCI", "DLR", "EXR", "EQR", "ESS", "AVB", "MAA", "UDR", "SBRA", "UNH", "HD", "MA", "PG", "LLY", "COST", "AVGO", "ABBV", "QCOM", 
-    "DDOG", "CRL", "EXAS", "ILMN", "INCY", "MELI", "MRNA", "NTLA", "REGN", "ROKU", "QSI", "SYM", "IONQ", "QBTS", "RGTI", "SMCI", "TSM", "ALDX", "CSX", "LRCX", 
-    "BIIB", "CDNS", "CTSH", "EA", "FTNT", "GILD", "IDXX", "MP", "MTCH", "MRVL", "PAYX", "PTON", "AAL", "UAL", "DAL", "LUV", "JBLU", "ALK", "FLEX", "CACI",  
-    "CRIS", "CYTK", "EXEL", "FATE", "INSM", "KPTI", "NBIX", "NTRA", "PGEN", "RGEN", "SAGE", "SNY", "TGTX", "VYGR", "ARCT", "AXSM", "BMRN", "KTOS","BTC", "ETH",
-    "LTC", "SOL", "LINK", "ATOM", "TRX", "COMP","VEEV", "LEN", "PHM", "DHI", "KBH", "TOL", "NVR", "RMAX", "BURL", "TJX", "ROST", "KSS", "LB", "FINV",
-    "GLD", "SLV", "GDX", "GDXJ", "SPY", "QQQ", "IWM", "DIA", "XLF", "XLC", "XLI", "XLB", "XLC", "XLV", "XLI", "XLP", "XLY","XLK", "XBI", "XHB", "URBN", "ANF",
-    "EZPW", "HNI", "COLL","LMB", "SCSC","CAR", "CARG", "CARS", "CVNA", "SAH", "GPI", "PAG", "RUSHA", "RUSHB", "LAD", "KMX", "CARV","SBLK","GOGL.OL", "SFL",
-     "VYX", "CCCC", "AG", "AGI", "AGL", "AGM", "AGO","AGQ", "AGR", "AGS", "AGX","DE", "DEO", "DES", "RR.L","RMS.PA", "ARG.PA", "RNO.PA", "AIR.PA", "ML.PA",
-    "FRO", "DHT", "STNG", "TNK", "GASS", "GLNG", "CMRE", "DAC", "ZIM","XMTR","JAKK","PANW","ETN", "EMR", "PH", "SWK", "FAST", "PNR", "XYL", "AOS","DOCN",
-    "VMEO", "GETY", "PUM.DE", "ETSY", "SSTK", "UDMY", "TDOC", "BARC.L", "LLOY.L", "STAN.L", "IMB.L", "GRPN", "CCRD", "LEU", "UEC", "CCJ", "AEO", "XRT",
+    "ASML.AS", "PHIA.AS", "INGA.AS", "MC.PA", "OR.PA", "AIR.PA", "BNP.PA", "SAN.PA", "ENGI.PA", "CAP.PA", "WELL", "O", "VICI", "ETOR", "ABR", "MOH.BE", 
+    "PLD", "PSA", "AMT", "CCI", "DLR", "EXR", "EQR", "ESS", "AVB", "MAA", "UDR", "SBRA", "UNH", "HD", "MA", "PG", "LLY", "COST", "AVGO", "ABBV", "QCOM", "ABBN.SW",
+    # "LONN.SW", "NOVN.SW", "ROG.SW", "ZURN.SW", "UBSG.SW", "QBTQ.CN","GC=F", "SI=F", "CL=F", "BZ=F", "NG=F", "HG=F", "PL=F", "PA=F", "ZC=F", "ZS=F", "ZL=F",
+    # "DDOG", "CRL", "EXAS", "ILMN", "INCY", "MELI", "MRNA", "NTLA", "REGN", "ROKU", "QSI", "SYM", "IONQ", "QBTS", "RGTI", "SMCI", "TSM", "ALDX", "CSX", "LRCX", 
+    # "BIIB", "CDNS", "CTSH", "EA", "FTNT", "GILD", "IDXX", "MP", "MTCH", "MRVL", "PAYX", "PTON", "AAL", "UAL", "DAL", "LUV", "JBLU", "ALK", "FLEX", "CACI",  
+    # "CRIS", "CYTK", "EXEL", "FATE", "INSM", "KPTI", "NBIX", "NTRA", "PGEN", "RGEN", "SAGE", "SNY", "TGTX", "VYGR", "ARCT", "AXSM", "BMRN", "KTOS","BTC-USD", "ETH-USD",
+    # "LTC-USD", "SOL-USD", "LINK-USD", "ATOM-USD", "TRX-USD", "COMP-USD","VEEV", "LEN", "PHM", "DHI", "KBH", "TOL", "NVR", "RMAX", "BURL", "TJX", "ROST", "KSS", "LB", "FINV",
+    # "LTC", "SOL", "LINK", "ATOM", "TRX", "COMP",
+    # "GLD", "SLV", "GDX", "GDXJ", "SPY", "QQQ", "IWM", "DIA", "XLF", "XLC", "XLI", "XLB", "XLC", "XLV", "XLI", "XLP", "XLY","XLK", "XBI", "XHB", "URBN", "ANF",
+    # "EZPW", "HNI", "COLL","LMB", "SCSC","CAR", "CARG", "CARS", "CVNA", "SAH", "GPI", "PAG", "RUSHA", "RUSHB", "LAD", "KMX", "CARV","SBLK","GOGL.OL", "SFL",
+    #  "VYX", "CCCC", "AG", "AGI", "AGL", "AGM", "AGO","AGQ", "AGS", "AGX","DE", "DEO", "DES", "RR.L","RMS.PA", "ARG.PA", "RNO.PA", "AIR.PA", "ML.PA",
+    # "FRO", "DHT", "STNG", "TNK", "GASS", "GLNG", "CMRE", "DAC", "ZIM","XMTR","JAKK","PANW","ETN", "EMR", "PH", "SWK", "FAST", "PNR", "XYL", "AOS","DOCN",
+    # "VMEO", "GETY", "PUM.DE", "ETSY", "SSTK", "UDMY", "TDOC", "BARC.L", "LLOY.L", "STAN.L", "IMB.L", "GRPN", "CCRD", "LEU", "UEC", "CCJ", "AEO", "XRT",
      "NEM", "HMY", "KGC", "SAND", "WPM", "FNV", "RGLD", "GFI", "AEM", "NXE", "AU", "SIL", "GDXU", "GDXD", "GLDM", "IAU", "SGOL", "CDE", "EXK", "AGI.TO",
-     "PHYS", "FNV.TO", "WDO.TO", "BOE", "JOBY", "LAC", "PLL", "ALB", "SQM", "RIOT", "MARA", "HUT", "BITF", "VKTX", "CRSR", "PFC.L", "OPEN", "FVRR", "TWTR"
+     "PHYS", "FNV.TO", "WDO.TO", "BOE", "JOBY", "LAC", "PLL", "ALB", "SQM", "RIOT", "MARA", "HUT", "BITF", "VKTX", "CRSR", "PFC.L", "OPEN", "FVRR", "BTC", "ETH",
     ]))
 
 mes_symbols = ["QSI", "GLD","SYM","INGA.AS", "FLEX", "ALDX", "TSM", "02020.HK", "ARCT", "CACI", "ERJ", "PYPL", "GLW", "MSFT",
                "TMDX", "GILT", "ENR.DE", "META", "AMD", "ASML.NV", "TBLA", "VOOG", "WELL", "SMSN.L", "BMRN", "GS", "BABA",
-               "SMTC", "AFX.DE", "ABBN.ZU", "QCOM", "MP", "TM", "SGMT", "AMZN", "INOD", "SMCI", "GOOGL", "MU", "ETOR", 
+               "SMTC", "AFX.DE", "ABBN.SW", "QCOM", "MP", "TM", "SGMT", "AMZN", "INOD", "SMCI", "GOOGL", "MU", "ETOR", 
                "DDOG", "OKTA", "AXSM", "EEM", "SPY", "HMY", "2318.HK", "RHM.DE", "NVDA", "QBTS", "SAP.DE", "V", "UEC"]
 
 # popular_symbols = list(set(mes_symbols))
@@ -499,7 +729,8 @@ def analyse_signaux_populaires(
     period="12mo",
     afficher_graphiques=True,
     chunk_size=20,
-    verbose=True
+    verbose=True,
+    save_csv = True
 ):
     """
     Analyse les signaux pour les actions populaires, affiche les résultats, effectue le backtest,
@@ -523,13 +754,13 @@ def analyse_signaux_populaires(
                 volumes = stock_data['Volume']
                 if len(prices) < 50:
                     continue
-                signal, last_price, trend, last_rsi, volume_mean, score = get_trading_signal(prices, volumes)
+                try:
+                    info = yf.Ticker(symbol).info
+                    domaine = info.get("sector", "ℹ️Inconnu!!")
+                except Exception:
+                    domaine = "ℹ️Inconnu!!"
+                signal, last_price, trend, last_rsi, volume_mean, score = get_trading_signal(prices, volumes, domaine)
                 if signal != "NEUTRE":
-                    try:
-                        info = yf.Ticker(symbol).info
-                        domaine = info.get("sector", "ℹ️Inconnu!!")
-                    except Exception:
-                        domaine = "ℹ️Inconnu!!"
                     signals.append({
                         'Symbole': symbol,
                         'Signal': signal,
@@ -571,7 +802,7 @@ def analyse_signaux_populaires(
                             else:
                                 analysis += "RSI élevé" if s['RSI'] > 60 else ""
                                 analysis += " + Tendance baissière" if s['Tendance'] == "Baisse" else ""
-                            print(f"{s['Symbole']:<8} {s['Signal']:<8} {s['Score']:<7} {s['Prix']:<10.2f} {s['Tendance']:<10} {s['RSI']:<6.1f} {s['Volume moyen']:<15,.0f} {s['Domaine']:<24} {analysis} ")
+                            print(f"{s['Symbole']:<8} {s['Signal']:<8} {s['Score']:<7.2f} {s['Prix']:<10.2f} {s['Tendance']:<10} {s['RSI']:<6.1f} {s['Volume moyen']:<15,.0f} {s['Domaine']:<24} {analysis} ")
         if verbose:
             print("=" * 110)
     else:
@@ -590,11 +821,17 @@ def analyse_signaux_populaires(
             stock_data = download_stock_data([s['Symbole']], period)[s['Symbole']]
             prices = stock_data['Close']
             volumes = stock_data['Volume']
+            # Ajout : récupération du domaine pour le backtest
+            try:
+                info = yf.Ticker(s['Symbole']).info
+                domaine = info.get("sector", "Inconnu")
+            except Exception:
+                domaine = "Inconnu"
             if not isinstance(prices, (pd.Series, pd.DataFrame)) or len(prices) < 2:
                 if verbose:
                     print(f"{s['Symbole']:<8} : Données insuffisantes pour le backtest")
                 continue
-            resultats = backtest_signals(prices, volumes, montant=50)
+            resultats = backtest_signals(prices, volumes, domaine, montant=50)
             backtest_results.append({
                 "Symbole": s['Symbole'],
                 "trades": resultats['trades'],
@@ -682,9 +919,41 @@ def analyse_signaux_populaires(
                     else:
                         analysis += "RSI élevé" if s['RSI'] > 60 else ""
                         analysis += " + Tendance baissière" if s['Tendance'] == "Baisse" else ""
-                    print(f"{s['Symbole']:<8} {s['Signal']:<8} {s['Score']:<7} {s['Prix']:<10.2f} {s['Tendance']:<10} {s['RSI']:<6.1f} {s['Volume moyen']:<15,.0f} {s['Domaine']:<24} {analysis} ")
+                    print(f"{s['Symbole']:<8} {s['Signal']:<8} {s['Score']:<7.2f} {s['Prix']:<10.2f} {s['Tendance']:<10} {s['RSI']:<6.1f} {s['Volume moyen']:<15,.0f} {s['Domaine']:<24} {analysis} ")
     if verbose:
         print("=" * 110)
+
+    signaux_valides = []
+    for s in signals:
+        # Vérifier si le symbole est dans la liste des fiables ou non évalués
+        if s['Symbole'] in fiables_ou_non_eval:
+            # Ajouter le taux de fiabilité si disponible
+            taux_fiabilite = next(
+                (res['taux_reussite'] for res in backtest_results if res['Symbole'] == s['Symbole']), 
+                "N/A"
+            )
+            # Créer une copie enrichie du signal
+            signal_valide = s.copy()
+            signal_valide['Fiabilite'] = taux_fiabilite
+            signaux_valides.append(signal_valide)
+
+    # =================================================================
+    # SAUVEGARDE DES SIGNAUX VALIDÉS
+    # =================================================================
+    if signaux_valides and save_csv:
+        if verbose:
+            print(f"\n💾 Sauvegarde de {len(signaux_valides)} signaux validés par le backtest...")
+        
+        # Sauvegarde principale
+        save_to_evolutive_csv(signaux_valides)
+        
+        # Sauvegarde spéciale pour vos symboles personnels
+        mes_signaux_valides = [s for s in signaux_valides if s['Symbole'] in mes_symbols]
+        if mes_signaux_valides:
+            special_filename = f"mes_signaux_fiables_{datetime.now().strftime('%Y%m%d')}.csv"
+            if verbose:
+                print(f"💠 Sauvegarde de {len(mes_signaux_valides)} signaux personnels fiables dans {special_filename}")
+            save_to_evolutive_csv(mes_signaux_valides, special_filename)
 
     # Affichage des graphiques pour les 5 premiers signaux d'achat et de vente FIABLES
     top_achats_fiables = []
@@ -720,7 +989,12 @@ def analyse_signaux_populaires(
                     progression = float(progression.iloc[0])
             else:
                 progression = 0.0
-            signal, last_price, trend, last_rsi, volume_mean, score = get_trading_signal(prices, volumes)
+            try:
+                info = yf.Ticker(s['Symbole']).info
+                domaine = info.get("sector", "Inconnu")
+            except Exception:
+                domaine = "Inconnu"
+            signal, last_price, trend, last_rsi, volume_mean, score = get_trading_signal(prices, volumes, domaine=domaine)
             taux_fiabilite = fiabilite_dict.get(s['Symbole'], None)
             fiabilite_str = f" | Fiabilité: {taux_fiabilite:.0f}%" if taux_fiabilite is not None else ""
             if last_price is not None:
@@ -756,7 +1030,12 @@ def analyse_signaux_populaires(
                     progression = float(progression.iloc[0])
             else:
                 progression = 0.0
-            signal, last_price, trend, last_rsi, volume_mean, score = get_trading_signal(prices, volumes)
+            try:
+                info = yf.Ticker(s['Symbole']).info
+                domaine = info.get("sector", "Inconnu")
+            except Exception:
+                domaine = "Inconnu"
+            signal, last_price, trend, last_rsi, volume_mean, score = get_trading_signal(prices, volumes, domaine=domaine)
             taux_fiabilite = fiabilite_dict.get(s['Symbole'], None)
             fiabilite_str = f" | Fiabilité: {taux_fiabilite:.0f}%" if taux_fiabilite is not None else ""
             if last_price is not None:
@@ -777,6 +1056,7 @@ def analyse_signaux_populaires(
     # Retourne les résultats pour usage ultérieur
     return {
         "signals": signals,
+        "signaux_valides": signaux_valides,
         "signaux_tries": signaux_tries,
         "backtest_results": backtest_results,
         "fiables_ou_non_eval": fiables_ou_non_eval,
