@@ -13,6 +13,8 @@ import warnings
 import requests
 from pathlib import Path
 from datetime import datetime, timedelta
+import yfinance as yf
+from typing import List, Dict
 
 # Supprimer les avertissements FutureWarning de yfinance
 warnings.filterwarnings("ignore", category=FutureWarning)
@@ -430,52 +432,133 @@ def get_trading_signal(prices, volumes, domaine, variation_seuil=-20, volume_seu
     
     return signal, last_close, last_close > last_ema20, round(last_rsi,2), round(volume_mean, 2), score
 
+# Configuration du cache pour les données boursières
 CACHE_DIR = Path("data_cache")
 CACHE_DIR.mkdir(exist_ok=True)
 
-def get_cached_data(symbol, period, max_age_hours=6):
-    """Récupère les données en cache si elles existent et sont récentes"""
+def get_cached_data(symbol: str, period: str, max_age_hours: int = 6) -> pd.DataFrame:
+    """Récupère les données en cache si elles existent et sont récentes, sinon télécharge.
+    
+    Args:
+        symbol: Symbole boursier (ex: 'AAPL').
+        period: Période des données (ex: '1y').
+        max_age_hours: Âge maximum du cache en heures.
+    
+    Returns:
+        pd.DataFrame avec les données, ou DataFrame vide si échec.
+    """
     cache_file = CACHE_DIR / f"{symbol}_{period}.pkl"
     
     # Vérifier si le cache existe et est récent
     if cache_file.exists():
         mod_time = datetime.fromtimestamp(cache_file.stat().st_mtime)
         if datetime.now() - mod_time < timedelta(hours=max_age_hours):
-            return pd.read_pickle(cache_file)
+            try:
+                data = pd.read_pickle(cache_file)
+                if not data.empty and 'Close' in data.columns and 'Volume' in data.columns:
+                    # Vérifier que les données ont assez de points
+                    if len(data) >= 50:
+                        return data
+                    else:
+                        print(f"🚨 Cache pour {symbol} contient trop peu de données ({len(data)} points)")
+            except Exception as e:
+                print(f"🚨 Erreur lors de la lecture du cache pour {symbol}: {e}")
     
-    # Télécharger et mettre en cache si nécessaire
-    data = yf.download(symbol, period=period)
-    data.to_pickle(cache_file)
-    return data
-
-def download_stock_data(symbols, period):
-    """Version avec cache et téléchargement groupé"""
-    valid_data = {}
-    
-    # Téléchargement groupé
+    # Télécharger et mettre en cache
     try:
-        all_data = yf.download(
-            list(symbols), 
-            period=period, 
-            group_by='ticker',
-            progress=False
-        )
-    except:
-        all_data = None
+        data = yf.download(symbol, period=period, progress=False, timeout=15)
+        if not data.empty and 'Close' in data.columns and 'Volume' in data.columns:
+            data.to_pickle(cache_file)
+            return data
+        else:
+            print(f"🚨 Données téléchargées vides ou incomplètes pour {symbol}")
+            return pd.DataFrame()
+    except Exception as e:
+        print(f"🚨 Erreur lors du téléchargement individuel pour {symbol}: {e}")
+        return pd.DataFrame()
+
+def download_stock_data(symbols: List[str], period: str) -> Dict[str, Dict[str, pd.Series]]:
+    """Version optimisée pour télécharger les données boursières avec cache.
     
-    for symbol in symbols:
+    Args:
+        symbols: Liste des symboles boursiers (ex: ['AAPL', 'MSFT']).
+        period: Période des données (ex: '1y', '6mo', '1mo').
+    
+    Returns:
+        Dictionnaire avec les données valides: {'symbol': {'Close': pd.Series, 'Volume': pd.Series}}.
+    """
+    valid_data = {}
+    valid_periods = ['1d', '5d', '1mo', '3mo', '6mo', '12mo', '1y', "18mo", "24mo", '2y', '5y', '10y', 'ytd', 'max']
+    
+    # Valider la période
+    if period not in valid_periods:
+        print(f"🚨 Période invalide: {period}. Valeurs possibles: {valid_periods}")
+        return valid_data
+    
+    # Filtrer les symboles potentiellement invalides
+    valid_symbols = [s for s in symbols if s and ('.' not in s or s.endswith(('.HK', '.DE', '.PA', '.AS', '.SW', '.L', '.TO', '-USD')))]
+    if len(valid_symbols) < len(symbols):
+        invalid = set(symbols) - set(valid_symbols)
+        print(f"🚨 Symboles ignorés (format invalide): {invalid}")
+    
+    # Diviser les symboles en lots
+    batch_size = 100  # Ajustez selon les limites de l'API
+    symbol_batches = [valid_symbols[i:i + batch_size] for i in range(0, len(valid_symbols), batch_size)]
+    
+    for batch in symbol_batches:
         try:
-            # Essayer le téléchargement groupé d'abord
-            data = all_data.get(symbol, get_cached_data(symbol, period))
-            
-            # Validation des données
-            if not data.empty and 'Close' in data.columns and 'Volume' in data.columns:
-                valid_data[symbol] = {
-                    'Close': data['Close'],
-                    'Volume': data['Volume']
-                }
+            # Téléchargement groupé
+            all_data = yf.download(
+                list(batch),
+                period=period,
+                group_by='ticker',
+                progress=False,
+                threads=True,  # Activer le multithreading
+                timeout=30  # Timeout pour éviter les blocages
+            )
         except Exception as e:
-            print(f"🚨 Erreur {symbol}: {e}")
+            print(f"🚨 Erreur lors du téléchargement groupé pour le lot {batch[:5]}...: {e}")
+            all_data = None
+        
+        for symbol in batch:
+            try:
+                # Extraire les données du téléchargement groupé ou du cache
+                if all_data is not None and symbol in all_data:
+                    data = all_data[symbol]
+                else:
+                    data = get_cached_data(symbol, period)
+                
+                # Validation des données
+                if data is None or data.empty:
+                    print(f"🚨 Aucune donnée pour {symbol}")
+                    continue
+                
+                if 'Close' not in data.columns or 'Volume' not in data.columns:
+                    print(f"🚨 Données incomplètes pour {symbol}: colonnes manquantes")
+                    continue
+                
+                # Vérifier la longueur minimale pour get_trading_signal
+                if len(data) < 50:
+                    print(f"🚨 Données insuffisantes pour {symbol} ({len(data)} points)")
+                    continue
+                
+                # Nettoyer les données
+                data = data[['Close', 'Volume']].copy()
+                data['Close'] = data['Close'].ffill()  # Remplir les NaN dans Close
+                data['Volume'] = data['Volume'].fillna(0)  # Remplir les NaN dans Volume par 0
+                
+                # Vérifier les NaN restants
+                if data['Close'].isna().all() or data['Volume'].isna().all():
+                    print(f"🚨 Données invalides pour {symbol}: trop de valeurs manquantes")
+                    continue
+                
+                # Convertir en Series si nécessaire
+                valid_data[symbol] = {
+                    'Close': data['Close'].squeeze(),
+                    'Volume': data['Volume'].squeeze()
+                }
+            except Exception as e:
+                print(f"🚨 Erreur pour {symbol}: {e}")
     
     return valid_data
 
