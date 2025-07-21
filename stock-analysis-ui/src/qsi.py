@@ -14,7 +14,7 @@ import requests
 from pathlib import Path
 from datetime import datetime, timedelta
 import yfinance as yf
-from typing import List, Dict
+from typing import List, Dict, Union
 
 # Supprimer les avertissements FutureWarning de yfinance
 warnings.filterwarnings("ignore", category=FutureWarning)
@@ -562,38 +562,77 @@ def download_stock_data(symbols: List[str], period: str) -> Dict[str, Dict[str, 
     
     return valid_data
 
-def backtest_signals(prices, volumes, domaine, montant=50):
+
+def backtest_signals(prices: Union[pd.Series, pd.DataFrame], volumes: Union[pd.Series, pd.DataFrame], 
+                    domaine: str, montant: float = 50, transaction_cost: float = 1.00) -> Dict:
     """
     Effectue un backtest sur la série de prix.
-    Un 'trade' correspond ici à un cycle complet ACHAT puis VENTE (entrée puis sortie).
-    Le gain est calculé pour chaque cycle achat-vente.
-    """
+    Un 'trade' correspond à un cycle complet ACHAT puis VENTE (entrée puis sortie).
+    Le gain est calculé pour chaque cycle, avec prise en compte des frais de transaction.
 
-    # Correction : refuse les scalaires et séries trop courtes
-    if not isinstance(prices, (pd.Series, pd.DataFrame)) or len(prices) < 2:
+    Args:
+        prices: Série ou DataFrame des prix de clôture.
+        volumes: Série ou DataFrame des volumes.
+        domaine: Secteur de l'actif (ex: 'Technology').
+        montant: Montant investi par trade (défaut: 50).
+        transaction_cost: Frais de transaction par trade (défaut: 0.1%).
+
+    Returns:
+        Dict avec les métriques: trades, gagnants, taux_reussite, gain_total, gain_moyen, drawdown_max.
+    """
+    # Validation des entrées
+    if not isinstance(prices, (pd.Series, pd.DataFrame)) or not isinstance(volumes, (pd.Series, pd.DataFrame)):
         return {
             "trades": 0,
             "gagnants": 0,
             "taux_reussite": 0,
-            "gain_total": 0.0
+            "gain_total": 0.0,
+            "gain_moyen": 0.0,
+            "drawdown_max": 0.0
         }
+    
     if isinstance(prices, pd.DataFrame):
         prices = prices.squeeze()
     if isinstance(volumes, pd.DataFrame):
         volumes = volumes.squeeze()
+    
+    if len(prices) < 50 or len(volumes) < 50 or prices.isna().any() or volumes.isna().any():
+        return {
+            "trades": 0,
+            "gagnants": 0,
+            "taux_reussite": 0,
+            "gain_total": 0.0,
+            "gain_moyen": 0.0,
+            "drawdown_max": 0.0
+        }
 
-    positions = []
-    for i in range(1, len(prices)):
+    # Pré-calculer les signaux pour toute la série
+    signals = []
+    for i in range(50, len(prices)):
         signal, *_ = get_trading_signal(prices[:i], volumes[:i], domaine)
-        if signal == "ACHAT":
-            positions.append({"entry": prices.iloc[i], "entry_idx": i, "type": "buy"})
-        elif signal == "VENTE" and positions and "exit" not in positions[-1]:
-            positions[-1]["exit"] = prices.iloc[i]
-            positions[-1]["exit_idx"] = i
+        signals.append(signal)
+    signals = pd.Series(signals, index=prices.index[50:])
 
+    # Simuler les trades
+    positions = []
+    for i in range(len(signals)):
+        if signals.iloc[i] == "ACHAT":
+            positions.append({"entry": prices.iloc[i + 50], "entry_idx": i + 50, "type": "buy"})
+        elif signals.iloc[i] == "VENTE" and positions and "exit" not in positions[-1]:
+            positions[-1]["exit"] = prices.iloc[i + 50]
+            positions[-1]["exit_idx"] = i + 50
+
+    # Fermer les positions ouvertes avec le dernier prix
+    if positions and "exit" not in positions[-1]:
+        positions[-1]["exit"] = prices.iloc[-1]
+        positions[-1]["exit_idx"] = len(prices) - 1
+
+    # Calculer les métriques
     nb_trades = 0
     nb_gagnants = 0
     gain_total = 0.0
+    gains = []
+    portfolio_values = [montant]  # Suivi de la valeur du portefeuille
 
     for pos in positions:
         if "exit" in pos:
@@ -601,16 +640,27 @@ def backtest_signals(prices, volumes, domaine, montant=50):
             entry = pos["entry"]
             exit = pos["exit"]
             rendement = (exit - entry) / entry
-            gain = montant * rendement
+            # Ajuster pour les frais de transaction (entrée + sortie)
+            gain = montant * rendement * (1 - 2 * transaction_cost)
             gain_total += gain
+            gains.append(gain)
             if gain > 0:
                 nb_gagnants += 1
+            portfolio_values.append(portfolio_values[-1] + gain)
+
+    # Calculer le drawdown maximum
+    portfolio_series = pd.Series(portfolio_values)
+    rolling_max = portfolio_series.cummax()
+    drawdowns = (portfolio_series - rolling_max) / rolling_max
+    drawdown_max = drawdowns.min() * 100 if len(drawdowns) > 0 else 0.0
 
     return {
-        "trades": nb_trades,  # Un trade = un cycle achat-vente
+        "trades": nb_trades,
         "gagnants": nb_gagnants,
         "taux_reussite": (nb_gagnants / nb_trades * 100) if nb_trades else 0,
-        "gain_total": gain_total
+        "gain_total": round(gain_total, 2),
+        "gain_moyen": round(np.mean(gains), 2) if gains else 0.0,
+        "drawdown_max": round(drawdown_max, 2)
     }
 
 def plot_unified_chart(symbol, prices, volumes, ax, show_xaxis=False):
@@ -780,23 +830,23 @@ popular_symbols = list(dict.fromkeys([
     "DHR", "BAX", "MDT", "GE", "NOC", "GD", "HII", "TXT", "LHX", "TDY", "CARR", "OTIS", "JCI", "INOD", "BIDU", "JD", "PDD", "TCEHY", "NTES", "BILI", "HL",
     "XPEV", "LI", "NIO", "BYDDF", "GME", "AMC", "BB", "NOK", "RBLX", "PLTR", "FSLY", "CRWD", "OKTA", "Z", "DOCU", "PINS", "SPOT", "LYFT", "UBER", "SNOW", "TTWO",
     "VRSN", "WDAY", "2318.HK", "2382.HK", "2388.HK", "2628.HK", "3328.HK", "3988.HK", "9988.HK", "2319.HK", "0700.HK", "3690.HK", "ADSK", "02020.HK", "ABG","AN",
-    "9618.HK", "1810.HK", "1211.HK", "1299.HK", "2313.HK", "2386.HK", "2385.HK", "0005.HK", "0011.HK", "0027.HK", "0038.HK", "0066.HK", "0083.HK",
-    "0101.HK", "0117.HK", "01177.HK", "0120.HK", "LSEG.L", "VOD.L", "BP.L", "HSBA.L",  "GSK.L", "ULVR.L", "AZN.L", "RIO.L", "BATS.L", "ADYEN.AS", "TM", "MU", "GILT",
-    "ASML.AS", "PHIA.AS", "INGA.AS", "MC.PA", "OR.PA", "AIR.PA", "BNP.PA", "SAN.PA", "ENGI.PA", "CAP.PA", "WELL", "O", "VICI", "ETOR", "ABR", "MOH.BE", 
-    "PLD", "PSA", "AMT", "CCI", "DLR", "EXR", "EQR", "ESS", "AVB", "MAA", "UDR", "SBRA", "UNH", "HD", "MA", "PG", "LLY", "COST", "AVGO", "ABBV", "QCOM", "ABBN.SW",
-    # "LONN.SW", "NOVN.SW", "ROG.SW", "ZURN.SW", "UBSG.SW", "QBTQ.CN","GC=F", "SI=F", "CL=F", "BZ=F", "NG=F", "HG=F", "PL=F", "PA=F", "ZC=F", "ZS=F", "ZL=F",
-    # "DDOG", "CRL", "EXAS", "ILMN", "INCY", "MELI", "MRNA", "NTLA", "REGN", "ROKU", "QSI", "SYM", "IONQ", "QBTS", "RGTI", "SMCI", "TSM", "ALDX", "CSX", "LRCX", 
-    # "BIIB", "CDNS", "CTSH", "EA", "FTNT", "GILD", "IDXX", "MP", "MTCH", "MRVL", "PAYX", "PTON", "AAL", "UAL", "DAL", "LUV", "JBLU", "ALK", "FLEX", "CACI",  
-    # "CRIS", "CYTK", "EXEL", "FATE", "INSM", "KPTI", "NBIX", "NTRA", "PGEN", "RGEN", "SAGE", "SNY", "TGTX", "VYGR", "ARCT", "AXSM", "BMRN", "KTOS","BTC-USD", "ETH-USD",
-    # "LTC-USD", "SOL-USD", "LINK-USD", "ATOM-USD", "TRX-USD", "COMP-USD","VEEV", "LEN", "PHM", "DHI", "KBH", "TOL", "NVR", "RMAX", "BURL", "TJX", "ROST", "KSS", "LB", "FINV",
-    # "LTC", "SOL", "LINK", "ATOM", "TRX", "COMP",
-    # "GLD", "SLV", "GDX", "GDXJ", "SPY", "QQQ", "IWM", "DIA", "XLF", "XLC", "XLI", "XLB", "XLC", "XLV", "XLI", "XLP", "XLY","XLK", "XBI", "XHB", "URBN", "ANF",
-    # "EZPW", "HNI", "COLL","LMB", "SCSC","CAR", "CARG", "CARS", "CVNA", "SAH", "GPI", "PAG", "RUSHA", "RUSHB", "LAD", "KMX", "CARV","SBLK","GOGL.OL", "SFL",
-    #  "VYX", "CCCC", "AG", "AGI", "AGL", "AGM", "AGO","AGQ", "AGS", "AGX","DE", "DEO", "DES", "RR.L","RMS.PA", "ARG.PA", "RNO.PA", "AIR.PA", "ML.PA",
-    # "FRO", "DHT", "STNG", "TNK", "GASS", "GLNG", "CMRE", "DAC", "ZIM","XMTR","JAKK","PANW","ETN", "EMR", "PH", "SWK", "FAST", "PNR", "XYL", "AOS","DOCN",
-    # "VMEO", "GETY", "PUM.DE", "ETSY", "SSTK", "UDMY", "TDOC", "BARC.L", "LLOY.L", "STAN.L", "IMB.L", "GRPN", "CCRD", "LEU", "UEC", "CCJ", "AEO", "XRT",
+    "9618.HK", "1810.HK", "1211.HK", "1299.HK", "2313.HK", "2386.HK", "2385.HK", "0005.HK", "0011.HK", "0027.HK", "0038.HK", "0066.HK", "0083.HK", "MU", "GILT",
+    "0101.HK", "0117.HK", "01177.HK", "0120.HK", "LSEG.L", "VOD.L", "BP.L", "HSBA.L",  "GSK.L", "ULVR.L", "AZN.L", "RIO.L", "BATS.L", "ADYEN.AS", "TM", "ABBN.SW",
+    "ASML.AS", "PHIA.AS", "INGA.AS", "MC.PA", "OR.PA", "AIR.PA", "BNP.PA", "SAN.PA", "ENGI.PA", "CAP.PA", "WELL", "O", "VICI", "ETOR", "ABR", "MOH.BE", "KSS",
+    "PLD", "PSA", "AMT", "CCI", "DLR", "EXR", "EQR", "ESS", "AVB", "MAA", "UDR", "SBRA", "UNH", "HD", "MA", "PG", "LLY", "COST", "AVGO", "ABBV", "QCOM",
+    "LONN.SW", "NOVN.SW", "ROG.SW", "ZURN.SW", "UBSG.SW", "QBTQ.CN","GC=F", "SI=F", "CL=F", "BZ=F", "NG=F", "HG=F", "PL=F", "PA=F", "ZC=F", "ZS=F", "ZL=F",
+    "DDOG", "CRL", "EXAS", "ILMN", "INCY", "MELI", "MRNA", "NTLA", "REGN", "ROKU", "QSI", "SYM", "IONQ", "QBTS", "RGTI", "SMCI", "TSM", "ALDX", "CSX", "LRCX", 
+    "BIIB", "CDNS", "CTSH", "EA", "FTNT", "GILD", "IDXX", "MP", "MTCH", "MRVL", "PAYX", "PTON", "AAL", "UAL", "DAL", "LUV", "JBLU", "ALK", "FLEX", "CACI",  
+    "CRIS", "CYTK", "EXEL", "FATE", "INSM", "KPTI", "NBIX", "NTRA", "PGEN", "RGEN", "SAGE", "SNY", "TGTX", "ARCT", "AXSM", "BMRN", "KTOS","BTC-USD", "ETH-USD",
+    "LTC-USD", "SOL-USD", "LINK-USD", "ATOM-USD", "TRX-USD", "COMP-USD","VEEV", "LEN", "PHM", "DHI", "KBH", "TOL", "NVR", "RMAX", "BURL", "TJX", "ROST", "VYGR",
+    "LTC", "SOL", "LINK", "ATOM", "TRX", "COMP", "BTC", "ETH", "LB", "FINV",
+    "GLD", "SLV", "GDX", "GDXJ", "SPY", "QQQ", "IWM", "DIA", "XLF", "XLC", "XLI", "XLB", "XLC", "XLV", "XLI", "XLP", "XLY","XLK", "XBI", "XHB", "URBN", "ANF",
+    "EZPW", "HNI", "COLL","LMB", "SCSC","CAR", "CARG", "CARS", "CVNA", "SAH", "GPI", "PAG", "RUSHA", "RUSHB", "LAD", "KMX", "CARV","SBLK","GOGL.OL", "SFL",
+     "VYX", "CCCC", "AG", "AGI", "AGL", "AGM", "AGO","AGQ", "AGS", "AGX","DE", "DEO", "DES", "RR.L","RMS.PA", "ARG.PA", "RNO.PA", "AIR.PA", "ML.PA",
+    "FRO", "DHT", "STNG", "TNK", "GASS", "GLNG", "CMRE", "DAC", "ZIM","XMTR","JAKK","PANW","ETN", "EMR", "PH", "SWK", "FAST", "PNR", "XYL", "AOS","DOCN",
+    "VMEO", "GETY", "PUM.DE", "ETSY", "SSTK", "UDMY", "TDOC", "BARC.L", "LLOY.L", "STAN.L", "IMB.L", "GRPN", "CCRD", "LEU", "UEC", "CCJ", "AEO", "XRT",
      "NEM", "HMY", "KGC", "SAND", "WPM", "FNV", "RGLD", "GFI", "AEM", "NXE", "AU", "SIL", "GDXU", "GDXD", "GLDM", "IAU", "SGOL", "CDE", "EXK", "AGI.TO",
-     "PHYS", "FNV.TO", "WDO.TO", "BOE", "JOBY", "LAC", "PLL", "ALB", "SQM", "RIOT", "MARA", "HUT", "BITF", "VKTX", "CRSR", "PFC.L", "OPEN", "FVRR", "BTC", "ETH",
+     "PHYS", "FNV.TO", "WDO.TO", "BOE", "JOBY", "LAC", "PLL", "ALB", "SQM", "RIOT", "MARA", "HUT", "BITF", "VKTX", "CRSR", "PFC.L", "OPEN", "FVRR"
     ]))
 
 mes_symbols = ["QSI", "GLD","SYM","INGA.AS", "FLEX", "ALDX", "TSM", "02020.HK", "ARCT", "CACI", "ERJ", "PYPL", "GLW", "MSFT",
@@ -920,7 +970,9 @@ def analyse_signaux_populaires(
                 "trades": resultats['trades'],
                 "gagnants": resultats['gagnants'],
                 "taux_reussite": resultats['taux_reussite'],
-                "gain_total": resultats['gain_total']
+                "gain_total": resultats['gain_total'],
+                "gain_moyen": resultats['gain_moyen'],
+                "drawdown_max": resultats['drawdown_max']
             })
             total_trades += resultats['trades']
             total_gagnants += resultats['gagnants']
@@ -936,6 +988,8 @@ def analyse_signaux_populaires(
                 f"Gagnants: {res['gagnants']:<2} | "
                 f"Taux réussite: {res['taux_reussite']:.0f}% | "
                 f"Gain total: {res['gain_total']:.2f} $"
+                f" | Gain moyen: {res['gain_moyen']:.2f} $ | "
+                f"Drawdown max: {res['drawdown_max']:.2f}%"
             )
         cout_total_trades = total_trades * cout_par_trade
         total_investi_reel = len(backtest_results) * 50
@@ -953,6 +1007,50 @@ def analyse_signaux_populaires(
             print("="*110)
         else:
             print("\nAucun trade détecté pour le calcul global.")
+        
+    # === Affichage des taux de réussite par catégorie de domaine (secteur) pour le backtest ===
+    domaine_stats = {}
+    for res in backtest_results:
+        symbole = res['Symbole']
+        # Retrouver le domaine associé à ce symbole
+        domaine = next((s['Domaine'] for s in signals if s['Symbole'] == symbole), "Inconnu")
+        if domaine not in domaine_stats:
+            domaine_stats[domaine] = {"trades": 0, "gagnants": 0, "gain_total": 0.0}
+        domaine_stats[domaine]["trades"] += res["trades"]
+        domaine_stats[domaine]["gagnants"] += res["gagnants"]
+        domaine_stats[domaine]["gain_total"] += res["gain_total"]
+
+    print("\n" + "="*110)
+    print("📊 Taux de réussite par catégorie de domaine (backtest) :")
+    print("="*110)
+    print(f"{'Domaine':<25} {'Trades':<8} {'Gagnants':<10} {'Taux de réussite':<15} {'Gain brut':<12} {'Gain net':<12} {'Rentab. brute':<15}")
+    print("-"*110)
+    cout_par_trade = 1.0
+
+    # Variables pour le total
+    total_trades = 0
+    total_gagnants = 0
+    total_gain_brut = 0.0
+
+    for domaine, stats in sorted(domaine_stats.items(), key=lambda x: -x[1]["trades"]):
+        taux = (stats["gagnants"] / stats["trades"] * 100) if stats["trades"] else 0
+        gain_brut = stats["gain_total"]
+        gain_net = gain_brut - stats["trades"] * cout_par_trade
+        investi = stats["trades"] * 50 if stats["trades"] else 1
+        rentab_brute = (gain_brut / investi * 100) if investi else 0
+        print(f"{domaine:<25} {stats['trades']:<8} {stats['gagnants']:<10} {taux:>10.1f} %   {gain_brut:>10.2f}   {gain_net:>10.2f}   {rentab_brute:>10.1f} %")
+        total_trades += stats["trades"]
+        total_gagnants += stats["gagnants"]
+        total_gain_brut += gain_brut
+
+    # Ligne TOTAL
+    total_taux = (total_gagnants / total_trades * 100) if total_trades else 0
+    total_gain_net = total_gain_brut - total_trades * cout_par_trade
+    total_investi = total_trades * 50 if total_trades else 1
+    total_rentab_brute = (total_gain_brut / total_investi * 100) if total_investi else 0
+    print("-"*110)
+    print(f"{'TOTAL':<25} {total_trades:<8} {total_gagnants:<10} {total_taux:>10.1f} %   {total_gain_brut:>10.2f}   {total_gain_net:>10.2f}   {total_rentab_brute:>10.1f} %")
+    print("="*110)
 
     # Évaluation supplémentaire : stratégie filtrée
     filtres = [res for res in backtest_results if res['taux_reussite'] >= 60 and res['gain_total'] > 0]
@@ -1148,7 +1246,13 @@ def analyse_signaux_populaires(
     }
 
 # Pour utiliser la fonction sans exécution automatique :
-resultats = analyse_signaux_populaires(popular_symbols, mes_symbols, period="12mo", afficher_graphiques=True)
+
+if __name__ == "__main__":
+        start_time = time.time()
+        resultats = analyse_signaux_populaires(popular_symbols, mes_symbols, period="12mo", afficher_graphiques=True)
+        end_time = time.time()
+        elapsed = end_time - start_time
+        print(f"\n⏱️ Temps total d'exécution : {elapsed:.2f} secondes ({elapsed/60:.2f} minutes)")
 
 
 

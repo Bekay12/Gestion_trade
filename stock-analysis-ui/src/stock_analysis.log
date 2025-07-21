@@ -1058,3 +1058,39 @@
 2025-07-21 00:14:05,586 - ERROR - 
 1 Failed download:
 2025-07-21 00:14:05,586 - ERROR - ['01177.HK']: YFPricesMissingError('possibly delisted; no price data found  (period=12mo)')
+2025-07-21 00:23:06,290 - ERROR - 
+1 Failed download:
+2025-07-21 00:23:06,290 - ERROR - ['02020.HK']: YFPricesMissingError('possibly delisted; no price data found  (period=12mo)')
+2025-07-21 00:23:13,117 - ERROR - 
+1 Failed download:
+2025-07-21 00:23:13,118 - ERROR - ['01177.HK']: YFPricesMissingError('possibly delisted; no price data found  (period=12mo)')
+2025-07-21 00:24:01,278 - ERROR - 
+1 Failed download:
+2025-07-21 00:24:01,278 - ERROR - ['COMP-USD']: YFPricesMissingError('possibly delisted; no price data found  (period=12mo)')
+2025-07-21 00:44:29,999 - ERROR - 
+1 Failed download:
+2025-07-21 00:44:30,000 - ERROR - ['02020.HK']: YFPricesMissingError('possibly delisted; no price data found  (period=1y)')
+2025-07-21 00:44:36,893 - ERROR - 
+1 Failed download:
+2025-07-21 00:44:36,893 - ERROR - ['01177.HK']: YFPricesMissingError('possibly delisted; no price data found  (period=1y)')
+2025-07-21 00:45:25,423 - ERROR - 
+1 Failed download:
+2025-07-21 00:45:25,423 - ERROR - ['COMP-USD']: YFPricesMissingError('possibly delisted; no price data found  (period=1y)')
+2025-07-21 00:55:55,814 - ERROR - 
+1 Failed download:
+2025-07-21 00:55:55,815 - ERROR - ['02020.HK']: YFPricesMissingError('possibly delisted; no price data found  (period=12mo)')
+2025-07-21 00:56:02,756 - ERROR - 
+1 Failed download:
+2025-07-21 00:56:02,757 - ERROR - ['01177.HK']: YFPricesMissingError('possibly delisted; no price data found  (period=12mo)')
+2025-07-21 00:56:52,138 - ERROR - 
+1 Failed download:
+2025-07-21 00:56:52,138 - ERROR - ['COMP-USD']: YFPricesMissingError('possibly delisted; no price data found  (period=12mo)')
+2025-07-21 01:20:43,568 - ERROR - 
+1 Failed download:
+2025-07-21 01:20:43,569 - ERROR - ['02020.HK']: YFPricesMissingError('possibly delisted; no price data found  (period=12mo)')
+2025-07-21 01:20:50,243 - ERROR - 
+1 Failed download:
+2025-07-21 01:20:50,243 - ERROR - ['01177.HK']: YFPricesMissingError('possibly delisted; no price data found  (period=12mo)')
+2025-07-21 01:21:36,699 - ERROR - 
+1 Failed download:
+2025-07-21 01:21:36,699 - ERROR - ['COMP-USD']: YFPricesMissingError('possibly delisted; no price data found  (period=12mo)')
