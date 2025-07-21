@@ -564,7 +564,7 @@ def download_stock_data(symbols: List[str], period: str) -> Dict[str, Dict[str, 
 
 
 def backtest_signals(prices: Union[pd.Series, pd.DataFrame], volumes: Union[pd.Series, pd.DataFrame], 
-                    domaine: str, montant: float = 50, transaction_cost: float = 1.00) -> Dict:
+                    domaine: str, montant: float = 50, transaction_cost: float = 0.00) -> Dict:
     """
     Effectue un backtest sur la série de prix.
     Un 'trade' correspond à un cycle complet ACHAT puis VENTE (entrée puis sortie).
@@ -623,9 +623,9 @@ def backtest_signals(prices: Union[pd.Series, pd.DataFrame], volumes: Union[pd.S
             positions[-1]["exit_idx"] = i + 50
 
     # Fermer les positions ouvertes avec le dernier prix
-    if positions and "exit" not in positions[-1]:
-        positions[-1]["exit"] = prices.iloc[-1]
-        positions[-1]["exit_idx"] = len(prices) - 1
+    # if positions and "exit" not in positions[-1]:
+    #     positions[-1]["exit"] = prices.iloc[-1]
+    #     positions[-1]["exit_idx"] = len(prices) - 1
 
     # Calculer les métriques
     nb_trades = 0
