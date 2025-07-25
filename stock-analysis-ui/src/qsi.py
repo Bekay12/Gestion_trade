@@ -123,7 +123,9 @@ def save_to_evolutive_csv(signals, filename="signaux_trading.csv"):
         print(f"🚨 Erreur sauvegarde CSV: {e}")
 
 def get_trading_signal(prices, volumes,  domaine, domain_coeffs=None,
-                       seuil_achat=4.20, seuil_vente=-0.81,# seuil_achat=5.75, seuil_vente=-0.5, taux de reussite 25.9 %
+                       seuil_achat=4.20, seuil_vente=-0.5,
+                       # seuil_achat=4.20, seuil_vente=-0.81, taux_reussite=33.3%
+                       # seuil_achat=5.75, seuil_vente=-0.5, taux de reussite 25.9 % 
                        variation_seuil=-20, volume_seuil=100000):
     """Détermine les signaux de trading avec validation des données"""
     # Correction : assure que prices et volumes sont bien des Series 1D
@@ -361,7 +363,7 @@ def get_trading_signal(prices, volumes,  domaine, domain_coeffs=None,
     if last_bb_percent > 0.6: score -= 1.0  # Zone de surachat
     if sell_conditions: score -= 1.75  # Conditions de vente renforcées
     
-    if volatility.iloc[-1] > 0.05 : m4=0.5 
+    if volatility.iloc[-1] > 0.05 : m4=0.65 
     score *= m4  # Réduire le score en cas de forte volatilité
 
     # Interprétation du score
