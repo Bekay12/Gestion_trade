@@ -1518,3 +1518,6 @@
 2025-07-25 02:02:05,868 - ERROR - 
 1 Failed download:
 2025-07-25 02:02:05,868 - ERROR - ['FVRR']: DNSError('Failed to perform, curl: (6) Could not resolve host: query2.finance.yahoo.com. See https://curl.se/libcurl/c/libcurl-errors.html first for more details.')
+2025-07-25 05:00:39,988 - ERROR - 
+1 Failed download:
+2025-07-25 05:00:39,989 - ERROR - ['02020.HK']: YFPricesMissingError('possibly delisted; no price data found  (period=12mo)')

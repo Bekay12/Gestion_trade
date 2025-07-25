@@ -114,16 +114,13 @@ class MainWindow(QMainWindow):
         n_groups = math.ceil(len(symbols) / group_size)
         for i in range(n_groups):
             group = symbols[i*group_size:(i+1)*group_size]
-            # analyse_et_affiche doit accepter une liste de symboles
-            # et afficher les graphiques sur une même figure
-            # analyse_et_affiche(group, period)
-            # plt.suptitle(f"Stocks {', '.join(group)}")
-            # plt.show()
             result = analyse_signaux_populaires(symbols, mes_symbols, period, plot_all=True)
             # self.result_label.setText(str(result))
 
 if __name__ == "__main__":
     app = QApplication(sys.argv)
     window = MainWindow()
+    analyse_signaux_populaires(popular_symbols, mes_symbols, period=period, plot_all=True)
+    window.setWindowTitle("Stock Analysis Tool")
     window.show()
     sys.exit(app.exec_())

@@ -123,7 +123,7 @@ def save_to_evolutive_csv(signals, filename="signaux_trading.csv"):
         print(f"🚨 Erreur sauvegarde CSV: {e}")
 
 def get_trading_signal(prices, volumes,  domaine, domain_coeffs=None,
-                       seuil_achat=5.75, seuil_vente=-0.5, 
+                       seuil_achat=4.20, seuil_vente=-0.81,# seuil_achat=5.75, seuil_vente=-0.5, taux de reussite 25.9 %
                        variation_seuil=-20, volume_seuil=100000):
     """Détermine les signaux de trading avec validation des données"""
     # Correction : assure que prices et volumes sont bien des Series 1D
@@ -254,17 +254,16 @@ def get_trading_signal(prices, volumes,  domaine, domain_coeffs=None,
         coeffs = domain_coeffs.get(domaine, default_coeffs)
     else:
         domain_coeffs = {
-            "Technology":      (2.0, 1.5, 1.3, 1.5, 1.8, 1.5, 1.4, 1.2),   # (2.0, 1.2, 1.7, 1.5, 2.0, 1.5, 1.2, 2.0),
-            "Healthcare":      (1.8, 1.1, 1.6, 1.3, 1.8, 1.3, 1.3, 1.8),
-            "Financial Services": (1.6, 1.9, 2.3, 1.2, 1.6, 1.1, 1.2, 1.6),  #(1.6, 0.9, 1.3, 1.1, 1.6, 1.1, 0.9, 1.6),
-            "Consumer Cyclical":  (1.7, 1.0, 1.4, 1.2, 1.7, 1.2, 1.7, 1.7),  #(1.7, 1.0, 1.4, 1.2, 1.7, 1.2, 1.0, 1.7),
-            "Industrials":     (1.7, 1.2, 1.2, 1.0, 1.5, 1.0, 1.2, 1.5), #(1.5, 0.8, 1.2, 1.0, 1.5, 1.0, 0.8, 1.5),
-            "Energy":          (1.4, 1.7, 1.1, 1.1, 1.4, 0.9, 0.7, 1.4), #(1.4, 0.7, 1.1, 0.9, 1.4, 0.9, 0.7, 1.4),
-            "Basic Materials": (1.3, 1.6, 1.0, 1.8, 1.3, 0.8, 0.6, 1.3),
-            "Communication Services": (1.6, 1.0, 1.3, 1.1, 1.6, 1.1, 1.0, 1.6), #(1.6, 1.0, 1.3, 1.1, 1.6, 1.1, 1.0, 1.6),
-            "Utilities":       (1.8, 1.5, 1.2, 1.3, 1.2, 1.3, 0.5, 1.2), #(1.2, 0.5, 0.9, 0.7, 1.2, 0.7, 0.5, 1.2),
-            "Real Estate":     (1.1, 1.6, 1.2, 1.4, 1.1, 1.4, 0.4, 1.1), #(1.1, 0.4, 0.8, 0.6, 1.1, 0.6, 0.4, 1.1),
-            # Ajoutez d'autres domaines si besoin
+            "Technology":      (0.8, 1.3, 0.5, 2.7, 1.1, 1.3, 1.1, 1.3),
+            "Healthcare":      (1.1, 2.4, 3.0, 1.9, 0.8, 0.8, 2.4, 0.5),
+            "Financial Services": (2.2, 1.6, 0.8, 1.9, 2.2, 2.4, 0.8, 1.9),
+            "Consumer Cyclical":  (2.7, 3.0, 1.6, 1.9, 2.2, 1.9, 2.4, 1.1),
+            "Industrials":     (2.7, 1.1, 0.8, 1.3, 1.1, 1.9, 1.3, 1.3),
+            "Energy":          (1.1, 0.5, 1.3, 0.8, 2.4, 2.7, 0.8, 3.0),
+            "Basic Materials": (2.4, 2.4, 2.4, 2.2, 0.5, 3.0, 2.7, 1.3),
+            "Communication Services": (2.7, 2.2, 1.1, 0.5, 1.6, 3.0, 2.4, 2.7),
+            "Utilities":       (2.7, 1.3, 1.9, 1.1, 1.9, 1.3, 1.1, 2.2),
+            "Real Estate":     (1.1, 3.0, 1.6, 3.0, 2.7, 0.8, 1.1, 1.1),
         }
         # Sélectionner les coefficients selon le domaine
         coeffs = domain_coeffs.get(domaine, default_coeffs)
@@ -798,7 +797,7 @@ popular_symbols = list(dict.fromkeys([
      "PHYS", "FNV.TO", "WDO.TO", "BOE", "JOBY", "LAC", "PLL", "ALB", "SQM", "RIOT", "MARA", "HUT", "BITF", "VKTX", "CRSR", "PFC.L", "OPEN", "FVRR"
     ]))
 
-mes_symbols = ["QSI", "GLD","SYM","INGA.AS", "FLEX", "ALDX", "TSM", "02020.HK", "ARCT", "CACI", "ERJ", "PYPL", "GLW", "MSFT",
+mes_symbols = ["QSI", "GLD","SYM","INGA.AS", "FLEX", "ALDX", "TSM", "ARCT", "CACI", "ERJ", "PYPL", "GLW", "MSFT",
                "TMDX", "GILT", "ENR.DE", "META", "AMD", "ASML.AS", "TBLA", "VOOG", "WELL", "SMSN.L", "BMRN", "GS", "BABA",
                "SMTC", "AFX.DE", "ABBN.SW", "QCOM", "MP", "TM", "SGMT", "AMZN", "INOD", "SMCI", "GOOGL", "MU", "ETOR","DBK.DE", 
                "DDOG", "OKTA", "AXSM", "EEM", "SPY", "HMY", "2318.HK", "RHM.DE", "NVDA", "QBTS", "SAP.DE", "V", "UEC"]
@@ -1199,12 +1198,12 @@ def analyse_signaux_populaires(
 
 # Pour utiliser la fonction sans exécution automatique :
 
-#if __name__ == "__main__":
-start_time = time.time()
-resultats = analyse_signaux_populaires(popular_symbols, mes_symbols, period="12mo", afficher_graphiques=True)
-end_time = time.time()
-elapsed = end_time - start_time
-print(f"\n⏱️ Temps total d'exécution : {elapsed:.2f} secondes ({elapsed/60:.2f} minutes)")
+if __name__ == "__main__":
+    start_time = time.time()
+    resultats = analyse_signaux_populaires(popular_symbols, mes_symbols, period="12mo", afficher_graphiques=True)
+    end_time = time.time()
+    elapsed = end_time - start_time
+    print(f"\n⏱️ Temps total d'exécution : {elapsed:.2f} secondes ({elapsed/60:.2f} minutes)")
 
 
 
