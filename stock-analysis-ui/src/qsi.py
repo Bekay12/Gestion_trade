@@ -77,8 +77,12 @@ def save_to_evolutive_csv(signals, filename="signaux_trading.csv"):
     detection_time = datetime.now().strftime("%Y-%m-%d %H:%M:%S")
     df_new['detection_time'] = detection_time
     
+    script_dir = Path(__file__).parent
+    signals_dir = script_dir / "signaux"
+    
+    # Construire les chemins pour le fichier principal et l'archive
+    file_path = signals_dir / filename
     # Vérifier si le fichier existe déjà
-    file_path = Path(filename)
     if file_path.exists():
         try:
             # Lire l'historique existant
@@ -109,7 +113,7 @@ def save_to_evolutive_csv(signals, filename="signaux_trading.csv"):
         
         # Sauvegarder avec date de mise à jour dans le nom
         timestamp = datetime.now().strftime("%Y%m%d")
-        archive_file = f"signaux_trading_{timestamp}.csv"
+        archive_file = signals_dir /f"signaux_trading_{timestamp}.csv"
         df_clean.to_csv(archive_file, index=False)
         
         # Sauvegarde principale
@@ -142,7 +146,6 @@ def get_trading_signal(prices, volumes,  domaine, domain_coeffs=None,
     if len(macd) < 2 or len(rsi) < 1:
         return "Données récentes manquantes", None, None, None, None, None  # <-- 6 valeurs
     
-
     last_close = prices.iloc[-1]
     last_ema20 = ema20.iloc[-1]
     last_ema50 = ema50.iloc[-1]
@@ -220,6 +223,16 @@ def get_trading_signal(prices, volumes,  domaine, domain_coeffs=None,
     strong_uptrend = (last_close > last_ichimoku_base) and (last_close > last_ichimoku_conversion)
     strong_downtrend = (last_close < last_ichimoku_base) and (last_close < last_ichimoku_conversion)
     adx_strong_trend = last_adx > 25  # Tendance forte
+
+    # Momentum 10 jours
+    momentum_10 = prices.pct_change(10)
+    
+    # Volatilité
+    volatility = prices.pct_change().rolling(20).std()
+    
+    # Ratio de Sharpe à court terme
+    returns = prices.pct_change()
+    sharpe = returns.mean() / returns.std() * np.sqrt(252)
     
     score = 0  # Initialisation du score
     ################################### Conditions d'achat et de vente optimisées ###################################
@@ -256,9 +269,8 @@ def get_trading_signal(prices, volumes,  domaine, domain_coeffs=None,
         # Sélectionner les coefficients selon le domaine
         coeffs = domain_coeffs.get(domaine, default_coeffs)
 
-
     a1, a2, a3, a4, a5, a6, a7, a8 = coeffs
-    m1, m2, m3 = 1.0, 1.0, 1.0  # Coefficients pour ajuster l'importance des conditions de volume et tendance
+    m1, m2, m3, m4 = 1.0, 1.0, 1.0 , 1.0 # Coefficients pour ajuster l'importance des conditions de volume et tendance
 
     if adx_strong_trend: m1 = 1.5
 
@@ -286,7 +298,6 @@ def get_trading_signal(prices, volumes,  domaine, domain_coeffs=None,
     if rsi_cross_down: score -= a1
     if delta_rsi < -3: score -= m3 * a2  # RSI chute rapide # RSI chute rapidement
  
-
     if rsi_ok: score += a4  # RSI dans une zone saine
     else: score -= a4  # RSI trop extrême
 
@@ -321,9 +332,6 @@ def get_trading_signal(prices, volumes,  domaine, domain_coeffs=None,
     # ):
     #     score -= 1.5
 
-    
-
-     # Facteurs d'achat
 
      # Conditions d'achat renforcées
     buy_conditions = (
@@ -346,16 +354,16 @@ def get_trading_signal(prices, volumes,  domaine, domain_coeffs=None,
         (volume_mean > volume_seuil)
     )
 
-    
     if strong_uptrend: score += 1.5
     if last_bb_percent < 0.4: score += 1.0  # Zone de survente
     if buy_conditions: score += 1.75  # Conditions d'achat renforcées
 
-    
-
     if strong_downtrend: score -= 1.5
     if last_bb_percent > 0.6: score -= 1.0  # Zone de surachat
     if sell_conditions: score -= 1.75  # Conditions de vente renforcées
+    
+    if volatility.iloc[-1] > 0.05 : m4=0.5 
+    score *= m4  # Réduire le score en cas de forte volatilité
 
     # Interprétation du score
     if score >= seuil_achat:
