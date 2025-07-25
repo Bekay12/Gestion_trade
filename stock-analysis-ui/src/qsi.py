@@ -13,7 +13,6 @@ import warnings
 import requests
 from pathlib import Path
 from datetime import datetime, timedelta
-import yfinance as yf
 from typing import List, Dict, Union
 
 # Supprimer les avertissements FutureWarning de yfinance
@@ -30,68 +29,6 @@ def calculate_macd(prices, fast=12, slow=26, signal=9):
     signal_line = macd.ewm(span=signal, adjust=False).mean()
     return macd, signal_line
 
-def earnings_beats_majority(symbol, api_key="WB9YQAN8DZQTN8FX"):
-    """Retourne True si l’entreprise a battu les attentes EPS au moins 3 fois sur les 5 derniers trimestres"""
-    url = f"https://www.alphavantage.co/query?function=EARNINGS&symbol={symbol}&apikey={api_key}"
-    
-    try:
-        response = requests.get(url)
-        data = response.json()
-        
-        if "quarterlyEarnings" not in data:
-            return False
-        
-        earnings = data["quarterlyEarnings"][:5]  # 5 derniers trimestres
-        beats = 0
-        for quarter in earnings:
-            actual = quarter.get("reportedEPS")
-            estimated = quarter.get("estimatedEPS")
-
-            if actual is None or estimated is None:
-                continue
-
-            try:
-                if float(actual) > float(estimated):
-                    beats += 1
-            except:
-                continue
-
-        return beats >= 3
-
-    except Exception as e:
-        print(f"Erreur lors de l'accès aux données Alpha Vantage : {e}")
-        return False
-
-def earnings_beats_majority2(symbol):
-    """Retourne True si l’entreprise a battu les attentes EPS au moins 3 fois sur les 5 derniers trimestres"""
-    try:
-        url = f"https://finance.yahoo.com/quote/{symbol}/analysis?p={symbol}"
-        headers = {'User-Agent': 'Mozilla/5.0'}
-        response = requests.get(url, headers=headers)
-        soup = BeautifulSoup(response.text, 'html.parser')
-        
-        # Ciblage de la table "Earnings Estimate" ou "Earnings History"
-        rows = soup.find_all('tr')
-        beats = 0
-        count = 0
-
-        for row in rows:
-            cols = row.find_all('td')
-            if len(cols) >= 4 and 'EPS' in row.text:
-                try:
-                    actual = float(cols[2].text.strip())
-                    estimate = float(cols[3].text.strip())
-                    if actual > estimate:
-                        beats += 1
-                    count += 1
-                    if count >= 5:
-                        break
-                except:
-                    continue
-
-        return beats >= 3
-    except:
-        return False
 
 def save_to_evolutive_csv(signals, filename="signaux_trading.csv"):
     """
@@ -181,7 +118,9 @@ def save_to_evolutive_csv(signals, filename="signaux_trading.csv"):
     except Exception as e:
         print(f"🚨 Erreur sauvegarde CSV: {e}")
 
-def get_trading_signal(prices, volumes, domaine, variation_seuil=-20, volume_seuil=100000):
+def get_trading_signal(prices, volumes,  domaine, domain_coeffs=None,
+                       seuil_achat=5.75, seuil_vente=-0.5, 
+                       variation_seuil=-20, volume_seuil=100000):
     """Détermine les signaux de trading avec validation des données"""
     # Correction : assure que prices et volumes sont bien des Series 1D
     if isinstance(prices, pd.DataFrame):
@@ -235,9 +174,6 @@ def get_trading_signal(prices, volumes, domaine, variation_seuil=-20, volume_seu
         volume_mean = float(volumes.mean()) if len(volumes) > 0 else 0.0
 
     current_volume = volumes.iloc[-1]
-
-
-
     
     # Nouveaux indicateurs pour confirmation
     from ta.volatility import BollingerBands
@@ -284,9 +220,6 @@ def get_trading_signal(prices, volumes, domaine, variation_seuil=-20, volume_seu
     strong_uptrend = (last_close > last_ichimoku_base) and (last_close > last_ichimoku_conversion)
     strong_downtrend = (last_close < last_ichimoku_base) and (last_close < last_ichimoku_conversion)
     adx_strong_trend = last_adx > 25  # Tendance forte
-
-    
-
     
     score = 0  # Initialisation du score
     ################################### Conditions d'achat et de vente optimisées ###################################
@@ -301,26 +234,29 @@ def get_trading_signal(prices, volumes, domaine, variation_seuil=-20, volume_seu
 
     ########################### Methode alternative avec score de signal ###########################
     # Définir les coefficients par domaine
-    domain_coeffs = {
-        "Technology":      (2.0, 1.7, 1.3, 1.5, 2.0, 1.5, 1.2, 1.2),   # (2.0, 1.2, 1.7, 1.5, 2.0, 1.5, 1.2, 2.0),
-        "Healthcare":      (1.8, 1.1, 1.6, 1.3, 1.8, 1.3, 1.1, 1.8),
-        "Financial Services": (1.6, 1.9, 2.3, 1.1, 1.6, 1.1, 1.1, 1.6),  #(1.6, 0.9, 1.3, 1.1, 1.6, 1.1, 0.9, 1.6),
-        "Consumer Cyclical":  (1.7, 1.0, 1.4, 1.2, 1.7, 1.2, 1.7, 1.7),  #(1.7, 1.0, 1.4, 1.2, 1.7, 1.2, 1.0, 1.7),
-        "Industrials":     (1.5, 1.2, 1.2, 1.0, 1.5, 1.0, 1.2, 1.5), #(1.5, 0.8, 1.2, 1.0, 1.5, 1.0, 0.8, 1.5),
-        "Energy":          (1.4, 1.7, 1.1, 1.1, 1.4, 0.9, 0.7, 1.4), #(1.4, 0.7, 1.1, 0.9, 1.4, 0.9, 0.7, 1.4),
-        "Basic Materials": (1.3, 1.6, 1.0, 1.8, 1.3, 0.8, 0.6, 1.3),
-        "Communication Services": (1.6, 1.0, 1.3, 1.1, 1.6, 1.1, 1.0, 1.6), #(1.6, 1.0, 1.3, 1.1, 1.6, 1.1, 1.0, 1.6),
-        "Utilities":       (1.2, 1.5, 1.1, 1.3, 1.2, 1.3, 0.5, 1.2), #(1.2, 0.5, 0.9, 0.7, 1.2, 0.7, 0.5, 1.2),
-        "Real Estate":     (1.1, 1.6, 1.2, 1.4, 1.1, 1.4, 0.4, 1.1), #(1.1, 0.4, 0.8, 0.6, 1.1, 0.6, 0.4, 1.1),
-        # Ajoutez d'autres domaines si besoin
-    }
+
     # Valeurs par défaut si domaine inconnu
     default_coeffs = (1.75, 1.0, 1.5, 1.25, 1.75, 1.25, 1.0, 1.75)
+    if domain_coeffs:
+        coeffs = domain_coeffs.get(domaine, default_coeffs)
+    else:
+        domain_coeffs = {
+            "Technology":      (2.0, 1.5, 1.3, 1.5, 1.8, 1.5, 1.4, 1.2),   # (2.0, 1.2, 1.7, 1.5, 2.0, 1.5, 1.2, 2.0),
+            "Healthcare":      (1.8, 1.1, 1.6, 1.3, 1.8, 1.3, 1.3, 1.8),
+            "Financial Services": (1.6, 1.9, 2.3, 1.2, 1.6, 1.1, 1.2, 1.6),  #(1.6, 0.9, 1.3, 1.1, 1.6, 1.1, 0.9, 1.6),
+            "Consumer Cyclical":  (1.7, 1.0, 1.4, 1.2, 1.7, 1.2, 1.7, 1.7),  #(1.7, 1.0, 1.4, 1.2, 1.7, 1.2, 1.0, 1.7),
+            "Industrials":     (1.7, 1.2, 1.2, 1.0, 1.5, 1.0, 1.2, 1.5), #(1.5, 0.8, 1.2, 1.0, 1.5, 1.0, 0.8, 1.5),
+            "Energy":          (1.4, 1.7, 1.1, 1.1, 1.4, 0.9, 0.7, 1.4), #(1.4, 0.7, 1.1, 0.9, 1.4, 0.9, 0.7, 1.4),
+            "Basic Materials": (1.3, 1.6, 1.0, 1.8, 1.3, 0.8, 0.6, 1.3),
+            "Communication Services": (1.6, 1.0, 1.3, 1.1, 1.6, 1.1, 1.0, 1.6), #(1.6, 1.0, 1.3, 1.1, 1.6, 1.1, 1.0, 1.6),
+            "Utilities":       (1.8, 1.5, 1.2, 1.3, 1.2, 1.3, 0.5, 1.2), #(1.2, 0.5, 0.9, 0.7, 1.2, 0.7, 0.5, 1.2),
+            "Real Estate":     (1.1, 1.6, 1.2, 1.4, 1.1, 1.4, 0.4, 1.1), #(1.1, 0.4, 0.8, 0.6, 1.1, 0.6, 0.4, 1.1),
+            # Ajoutez d'autres domaines si besoin
+        }
+        # Sélectionner les coefficients selon le domaine
+        coeffs = domain_coeffs.get(domaine, default_coeffs)
 
-    # Récupérer le domaine si disponible
 
-    # Sélectionner les coefficients selon le domaine
-    coeffs = domain_coeffs.get(domaine, default_coeffs)
     a1, a2, a3, a4, a5, a6, a7, a8 = coeffs
     m1, m2, m3 = 1.0, 1.0, 1.0  # Coefficients pour ajuster l'importance des conditions de volume et tendance
 
@@ -422,9 +358,9 @@ def get_trading_signal(prices, volumes, domaine, variation_seuil=-20, volume_seu
     if sell_conditions: score -= 1.75  # Conditions de vente renforcées
 
     # Interprétation du score
-    if score >= 5.75:
+    if score >= seuil_achat:
         signal = "ACHAT"
-    elif score <= -0.5:
+    elif score <= seuil_vente:
         signal = "VENTE"
     else:
         signal = "NEUTRE"
@@ -495,8 +431,12 @@ def download_stock_data(symbols: List[str], period: str) -> Dict[str, Dict[str, 
         print(f"🚨 Période invalide: {period}. Valeurs possibles: {valid_periods}")
         return valid_data
     
+    YAHOO_SUFFIXES = ('.HK', '.DE', '.PA', '.AS', '.SW', '.L', '.TO', '.V', '.MI', '.AX', '.SI',
+    '.KQ', '.T', '.OL', '.HE', '.ST', '.CO', '.SA', '.MX', '.TW', '.JO', '.SZ', '.NZ', '.KS',
+    '.PL', '.IR', '.MC', '.VI', '.BK', '.SS', '.SG', '.F', '.BE', '.CN', '.TA',  '-USD', '=F')
+    
     # Filtrer les symboles potentiellement invalides
-    valid_symbols = [s for s in symbols if s and ('.' not in s or s.endswith(('.HK', '.DE', '.PA', '.AS', '.SW', '.L', '.TO', '-USD')))]
+    valid_symbols = [s for s in symbols if s and ('.' not in s or s.endswith(YAHOO_SUFFIXES))]
     if len(valid_symbols) < len(symbols):
         invalid = set(symbols) - set(valid_symbols)
         print(f"🚨 Symboles ignorés (format invalide): {invalid}")
@@ -823,35 +763,36 @@ period = "12mo"  #variable globale pour la période d'analyse ne pas commenter
 # SIGNEAUX POUR ACTIONS POPULAIRES (version simplifiée)
 # ======================================================================
 popular_symbols = list(dict.fromkeys([
-    "AAPL", "MSFT", "GOOGL", "AMZN", "NVDA", "TSLA", "META", "BRK-B", "JPM", "V", "BABA", "DIS", "NFLX", "PYPL", "INTC", "AMD", "CSCO", "WMT", "VZ", "KO", "SGMT",
-    "PEP", "MRK", "T", "NKE", "XOM", "CVX", "ABT", "CRM", "IBM", "ORCL", "MCD", "TMDX", "BA", "CAT", "GS", "RTX", "MMM", "HON", "LMT", "SBUX", "ADBE", "SMSN.IL",
+    # "AAPL", "MSFT", "GOOGL", "AMZN", "NVDA", "META", "BRK-B", "JPM", "V", "BABA", "DIS", "NFLX", "PYPL", "INTC", "AMD", "CSCO", "WMT", "VZ", "KO", "SGMT",
+    # "PEP", "MRK", "T", "NKE", "XOM", "CVX", "ABT", "CRM", "IBM", "ORCL", "MCD", "TMDX", "BA", "CAT", "GS", "RTX", "MMM", "HON", "LMT", "SBUX", "ADBE", "SMSN.L",
     "EEM", "INTU", "NOW", "ZM", "SHOP", "SNAP", "PFE", "TGT", "CVS", "WFC", "RHM.DE", "SAP.DE", "BAS.DE", "ALV.DE", "BMW.DE", "VOW3.DE", "SMTC", "ZS", "ZTS",
     "DTE.DE", "DBK.DE", "LHA.DE", "FME.DE", "BAYN.DE", "LIN.DE", "ENR.DE", "VNA.DE", "1COV.DE", "FRE.DE", "HEN3.DE", "HEI.DE", "RWE.DE", "VOW.DE", "GLW", "TMO",
     "DHR", "BAX", "MDT", "GE", "NOC", "GD", "HII", "TXT", "LHX", "TDY", "CARR", "OTIS", "JCI", "INOD", "BIDU", "JD", "PDD", "TCEHY", "NTES", "BILI", "HL",
-    "XPEV", "LI", "NIO", "BYDDF", "GME", "AMC", "BB", "NOK", "RBLX", "PLTR", "FSLY", "CRWD", "OKTA", "Z", "DOCU", "PINS", "SPOT", "LYFT", "UBER", "SNOW", "TTWO",
-    "VRSN", "WDAY", "2318.HK", "2382.HK", "2388.HK", "2628.HK", "3328.HK", "3988.HK", "9988.HK", "2319.HK", "0700.HK", "3690.HK", "ADSK", "02020.HK", "ABG","AN",
-    "9618.HK", "1810.HK", "1211.HK", "1299.HK", "2313.HK", "2386.HK", "2385.HK", "0005.HK", "0011.HK", "0027.HK", "0038.HK", "0066.HK", "0083.HK", "MU", "GILT",
-    "0101.HK", "0117.HK", "01177.HK", "0120.HK", "LSEG.L", "VOD.L", "BP.L", "HSBA.L",  "GSK.L", "ULVR.L", "AZN.L", "RIO.L", "BATS.L", "ADYEN.AS", "TM", "ABBN.SW",
-    "ASML.AS", "PHIA.AS", "INGA.AS", "MC.PA", "OR.PA", "AIR.PA", "BNP.PA", "SAN.PA", "ENGI.PA", "CAP.PA", "WELL", "O", "VICI", "ETOR", "ABR", "MOH.BE", "KSS",
-    "PLD", "PSA", "AMT", "CCI", "DLR", "EXR", "EQR", "ESS", "AVB", "MAA", "UDR", "SBRA", "UNH", "HD", "MA", "PG", "LLY", "COST", "AVGO", "ABBV", "QCOM",
-    "LONN.SW", "NOVN.SW", "ROG.SW", "ZURN.SW", "UBSG.SW", "QBTQ.CN","GC=F", "SI=F", "CL=F", "BZ=F", "NG=F", "HG=F", "PL=F", "PA=F", "ZC=F", "ZS=F", "ZL=F",
-    "DDOG", "CRL", "EXAS", "ILMN", "INCY", "MELI", "MRNA", "NTLA", "REGN", "ROKU", "QSI", "SYM", "IONQ", "QBTS", "RGTI", "SMCI", "TSM", "ALDX", "CSX", "LRCX", 
-    "BIIB", "CDNS", "CTSH", "EA", "FTNT", "GILD", "IDXX", "MP", "MTCH", "MRVL", "PAYX", "PTON", "AAL", "UAL", "DAL", "LUV", "JBLU", "ALK", "FLEX", "CACI",  
-    "CRIS", "CYTK", "EXEL", "FATE", "INSM", "KPTI", "NBIX", "NTRA", "PGEN", "RGEN", "SAGE", "SNY", "TGTX", "ARCT", "AXSM", "BMRN", "KTOS","BTC-USD", "ETH-USD",
-    "LTC-USD", "SOL-USD", "LINK-USD", "ATOM-USD", "TRX-USD", "COMP-USD","VEEV", "LEN", "PHM", "DHI", "KBH", "TOL", "NVR", "RMAX", "BURL", "TJX", "ROST", "VYGR",
-    "LTC", "SOL", "LINK", "ATOM", "TRX", "COMP", "BTC", "ETH", "LB", "FINV",
+    # "XPEV", "LI", "NIO", "BYDDF", "GME", "AMC", "BB", "NOK", "RBLX", "PLTR", "FSLY", "CRWD", "OKTA", "Z", "DOCU", "PINS", "SPOT", "LYFT", "UBER", "SNOW", "TTWO",
+    # "VRSN", "WDAY", "2318.HK", "2382.HK", "2388.HK", "2628.HK", "3328.HK", "3988.HK", "9988.HK", "2319.HK", "0700.HK", "3690.HK", "ADSK", "02020.HK", "ABG","AN",
+    # "9618.HK", "1810.HK", "1211.HK", "1299.HK", "2386.HK", "2385.HK", "0005.HK", "0011.HK", "0027.HK", "0038.HK", "0066.HK", "0083.HK", "MU", "GILT",
+    # "0101.HK", "01177.HK", "0120.HK", "LSEG.L", "VOD.L", "BP.L", "HSBA.L",  "GSK.L", "ULVR.L", "AZN.L", "RIO.L", "BATS.L", "ADYEN.AS", "ABBN.SW",
+    # "ASML.AS", "PHIA.AS", "INGA.AS", "MC.PA", "OR.PA", "AIR.PA", "BNP.PA", "SAN.PA", "ENGI.PA", "CAP.PA", "WELL", "O", "VICI", "ETOR", "ABR", "MOH.BE", "KSS",
+    # "PLD", "PSA", "AMT", "CCI", "DLR", "EXR", "EQR", "ESS", "AVB", "MAA", "UDR", "SBRA", "UNH", "HD", "MA", "PG", "LLY", "COST", "AVGO", "ABBV", "QCOM",
+    # "LONN.SW", "NOVN.SW", "ROG.SW", "ZURN.SW", "UBSG.SW", "QBTQ.CN","GC=F", "SI=F", "CL=F", "BZ=F", "NG=F", "HG=F", "PL=F", "PA=F", "ZC=F", "ZS=F", "ZL=F",
+    # "DDOG", "CRL", "EXAS", "ILMN", "INCY", "MELI", "MRNA", "NTLA", "REGN", "ROKU", "QSI", "SYM", "IONQ", "QBTS", "RGTI", "SMCI", "TSM", "ALDX", "CSX", "LRCX", 
+    # "BIIB", "CDNS", "CTSH", "EA", "FTNT", "GILD", "IDXX", "MP", "MTCH", "MRVL", "PAYX", "PTON", "AAL", "UAL", "DAL", "LUV", "JBLU", "ALK", "FLEX", "CACI",  
+    # "CRIS", "CYTK", "EXEL", "FATE", "INSM", "KPTI", "NBIX", "NTRA", "PGEN", "RGEN", "SAGE", "SNY", "TGTX", "ARCT", "AXSM", "BMRN", "KTOS","BTC-USD", "ETH-USD",
+    # "LTC-USD", "SOL-USD", "LINK-USD", "ATOM-USD", "TRX-USD", "COMP-USD","VEEV", "LEN", "PHM", "DHI", "KBH", "TOL", "NVR", "RMAX", "BURL", "TJX", "ROST", "VYGR",
+    "LTC", "SOL", "LINK", "ATOM", "TRX", "COMP", "BTC", "ETH", "LB", "FINV", "HMC", "TM", "F", "GM", "TSLA", "RIVN", "LCID", "CGC", "CRON", "TLRY", "FSK", "PSEC",
+    "MAIN", "ARCC", "ORC", "GBDC", "FDUS", "ALHF.PA", "PBR",
     "GLD", "SLV", "GDX", "GDXJ", "SPY", "QQQ", "IWM", "DIA", "XLF", "XLC", "XLI", "XLB", "XLC", "XLV", "XLI", "XLP", "XLY","XLK", "XBI", "XHB", "URBN", "ANF",
-    "EZPW", "HNI", "COLL","LMB", "SCSC","CAR", "CARG", "CARS", "CVNA", "SAH", "GPI", "PAG", "RUSHA", "RUSHB", "LAD", "KMX", "CARV","SBLK","GOGL.OL", "SFL",
-     "VYX", "CCCC", "AG", "AGI", "AGL", "AGM", "AGO","AGQ", "AGS", "AGX","DE", "DEO", "DES", "RR.L","RMS.PA", "ARG.PA", "RNO.PA", "AIR.PA", "ML.PA",
-    "FRO", "DHT", "STNG", "TNK", "GASS", "GLNG", "CMRE", "DAC", "ZIM","XMTR","JAKK","PANW","ETN", "EMR", "PH", "SWK", "FAST", "PNR", "XYL", "AOS","DOCN",
-    "VMEO", "GETY", "PUM.DE", "ETSY", "SSTK", "UDMY", "TDOC", "BARC.L", "LLOY.L", "STAN.L", "IMB.L", "GRPN", "CCRD", "LEU", "UEC", "CCJ", "AEO", "XRT",
+    # "EZPW", "HNI", "COLL","LMB", "SCSC","CAR", "CARG", "CARS", "CVNA", "SAH", "GPI", "PAG", "RUSHA", "RUSHB", "LAD", "KMX", "CARV","SBLK","GOGL.OL", "SFL",
+    #  "VYX", "CCCC", "AG", "AGI", "AGL", "AGM", "AGO","AGQ", "AGS", "AGX","DE", "DEO", "DES", "RR.L","RMS.PA", "ARG.PA", "RNO.PA", "AIR.PA", "ML.PA",
+    # "FRO", "DHT", "STNG", "TNK", "GASS", "GLNG", "CMRE", "DAC", "ZIM","XMTR","JAKK","PANW","ETN", "EMR", "PH", "SWK", "FAST", "PNR", "XYL", "AOS","DOCN",
+    # "VMEO", "GETY", "PUM.DE", "ETSY", "SSTK", "UDMY", "TDOC", "BARC.L", "LLOY.L", "STAN.L", "IMB.L", "GRPN", "CCRD", "LEU", "UEC", "CCJ", "AEO", "XRT",
      "NEM", "HMY", "KGC", "SAND", "WPM", "FNV", "RGLD", "GFI", "AEM", "NXE", "AU", "SIL", "GDXU", "GDXD", "GLDM", "IAU", "SGOL", "CDE", "EXK", "AGI.TO",
      "PHYS", "FNV.TO", "WDO.TO", "BOE", "JOBY", "LAC", "PLL", "ALB", "SQM", "RIOT", "MARA", "HUT", "BITF", "VKTX", "CRSR", "PFC.L", "OPEN", "FVRR"
     ]))
 
 mes_symbols = ["QSI", "GLD","SYM","INGA.AS", "FLEX", "ALDX", "TSM", "02020.HK", "ARCT", "CACI", "ERJ", "PYPL", "GLW", "MSFT",
-               "TMDX", "GILT", "ENR.DE", "META", "AMD", "ASML.NV", "TBLA", "VOOG", "WELL", "SMSN.L", "BMRN", "GS", "BABA",
-               "SMTC", "AFX.DE", "ABBN.SW", "QCOM", "MP", "TM", "SGMT", "AMZN", "INOD", "SMCI", "GOOGL", "MU", "ETOR", 
+               "TMDX", "GILT", "ENR.DE", "META", "AMD", "ASML.AS", "TBLA", "VOOG", "WELL", "SMSN.L", "BMRN", "GS", "BABA",
+               "SMTC", "AFX.DE", "ABBN.SW", "QCOM", "MP", "TM", "SGMT", "AMZN", "INOD", "SMCI", "GOOGL", "MU", "ETOR","DBK.DE", 
                "DDOG", "OKTA", "AXSM", "EEM", "SPY", "HMY", "2318.HK", "RHM.DE", "NVDA", "QBTS", "SAP.DE", "V", "UEC"]
 
 # popular_symbols = list(set(mes_symbols))
@@ -863,7 +804,8 @@ def analyse_signaux_populaires(
     afficher_graphiques=True,
     chunk_size=20,
     verbose=True,
-    save_csv = True
+    save_csv = True,
+    plot_all=False
 ):
     """
     Analyse les signaux pour les actions populaires, affiche les résultats, effectue le backtest,
@@ -913,11 +855,11 @@ def analyse_signaux_populaires(
     signaux_tries = {"ACHAT": {"Hausse": [], "Baisse": []}, "VENTE": {"Hausse": [], "Baisse": []}}
     if signals:
         if verbose:
-            print("\n" + "=" * 110)
+            print("\n" + "=" * 115)
             print("RÉSULTATS DES SIGNEAUX")
-            print("=" * 110)
+            print("=" * 115)
             print(f"{'Symbole':<8} {'Signal':<8} {'Score':<7} {'Prix':<10} {'Tendance':<10} {'RSI':<6} {'Volume moyen':<15} {'Domaine':<24} Analyse")
-            print("-" * 110)
+            print("-" * 115)
         for s in signals:
             if s['Signal'] in signaux_tries and s['Tendance'] in signaux_tries[s['Signal']]:
                 signaux_tries[s['Signal']][s['Tendance']].append(s)
@@ -926,8 +868,9 @@ def analyse_signaux_populaires(
                 if signaux_tries[signal_type][tendance]:
                     signaux_tries[signal_type][tendance].sort(key=lambda x: x['Prix'])
                     if verbose:
-                        print(f"\n--- Signal {signal_type} | Tendance {tendance} ---")
+                        print(f"\n------------------------------------ Signal {signal_type} | Tendance {tendance} ------------------------------------")
                         for s in signaux_tries[signal_type][tendance]:
+                            special_marker = "‼️ " if s['Symbole'] in mes_symbols else ""
                             analysis = ""
                             if s['Signal'] == "ACHAT":
                                 analysis += "RSI bas" if s['RSI'] < 40 else ""
@@ -935,9 +878,9 @@ def analyse_signaux_populaires(
                             else:
                                 analysis += "RSI élevé" if s['RSI'] > 60 else ""
                                 analysis += " + Tendance baissière" if s['Tendance'] == "Baisse" else ""
-                            print(f"{s['Symbole']:<8} {s['Signal']:<8} {s['Score']:<7.2f} {s['Prix']:<10.2f} {s['Tendance']:<10} {s['RSI']:<6.1f} {s['Volume moyen']:<15,.0f} {s['Domaine']:<24} {analysis} ")
+                            print(f" {s['Symbole']:<8}{s['Signal']}{special_marker:<3} {s['Score']:<7.2f} {s['Prix']:<10.2f} {s['Tendance']:<10} {s['RSI']:<6.1f} {s['Volume moyen']:<15,.0f} {s['Domaine']:<24} {analysis}")
         if verbose:
-            print("=" * 110)
+            print("=" * 115)
     else:
         if verbose:
             print("\nℹ️ Aucun signal fort détecté parmi les actions populaires")
@@ -996,7 +939,7 @@ def analyse_signaux_populaires(
         gain_total_reel = total_gain - cout_total_trades
         if total_trades > 0:
             taux_global = total_gagnants / total_trades * 100
-            print("\n" + "="*110)
+            print("\n" + "="*115)
             print(f"🌍 Résultat global :")
             print(f"  - Taux de réussite = {taux_global:.1f}%")
             print(f"  - Nombre de trades = {total_trades}")
@@ -1004,7 +947,7 @@ def analyse_signaux_populaires(
             print(f"  - Coût total des trades = {cout_total_trades:.2f} $ (à {cout_par_trade:.2f} $ par trade)")
             print(f"  - Gain total brut = {total_gain:.2f} $")
             print(f"  - Gain total net (après frais) = {gain_total_reel:.2f} $")
-            print("="*110)
+            print("="*115)
         else:
             print("\nAucun trade détecté pour le calcul global.")
         
@@ -1020,11 +963,11 @@ def analyse_signaux_populaires(
         domaine_stats[domaine]["gagnants"] += res["gagnants"]
         domaine_stats[domaine]["gain_total"] += res["gain_total"]
 
-    print("\n" + "="*110)
+    print("\n" + "="*115)
     print("📊 Taux de réussite par catégorie de domaine (backtest) :")
-    print("="*110)
+    print("="*115)
     print(f"{'Domaine':<25} {'Trades':<8} {'Gagnants':<10} {'Taux de réussite':<15} {'Gain brut':<12} {'Gain net':<12} {'Rentab. brute':<15}")
-    print("-"*110)
+    print("-"*115)
     cout_par_trade = 1.0
 
     # Variables pour le total
@@ -1048,9 +991,9 @@ def analyse_signaux_populaires(
     total_gain_net = total_gain_brut - total_trades * cout_par_trade
     total_investi = total_trades * 50 if total_trades else 1
     total_rentab_brute = (total_gain_brut / total_investi * 100) if total_investi else 0
-    print("-"*110)
+    print("-"*115)
     print(f"{'TOTAL':<25} {total_trades:<8} {total_gagnants:<10} {total_taux:>10.1f} %   {total_gain_brut:>10.2f}   {total_gain_net:>10.2f}   {total_rentab_brute:>10.1f} %")
-    print("="*110)
+    print("="*115)
 
     # Évaluation supplémentaire : stratégie filtrée
     filtres = [res for res in backtest_results if res['taux_reussite'] >= 60 and res['gain_total'] > 0]
@@ -1062,7 +1005,7 @@ def analyse_signaux_populaires(
     total_investi_filtre = nb_actions_filtrees * 50
     gain_total_reel_filtre = total_gain_filtre - cout_total_trades_filtre
     if verbose:
-        print("\n" + "="*110)
+        print("\n" + "="*115)
         print("🔎 Évaluation si investissement SEULEMENT sur les actions à taux de réussite >= 60% ET gain total positif :")
         print(f"  - Nombre d'actions sélectionnées = {nb_actions_filtrees}")
         print(f"  - Nombre de trades = {total_trades_filtre}")
@@ -1071,7 +1014,7 @@ def analyse_signaux_populaires(
         print(f"  - Coût total des trades = {cout_total_trades_filtre:.2f} $ (à {cout_par_trade:.2f} $ par trade)")
         print(f"  - Gain total brut = {total_gain_filtre:.2f} $")
         print(f"  - Gain total net (après frais) = {gain_total_reel_filtre:.2f} $")
-        print("="*110)
+        print("="*115)
 
     # Tableau des signaux pour actions fiables (>=60% taux de réussite) ou non encore évaluables
     fiables_ou_non_eval = set()
@@ -1079,11 +1022,11 @@ def analyse_signaux_populaires(
         if res['taux_reussite'] >= 60 or res['trades'] == 0:
             fiables_ou_non_eval.add(res['Symbole'])
     if verbose:
-        print("\n" + "=" * 110)
+        print("\n" + "=" * 115)
         print("SIGNES UNIQUEMENT POUR ACTIONS FIABLES (>=60% taux de réussite) OU NON ÉVALUÉES")
-        print("=" * 110)
+        print("=" * 115)
         print(f"{'Symbole':<8} {'Signal':<8} {'Score':<7} {'Prix':<10} {'Tendance':<10} {'RSI':<6} {'Volume moyen':<15} {'Domaine':<24} Analyse")
-        print("-" * 110)
+        print("-" * 115)
     for signal_type in ["ACHAT", "VENTE"]:
         for tendance in ["Hausse", "Baisse"]:
             filtered = [
@@ -1091,8 +1034,9 @@ def analyse_signaux_populaires(
                 if s['Symbole'] in fiables_ou_non_eval
             ]
             if filtered and verbose:
-                print(f"\n--- Signal {signal_type} | Tendance {tendance} ---")
+                print(f"\n------------------------------------ Signal {signal_type} | Tendance {tendance} ------------------------------------")
                 for s in filtered:
+                    special_marker = "‼️ " if s['Symbole'] in mes_symbols else ""
                     analysis = ""
                     if s['Signal'] == "ACHAT":
                         analysis += "RSI bas" if s['RSI'] < 40 else ""
@@ -1100,9 +1044,9 @@ def analyse_signaux_populaires(
                     else:
                         analysis += "RSI élevé" if s['RSI'] > 60 else ""
                         analysis += " + Tendance baissière" if s['Tendance'] == "Baisse" else ""
-                    print(f"{s['Symbole']:<8} {s['Signal']:<8} {s['Score']:<7.2f} {s['Prix']:<10.2f} {s['Tendance']:<10} {s['RSI']:<6.1f} {s['Volume moyen']:<15,.0f} {s['Domaine']:<24} {analysis} ")
+                    print(f" {s['Symbole']:<8} {s['Signal']}{special_marker:<3} {s['Score']:<7.2f} {s['Prix']:<10.2f} {s['Tendance']:<10} {s['RSI']:<6.1f} {s['Volume moyen']:<15,.0f} {s['Domaine']:<24} {analysis}")
     if verbose:
-        print("=" * 110)
+        print("=" * 115)
 
     signaux_valides = []
     for s in signals:
@@ -1180,7 +1124,7 @@ def analyse_signaux_populaires(
             fiabilite_str = f" | Fiabilité: {taux_fiabilite:.0f}%" if taux_fiabilite is not None else ""
             if last_price is not None:
                 trend_symbol = "Haussière" if trend else "Baissière"
-                rsi_status = "SURACH" if last_rsi > 70 else "SURVENTE" if last_rsi < 30 else "NEUTRE"
+                rsi_status = "SURACH" if last_rsi > 72.5 else "SURVENTE" if last_rsi < 30 else "NEUTRE"
                 signal_color = 'green' if signal == "ACHAT" else 'red' if signal == "VENTE" else 'black'
                 special_marker = " ‼️" if s['Symbole'] in mes_symbols else ""
                 title = (
@@ -1247,21 +1191,21 @@ def analyse_signaux_populaires(
 
 # Pour utiliser la fonction sans exécution automatique :
 
-if __name__ == "__main__":
-        start_time = time.time()
-        resultats = analyse_signaux_populaires(popular_symbols, mes_symbols, period="12mo", afficher_graphiques=True)
-        end_time = time.time()
-        elapsed = end_time - start_time
-        print(f"\n⏱️ Temps total d'exécution : {elapsed:.2f} secondes ({elapsed/60:.2f} minutes)")
+#if __name__ == "__main__":
+start_time = time.time()
+resultats = analyse_signaux_populaires(popular_symbols, mes_symbols, period="12mo", afficher_graphiques=True)
+end_time = time.time()
+elapsed = end_time - start_time
+print(f"\n⏱️ Temps total d'exécution : {elapsed:.2f} secondes ({elapsed/60:.2f} minutes)")
 
 
 
 # # ======================================================================
 # # Évaluation dynamique : investissement uniquement si l'action est "fiable" au moment du signal
 # # ======================================================================
-# print("\n" + "="*110)
+# print("\n" + "="*115)
 # print("🔎 Simulation dynamique : investissement SEULEMENT si l'action est déjà >50% réussite ET gain positif au moment du signal")
-# print("="*110)
+# print("="*115)
 # print(f"{'Symbole':<8} {'Entrée':<10} {'Sortie':<10} {'Résultat':<8} {'Gain($)':<10} {'Taux%':<7} {'GainTot($)':<10}")
 
 # total_dyn_trades = 0
@@ -1309,7 +1253,7 @@ if __name__ == "__main__":
 # gain_total_reel_dyn = total_dyn_gain - cout_total_dyn_trades
 # taux_dyn = (total_dyn_gagnants / total_dyn_trades * 100) if total_dyn_trades else 0
 
-# print("="*110)
+# print("="*115)
 # print(f"  - Nombre d'actions sélectionnées dynamiquement = {nb_dyn_actions}")
 # print(f"  - Nombre de trades dynamiques = {total_dyn_trades}")
 # print(f"  - Taux de réussite global = {taux_dyn:.1f}%")
@@ -1317,7 +1261,7 @@ if __name__ == "__main__":
 # print(f"  - Coût total des trades = {cout_total_dyn_trades:.2f} $ (à {cout_par_trade:.2f} $ par trade)")
 # print(f"  - Gain total brut = {total_dyn_gain:.2f} $")
 # print(f"  - Gain total net (après frais) = {gain_total_reel_dyn:.2f} $")
-# print("="*110)
+# print("="*115)
 
 
 

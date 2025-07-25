@@ -29,6 +29,10 @@ class MainWindow(QMainWindow):
         self.analyze_button.clicked.connect(self.analyze_stock)
         self.layout.addWidget(self.analyze_button)
 
+        self.analyze_and_backtest_button = QPushButton("Analyze and Backtest")
+        self.analyze_and_backtest_button.clicked.connect(self.analyse_and_backtest)
+        self.layout.addWidget(self.analyze_and_backtest_button)
+
         # Nouveau bouton pour signaux populaires
         self.popular_signals_button = QPushButton("Analyser mouvements fiables (populaires)")
         self.popular_signals_button.clicked.connect(self.analyze_popular_signals)
@@ -92,6 +96,31 @@ class MainWindow(QMainWindow):
         period=self.period_input.text().strip()
         result = analyse_signaux_populaires(popular_symbols, mes_symbols, period=period)
         self.result_label.setText(str(result))
+    
+    def analyse_and_backtest(self):
+        symbols = [s.strip().upper() for s in self.symbol_input.text().split(",") if s.strip()]
+        if not symbols:
+            self.result_label.setText("Please enter at least one stock symbol.")
+            return
+        
+        # Récupérer la période saisie par l'utilisateur
+        period = self.period_input.text().strip()
+        if not period:
+            self.result_label.setText("Please enter a valid period (e.g., 12mo).")
+            return
+        
+        # Appel de la fonction d'analyse et de backtest
+        group_size = 5
+        n_groups = math.ceil(len(symbols) / group_size)
+        for i in range(n_groups):
+            group = symbols[i*group_size:(i+1)*group_size]
+            # analyse_et_affiche doit accepter une liste de symboles
+            # et afficher les graphiques sur une même figure
+            # analyse_et_affiche(group, period)
+            # plt.suptitle(f"Stocks {', '.join(group)}")
+            # plt.show()
+            result = analyse_signaux_populaires(symbols, mes_symbols, period, plot_all=True)
+            # self.result_label.setText(str(result))
 
 if __name__ == "__main__":
     app = QApplication(sys.argv)
