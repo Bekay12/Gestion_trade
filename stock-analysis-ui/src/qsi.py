@@ -93,7 +93,7 @@ def save_to_evolutive_csv(signals, filename="signaux_trading.csv"):
             
             # Supprimer les doublons en gardant la dernière version
             df_combined = df_combined.sort_values(
-                by=['Symbole', 'detection_time'],
+                by=['detection_time', 'Symbole', 'Fiabilite'],
                 ascending=[True, False]
             )
             df_clean = df_combined.drop_duplicates(
@@ -124,8 +124,6 @@ def save_to_evolutive_csv(signals, filename="signaux_trading.csv"):
 
 def get_trading_signal(prices, volumes,  domaine, domain_coeffs=None,
                        seuil_achat=4.20, seuil_vente=-0.5,
-                       # seuil_achat=4.20, seuil_vente=-0.81, taux_reussite=33.3%
-                       # seuil_achat=5.75, seuil_vente=-0.5, taux de reussite 25.9 % 
                        variation_seuil=-20, volume_seuil=100000):
     """Détermine les signaux de trading avec validation des données"""
     # Correction : assure que prices et volumes sont bien des Series 1D
@@ -269,6 +267,11 @@ def get_trading_signal(prices, volumes,  domaine, domain_coeffs=None,
         }
         # Sélectionner les coefficients selon le domaine
         coeffs = domain_coeffs.get(domaine, default_coeffs)
+    
+    if seuil_achat is None:
+        seuil_achat = 4.20      # seuil_achat=4.20, seuil_vente=-0.81, taux_reussite=33.3%
+    if seuil_vente is None:     # seuil_achat=5.75, seuil_vente=-0.5, taux de reussite 25.9 %
+        seuil_vente = -0.5
 
     a1, a2, a3, a4, a5, a6, a7, a8 = coeffs
     m1, m2, m3, m4 = 1.0, 1.0, 1.0 , 1.0 # Coefficients pour ajuster l'importance des conditions de volume et tendance
@@ -513,7 +516,7 @@ def download_stock_data(symbols: List[str], period: str) -> Dict[str, Dict[str, 
 
 
 def backtest_signals(prices: Union[pd.Series, pd.DataFrame], volumes: Union[pd.Series, pd.DataFrame], 
-                    domaine: str, montant: float = 50, transaction_cost: float = 0.00) -> Dict:
+                    domaine: str, montant: float = 50, transaction_cost: float = 0.00, domain_coeffs=None,seuil_achat=None, seuil_vente=None) -> Dict:
     """
     Effectue un backtest sur la série de prix.
     Un 'trade' correspond à un cycle complet ACHAT puis VENTE (entrée puis sortie).
@@ -558,7 +561,8 @@ def backtest_signals(prices: Union[pd.Series, pd.DataFrame], volumes: Union[pd.S
     # Pré-calculer les signaux pour toute la série
     signals = []
     for i in range(50, len(prices)):
-        signal, *_ = get_trading_signal(prices[:i], volumes[:i], domaine)
+        signal, *_ = get_trading_signal(prices[:i], volumes[:i], domaine,domain_coeffs=domain_coeffs,
+                                        seuil_achat=seuil_achat, seuil_vente=seuil_vente)
         signals.append(signal)
     signals = pd.Series(signals, index=prices.index[50:])
 
@@ -757,64 +761,71 @@ def analyse_et_affiche(symbols, period="12mo"):
     plt.subplots_adjust(top=0.92, hspace=0.152,bottom=0.032)
     plt.show()
 
+def save_symbols_to_txt(symbols: List[str], filename: str):
+    with open(filename, 'w', encoding='utf-8') as f:
+        for symbol in symbols:
+            f.write(symbol + '\n')
+
+def load_symbols_from_txt(filename: str) -> List[str]:
+    try:
+        with open(filename, 'r', encoding='utf-8') as f:
+            return [line.strip() for line in f if line.strip()]
+    except Exception as e:
+        print(f"Erreur de lecture du fichier {filename} : {e}")
+        return []
+    
+def modify_symbols_file(filename: str, symbols_to_change: List[str], action: str):
+    try:
+        # Charger les symboles existants
+        with open(filename, 'r', encoding='utf-8') as f:
+            existing_symbols = set(line.strip() for line in f if line.strip())
+
+        initial_count = len(existing_symbols)
+        added, removed = 0, 0
+
+        if action == "add":
+            for symbol in symbols_to_change:
+                if symbol not in existing_symbols:
+                    existing_symbols.add(symbol)
+                    added += 1
+
+        elif action == "remove":
+            for symbol in symbols_to_change:
+                if symbol in existing_symbols:
+                    existing_symbols.remove(symbol)
+                    removed += 1
+
+        else:
+            print("⚠️ Action invalide. Utilise 'add' ou 'remove'.")
+            return
+
+        # Sauvegarder la nouvelle liste
+        with open(filename, 'w', encoding='utf-8') as f:
+            for symbol in sorted(existing_symbols):
+                f.write(symbol + '\n')
+
+        print(f"✅ Fichier mis à jour : {filename}")
+        print(f"🔼 Symboles ajoutés : {added}")
+        print(f"🔽 Symboles retirés : {removed}")
+        print(f"📊 Total actuel : {len(existing_symbols)} symboles")
+
+    except Exception as e:
+        print(f"❌ Erreur lors de la modification du fichier : {e}")
 # ======================================================================
 # CONFIGURATION PRINCIPALE
 # ======================================================================
-
-period = "12mo"  #variable globale pour la période d'analyse ne pas commenter 
-
-# Exemple d'utilisation (décommente pour exécuter) :
-# symbols = ["SYM", "LHA.DE", "INGA.AS", "FLEX", "ALDX"]
-
-# analyse_et_affiche(symbols, period)
-
-# ======================================================================
 # SIGNEAUX POUR ACTIONS POPULAIRES (version simplifiée)
 # ======================================================================
-popular_symbols = list(dict.fromkeys([
-    # "AAPL", "MSFT", "GOOGL", "AMZN", "NVDA", "META", "BRK-B", "JPM", "V", "BABA", "DIS", "NFLX", "PYPL", "INTC", "AMD", "CSCO", "WMT", "VZ", "KO", "SGMT",
-    # "PEP", "MRK", "T", "NKE", "XOM", "CVX", "ABT", "CRM", "IBM", "ORCL", "MCD", "TMDX", "BA", "CAT", "GS", "RTX", "MMM", "HON", "LMT", "SBUX", "ADBE", "SMSN.L",
-    "EEM", "INTU", "NOW", "ZM", "SHOP", "SNAP", "PFE", "TGT", "CVS", "WFC", "RHM.DE", "SAP.DE", "BAS.DE", "ALV.DE", "BMW.DE", "VOW3.DE", "SMTC", "ZS", "ZTS",
-    "DTE.DE", "DBK.DE", "LHA.DE", "FME.DE", "BAYN.DE", "LIN.DE", "ENR.DE", "VNA.DE", "1COV.DE", "FRE.DE", "HEN3.DE", "HEI.DE", "RWE.DE", "VOW.DE", "GLW", "TMO",
-    "DHR", "BAX", "MDT", "GE", "NOC", "GD", "HII", "TXT", "LHX", "TDY", "CARR", "OTIS", "JCI", "INOD", "BIDU", "JD", "PDD", "TCEHY", "NTES", "BILI", "HL",
-    # "XPEV", "LI", "NIO", "BYDDF", "GME", "AMC", "BB", "NOK", "RBLX", "PLTR", "FSLY", "CRWD", "OKTA", "Z", "DOCU", "PINS", "SPOT", "LYFT", "UBER", "SNOW", "TTWO",
-    # "VRSN", "WDAY", "2318.HK", "2382.HK", "2388.HK", "2628.HK", "3328.HK", "3988.HK", "9988.HK", "2319.HK", "0700.HK", "3690.HK", "ADSK", "02020.HK", "ABG","AN",
-    # "9618.HK", "1810.HK", "1211.HK", "1299.HK", "2386.HK", "2385.HK", "0005.HK", "0011.HK", "0027.HK", "0038.HK", "0066.HK", "0083.HK", "MU", "GILT",
-    # "0101.HK", "01177.HK", "0120.HK", "LSEG.L", "VOD.L", "BP.L", "HSBA.L",  "GSK.L", "ULVR.L", "AZN.L", "RIO.L", "BATS.L", "ADYEN.AS", "ABBN.SW",
-    # "ASML.AS", "PHIA.AS", "INGA.AS", "MC.PA", "OR.PA", "AIR.PA", "BNP.PA", "SAN.PA", "ENGI.PA", "CAP.PA", "WELL", "O", "VICI", "ETOR", "ABR", "MOH.BE", "KSS",
-    # "PLD", "PSA", "AMT", "CCI", "DLR", "EXR", "EQR", "ESS", "AVB", "MAA", "UDR", "SBRA", "UNH", "HD", "MA", "PG", "LLY", "COST", "AVGO", "ABBV", "QCOM",
-    # "LONN.SW", "NOVN.SW", "ROG.SW", "ZURN.SW", "UBSG.SW", "QBTQ.CN","GC=F", "SI=F", "CL=F", "BZ=F", "NG=F", "HG=F", "PL=F", "PA=F", "ZC=F", "ZS=F", "ZL=F",
-    # "DDOG", "CRL", "EXAS", "ILMN", "INCY", "MELI", "MRNA", "NTLA", "REGN", "ROKU", "QSI", "SYM", "IONQ", "QBTS", "RGTI", "SMCI", "TSM", "ALDX", "CSX", "LRCX", 
-    # "BIIB", "CDNS", "CTSH", "EA", "FTNT", "GILD", "IDXX", "MP", "MTCH", "MRVL", "PAYX", "PTON", "AAL", "UAL", "DAL", "LUV", "JBLU", "ALK", "FLEX", "CACI",  
-    # "CRIS", "CYTK", "EXEL", "FATE", "INSM", "KPTI", "NBIX", "NTRA", "PGEN", "RGEN", "SAGE", "SNY", "TGTX", "ARCT", "AXSM", "BMRN", "KTOS","BTC-USD", "ETH-USD",
-    # "LTC-USD", "SOL-USD", "LINK-USD", "ATOM-USD", "TRX-USD", "COMP-USD","VEEV", "LEN", "PHM", "DHI", "KBH", "TOL", "NVR", "RMAX", "BURL", "TJX", "ROST", "VYGR",
-    "LTC", "SOL", "LINK", "ATOM", "TRX", "COMP", "BTC", "ETH", "LB", "FINV", "HMC", "TM", "F", "GM", "TSLA", "RIVN", "LCID", "CGC", "CRON", "TLRY", "FSK", "PSEC",
-    "MAIN", "ARCC", "ORC", "GBDC", "FDUS", "ALHF.PA", "PBR",
-    "GLD", "SLV", "GDX", "GDXJ", "SPY", "QQQ", "IWM", "DIA", "XLF", "XLC", "XLI", "XLB", "XLC", "XLV", "XLI", "XLP", "XLY","XLK", "XBI", "XHB", "URBN", "ANF",
-    # "EZPW", "HNI", "COLL","LMB", "SCSC","CAR", "CARG", "CARS", "CVNA", "SAH", "GPI", "PAG", "RUSHA", "RUSHB", "LAD", "KMX", "CARV","SBLK","GOGL.OL", "SFL",
-    #  "VYX", "CCCC", "AG", "AGI", "AGL", "AGM", "AGO","AGQ", "AGS", "AGX","DE", "DEO", "DES", "RR.L","RMS.PA", "ARG.PA", "RNO.PA", "AIR.PA", "ML.PA",
-    # "FRO", "DHT", "STNG", "TNK", "GASS", "GLNG", "CMRE", "DAC", "ZIM","XMTR","JAKK","PANW","ETN", "EMR", "PH", "SWK", "FAST", "PNR", "XYL", "AOS","DOCN",
-    # "VMEO", "GETY", "PUM.DE", "ETSY", "SSTK", "UDMY", "TDOC", "BARC.L", "LLOY.L", "STAN.L", "IMB.L", "GRPN", "CCRD", "LEU", "UEC", "CCJ", "AEO", "XRT",
-     "NEM", "HMY", "KGC", "SAND", "WPM", "FNV", "RGLD", "GFI", "AEM", "NXE", "AU", "SIL", "GDXU", "GDXD", "GLDM", "IAU", "SGOL", "CDE", "EXK", "AGI.TO",
-     "PHYS", "FNV.TO", "WDO.TO", "BOE", "JOBY", "LAC", "PLL", "ALB", "SQM", "RIOT", "MARA", "HUT", "BITF", "VKTX", "CRSR", "PFC.L", "OPEN", "FVRR"
-    ]))
-
-mes_symbols = ["QSI", "GLD","SYM","INGA.AS", "FLEX", "ALDX", "TSM", "ARCT", "CACI", "ERJ", "PYPL", "GLW", "MSFT",
-               "TMDX", "GILT", "ENR.DE", "META", "AMD", "ASML.AS", "TBLA", "VOOG", "WELL", "SMSN.L", "BMRN", "GS", "BABA",
-               "SMTC", "AFX.DE", "ABBN.SW", "QCOM", "MP", "TM", "SGMT", "AMZN", "INOD", "SMCI", "GOOGL", "MU", "ETOR","DBK.DE", 
-               "DDOG", "OKTA", "AXSM", "EEM", "SPY", "HMY", "2318.HK", "RHM.DE", "NVDA", "QBTS", "SAP.DE", "V", "UEC"]
-
+period = "12mo"  #variable globale pour la période d'analyse ne pas commenter 
+popular_symbols = load_symbols_from_txt("popular_symbols.txt")
+mes_symbols = load_symbols_from_txt("mes_symbols.txt")
 # popular_symbols = list(set(mes_symbols))
 
 def analyse_signaux_populaires(
-    popular_symbols,
-    mes_symbols,
-    period="12mo",
-    afficher_graphiques=True,
-    chunk_size=20,
-    verbose=True,
-    save_csv = True,
-    plot_all=False
+    popular_symbols, mes_symbols,
+    period="12mo", afficher_graphiques=True,
+    chunk_size=20, verbose=True,
+    save_csv = True, plot_all=False
 ):
     """
     Analyse les signaux pour les actions populaires, affiche les résultats, effectue le backtest,
@@ -1200,12 +1211,12 @@ def analyse_signaux_populaires(
 
 # Pour utiliser la fonction sans exécution automatique :
 
-if __name__ == "__main__":
-    start_time = time.time()
-    resultats = analyse_signaux_populaires(popular_symbols, mes_symbols, period="12mo", afficher_graphiques=True)
-    end_time = time.time()
-    elapsed = end_time - start_time
-    print(f"\n⏱️ Temps total d'exécution : {elapsed:.2f} secondes ({elapsed/60:.2f} minutes)")
+# if __name__ == "__main__":
+#     start_time = time.time()
+#     resultats = analyse_signaux_populaires(popular_symbols, mes_symbols, period="12mo", afficher_graphiques=True)
+#     end_time = time.time()
+#     elapsed = end_time - start_time
+#     print(f"\n⏱️ Temps total d'exécution : {elapsed:.2f} secondes ({elapsed/60:.2f} minutes)")
 
 
 

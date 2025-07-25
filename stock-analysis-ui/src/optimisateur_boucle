@@ -1,299 +1,210 @@
-from qsi import download_stock_data, analyse_signaux_populaires, get_trading_signal, popular_symbols, mes_symbols, period
-import numpy as np
 import pandas as pd
-import yfinance as yf
-import matplotlib.pyplot as plt
-import ta
-import time
-import csv
-import itertools
+import numpy as np
+from datetime import datetime, timedelta
+import random
+from qsi import backtest_signals,download_stock_data,get_trading_signal, popular_symbols, mes_symbols, period
+from pathlib import Path
 from tqdm import tqdm
+import yfinance as yf
 
+# Assurez-vous que votre fonction get_trading_signal est définie ici ou importée
+# from your_module import get_trading_signal, download_stock_data
+
+def evaluate_signal(prices, signal, horizon=5, threshold=0.02):
+    """Évalue la précision d'un signal sur un horizon donné"""
+    if len(prices) < horizon:
+        return 0
+    future_price = prices.shift(-horizon).iloc[-1]
+    current_price = prices.iloc[-1]
+    if signal == "ACHAT":
+        return 1 if (future_price / current_price - 1) > threshold else 0
+    elif signal == "VENTE":
+        return 1 if (future_price / current_price - 1) < -threshold else 0
+    return 0
 
 def get_sector(symbol):
-    """Récupère le secteur d'une action"""
+    """Récupère le secteur d'une action avec logs pour diagnostic"""
     try:
         ticker = yf.Ticker(symbol)
-        return ticker.info.get('sector', 'Unknown')
-    except:
-        return 'Unknown'
-
-def evaluate_simple(symbols, seuil_achat, seuil_vente, rsi_window, macd_fast):
-    """Évaluation rapide sur un sous-ensemble"""
-    correct = 0
-    total = 0
-    
-    for symbol in symbols:
-        data = download_stock_data([symbol], "12mo")[symbol]
-        prices = data['Close']
-        volumes = data['Volume']
-        domaine = get_sector(symbol)
-        
-        # Générer signal avec paramètres actuels
-        signal = get_trading_signal(
-            prices, volumes, domaine,
-            seuil_achat=seuil_achat,
-            seuil_vente=seuil_vente,
-        )[0]
-        
-        # Évaluer la performance à 5 jours
-        future_5d = (prices.iloc[-1] - prices.iloc[-6]) / prices.iloc[-6]
-        
-        if signal == "ACHAT" and future_5d > 0.02:
-            correct += 1
-        elif signal == "VENTE" and future_5d < -0.02:
-            correct += 1
-            
-        total += 1
-    
-    return correct / total if total > 0 else 0
-
-
-
-def optimize_sector_coefficients(symbols_sample, n_iter=50):
-    """Optimisation des coefficients par secteur avec recherche aléatoire"""
-    # Liste de tous les secteurs
-    all_sectors = [
-        "Technology", "Healthcare", "Financial Services", 
-        "Consumer Cyclical", "Industrials", "Energy",
-        "Basic Materials", "Communication Services", 
-        "Utilities", "Real Estate"
-    ]
-    
-    # Plages de valeurs pour les coefficients
-    coeff_range = np.linspace(0.5, 3.0, 10)  # 10 valeurs entre 0.5 et 3.0
-    
-    best_accuracy = 0
-    best_coeffs = None
-    best_seuils = None
-    
-    # Barre de progression principale
-    with tqdm(total=n_iter, desc="🔍 Optimisation sectorielle", unit="it") as pbar:
-        for i in range(n_iter):
-            # Générer une configuration aléatoire pour tous les secteurs
-            random_coeffs = {}
-            for sector in all_sectors:
-                # Générer 8 coefficients aléatoires pour ce secteur
-                random_coeffs[sector] = tuple(np.random.choice(coeff_range, size=8))
-            
-            # Générer des seuils aléatoires
-            random_seuil_achat = np.random.uniform(4.0, 6.0)
-            random_seuil_vente = np.random.uniform(-3.0, -0.5)
-            
-            try:
-                accuracy = evaluate_sector_coefficients(
-                    symbols_sample,
-                    random_coeffs,
-                    random_seuil_achat,
-                    random_seuil_vente
-                )
-                
-                if accuracy > best_accuracy:
-                    best_accuracy = accuracy
-                    best_coeffs = random_coeffs
-                    best_seuils = (random_seuil_achat, random_seuil_vente)
-                    pbar.set_postfix({'best_acc': f"{best_accuracy:.2%}"})
-                    
-            except Exception as e:
-                pbar.set_postfix({'error': str(e)[:20] + '...'})
-            
-            pbar.update(1)
-    
-    return best_coeffs, best_seuils, best_accuracy
-
-    # Configuration initiale des coefficients
-base_coeffs = {
-        "Technology": (2.0, 1.5, 1.3, 1.5, 1.8, 1.5, 1.4, 1.2),
-        "Healthcare": (1.8, 1.1, 1.6, 1.3, 1.8, 1.3, 1.3, 1.8),
-        "Financial Services": (1.6, 1.9, 2.3, 1.2, 1.6, 1.1, 1.2, 1.6),
-        "Consumer Cyclical": (1.7, 1.0, 1.4, 1.2, 1.7, 1.2, 1.7, 1.7),
-        "Industrials": (1.7, 1.2, 1.2, 1.0, 1.5, 1.0, 1.2, 1.5),
-        "Energy": (1.4, 1.7, 1.1, 1.1, 1.4, 0.9, 0.7, 1.4),
-        "Basic Materials": (1.3, 1.6, 1.0, 1.8, 1.3, 0.8, 0.6, 1.3),
-        "Communication Services": (1.6, 1.0, 1.3, 1.1, 1.6, 1.1, 1.0, 1.6),
-        "Utilities": (1.8, 1.5, 1.2, 1.3, 1.2, 1.3, 0.5, 1.2),
-        "Real Estate": (1.1, 1.6, 1.2, 1.4, 1.1, 1.4, 0.4, 1.1)
-    }
-def grid_search_sector_coefficients(symbols_sample):
-    # Espace de recherche
-    variations = [0.8, 1.0, 1.2]
-    seuils_achat = [4.5, 5.0, 5.5]
-    seuils_vente = [-1.0, -2.0, -3.0]
-    
-    best_accuracy = 0
-    best_config = None
-    total_combinations = len(variations)**3 * len(seuils_achat) * len(seuils_vente)
-    
-    with tqdm(total=total_combinations, desc="🔍 Recherche sectorielle", unit="comb") as pbar:
-        for v1, v2, v3 in itertools.product(variations, repeat=3):
-            new_coeffs = {}
-            for sector, coeffs in base_coeffs.items():
-                new_coeffs[sector] = tuple(c * v for c, v in zip(coeffs, (v1, v2, v3, v1, v2, v3, v1, v2)))
-            
-            for seuil_achat in seuils_achat:
-                for seuil_vente in seuils_vente:
-                    try:
-                        accuracy = evaluate_sector_coefficients(
-                            symbols_sample,
-                            new_coeffs,
-                            seuil_achat,
-                            seuil_vente
-                        )
-                        
-                        # Gestion des configurations non valides
-                        if accuracy is None:
-                            continue
-                            
-                        if accuracy > best_accuracy:
-                            best_accuracy = accuracy
-                            best_config = {
-                                'coeffs': new_coeffs,
-                                'seuil_achat': seuil_achat,
-                                'seuil_vente': seuil_vente
-                            }
-                            pbar.set_postfix({'best_acc': f"{best_accuracy:.2%}"})
-                            
-                    except Exception as e:
-                        continue
-                    
-                    pbar.update(1)
-    
-    # Fallback si aucune config valide
-    if best_config is None:
-        print("⚠️ Aucune configuration optimale trouvée. Utilisation des paramètres par défaut.")
-        return base_coeffs, (5.0, -2.0), 0.0
-    
-    return best_config['coeffs'], (best_config['seuil_achat'], best_config['seuil_vente']), best_accuracy
-
-def evaluate_sector_coefficients(symbols, sector_coeffs, seuil_achat, seuil_vente):
-    """Évalue une configuration de coefficients sectoriels avec gestion des erreurs"""
-    if not symbols:
-        return None
-        
-    correct = 0
-    total = 0
-    
-    for symbol in symbols:
-        try:
-            data = download_stock_data([symbol], "6mo").get(symbol)
-            if data is None or len(data) < 6:
-                continue
-                
-            prices = data['Close']
-            volumes = data['Volume']
-            secteur = get_sector(symbol)
-            
-            signal = get_trading_signal(
-                prices, volumes, secteur,
-                domain_coeffs=sector_coeffs,
-                seuil_achat=seuil_achat,
-                seuil_vente=seuil_vente
-            )[0]
-            
-            if len(prices) > 5:
-                future_5d = (prices.iloc[-1] - prices.iloc[-6]) / prices.iloc[-6]
-                
-                if signal == "ACHAT" and future_5d > 0.02:
-                    correct += 1
-                elif signal == "VENTE" and future_5d < -0.02:
-                    correct += 1
-                    
-                total += 1
-                
-        except Exception as e:
-            continue
-    
-    return correct / total if total > 5 else None  # Nécessite au moins 5 évaluations valides
-
-# Fonction pour appliquer les coefficients optimisés
-def apply_optimized_coeffs(optimized_coeffs):
-    """Applique les coefficients optimisés dans le code principal"""
-    print("\n✅ Coefficients optimisés par secteur:")
-    for sector, coeffs in optimized_coeffs.items():
-        print(f"{sector}: {coeffs}")
-    return optimized_coeffs
-
-def display_optimization_results(best_coeffs, best_seuils, best_accuracy):
-    """Affiche les résultats de l'optimisation de manière lisible"""
-    # En-tête
-    print("\n" + "="*70)
-    print("🔥 RÉSULTATS DE L'OPTIMISATION SECTORIELLE")
-    print("="*70)
-    
-    # Affichage de la précision
-    print(f"\n🎯 PRÉCISION OPTIMISÉE: {best_accuracy:.2%}\n")
-    
-    # Affichage des seuils
-    seuil_achat, seuil_vente = best_seuils
-    print("⚖️ SEUILS OPTIMAUX:")
-    print(f"- Seuil ACHAT: {seuil_achat:.2f}")
-    print(f"- Seuil VENTE: {seuil_vente:.2f}")
-    print("-"*50)
-    
-    # Affichage des coefficients par secteur
-    print("\n📊 COEFFICIENTS OPTIMISÉS PAR SECTEUR:")
-    print("Secteur               a1     a2     a3     a4     a5     a6     a7     a8")
-    print("-"*70)
-    
-    for sector, coeffs in best_coeffs.items():
-        # Formatage des coefficients
-        formatted_coeffs = [f"{c:.3f}" for c in coeffs]
-        # Affichage aligné
-        print(f"{sector[:20]:<20} {formatted_coeffs[0]:>6} {formatted_coeffs[1]:>6} {formatted_coeffs[2]:>6} "
-              f"{formatted_coeffs[3]:>6} {formatted_coeffs[4]:>6} {formatted_coeffs[5]:>6} "
-              f"{formatted_coeffs[6]:>6} {formatted_coeffs[7]:>6}")
-    
-    # Pied de page
-    print("\n" + "="*70)
-    print("="*70)
-
-# Exemple d'utilisation après l'optimisation
-if __name__ == "__main__":
-    # Exécution de l'optimisation
-    best_coeffs, best_seuils, best_accuracy = grid_search_sector_coefficients(mes_symbols[:15])
-    
-    # Affichage des résultats
-    display_optimization_results(best_coeffs, best_seuils, best_accuracy)
-    
-    # Génération d'un dictionnaire Python prêt à l'emploi
-    print("\n📝 DICTIONNAIRE PYTHON PRÊT À COPIER-COLLER:")
-    print("domain_coeffs = {")
-    for sector, coeffs in best_coeffs.items():
-        coeffs_str = ", ".join([f"{c:.3f}" for c in coeffs])
-        print(f'    "{sector}": ({coeffs_str}),')
-    print("}")
-    
-    # 1. Vérifier la disponibilité des données
-    valid_symbols = []
-    for symbol in mes_symbols[:15]:
-        try:
-            data = download_stock_data([symbol], "6mo")[symbol]
-            if len(data) > 20:  # Vérifier suffisamment de données
-                valid_symbols.append(symbol)
-        except:
-            continue
-    
-    if not valid_symbols:
-        print("❌ Aucun symbole valide pour l'optimisation")
-        exit()
-    
-    print(f"🔍 Utilisation de {len(valid_symbols)} symboles valides pour l'optimisation")
-    
-    # 2. Exécuter l'optimisation avec gestion des erreurs
-    try:
-        best_coeffs, best_seuils, best_accuracy = grid_search_sector_coefficients(valid_symbols)
+        info = ticker.info
+        sector = info.get('sector', 'ℹ️Inconnu!!')
+        print(f"📋 {symbol}: Secteur = {sector}")
+        return sector
     except Exception as e:
-        print(f"❌ Erreur lors de l'optimisation: {e}")
-        best_coeffs = base_coeffs  # Utiliser la config de base
-        best_seuils = (5.0, -2.0)
-        best_accuracy = 0.0
+        print(f"⚠️ Erreur pour {symbol}: {e}")
+        return 'ℹ️Inconnu!!'
 
-    # 3. Affichage des résultats
-    print("\n🔎 Optimisation terminée!")
-    print(f"- Meilleure précision: {best_accuracy:.2%}")
-    print(f"- Seuil achat: {best_seuils[0]:.2f}")
-    print(f"- Seuil vente: {best_seuils[1]:.2f}")
+def optimize_sector_coefficients(sector_symbols, domain, period='1y', n_iterations=100, montant=50, transaction_cost=1.0):
+    """Optimise les coefficients pour un secteur donné via recherche aléatoire en utilisant download_stock_data"""
+    if not sector_symbols:
+        print(f"🚫 Secteur {domain} vide, ignoré")
+        return None, 0.0, (4.20, -0.5)
     
-    # 4. Application des résultats
-    domain_coeffs = apply_optimized_coeffs(best_coeffs)
-    print("\n🔧 Coefficients appliqués dans le système.")
+    stock_data = download_stock_data(sector_symbols, period=period)
+    
+    if not stock_data:
+        print(f"🚨 Aucune donnée téléchargée pour le secteur {domain}")
+        return None, 0.0, (4.20, -0.5)
+    
+    for symbol, data in stock_data.items():
+        print(f"📊 {symbol}: {len(data['Close'])} points de données")
+    
+    best_gain_total = -float('inf')  # Optimiser sur le gain total
+    best_coeffs = None
+    best_thresholds = (4.20, -0.5)
+    
+    # Barre de progression principale avec tqdm
+    with tqdm(total=n_iterations, desc=f"🔍 Optimisation {domain}", unit="it") as pbar:   
+        for _ in range(n_iterations):
+            # Générer des coefficients aléatoires dans une plage raisonnable
+            coeffs = tuple(np.random.uniform(0.5, 3.0, 8))
+            seuil_achat = np.random.uniform(3.0, 6.0)
+            seuil_vente = np.random.uniform(-2, 0.0)
+
+            total_gain = 0.0
+            total_trades = 0
+            total_success_rate = 0.0
+            
+            for symbol, data in stock_data.items():
+                prices = data['Close']
+                volumes = data['Volume']
+                
+                result = backtest_signals(
+                    prices, volumes, domain,
+                    domain_coeffs={domain: coeffs},
+                    montant=montant , transaction_cost=transaction_cost,
+                    seuil_achat=seuil_achat, seuil_vente=seuil_vente
+                )
+
+                total_gain += result['gain_total']
+                total_trades += result['trades']
+                total_success_rate += result['taux_reussite']
+                    
+            avg_gain = total_gain / len(stock_data) if stock_data else 0.0
+            avg_success_rate = total_success_rate / len(stock_data) if stock_data else 0.0
+            if _ == 0:
+                print(f"📈 Itération 1: Gain moyen = {avg_gain:.2f}, Trades = {total_trades}, Taux de réussite = {avg_success_rate:.2f}%")
+            
+            if avg_gain > best_gain_total:
+                best_gain_total = avg_gain
+                best_coeffs = coeffs
+                best_thresholds = (seuil_achat, seuil_vente)
+                pbar.set_postfix({
+                    'Best_Gain': f"{best_gain_total:.2f}",
+                    'Success_Rate': f"{avg_success_rate:.2f}%",
+                    'Seuil_Achat': f"{seuil_achat:.2f}",
+                    'Seuil_Vente': f"{seuil_vente:.2f}",
+                    'Trades': total_trades
+                })
+
+                save_optimization_results(domain, best_coeffs,best_gain_total, avg_success_rate,total_trades, best_thresholds)
+            pbar.update(1)
+
+    if best_coeffs is None:
+        print(f"🚨 Aucun coefficient optimisé pour {domain}: aucun signal ACHAT/VENTE généré")
+
+    return best_coeffs, best_gain_total, avg_success_rate, best_thresholds
+
+def save_optimization_results(sector, coeffs,gain_total, success_rate, trade, thresholds, filename="signaux/optimization_history.csv"):
+    """Enregistre les résultats de l'optimisation dans un CSV évolutif"""
+    file_path = Path(filename)
+    timestamp = datetime.now().strftime("%Y-%m-%d %H:%M:%S")
+    
+    # Créer une ligne pour le CSV
+    row = {
+        'Timestamp': timestamp,
+        'Sector': sector,
+        'Best_Gain': round(gain_total, 2),
+        'Success_Rate': round(success_rate, 4),
+        'Trades': trade,
+        'Seuil_Achat': round(thresholds[0], 2),
+        'Seuil_Vente': round(thresholds[1], 2),
+        'a1': round(coeffs[0], 3),
+        'a2': round(coeffs[1], 3),
+        'a3': round(coeffs[2], 3),
+        'a4': round(coeffs[3], 3),
+        'a5': round(coeffs[4], 3),
+        'a6': round(coeffs[5], 3),
+        'a7': round(coeffs[6], 3),
+        'a8': round(coeffs[7], 3)
+    }
+    
+    # Convertir en DataFrame
+    df_new = pd.DataFrame([row])
+    
+    # Si le fichier existe, ajouter les données
+    if file_path.exists():
+        try:
+            df_old = pd.read_csv(file_path)
+            df_combined = pd.concat([df_old, df_new], ignore_index=True)
+        except Exception as e:
+            print(f"⚠️ Erreur lecture CSV: {e}")
+            df_combined = df_new
+    else:
+        df_combined = df_new
+    
+    # Créer le dossier 'signaux' si nécessaire
+    file_path.parent.mkdir(parents=True, exist_ok=True)
+    
+    # Sauvegarder
+    try:
+        df_combined.to_csv(file_path, index=False)
+        print(f"💾 Résultats enregistrés dans {file_path}")
+    except Exception as e:
+        print(f"🚨 Erreur sauvegarde CSV: {e}")
+
+# Exemple d'utilisation
+if __name__ == "__main__":
+    # Exemple de symboles par secteur, incluant cryptomonnaies et inconnus
+    symbols = list(dict.fromkeys([
+        "AAPL", "MSFT","PLTR", "QBTS", "TSM", "NVDA",
+        "PFE", "JNJ", "MRK","SGMT", "JPM", "BAC", "WFC",
+        "AMZN", "TSLA", "NKE","BA", "CAT", "GE","ENR.DE",
+        "XOM", "CVX", "BP","FCX", "NEM", "BHP","FNV.TO",
+        "VZ", "T", "GOOGL", "META","NEE", "DUK", "SO",
+        "AMT", "PLD", "SPG","GLD", "SPY",
+    ]))
+    # Créer le dictionnaire des secteurs dynamiquement
+    sectors = {
+        # "Technology": [],
+        "Healthcare": [],  
+        # "Financial Services":[],
+        # "Consumer Cyclical":  [],
+        # "Industrials":     [],
+        # "Energy":          [],
+        # "Basic Materials": [],
+        # "Communication Services": [],
+        # "Utilities":      [],
+        # "Real Estate":  [],
+        "ℹ️Inconnu!!": []
+    }
+    
+    # Assigner les symboles aux secteurs
+    for symbol in symbols:
+        sector = get_sector(symbol)
+        if sector in sectors:
+            sectors[sector].append(symbol)
+        else:
+            sectors["ℹ️Inconnu!!"].append(symbol)
+
+    optimized_coeffs = {}
+    for sector, sector_symbols in sectors.items():
+        if not sector_symbols:
+            print(f"🚫 Secteur {sector} vide, ignoré")
+            continue
+        coeffs, gain_total, thresholds,*_ = optimize_sector_coefficients(
+            sector_symbols, sector, period='1y', montant=50, transaction_cost=0.00
+        )
+        if coeffs:
+            optimized_coeffs[sector] = coeffs
+            print(f"\nSecteur: {sector}")
+            print(f"Meilleurs coefficients: {coeffs}")
+            print(f"Meilleurs seuils (achat, vente): {thresholds}")
+            print(f"Gain total moyen: {gain_total:.2f}\n")
+    
+    # Générer le dictionnaire Python
+    print("Dictionnaire optimisé pour domain_coeffs:")
+    print("{")
+    for sector, coeffs in optimized_coeffs.items():
+        print(f"    '{sector}': {coeffs},")
+    print("}")

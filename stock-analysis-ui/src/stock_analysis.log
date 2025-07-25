@@ -1521,3 +1521,45 @@
 2025-07-25 05:00:39,988 - ERROR - 
 1 Failed download:
 2025-07-25 05:00:39,989 - ERROR - ['02020.HK']: YFPricesMissingError('possibly delisted; no price data found  (period=12mo)')
+2025-07-25 14:07:24,694 - ERROR - 
+2 Failed downloads:
+2025-07-25 14:07:24,696 - ERROR - ['I']: YFPricesMissingError('possibly delisted; no price data found  (period=1y) (Yahoo error = "No data found, symbol may be delisted")')
+2025-07-25 14:07:24,696 - ERROR - ['Q']: YFPricesMissingError('possibly delisted; no price data found  (period=1y)')
+2025-07-25 14:07:25,968 - ERROR - 
+1 Failed download:
+2025-07-25 14:07:25,968 - ERROR - ['Y']: YFPricesMissingError('possibly delisted; no price data found  (period=1y) (Yahoo error = "No data found, symbol may be delisted")')
+2025-07-25 14:07:26,404 - ERROR - 
+2 Failed downloads:
+2025-07-25 14:07:26,405 - ERROR - ['N']: YFPricesMissingError('possibly delisted; no price data found  (period=1y)')
+2025-07-25 14:07:26,405 - ERROR - ['I']: YFPricesMissingError('possibly delisted; no price data found  (period=1y) (Yahoo error = "No data found, symbol may be delisted")')
+2025-07-25 14:07:28,135 - ERROR - 
+1 Failed download:
+2025-07-25 14:07:28,135 - ERROR - ['I']: YFPricesMissingError('possibly delisted; no price data found  (period=1y) (Yahoo error = "No data found, symbol may be delisted")')
+2025-07-25 14:07:28,817 - ERROR - 
+2 Failed downloads:
+2025-07-25 14:07:28,817 - ERROR - ['Y']: YFPricesMissingError('possibly delisted; no price data found  (period=1y) (Yahoo error = "No data found, symbol may be delisted")')
+2025-07-25 14:07:28,817 - ERROR - ['P']: YFPricesMissingError('possibly delisted; no price data found  (period=1y)')
+2025-07-25 14:07:30,008 - ERROR - 
+1 Failed download:
+2025-07-25 14:07:30,009 - ERROR - ['I']: YFPricesMissingError('possibly delisted; no price data found  (period=1y) (Yahoo error = "No data found, symbol may be delisted")')
+2025-07-25 14:07:55,853 - ERROR - 
+2 Failed downloads:
+2025-07-25 14:07:55,854 - ERROR - ['I']: YFPricesMissingError('possibly delisted; no price data found  (period=6mo) (Yahoo error = "No data found, symbol may be delisted")')
+2025-07-25 14:07:55,854 - ERROR - ['Q']: YFPricesMissingError('possibly delisted; no price data found  (period=6mo)')
+2025-07-25 14:07:56,985 - ERROR - 
+1 Failed download:
+2025-07-25 14:07:56,985 - ERROR - ['Y']: YFPricesMissingError('possibly delisted; no price data found  (period=6mo) (Yahoo error = "No data found, symbol may be delisted")')
+2025-07-25 14:07:57,334 - ERROR - 
+2 Failed downloads:
+2025-07-25 14:07:57,335 - ERROR - ['N']: YFPricesMissingError('possibly delisted; no price data found  (period=6mo)')
+2025-07-25 14:07:57,336 - ERROR - ['I']: YFPricesMissingError('possibly delisted; no price data found  (period=6mo) (Yahoo error = "No data found, symbol may be delisted")')
+2025-07-25 14:07:59,836 - ERROR - 
+1 Failed download:
+2025-07-25 14:07:59,836 - ERROR - ['I']: YFPricesMissingError('possibly delisted; no price data found  (period=6mo) (Yahoo error = "No data found, symbol may be delisted")')
+2025-07-25 14:08:00,554 - ERROR - 
+2 Failed downloads:
+2025-07-25 14:08:00,554 - ERROR - ['P']: YFPricesMissingError('possibly delisted; no price data found  (period=6mo)')
+2025-07-25 14:08:00,555 - ERROR - ['Y']: YFPricesMissingError('possibly delisted; no price data found  (period=6mo) (Yahoo error = "No data found, symbol may be delisted")')
+2025-07-25 14:08:01,664 - ERROR - 
+1 Failed download:
+2025-07-25 14:08:01,664 - ERROR - ['I']: YFPricesMissingError('possibly delisted; no price data found  (period=6mo) (Yahoo error = "No data found, symbol may be delisted")')
