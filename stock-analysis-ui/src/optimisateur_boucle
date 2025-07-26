@@ -2,25 +2,11 @@ import pandas as pd
 import numpy as np
 from datetime import datetime, timedelta
 import random
-from qsi import backtest_signals,download_stock_data,get_trading_signal, popular_symbols, mes_symbols, period
+from qsi import backtest_signals,download_stock_data,modify_symbols_file,load_symbols_from_txt
 from pathlib import Path
 from tqdm import tqdm
 import yfinance as yf
-
-# Assurez-vous que votre fonction get_trading_signal est définie ici ou importée
-# from your_module import get_trading_signal, download_stock_data
-
-def evaluate_signal(prices, signal, horizon=5, threshold=0.02):
-    """Évalue la précision d'un signal sur un horizon donné"""
-    if len(prices) < horizon:
-        return 0
-    future_price = prices.shift(-horizon).iloc[-1]
-    current_price = prices.iloc[-1]
-    if signal == "ACHAT":
-        return 1 if (future_price / current_price - 1) > threshold else 0
-    elif signal == "VENTE":
-        return 1 if (future_price / current_price - 1) < -threshold else 0
-    return 0
+from collections import deque
 
 def get_sector(symbol):
     """Récupère le secteur d'une action avec logs pour diagnostic"""
@@ -52,18 +38,26 @@ def optimize_sector_coefficients(sector_symbols, domain, period='1y', n_iteratio
     best_gain_total = -float('inf')  # Optimiser sur le gain total
     best_coeffs = None
     best_thresholds = (4.20, -0.5)
+    tested_configs = deque(maxlen=80)  # Ensemble pour stocker les configurations testées
     
     # Barre de progression principale avec tqdm
     with tqdm(total=n_iterations, desc=f"🔍 Optimisation {domain}", unit="it") as pbar:   
         for _ in range(n_iterations):
-            # Générer des coefficients aléatoires dans une plage raisonnable
-            coeffs = tuple(np.random.uniform(0.5, 3.0, 8))
-            seuil_achat = np.random.uniform(3.0, 6.0)
-            seuil_vente = np.random.uniform(-2, 0.0)
+            # Générer des coefficients arrondis à 2 chiffres après la virgule
+            coeffs = tuple(np.round(np.random.uniform(0.5, 3.0, 8), 2))
+            seuil_achat = np.round(np.random.uniform(2.0, 5.0), 2)
+            seuil_vente = np.round(np.random.uniform(-2.0, 0.0), 2)
+
+            # Vérifier si la configuration a déjà été testée
+            config_key = (coeffs, seuil_achat, seuil_vente)
+            if config_key in tested_configs:
+                continue  # Passer à la prochaine itération si doublon
+            tested_configs.append(config_key)
 
             total_gain = 0.0
             total_trades = 0
-            total_success_rate = 0.0
+            total_success = 0
+            success_rate = 0.0
             
             for symbol, data in stock_data.items():
                 prices = data['Close']
@@ -78,32 +72,33 @@ def optimize_sector_coefficients(sector_symbols, domain, period='1y', n_iteratio
 
                 total_gain += result['gain_total']
                 total_trades += result['trades']
-                total_success_rate += result['taux_reussite']
+                total_success += result['gagnants']
+                success_rate = (total_success / total_trades) * 100 if total_trades > 0 else 0.0
                     
             avg_gain = total_gain / len(stock_data) if stock_data else 0.0
-            avg_success_rate = total_success_rate / len(stock_data) if stock_data else 0.0
             if _ == 0:
-                print(f"📈 Itération 1: Gain moyen = {avg_gain:.2f}, Trades = {total_trades}, Taux de réussite = {avg_success_rate:.2f}%")
+                print(f"🔍 Optimisation {domain} démarrée avec {len(stock_data)} symboles")
+                print(f"📈 Itération 1: Gain moyen = {avg_gain:.2f}, Trades = {total_trades}, Taux de réussite = {success_rate:.2f}% ,")
             
             if avg_gain > best_gain_total:
                 best_gain_total = avg_gain
                 best_coeffs = coeffs
                 best_thresholds = (seuil_achat, seuil_vente)
                 pbar.set_postfix({
-                    'Best_Gain': f"{best_gain_total:.2f}",
-                    'Success_Rate': f"{avg_success_rate:.2f}%",
+                    'Mean_Gain': f"{best_gain_total:.2f}",
+                    'Success_Rate': f"{success_rate:.2f}%",
                     'Seuil_Achat': f"{seuil_achat:.2f}",
                     'Seuil_Vente': f"{seuil_vente:.2f}",
                     'Trades': total_trades
                 })
 
-                save_optimization_results(domain, best_coeffs,best_gain_total, avg_success_rate,total_trades, best_thresholds)
+                save_optimization_results(domain, best_coeffs,best_gain_total, success_rate,total_trades, best_thresholds)
             pbar.update(1)
 
     if best_coeffs is None:
         print(f"🚨 Aucun coefficient optimisé pour {domain}: aucun signal ACHAT/VENTE généré")
 
-    return best_coeffs, best_gain_total, avg_success_rate, best_thresholds
+    return best_coeffs, best_gain_total, success_rate, best_thresholds
 
 def save_optimization_results(sector, coeffs,gain_total, success_rate, trade, thresholds, filename="signaux/optimization_history.csv"):
     """Enregistre les résultats de l'optimisation dans un CSV évolutif"""
@@ -114,7 +109,7 @@ def save_optimization_results(sector, coeffs,gain_total, success_rate, trade, th
     row = {
         'Timestamp': timestamp,
         'Sector': sector,
-        'Best_Gain': round(gain_total, 2),
+        'Mean_Gain': round(gain_total, 2),
         'Success_Rate': round(success_rate, 4),
         'Trades': trade,
         'Seuil_Achat': round(thresholds[0], 2),
@@ -156,26 +151,19 @@ def save_optimization_results(sector, coeffs,gain_total, success_rate, trade, th
 # Exemple d'utilisation
 if __name__ == "__main__":
     # Exemple de symboles par secteur, incluant cryptomonnaies et inconnus
-    symbols = list(dict.fromkeys([
-        "AAPL", "MSFT","PLTR", "QBTS", "TSM", "NVDA",
-        "PFE", "JNJ", "MRK","SGMT", "JPM", "BAC", "WFC",
-        "AMZN", "TSLA", "NKE","BA", "CAT", "GE","ENR.DE",
-        "XOM", "CVX", "BP","FCX", "NEM", "BHP","FNV.TO",
-        "VZ", "T", "GOOGL", "META","NEE", "DUK", "SO",
-        "AMT", "PLD", "SPG","GLD", "SPY",
-    ]))
+    symbols = list(dict.fromkeys(load_symbols_from_txt("optimisation_symbols.txt")))
     # Créer le dictionnaire des secteurs dynamiquement
     sectors = {
-        # "Technology": [],
+        "Technology": [],
         "Healthcare": [],  
-        # "Financial Services":[],
-        # "Consumer Cyclical":  [],
-        # "Industrials":     [],
-        # "Energy":          [],
-        # "Basic Materials": [],
-        # "Communication Services": [],
-        # "Utilities":      [],
-        # "Real Estate":  [],
+        "Financial Services":[],
+        "Consumer Cyclical":  [],
+        "Industrials":     [],
+        "Energy":          [],
+        "Basic Materials": [],
+        "Communication Services": [],
+        "Utilities":      [],
+        "Real Estate":  [],
         "ℹ️Inconnu!!": []
     }
     
@@ -193,7 +181,7 @@ if __name__ == "__main__":
             print(f"🚫 Secteur {sector} vide, ignoré")
             continue
         coeffs, gain_total, thresholds,*_ = optimize_sector_coefficients(
-            sector_symbols, sector, period='1y', montant=50, transaction_cost=0.00
+            sector_symbols, sector, period='1y',n_iterations=350, montant=50, transaction_cost=0.00
         )
         if coeffs:
             optimized_coeffs[sector] = coeffs

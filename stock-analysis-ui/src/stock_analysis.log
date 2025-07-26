@@ -1563,3 +1563,9 @@
 2025-07-25 14:08:01,664 - ERROR - 
 1 Failed download:
 2025-07-25 14:08:01,664 - ERROR - ['I']: YFPricesMissingError('possibly delisted; no price data found  (period=6mo) (Yahoo error = "No data found, symbol may be delisted")')
+2025-07-25 19:22:54,465 - ERROR - 
+2 Failed downloads:
+2025-07-25 19:22:54,483 - ERROR - ['02020.HK', '01177.HK']: YFPricesMissingError('possibly delisted; no price data found  (period=12mo)')
+2025-07-25 19:23:29,680 - ERROR - 
+1 Failed download:
+2025-07-25 19:23:29,680 - ERROR - ['COMP-USD']: YFPricesMissingError('possibly delisted; no price data found  (period=12mo)')
