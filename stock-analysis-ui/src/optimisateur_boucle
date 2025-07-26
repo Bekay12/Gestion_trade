@@ -20,87 +20,325 @@ def get_sector(symbol):
         print(f"⚠️ Erreur pour {symbol}: {e}")
         return 'ℹ️Inconnu!!'
 
-def optimize_sector_coefficients(sector_symbols, domain, period='1y', n_iterations=100, montant=50, transaction_cost=1.0):
-    """Optimise les coefficients pour un secteur donné via recherche aléatoire en utilisant download_stock_data"""
+# def optimize_sector_coefficients(sector_symbols, domain, period='1y', n_iterations=100, montant=50, transaction_cost=1.0):
+#     """Optimise les coefficients pour un secteur donné via recherche aléatoire en utilisant download_stock_data"""
+#     if not sector_symbols:
+#         print(f"🚫 Secteur {domain} vide, ignoré")
+#         return None, 0.0, (4.20, -0.5)
+    
+#     stock_data = download_stock_data(sector_symbols, period=period)
+    
+#     if not stock_data:
+#         print(f"🚨 Aucune donnée téléchargée pour le secteur {domain}")
+#         return None, 0.0, (4.20, -0.5)
+    
+#     for symbol, data in stock_data.items():
+#         print(f"📊 {symbol}: {len(data['Close'])} points de données")
+    
+#     best_gain_total = -float('inf')  # Optimiser sur le gain total
+#     best_coeffs = None
+#     best_thresholds = (4.20, -0.5)
+#     tested_configs = deque(maxlen=80)  # Ensemble pour stocker les configurations testées
+    
+#     # Barre de progression principale avec tqdm
+#     with tqdm(total=n_iterations, desc=f"🔍 Optimisation {domain}", unit="it") as pbar:   
+#         for _ in range(n_iterations):
+#             # Générer des coefficients arrondis à 2 chiffres après la virgule
+#             coeffs = tuple(np.round(np.random.uniform(0.5, 3.0, 8), 2))
+#             seuil_achat = np.round(np.random.uniform(2.0, 5.0), 2)
+#             seuil_vente = np.round(np.random.uniform(-2.0, 0.0), 2)
+
+#             # Vérifier si la configuration a déjà été testée
+#             config_key = (coeffs, seuil_achat, seuil_vente)
+#             if config_key in tested_configs:
+#                 continue  # Passer à la prochaine itération si doublon
+#             tested_configs.append(config_key)
+
+#             total_gain = 0.0
+#             total_trades = 0
+#             total_success = 0
+#             success_rate = 0.0
+            
+#             for symbol, data in stock_data.items():
+#                 prices = data['Close']
+#                 volumes = data['Volume']
+                
+#                 result = backtest_signals(
+#                     prices, volumes, domain,
+#                     domain_coeffs={domain: coeffs},
+#                     montant=montant , transaction_cost=transaction_cost,
+#                     seuil_achat=seuil_achat, seuil_vente=seuil_vente
+#                 )
+
+#                 total_gain += result['gain_total']
+#                 total_trades += result['trades']
+#                 total_success += result['gagnants']
+#                 success_rate = (total_success / total_trades) * 100 if total_trades > 0 else 0.0
+                    
+#             avg_gain = total_gain / len(stock_data) if stock_data else 0.0
+#             if _ == 0:
+#                 print(f"🔍 Optimisation {domain} démarrée avec {len(stock_data)} symboles")
+#                 print(f"📈 Itération 1: Gain moyen = {avg_gain:.2f}, Trades = {total_trades}, Taux de réussite = {success_rate:.2f}% ,")
+            
+#             if avg_gain > best_gain_total:
+#                 best_gain_total = avg_gain
+#                 best_coeffs = coeffs
+#                 best_thresholds = (seuil_achat, seuil_vente)
+#                 pbar.set_postfix({
+#                     'Gain_moy': f"{best_gain_total:.2f}",
+#                     'Success_Rate': f"{success_rate:.2f}%",
+#                     'Seuil_Achat': f"{seuil_achat:.2f}",
+#                     'Seuil_Vente': f"{seuil_vente:.2f}",
+#                     'Trades': total_trades
+#                 })
+
+#                 save_optimization_results(domain, best_coeffs,best_gain_total, success_rate,total_trades, best_thresholds)
+#             pbar.update(1)
+
+#     if best_coeffs is None:
+#         print(f"🚨 Aucun coefficient optimisé pour {domain}: aucun signal ACHAT/VENTE généré")
+
+#     return best_coeffs, best_gain_total, success_rate, best_thresholds
+
+def optimize_sector_coefficients(sector_symbols, domain, period='1y', n_iterations=30, montant=50, transaction_cost=1.0, 
+                                initial_thresholds=(4.20, -0.5), max_cycles=2, convergence_threshold=0.1):
+    """Optimise les coefficients et seuils en trois étapes itératives jusqu'à convergence via recherche aléatoire"""
     if not sector_symbols:
         print(f"🚫 Secteur {domain} vide, ignoré")
-        return None, 0.0, (4.20, -0.5)
+        return None, 0.0, 0.0, initial_thresholds
     
     stock_data = download_stock_data(sector_symbols, period=period)
     
     if not stock_data:
         print(f"🚨 Aucune donnée téléchargée pour le secteur {domain}")
-        return None, 0.0, (4.20, -0.5)
+        return None, 0.0, 0.0, initial_thresholds
     
     for symbol, data in stock_data.items():
         print(f"📊 {symbol}: {len(data['Close'])} points de données")
     
-    best_gain_total = -float('inf')  # Optimiser sur le gain total
+    best_gain_total = -float('inf')
     best_coeffs = None
-    best_thresholds = (4.20, -0.5)
-    tested_configs = deque(maxlen=80)  # Ensemble pour stocker les configurations testées
+    best_thresholds = initial_thresholds
+    best_success_rate = 0.0
+    best_trades = 0
+    cycle = 0
     
-    # Barre de progression principale avec tqdm
-    with tqdm(total=n_iterations, desc=f"🔍 Optimisation {domain}", unit="it") as pbar:   
-        for _ in range(n_iterations):
-            # Générer des coefficients arrondis à 2 chiffres après la virgule
-            coeffs = tuple(np.round(np.random.uniform(0.5, 3.0, 8), 2))
-            seuil_achat = np.round(np.random.uniform(2.0, 5.0), 2)
-            seuil_vente = np.round(np.random.uniform(-2.0, 0.0), 2)
-
-            # Vérifier si la configuration a déjà été testée
-            config_key = (coeffs, seuil_achat, seuil_vente)
-            if config_key in tested_configs:
-                continue  # Passer à la prochaine itération si doublon
-            tested_configs.append(config_key)
-
-            total_gain = 0.0
-            total_trades = 0
-            total_success = 0
-            success_rate = 0.0
-            
-            for symbol, data in stock_data.items():
-                prices = data['Close']
-                volumes = data['Volume']
+    while cycle < max_cycles:
+        print(f"\n🔄 Cycle {cycle + 1}/{max_cycles} pour {domain}")
+        
+        # Étape 1 : Optimiser les coefficients avec seuils fixes
+        print(f"🔍 Étape 1 : Optimisation des coefficients avec seuils {best_thresholds}")
+        current_gain_total = -float('inf')
+        current_coeffs = None
+        current_success_rate = 0.0
+        current_trades = 0
+        tested_configs = deque(maxlen=50)
+        doublons = 0
+        
+        with tqdm(total=n_iterations, desc=f"🔍 Cycle {cycle + 1} - Étape 1 - Coeffs {domain}", unit="it") as pbar:
+            for _ in range(n_iterations):
+                coeffs = tuple(np.round(np.random.uniform(0.5, 3.0, 8), 1)) # # Coefficients arrondis à 1 chiffre après la virgule
+                config_key = coeffs
                 
-                result = backtest_signals(
-                    prices, volumes, domain,
-                    domain_coeffs={domain: coeffs},
-                    montant=montant , transaction_cost=transaction_cost,
-                    seuil_achat=seuil_achat, seuil_vente=seuil_vente
-                )
-
-                total_gain += result['gain_total']
-                total_trades += result['trades']
-                total_success += result['gagnants']
-                success_rate = (total_success / total_trades) * 100 if total_trades > 0 else 0.0
+                if config_key in tested_configs:
+                    doublons += 1
+                    continue
+                tested_configs.append(config_key)
+                
+                total_gain = 0.0
+                total_trades = 0
+                total_success = 0
+                
+                for symbol, data in stock_data.items():
+                    prices = data['Close']
+                    volumes = data['Volume']
                     
-            avg_gain = total_gain / len(stock_data) if stock_data else 0.0
-            if _ == 0:
-                print(f"🔍 Optimisation {domain} démarrée avec {len(stock_data)} symboles")
-                print(f"📈 Itération 1: Gain moyen = {avg_gain:.2f}, Trades = {total_trades}, Taux de réussite = {success_rate:.2f}% ,")
+                    result = backtest_signals(
+                        prices, volumes, domain,
+                        domain_coeffs={domain: coeffs},
+                        seuil_achat=best_thresholds[0], seuil_vente=best_thresholds[1],
+                        montant=montant, transaction_cost=transaction_cost
+                    )
+                    
+                    total_gain += result['gain_total']
+                    total_trades += result['trades']
+                    total_success += result['gagnants']
+                
+                avg_gain = total_gain / len(stock_data) if stock_data else 0.0
+                success_rate = (total_success / total_trades * 100) if total_trades > 0 else 0.0
+                if _ == 0:
+                    print(f"🔍 Cycle {cycle + 1} - Étape 1 - Optimisation {domain} démarrée avec {len(stock_data)} symboles")
+                    print(f"📈 Itération 1: Gain moyen = {avg_gain:.2f}, Trades = {total_trades}, Taux de réussite = {success_rate:.2f}%")
+                
+                if avg_gain > current_gain_total:
+                    current_gain_total = avg_gain
+                    current_coeffs = coeffs
+                    current_success_rate = success_rate
+                    current_trades = total_trades
+                    pbar.set_postfix({
+                        'Gain_moy': f"{current_gain_total:.2f}",
+                        'Success_Rate': f"{success_rate:.2f}%",
+                        'Trades': total_trades
+                    })
+                
+                pbar.update(1)
             
-            if avg_gain > best_gain_total:
-                best_gain_total = avg_gain
-                best_coeffs = coeffs
-                best_thresholds = (seuil_achat, seuil_vente)
-                pbar.set_postfix({
-                    'Mean_Gain': f"{best_gain_total:.2f}",
-                    'Success_Rate': f"{success_rate:.2f}%",
-                    'Seuil_Achat': f"{seuil_achat:.2f}",
-                    'Seuil_Vente': f"{seuil_vente:.2f}",
-                    'Trades': total_trades
-                })
-
-                save_optimization_results(domain, best_coeffs,best_gain_total, success_rate,total_trades, best_thresholds)
-            pbar.update(1)
-
+            print(f"📊 Cycle {cycle + 1} - Étape 1 - Nombre de doublons évités : {doublons}")
+        
+        if current_coeffs is None:
+            print(f"🚨 Cycle {cycle + 1} - Étape 1 - Aucun coefficient optimisé pour {domain}: aucun signal ACHAT/VENTE généré")
+            return None, 0.0, 0.0, best_thresholds
+        
+        print(f"✅ Cycle {cycle + 1} - Étape 1 - Meilleurs coefficients : {current_coeffs}, Gain moyen = {current_gain_total:.2f}")
+        
+        # Étape 2 : Optimiser le seuil d'achat avec coefficients et seuil de vente fixes
+        print(f"🔍 Étape 2 : Optimisation du seuil d'achat avec coefficients {current_coeffs} et seuil de vente {best_thresholds[1]}")
+        tested_configs = deque(maxlen=50)
+        doublons = 0
+        current_seuil_achat = best_thresholds[0]
+        
+        with tqdm(total=n_iterations, desc=f"🔍 Cycle {cycle + 1} - Étape 2 - Seuil Achat {domain}", unit="it") as pbar:
+            for _ in range(n_iterations):
+                seuil_achat = np.round(np.random.uniform(2.5, 6.0), 2)
+                config_key = seuil_achat
+                
+                if config_key in tested_configs:
+                    doublons += 1
+                    continue
+                tested_configs.append(config_key)
+                
+                total_gain = 0.0
+                total_trades = 0
+                total_success = 0
+                
+                for symbol, data in stock_data.items():
+                    prices = data['Close']
+                    volumes = data['Volume']
+                    
+                    result = backtest_signals(
+                        prices, volumes, domain,
+                        domain_coeffs={domain: current_coeffs},
+                        seuil_achat=seuil_achat, seuil_vente=best_thresholds[1],
+                        montant=montant, transaction_cost=transaction_cost
+                    )
+                    
+                    total_gain += result['gain_total']
+                    total_trades += result['trades']
+                    total_success += result['gagnants']
+                
+                avg_gain = total_gain / len(stock_data) if stock_data else 0.0
+                success_rate = (total_success / total_trades * 100) if total_trades > 0 else 0.0
+                if _ == 0:
+                    print(f"🔍 Cycle {cycle + 1} - Étape 2 - Optimisation {domain} démarrée avec {len(stock_data)} symboles")
+                    print(f"📈 Itération 1: Gain moyen = {avg_gain:.2f}, Trades = {total_trades}, Taux de réussite = {success_rate:.2f}%")
+                
+                if avg_gain > current_gain_total:
+                    current_gain_total = avg_gain
+                    current_seuil_achat = seuil_achat
+                    current_success_rate = success_rate
+                    current_trades = total_trades
+                    pbar.set_postfix({
+                        'Gain_moy': f"{current_gain_total:.2f}",
+                        'Success_Rate': f"{success_rate:.2f}%",
+                        'Seuil_Achat': f"{seuil_achat:.2f}",
+                        'Trades': total_trades
+                    })
+                
+                pbar.update(1)
+            
+            print(f"📊 Cycle {cycle + 1} - Étape 2 - Nombre de doublons évités : {doublons}")
+        
+        print(f"✅ Cycle {cycle + 1} - Étape 2 - Meilleur seuil d'achat : {current_seuil_achat}, Gain moyen = {current_gain_total:.2f}")
+        
+        # Étape 3 : Optimiser le seuil de vente avec coefficients et seuil d'achat fixes
+        print(f"🔍 Étape 3 : Optimisation du seuil de vente avec coefficients {current_coeffs} et seuil d'achat {current_seuil_achat}")
+        tested_configs = deque(maxlen=50)
+        doublons = 0
+        current_seuil_vente = best_thresholds[1]
+        
+        with tqdm(total=n_iterations, desc=f"🔍 Cycle {cycle + 1} - Étape 3 - Seuil Vente {domain}", unit="it") as pbar:
+            for _ in range(n_iterations):
+                seuil_vente = np.round(np.random.uniform(-3.0, 0.0), 2)
+                config_key = seuil_vente
+                
+                if config_key in tested_configs:
+                    doublons += 1
+                    continue
+                tested_configs.append(config_key)
+                
+                total_gain = 0.0
+                total_trades = 0
+                total_success = 0
+                
+                for symbol, data in stock_data.items():
+                    prices = data['Close']
+                    volumes = data['Volume']
+                    
+                    result = backtest_signals(
+                        prices, volumes, domain,
+                        domain_coeffs={domain: current_coeffs},
+                        seuil_achat=current_seuil_achat, seuil_vente=seuil_vente,
+                        montant=montant, transaction_cost=transaction_cost
+                    )
+                    
+                    total_gain += result['gain_total']
+                    total_trades += result['trades']
+                    total_success += result['gagnants']
+                
+                avg_gain = total_gain / len(stock_data) if stock_data else 0.0
+                success_rate = (total_success / total_trades * 100) if total_trades > 0 else 0.0
+                if _ == 0:
+                    print(f"🔍 Cycle {cycle + 1} - Étape 3 - Optimisation {domain} démarrée avec {len(stock_data)} symboles")
+                    print(f"📈 Itération 1: Gain moyen = {avg_gain:.2f}, Trades = {total_trades}, Taux de réussite = {success_rate:.2f}%")
+                
+                if avg_gain > current_gain_total:
+                    current_gain_total = avg_gain
+                    current_seuil_vente = seuil_vente
+                    current_success_rate = success_rate
+                    current_trades = total_trades
+                    pbar.set_postfix({
+                        'Gain_moy': f"{current_gain_total:.2f}",
+                        'Success_Rate': f"{success_rate:.2f}%",
+                        'Seuil_Vente': f"{seuil_vente:.2f}",
+                        'Trades': total_trades
+                    })
+                
+                pbar.update(1)
+            
+            print(f"📊 Cycle {cycle + 1} - Étape 3 - Nombre de doublons évités : {doublons}")
+        
+        current_thresholds = (current_seuil_achat, current_seuil_vente)
+        print(f"✅ Cycle {cycle + 1} - Étape 3 - Meilleur seuil de vente : {current_seuil_vente}, Gain moyen = {current_gain_total:.2f}")
+        
+        # Mise à jour des meilleurs paramètres
+        if current_gain_total > best_gain_total:
+            improvement = current_gain_total - best_gain_total
+            best_gain_total = current_gain_total
+            best_coeffs = current_coeffs
+            best_thresholds = current_thresholds
+            best_success_rate = current_success_rate
+            best_trades = current_trades
+            print(f"✅ Cycle {cycle + 1} - Amélioration du gain : {improvement:.2f}")
+            save_optimization_results(domain, best_coeffs, best_gain_total, best_success_rate, best_trades, best_thresholds)
+        else:
+            print(f"✅ Cycle {cycle + 1} - Aucune amélioration significative, arrêt anticipé")
+            break
+        
+        # Critère de convergence
+        if improvement < convergence_threshold:
+            print(f"✅ Cycle {cycle + 1} - Convergence atteinte (amélioration < {convergence_threshold})")
+            break
+        
+        cycle += 1
+    
     if best_coeffs is None:
         print(f"🚨 Aucun coefficient optimisé pour {domain}: aucun signal ACHAT/VENTE généré")
+    else:
+        save_optimization_results(domain, best_coeffs, best_gain_total, best_success_rate, best_trades, best_thresholds)
+    
+    return best_coeffs, best_gain_total, best_success_rate, best_thresholds
 
-    return best_coeffs, best_gain_total, success_rate, best_thresholds
-
-def save_optimization_results(sector, coeffs,gain_total, success_rate, trade, thresholds, filename="signaux/optimization_history.csv"):
+def save_optimization_results(sector, coeffs,gain_total, success_rate, trade, thresholds, filename="signaux/optimization_hist_3stp.csv"):
     """Enregistre les résultats de l'optimisation dans un CSV évolutif"""
     file_path = Path(filename)
     timestamp = datetime.now().strftime("%Y-%m-%d %H:%M:%S")
@@ -109,7 +347,7 @@ def save_optimization_results(sector, coeffs,gain_total, success_rate, trade, th
     row = {
         'Timestamp': timestamp,
         'Sector': sector,
-        'Mean_Gain': round(gain_total, 2),
+        'Gain_moy': round(gain_total, 2),
         'Success_Rate': round(success_rate, 4),
         'Trades': trade,
         'Seuil_Achat': round(thresholds[0], 2),
@@ -174,23 +412,28 @@ if __name__ == "__main__":
             sectors[sector].append(symbol)
         else:
             sectors["ℹ️Inconnu!!"].append(symbol)
-
+    
+    print("\n📋 Assignation des secteurs:")
+    for sector, syms in sectors.items():
+        print(f"{sector}: {syms}")
+    
     optimized_coeffs = {}
     for sector, sector_symbols in sectors.items():
         if not sector_symbols:
             print(f"🚫 Secteur {sector} vide, ignoré")
             continue
-        coeffs, gain_total, thresholds,*_ = optimize_sector_coefficients(
-            sector_symbols, sector, period='1y',n_iterations=350, montant=50, transaction_cost=0.00
+        coeffs, gain_total, success_rate, thresholds = optimize_sector_coefficients(
+            sector_symbols, sector, period='1y', n_iterations=100, montant=50, 
+            transaction_cost=0.02, max_cycles=5, convergence_threshold=0.1
         )
         if coeffs:
             optimized_coeffs[sector] = coeffs
             print(f"\nSecteur: {sector}")
             print(f"Meilleurs coefficients: {coeffs}")
             print(f"Meilleurs seuils (achat, vente): {thresholds}")
-            print(f"Gain total moyen: {gain_total:.2f}\n")
+            print(f"Gain total moyen: {gain_total:.2f}")
+            print(f"Taux de réussite: {success_rate:.2f}%")
     
-    # Générer le dictionnaire Python
     print("Dictionnaire optimisé pour domain_coeffs:")
     print("{")
     for sector, coeffs in optimized_coeffs.items():
