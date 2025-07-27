@@ -121,6 +121,53 @@ def save_to_evolutive_csv(signals, filename="signaux_trading.csv"):
         print(f"💾 Signaux sauvegardés: {filename} (archive: {archive_file})")
     except Exception as e:
         print(f"🚨 Erreur sauvegarde CSV: {e}")
+        
+from typing import Tuple, Dict, Union, List
+def extract_best_parameters(csv_path: str = 'signaux/optimization_hist_4stp.csv') -> Dict[str, Tuple[Tuple[float, ...], Tuple[float, float]]]:
+    """
+    Extrait les meilleurs coefficients et seuils pour chaque secteur à partir du CSV, basés sur le Gain_moy maximal.
+    
+    Args:
+        csv_path (str): Chemin vers le CSV contenant l'historique d'optimisation.
+    
+    Returns:
+        Dict[str, Tuple[Tuple[float, ...], Tuple[float, float]]]: Dictionnaire avec pour chaque secteur
+        un tuple (coefficients, seuils), où coefficients est (a1, a2, ..., a8) et seuils est (Seuil_Achat, Seuil_Vente).
+    """
+    try:
+        df = pd.read_csv(csv_path)
+        if df.empty:
+            print("🚫 CSV vide, aucun paramètre extrait")
+            return {}
+        
+        required_columns = ['Sector', 'Gain_moy', 'Success_Rate', 'Trades', 'Seuil_Achat', 'Seuil_Vente', 'a1', 'a2', 'a3', 'a4', 'a5', 'a6', 'a7', 'a8']
+        if not all(col in df.columns for col in required_columns):
+            missing = [col for col in required_columns if col not in df.columns]
+            print(f"🚫 Colonnes manquantes dans le CSV : {missing}")
+            return {}
+        
+        # Trier par Gain_moy (descendant), Success_Rate (descendant), Trades (descendant), Timestamp (descendant)
+        df_sorted = df.sort_values(by=['Sector', 'Gain_moy', 'Success_Rate', 'Trades', 'Timestamp'], ascending=[True, False, False, False, False])
+        
+        # Prendre la première entrée par secteur (la meilleure)
+        best_params = df_sorted.groupby('Sector').first().reset_index()
+        
+        result = {}
+        for _, row in best_params.iterrows():
+            sector = row['Sector']
+            coefficients = tuple(row[f'a{i+1}'] for i in range(8))
+            thresholds = (row['Seuil_Achat'], row['Seuil_Vente'])
+            result[sector] = (coefficients, thresholds)
+            # print(f"📊 Meilleurs paramètres pour {sector}: Coefficients={coefficients}, Seuils={thresholds}, Gain_moy={row['Gain_moy']:.2f}")
+        
+        return result
+    
+    except FileNotFoundError:
+        print(f"🚫 Fichier CSV {csv_path} non trouvé")
+        return {}
+    except Exception as e:
+        print(f"⚠️ Erreur lors de l'extraction des paramètres: {e}")
+        return {}
 
 def get_trading_signal(prices, volumes,  domaine, domain_coeffs=None,
                        seuil_achat=4.20, seuil_vente=-0.5,
@@ -247,26 +294,17 @@ def get_trading_signal(prices, volumes,  domaine, domain_coeffs=None,
 
     ########################### Methode alternative avec score de signal ###########################
     # Définir les coefficients par domaine
-
-    # Valeurs par défaut si domaine inconnu
     default_coeffs = (1.75, 1.0, 1.5, 1.25, 1.75, 1.25, 1.0, 1.75)
+    thresholds = (4.20, -0.5)
+    best_params = extract_best_parameters()
     if domain_coeffs:
         coeffs = domain_coeffs.get(domaine, default_coeffs)
     else:
-        domain_coeffs = {
-            "Technology":      (1.4,1.16,0.85,1.35,1.43,2.71,0.76,1.49),
-            "Healthcare":      (1.04,2.03,2.01,1.01,1.0,2.98,1.82,0.89),
-            "Financial Services": (1.07,0.88,2.22,0.55,2.90,0.81,1.64,0.64),
-            "Consumer Cyclical":  (1.73,0.93,2.41,2.21,0.72,2.85,0.64,1.15),
-            "Industrials":     (0.51,0.54,1.44,0.69,1.48,2.09,0.76,2.32),
-            "Energy":          (2.99,2.22,2.75,1.16,2.45,2.66,2.96,2.43),
-            "Basic Materials": (0.78,1.14,1.0,0.84,1.75,0.50,1.45,1.34),
-            "Communication Services": (2.7, 2.2, 1.1, 0.5, 1.6, 3.0, 2.4, 2.7),
-            "Utilities":       (2.7, 1.3, 1.9, 1.1, 1.9, 1.3, 1.1, 2.2),
-            "Real Estate":     (1.1, 3.0, 1.6, 3.0, 2.7, 0.8, 1.1, 1.1),
-        }
-        # Sélectionner les coefficients selon le domaine
-        coeffs = domain_coeffs.get(domaine, default_coeffs)
+        # Vérifier si le secteur existe dans les paramètres extraits
+        if domaine in best_params:
+            coeffs, thresholds = best_params[domaine]
+        else:
+            coeffs = default_coeffs
     
     if seuil_achat is None:
         seuil_achat = 4.20      # seuil_achat=4.20, seuil_vente=-0.81, taux_reussite=33.3%
@@ -321,22 +359,6 @@ def get_trading_signal(prices, volumes,  domaine, domain_coeffs=None,
     if is_variation_ok: score += a7
     else: score -= a7  # Sous-performance
 
-    #  ## 🟢 CONDITIONS D'ACHAT Bonus
-    # if (
-    #     (rsi_cross_up or delta_rsi > 2.5 or rsi_cross_mid) and
-    #     (is_macd_cross_up or ema_structure_up) and
-    #     is_volume_ok and is_variation_ok and last_rsi < 75
-    # ):
-    #     score += 1.5
-
-    # ### 🔴 CONDITIONS DE VENTE BONUS
-    # elif (
-    #     (rsi_cross_down or last_rsi > 70) and
-    #     (is_macd_cross_down or ema_structure_down)
-    # ):
-    #     score -= 1.5
-
-
      # Conditions d'achat renforcées
     buy_conditions = (
         (is_macd_cross_up or ema_structure_up) and
@@ -370,13 +392,12 @@ def get_trading_signal(prices, volumes,  domaine, domain_coeffs=None,
     score *= m4  # Réduire le score en cas de forte volatilité
 
     # Interprétation du score
-    if score >= seuil_achat:
+    if score >= thresholds[0]:  # seuil d'achat
         signal = "ACHAT"
-    elif score <= seuil_vente:
+    elif score <= thresholds[1]:  # seuil de vente
         signal = "VENTE"
     else:
         signal = "NEUTRE"
-    
     
     return signal, last_close, last_close > last_ema20, round(last_rsi,2), round(volume_mean, 2), score
 
