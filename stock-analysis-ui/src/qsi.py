@@ -113,7 +113,8 @@ def save_to_evolutive_csv(signals, filename="signaux_trading.csv"):
         
         # Sauvegarder avec date de mise à jour dans le nom
         timestamp = datetime.now().strftime("%Y%m%d")
-        archive_file = signals_dir /f"signaux_trading_{timestamp}.csv"
+        base_name = Path(filename).stem  # enlève l'extension
+        archive_file = signals_dir / f"{base_name}_{timestamp}.csv"
         df_clean.to_csv(archive_file, index=False)
         
         # Sauvegarde principale
@@ -157,7 +158,8 @@ def extract_best_parameters(csv_path: str = 'signaux/optimization_hist_4stp.csv'
             sector = row['Sector']
             coefficients = tuple(row[f'a{i+1}'] for i in range(8))
             thresholds = (row['Seuil_Achat'], row['Seuil_Vente'])
-            result[sector] = (coefficients, thresholds)
+            gain_moy = row['Gain_moy']
+            result[sector] = (coefficients, thresholds, gain_moy)
             # print(f"📊 Meilleurs paramètres pour {sector}: Coefficients={coefficients}, Seuils={thresholds}, Gain_moy={row['Gain_moy']:.2f}")
         
         return result
@@ -302,7 +304,7 @@ def get_trading_signal(prices, volumes,  domaine, domain_coeffs=None,
     else:
         # Vérifier si le secteur existe dans les paramètres extraits
         if domaine in best_params:
-            coeffs, thresholds = best_params[domaine]
+            coeffs, thresholds, gain_moyen = best_params[domaine]
         else:
             coeffs = default_coeffs
     
@@ -380,15 +382,15 @@ def get_trading_signal(prices, volumes,  domaine, domain_coeffs=None,
         (volume_mean > volume_seuil)
     )
 
-    if strong_uptrend: score += 1.5
-    if last_bb_percent < 0.4: score += 1.0  # Zone de survente
-    if buy_conditions: score += 1.75  # Conditions d'achat renforcées
+    if strong_uptrend: score += m2*a5
+    if last_bb_percent < 0.4: score += m3*a4  # Zone de survente
+    if buy_conditions: score += a8  # Conditions d'achat renforcées
 
-    if strong_downtrend: score -= 1.5
-    if last_bb_percent > 0.6: score -= 1.0  # Zone de surachat
-    if sell_conditions: score -= 1.75  # Conditions de vente renforcées
+    if strong_downtrend: score -= m2*a5
+    if last_bb_percent > 0.6: score -= m3*a4  # Zone de surachat
+    if sell_conditions: score -= a8  # Conditions de vente renforcées
     
-    if volatility.iloc[-1] > 0.05 : m4=0.65 
+    if volatility.iloc[-1] > 0.05 : m4=0.75 
     score *= m4  # Réduire le score en cas de forte volatilité
 
     # Interprétation du score
@@ -855,6 +857,15 @@ def analyse_signaux_populaires(
     """
     import matplotlib.pyplot as plt
 
+    print("\nExtraction des meilleurs paramètres depuis le CSV:")
+    best_parameters = extract_best_parameters()
+    print("\nDictionnaire des meilleurs paramètres:")
+    print("{")
+    for sector, (coeffs, thresholds, gain_moy) in best_parameters.items():
+            print(f"    '{sector}': (coefficients={coeffs}, thresholds={thresholds}), 'Gain moy={gain_moy}/50),")
+    print("}")
+
+
     if verbose:
         print("\n🔍 Analyse des signaux pour actions populaires...")
     signals = []
@@ -1116,7 +1127,7 @@ def analyse_signaux_populaires(
         # Sauvegarde spéciale pour vos symboles personnels
         mes_signaux_valides = [s for s in signaux_valides if s['Symbole'] in mes_symbols]
         if mes_signaux_valides:
-            special_filename = f"mes_signaux_fiables_{datetime.now().strftime('%Y%m%d')}.csv"
+            special_filename = f"mes_signaux_fiables_.csv"
             if verbose:
                 print(f"💠 Sauvegarde de {len(mes_signaux_valides)} signaux personnels fiables dans {special_filename}")
             save_to_evolutive_csv(mes_signaux_valides, special_filename)

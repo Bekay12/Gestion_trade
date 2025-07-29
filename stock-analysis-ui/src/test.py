@@ -9,13 +9,5 @@ import csv
 
 test_symbols = load_symbols_from_txt("test_symbols.txt")
 mes_symbols = load_symbols_from_txt("mes_symbols.txt")
-
-print("\nExtraction des meilleurs paramètres depuis le CSV:")
-best_parameters = extract_best_parameters()
-print("\nDictionnaire des meilleurs paramètres:")
-print("{")
-for sector, (coeffs, thresholds) in best_parameters.items():
-        print(f"    '{sector}': (coefficients={coeffs}, thresholds={thresholds}),")
-print("}")
-
+#modify_symbols_file("optimisation_symbols.txt", ["QBTS", "PLTR", "SPOT", "AAPL", "MSFT", "GOOGL", "AMZN", "TSLA", "NVDA", "META"],action='add')
 analyse_signaux_populaires(test_symbols, mes_symbols, period, plot_all=True)
