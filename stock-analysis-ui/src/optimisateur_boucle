@@ -402,7 +402,7 @@ if __name__ == "__main__":
             print(f"🚫 Secteur {sector} vide, ignoré")
             continue
         coeffs, gain_total, success_rate, thresholds = optimize_sector_coefficients(
-            sector_symbols, sector, period='1y', n_iterations=300, montant=50, 
+            sector_symbols, sector, period='1y', n_iterations=10, montant=50, 
             transaction_cost=0.02, max_cycles=5, convergence_threshold=0.1
         )
         if coeffs:

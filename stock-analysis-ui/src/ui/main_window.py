@@ -95,7 +95,7 @@ class MainWindow(QMainWindow):
         mes_symbols = [s.strip().upper() for s in self.mes_symbols_input.text().split(",") if s.strip()]
         period=self.period_input.text().strip()
         result = analyse_signaux_populaires(popular_symbols, mes_symbols, period=period)
-        self.result_label.setText(str(result))
+        # self.result_label.setText(str(result))
     
     def analyse_and_backtest(self):
         symbols = [s.strip().upper() for s in self.symbol_input.text().split(",") if s.strip()]

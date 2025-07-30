@@ -9,5 +9,5 @@ import csv
 
 test_symbols = load_symbols_from_txt("test_symbols.txt")
 mes_symbols = load_symbols_from_txt("mes_symbols.txt")
-#modify_symbols_file("optimisation_symbols.txt", ["QBTS", "PLTR", "SPOT", "AAPL", "MSFT", "GOOGL", "AMZN", "TSLA", "NVDA", "META"],action='add')
-analyse_signaux_populaires(test_symbols, mes_symbols, period, plot_all=True)
+modify_symbols_file("optimisation_symbols.txt", ["BATS.L", "ULVR.L"],action='add')  # Exclure CDNS de l'analyse
+# analyse_signaux_populaires(test_symbols, mes_symbols, period, plot_all=True)

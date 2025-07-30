@@ -1659,3 +1659,12 @@
 2025-07-29 08:51:30,492 - ERROR - 
 1 Failed download:
 2025-07-29 08:51:30,492 - ERROR - ['COMP-USD']: YFPricesMissingError('possibly delisted; no price data found  (period=12mo)')
+2025-07-29 21:16:01,526 - ERROR - 
+1 Failed download:
+2025-07-29 21:16:01,574 - ERROR - ['COMP-USD']: YFPricesMissingError('possibly delisted; no price data found  (period=12mo)')
+2025-07-30 03:36:28,105 - ERROR - 
+1 Failed download:
+2025-07-30 03:36:28,105 - ERROR - ['COMP-USD']: YFPricesMissingError('possibly delisted; no price data found  (period=12mo)')
+2025-07-30 09:26:04,366 - ERROR - 
+1 Failed download:
+2025-07-30 09:26:04,366 - ERROR - ['COMP-USD']: YFPricesMissingError('possibly delisted; no price data found  (period=12mo)')
