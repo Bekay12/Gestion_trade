@@ -14,6 +14,7 @@ import requests
 from pathlib import Path
 from datetime import datetime, timedelta
 from typing import List, Dict, Union
+from concurrent.futures import ThreadPoolExecutor
 
 # Supprimer les avertissements FutureWarning de yfinance
 warnings.filterwarnings("ignore", category=FutureWarning)
@@ -171,21 +172,19 @@ def extract_best_parameters(csv_path: str = 'signaux/optimization_hist_4stp.csv'
         print(f"⚠️ Erreur lors de l'extraction des paramètres: {e}")
         return {}
 
-def get_trading_signal(prices, volumes,  domaine, domain_coeffs=None,
-                       seuil_achat=4.20, seuil_vente=-0.5,
+def get_trading_signal(prices, volumes, domaine, domain_coeffs=None,
                        variation_seuil=-20, volume_seuil=100000):
     """Détermine les signaux de trading avec validation des données"""
-    # Correction : assure que prices et volumes sont bien des Series 1D
+    # Conversion explicite en Series scalaires
     if isinstance(prices, pd.DataFrame):
         prices = prices.squeeze()
     if isinstance(volumes, pd.DataFrame):
         volumes = volumes.squeeze()
     if len(prices) < 50:
-        return "Données insuffisantes", None, None, None, None, None  # <-- 6 valeurs
-    
+        return "Données insuffisantes", None, None, None, None, None
+
     # Calcul des indicateurs
     macd, signal_line = calculate_macd(prices)
-    #rsi = ta.momentum.RSIIndicator(close=prices, window=14).rsi()
     rsi = ta.momentum.RSIIndicator(close=prices, window=17).rsi()
     ema20 = prices.ewm(span=20, adjust=False).mean()
     ema50 = prices.ewm(span=50, adjust=False).mean()
@@ -193,39 +192,34 @@ def get_trading_signal(prices, volumes,  domaine, domain_coeffs=None,
     
     # Validation des derniers points
     if len(macd) < 2 or len(rsi) < 1:
-        return "Données récentes manquantes", None, None, None, None, None  # <-- 6 valeurs
+        return "Données récentes manquantes", None, None, None, None, None
     
-    last_close = prices.iloc[-1]
-    last_ema20 = ema20.iloc[-1]
-    last_ema50 = ema50.iloc[-1]
-    last_ema200 = ema200.iloc[-1]
-    last_rsi = rsi.iloc[-1]
-    last_macd = macd.iloc[-1]
-    prev_macd = macd.iloc[-2]
-    last_signal = signal_line.iloc[-1]
-    prev_signal = signal_line.iloc[-2]
-    prev_rsi = rsi.iloc[-2]
+    # CORRECTION 1: Conversion explicite en valeurs scalaires
+    last_close = float(prices.iloc[-1])
+    last_ema20 = float(ema20.iloc[-1])
+    last_ema50 = float(ema50.iloc[-1])
+    last_ema200 = float(ema200.iloc[-1]) if len(prices) >= 200 else last_ema50
+    last_rsi = float(rsi.iloc[-1])
+    last_macd = float(macd.iloc[-1])
+    prev_macd = float(macd.iloc[-2])
+    last_signal = float(signal_line.iloc[-1])
+    prev_signal = float(signal_line.iloc[-2])
+    prev_rsi = float(rsi.iloc[-2])
     delta_rsi = last_rsi - prev_rsi
     
-   # Performance long terme
-    variation_30j = ((last_close - prices.iloc[-30]) / prices.iloc[-30]) * 100 if len(prices) >= 30 else None
-    variation_180j = ((last_close - prices.iloc[-180]) / prices.iloc[-180]) * 100 if len(prices) >= 180 else None
+    # Performance long terme
+    variation_30j = ((last_close - float(prices.iloc[-30])) / float(prices.iloc[-30]) * 100) if len(prices) >= 30 else np.nan
+    variation_180j = ((last_close - float(prices.iloc[-180])) / float(prices.iloc[-180]) * 100) if len(prices) >= 180 else np.nan
 
     # Calcul du volume moyen sur 30 jours
     if len(volumes) >= 30:
-        volume_mean = volumes.rolling(window=30).mean().iloc[-1]
-        volume_std = volumes.rolling(window=30).std().iloc[-1]
-
-        if isinstance(volume_mean, pd.Series):
-            volume_mean = float(volume_mean.iloc[0])
-            volume_std = float(volume_std.iloc[0]) if not volume_std.empty else 0.0
-        else:
-            volume_mean = float(volume_mean)
-            volume_std = float(volume_std) 
+        volume_mean = float(volumes.rolling(window=30).mean().iloc[-1])
+        volume_std = float(volumes.rolling(window=30).std().iloc[-1])
     else:
         volume_mean = float(volumes.mean()) if len(volumes) > 0 else 0.0
+        volume_std = 0.0
 
-    current_volume = volumes.iloc[-1]
+    current_volume = float(volumes.iloc[-1])
     
     # Nouveaux indicateurs pour confirmation
     from ta.volatility import BollingerBands
@@ -236,38 +230,36 @@ def get_trading_signal(prices, volumes,  domaine, domain_coeffs=None,
     bb_upper = bb.bollinger_hband()
     bb_lower = bb.bollinger_lband()
     bb_percent = (prices - bb_lower) / (bb_upper - bb_lower)
-    last_bb_percent = bb_percent.iloc[-1] if len(bb_percent) > 0 else 0.5
+    last_bb_percent = float(bb_percent.iloc[-1]) if len(bb_percent) > 0 else 0.5
     
     # ADX (Force de la tendance)
     adx_indicator = ADXIndicator(high=prices, low=prices, close=prices, window=14)
     adx = adx_indicator.adx()
-    last_adx = adx.iloc[-1] if len(adx) > 0 else 0
+    last_adx = float(adx.iloc[-1]) if len(adx) > 0 else 0
     
     # Ichimoku Cloud (Tendance globale)
     ichimoku = IchimokuIndicator(high=prices, low=prices, window1=9, window2=26, window3=52)
     ichimoku_base = ichimoku.ichimoku_base_line()
     ichimoku_conversion = ichimoku.ichimoku_conversion_line()
-    last_ichimoku_base = ichimoku_base.iloc[-1] if len(ichimoku_base) > 0 else last_close
-    last_ichimoku_conversion = ichimoku_conversion.iloc[-1] if len(ichimoku_conversion) > 0 else last_close
+    last_ichimoku_base = float(ichimoku_base.iloc[-1]) if len(ichimoku_base) > 0 else last_close
+    last_ichimoku_conversion = float(ichimoku_conversion.iloc[-1]) if len(ichimoku_conversion) > 0 else last_close
     
-     # Conditions d’achat optimisées
+    # Conditions d'achat optimisées
     is_macd_cross_up = prev_macd < prev_signal and last_macd > last_signal
     is_macd_cross_down = prev_macd > prev_signal and last_macd < last_signal
     is_volume_ok = volume_mean > volume_seuil
+    is_variation_ok = not np.isnan(variation_30j) and variation_30j > variation_seuil
+    
+    # CORRECTION 2: Utilisation de valeurs scalaires pour les comparaisons
+    ema_structure_up = last_close > last_ema20 > last_ema50 > last_ema200
+    ema_structure_down = last_close < last_ema20 < last_ema50 < last_ema200
 
-    is_variation_ok = variation_30j is not np.nan and variation_30j > variation_seuil
-    tendance_haussière = last_close > last_ema20 > last_ema50 > last_ema200
-
-        # RSI dynamique
+    # RSI dynamique
     rsi_cross_up = prev_rsi < 30 and last_rsi >= 30
     rsi_cross_mid = prev_rsi < 50 and last_rsi >= 50
-    rsi_cross_down = prev_rsi > 65 and last_rsi <= 65  # Seuil abaissé
-    rsi_ok = last_rsi < 75 and last_rsi > 40  # pas suracheté, mais dynamique
+    rsi_cross_down = prev_rsi > 65 and last_rsi <= 65
+    rsi_ok = last_rsi < 75 and last_rsi > 40
 
-    # EMA tendance
-    ema_structure_up = last_close > ema20.iloc[-1] > ema50.iloc[-1] > ema200.iloc[-1]
-    ema_structure_down = last_close < ema20.iloc[-1] < ema50.iloc[-1] < ema200.iloc[-1]
-    
     # Conditions supplémentaires pour confirmation
     strong_uptrend = (last_close > last_ichimoku_base) and (last_close > last_ichimoku_conversion)
     strong_downtrend = (last_close < last_ichimoku_base) and (last_close < last_ichimoku_conversion)
@@ -278,54 +270,41 @@ def get_trading_signal(prices, volumes,  domaine, domain_coeffs=None,
     
     # Volatilité
     volatility = prices.pct_change().rolling(20).std()
+    # CORRECTION 3: Conversion de la volatilité en scalaire
+    if isinstance(volatility, pd.Series) and not volatility.empty:
+        volatility = float(volatility.iloc[-1])
+    else:
+        volatility = 0.05
     
     # Ratio de Sharpe à court terme
     returns = prices.pct_change()
-    sharpe = returns.mean() / returns.std() * np.sqrt(252)
+    sharpe = returns.mean() / returns.std() * np.sqrt(252) if returns.std() > 0 else 0
     
-    score = 0  # Initialisation du score
-    ################################### Conditions d'achat et de vente optimisées ###################################
-    # if is_macd_cross_up and is_volume_ok and is_variation_ok and rsi.iloc[-1] < 75 :
-    #     score += 2  # Signal d'achat fort
-    #     # signal = "ACHAT"
-    # elif is_macd_cross_down and rsi.iloc[-1] > 30:
-    #     score -= 2  # Signal de vente fort
-    #     #signal = "VENTE"
-    # else:
-    #     signal = "NEUTRE"
-
-    ########################### Methode alternative avec score de signal ###########################
-    # Définir les coefficients par domaine
+    score = 0
     default_coeffs = (1.75, 1.0, 1.5, 1.25, 1.75, 1.25, 1.0, 1.75)
     thresholds = (4.20, -0.5)
     best_params = extract_best_parameters()
+    
     if domain_coeffs:
         coeffs = domain_coeffs.get(domaine, default_coeffs)
     else:
-        # Vérifier si le secteur existe dans les paramètres extraits
         if domaine in best_params:
             coeffs, thresholds, gain_moyen = best_params[domaine]
         else:
             coeffs = default_coeffs
-    
-    if seuil_achat is None:
-        seuil_achat = 4.20      # seuil_achat=4.20, seuil_vente=-0.81, taux_reussite=33.3%
-    if seuil_vente is None:     # seuil_achat=5.75, seuil_vente=-0.5, taux de reussite 25.9 %
-        seuil_vente = -0.5
 
     a1, a2, a3, a4, a5, a6, a7, a8 = coeffs
-    m1, m2, m3, m4 = 1.0, 1.0, 1.0 , 1.0 # Coefficients pour ajuster l'importance des conditions de volume et tendance
+    m1, m2, m3, m4 = 1.0, 1.0, 1.0, 1.0
 
-    if adx_strong_trend: m1 = 1.5
+    if adx_strong_trend: 
+        m1 = 1.5
 
-    # Vérification du volume : Mesure à quel point le volume actuel s’éloigne de sa moyenne.
+    # Vérification du volume
     z = (current_volume - volume_mean) / volume_std if volume_std > 0 else 0
     if z > 1.75:
-        m2= 1.5
+        m2 = 1.5
     elif z < -1.75:
-        m2= 0.7
-    else:
-        m2=1.0
+        m2 = 0.7
     
     volume_ratio = current_volume / volume_mean if volume_mean > 0 else 0
     if volume_ratio > 1.5:
@@ -334,80 +313,102 @@ def get_trading_signal(prices, volumes,  domaine, domain_coeffs=None,
         m3 = 0.7
 
     # RSI : Signaux haussiers
-    if rsi_cross_up: score += a1
-    if  delta_rsi > 3 : score += m3*a2 # accélération RSI rsi_surge  # Momentum haussier
-    if rsi_cross_mid: score += a3
+    if rsi_cross_up: 
+        score += a1
+    if delta_rsi > 3: 
+        score += m3 * a2
+    if rsi_cross_mid: 
+        score += a3
 
     # RSI : Signaux baissiers
-    if rsi_cross_down: score -= a1
-    if delta_rsi < -3: score -= m3 * a2  # RSI chute rapide # RSI chute rapidement
+    if rsi_cross_down: 
+        score -= a1
+    if delta_rsi < -3: 
+        score -= m3 * a2
  
-    if rsi_ok: score += a4  # RSI dans une zone saine
-    else: score -= a4  # RSI trop extrême
+    if rsi_ok: 
+        score += a4
+    else: 
+        score -= a4
 
     # EMA : Structure de tendance
-    if ema_structure_up: score += m1*a5
-    if ema_structure_down: score -= m1*a5
+    if ema_structure_up: 
+        score += m1 * a5
+    if ema_structure_down: 
+        score -= m1 * a5
 
     # MACD : Croisements
-    if is_macd_cross_up: score += a6
-    if is_macd_cross_down: score -= a6
+    if is_macd_cross_up: 
+        score += a6
+    if is_macd_cross_down: 
+        score -= a6
 
     # Volume
-    if is_volume_ok: score += m2*a6
-    else: score -= m2*a6  # Manque de volume → faible conviction
+    if is_volume_ok: 
+        score += m2 * a6
+    else: 
+        score -= m2 * a6
 
     # Performance passée
-    if is_variation_ok: score += a7
-    else: score -= a7  # Sous-performance
+    if is_variation_ok: 
+        score += a7
+    else: 
+        score -= a7
 
-     # Conditions d'achat renforcées
+    # Conditions d'achat renforcées
     buy_conditions = (
         (is_macd_cross_up or ema_structure_up) and
         (rsi_cross_up or rsi_cross_mid) and
         (last_rsi < 65) and
-        (last_bb_percent < 0.7) and  # Pas en zone de surachat
+        (last_bb_percent < 0.7) and
         (strong_uptrend or adx_strong_trend) and
         (volume_mean > volume_seuil) and
-        (variation_30j > variation_seuil if variation_30j else True)
+        (is_variation_ok if not np.isnan(variation_30j) else True)
     )
     
     # Conditions de vente renforcées
     sell_conditions = (
         (is_macd_cross_down or ema_structure_down) and
         (rsi_cross_down or last_rsi > 70) and
-        (last_rsi > 35) and  # Éviter les surventes extrêmes
-        (last_bb_percent > 0.3) and  # Pas en zone de survente
+        (last_rsi > 35) and
+        (last_bb_percent > 0.3) and
         (strong_downtrend or adx_strong_trend) and
         (volume_mean > volume_seuil)
     )
 
-    if strong_uptrend: score += m2*a5
-    if last_bb_percent < 0.4: score += m3*a4  # Zone de survente
-    if buy_conditions: score += a8  # Conditions d'achat renforcées
+    if strong_uptrend: 
+        score += m2 * a5
+    if last_bb_percent < 0.4: 
+        score += m3 * a4
+    if buy_conditions: 
+        score += a8
 
-    if strong_downtrend: score -= m2*a5
-    if last_bb_percent > 0.6: score -= m3*a4  # Zone de surachat
-    if sell_conditions: score -= a8  # Conditions de vente renforcées
+    if strong_downtrend: 
+        score -= m2 * a5
+    if last_bb_percent > 0.6: 
+        score -= m3 * a4
+    if sell_conditions: 
+        score -= a8
     
-    if volatility.iloc[-1] > 0.05 : m4=0.75 
-    score *= m4  # Réduire le score en cas de forte volatilité
+    if volatility > 0.05: 
+        m4 = 0.75 
+    score *= m4
 
     # Interprétation du score
-    if score >= thresholds[0]:  # seuil d'achat
+    if score >= thresholds[0]:
         signal = "ACHAT"
-    elif score <= thresholds[1]:  # seuil de vente
+    elif score <= thresholds[1]:
         signal = "VENTE"
     else:
         signal = "NEUTRE"
     
-    return signal, last_close, last_close > last_ema20, round(last_rsi,2), round(volume_mean, 2), score
+    return signal, last_close, last_close > last_ema20, round(last_rsi,2), round(volume_mean, 2), round(score,3)
 
 # Configuration du cache pour les données boursières
 CACHE_DIR = Path("data_cache")
 CACHE_DIR.mkdir(exist_ok=True)
 
-def get_cached_data(symbol: str, period: str, max_age_hours: int = 6) -> pd.DataFrame:
+def get_cached_data(symbol: str, period: str, max_age_hours: int = 6,  offline_mode=False) -> pd.DataFrame:
     """Récupère les données en cache si elles existent et sont récentes, sinon télécharge.
     
     Args:
@@ -419,34 +420,33 @@ def get_cached_data(symbol: str, period: str, max_age_hours: int = 6) -> pd.Data
         pd.DataFrame avec les données, ou DataFrame vide si échec.
     """
     cache_file = CACHE_DIR / f"{symbol}_{period}.pkl"
-    
-    # Vérifier si le cache existe et est récent
     if cache_file.exists():
-        mod_time = datetime.fromtimestamp(cache_file.stat().st_mtime)
-        if datetime.now() - mod_time < timedelta(hours=max_age_hours):
-            try:
-                data = pd.read_pickle(cache_file)
-                if not data.empty and 'Close' in data.columns and 'Volume' in data.columns:
-                    # Vérifier que les données ont assez de points
-                    if len(data) >= 50:
-                        return data
-                    else:
-                        print(f"🚨 Cache pour {symbol} contient trop peu de données ({len(data)} points)")
-            except Exception as e:
-                print(f"🚨 Erreur lors de la lecture du cache pour {symbol}: {e}")
-    
-    # Télécharger et mettre en cache
-    try:
-        data = yf.download(symbol, period=period, progress=False, timeout=15)
-        if not data.empty and 'Close' in data.columns and 'Volume' in data.columns:
-            data.to_pickle(cache_file)
-            return data
+        age = (datetime.now() - datetime.fromtimestamp(cache_file.stat().st_mtime)).total_seconds() / 3600
+        if age < max_age_hours or offline_mode:
+            return pd.read_pickle(cache_file)
+    if offline_mode:
+        # Si offline, charger le cache même s'il est vieux
+        if cache_file.exists():
+            return pd.read_pickle(cache_file)
         else:
-            print(f"🚨 Données téléchargées vides ou incomplètes pour {symbol}")
+            print(f"Pas de cache disponible pour {symbol} ({period}) en mode hors ligne.")
             return pd.DataFrame()
+    # Sinon, télécharger et mettre en cache
+    try:
+        data = yf.download(symbol, period=period)
+        data.to_pickle(cache_file)
+        return data
     except Exception as e:
-        print(f"🚨 Erreur lors du téléchargement individuel pour {symbol}: {e}")
+        print(f"Erreur téléchargement {symbol}: {e}")
+        if cache_file.exists():
+            return pd.read_pickle(cache_file)
         return pd.DataFrame()
+    
+def preload_cache(symbols, period):
+    with ThreadPoolExecutor(max_workers=8) as executor:
+        futures = [executor.submit(get_cached_data, symbol, period) for symbol in symbols]
+        for f in futures:
+            f.result()  # force le téléchargement/cache
 
 def download_stock_data(symbols: List[str], period: str) -> Dict[str, Dict[str, pd.Series]]:
     """Version optimisée pour télécharger les données boursières avec cache.
@@ -495,6 +495,10 @@ def download_stock_data(symbols: List[str], period: str) -> Dict[str, Dict[str, 
             print(f"🚨 Erreur lors du téléchargement groupé pour le lot {batch[:5]}...: {e}")
             all_data = None
         
+        # Extraire d'abord la liste des symboles non présents dans all_data
+        symbols_to_fetch = [s for s in batch if all_data is None or s not in all_data]
+
+
         for symbol in batch:
             try:
                 # Extraire les données du téléchargement groupé ou du cache
@@ -539,7 +543,7 @@ def download_stock_data(symbols: List[str], period: str) -> Dict[str, Dict[str, 
 
 
 def backtest_signals(prices: Union[pd.Series, pd.DataFrame], volumes: Union[pd.Series, pd.DataFrame], 
-                    domaine: str, montant: float = 50, transaction_cost: float = 0.00, domain_coeffs=None,seuil_achat=None, seuil_vente=None) -> Dict:
+                    domaine: str, montant: float = 50, transaction_cost: float = 0.00, domain_coeffs=None,) -> Dict:
     """
     Effectue un backtest sur la série de prix.
     Un 'trade' correspond à un cycle complet ACHAT puis VENTE (entrée puis sortie).
@@ -584,8 +588,7 @@ def backtest_signals(prices: Union[pd.Series, pd.DataFrame], volumes: Union[pd.S
     # Pré-calculer les signaux pour toute la série
     signals = []
     for i in range(50, len(prices)):
-        signal, *_ = get_trading_signal(prices[:i], volumes[:i], domaine,domain_coeffs=domain_coeffs,
-                                        seuil_achat=seuil_achat, seuil_vente=seuil_vente)
+        signal, *_ = get_trading_signal(prices[:i], volumes[:i], domaine,domain_coeffs=domain_coeffs,)
         signals.append(signal)
     signals = pd.Series(signals, index=prices.index[50:])
 
@@ -843,6 +846,7 @@ period = "12mo"  #variable globale pour la période d'analyse ne pas commenter
 popular_symbols = load_symbols_from_txt("popular_symbols.txt")
 mes_symbols = load_symbols_from_txt("mes_symbols.txt")
 # popular_symbols = list(set(mes_symbols))
+preload_cache(popular_symbols + mes_symbols, period)
 
 def analyse_signaux_populaires(
     popular_symbols, mes_symbols,
