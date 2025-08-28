@@ -1,83 +1,75 @@
 """
-Système de logging centralisé pour le trading bot.
+Systeme de logging centralisé pour le trading bot.
 """
 import logging
-import sys
+import logging.handlers
 from pathlib import Path
 from typing import Optional
-from datetime import datetime
 
-class TradingBotLogger:
-    """Logger personnalisé pour le trading bot."""
+def setup_logging(config_logging) -> logging.Logger:
+    """
+    Configure le syst�me de logging.
+    
+    Args:
+        config_logging: Configuration du logging depuis settings.py
+        
+    Returns:
+        Logger principal configur�.
+    """
+    # Cr�er le dossier logs s'il n'existe pas
+    log_dir = Path("logs")
+    log_dir.mkdir(exist_ok=True)
+    
+    # Configuration du logger principal
+    logger = logging.getLogger()
+    logger.setLevel(getattr(logging, config_logging.level, logging.INFO))
+    
+    # �viter la duplication des handlers
+    if logger.handlers:
+        return logger
+    
+    # Handler pour fichier avec rotation
+    file_handler = logging.handlers.RotatingFileHandler(
+        log_dir / config_logging.file_name,
+        maxBytes=config_logging.max_bytes,
+        backupCount=config_logging.backup_count,
+        encoding='utf-8'
+    )
+    file_handler.setLevel(logging.DEBUG)
+    
+    # Handler pour console
+    console_handler = logging.StreamHandler()
+    console_handler.setLevel(logging.INFO)
+    
+    # Formatter
+    formatter = logging.Formatter(config_logging.format)
+    file_handler.setFormatter(formatter)
+    console_handler.setFormatter(formatter)
+    
+    # Ajouter les handlers
+    logger.addHandler(file_handler)
+    logger.addHandler(console_handler)
+    
+    return logger
 
-    def __init__(self, name: str = "trading_bot", 
-                 log_file: Optional[str] = None,
-                 level: int = logging.INFO):
-        self.name = name
-        self.logger = logging.getLogger(name)
-        self.logger.setLevel(level)
+def get_logger(name: str) -> logging.Logger:
+    """
+    Retourne un logger nomm�.
+    
+    Args:
+        name: Nom du logger (g�n�ralement __name__).
+        
+    Returns:
+        Instance du logger.
+    """
+    return logging.getLogger(name)
 
-        # Éviter la duplication des handlers
-        if not self.logger.handlers:
-            self._setup_handlers(log_file, level)
+# Instance globale pour compatibilit�
+_main_logger: Optional[logging.Logger] = None
 
-    def _setup_handlers(self, log_file: Optional[str], level: int):
-        """Configure les handlers pour console et fichier."""
-
-        # Format des logs
-        formatter = logging.Formatter(
-            '%(asctime)s - %(name)s - %(levelname)s - %(message)s'
-        )
-
-        # Handler pour la console
-        console_handler = logging.StreamHandler(sys.stdout)
-        console_handler.setLevel(level)
-        console_handler.setFormatter(formatter)
-        self.logger.addHandler(console_handler)
-
-        # Handler pour fichier si spécifié
-        if log_file:
-            log_path = Path(log_file)
-            log_path.parent.mkdir(parents=True, exist_ok=True)
-
-            file_handler = logging.FileHandler(log_path, mode='a', encoding='utf-8')
-            file_handler.setLevel(level)
-            file_handler.setFormatter(formatter)
-            self.logger.addHandler(file_handler)
-
-    def info(self, message: str):
-        """Log info."""
-        self.logger.info(message)
-
-    def warning(self, message: str):
-        """Log warning."""
-        self.logger.warning(message)
-
-    def error(self, message: str):
-        """Log error."""
-        self.logger.error(message)
-
-    def debug(self, message: str):
-        """Log debug."""
-        self.logger.debug(message)
-
-# Instance globale
-_main_logger = None
-
-def get_logger(name: str = "trading_bot") -> TradingBotLogger:
-    """Retourne une instance du logger."""
+def get_main_logger() -> logging.Logger:
+    """Retourne le logger principal."""
     global _main_logger
-
     if _main_logger is None:
-        # Initialiser avec le fichier de log par défaut
-        log_file = Path.cwd() / "logs" / "trading_bot.log"
-        _main_logger = TradingBotLogger(name, str(log_file))
-
+        _main_logger = logging.getLogger("trading_bot")
     return _main_logger
-
-def setup_logging():
-    """Configure le logging pour l'interface utilisateur."""
-    global _main_logger
-
-    log_file = Path.cwd() / "logs" / "ui.log"
-    _main_logger = TradingBotLogger("trading_bot.ui", str(log_file))

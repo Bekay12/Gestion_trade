@@ -2,11 +2,11 @@
 Utilitaires pour le trading bot.
 """
 from .logger import get_logger, setup_logging
-from .cache import CacheManager
-from .file_manager import SymbolFileManager, load_symbols_from_txt, save_symbols_to_txt, modify_symbols_file
+from .cache import DataCacheManager, data_cache_manager, get_cached_data, preload_cache
+from .file_manager import SymbolFileManager
 
 __all__ = [
     'get_logger', 'setup_logging',
-    'CacheManager',
-    'SymbolFileManager', 'load_symbols_from_txt', 'save_symbols_to_txt', 'modify_symbols_file'
+    'DataCacheManager', 'data_cache_manager', 'get_cached_data', 'preload_cache',
+    'SymbolFileManager'
 ]

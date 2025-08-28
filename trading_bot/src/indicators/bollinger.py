@@ -9,8 +9,9 @@ from typing import Dict
 from .base_indicator import BaseIndicator
 
 class BollingerIndicator(BaseIndicator):
+    # -*- coding: utf-8 -*-
     """
-    Indicateur Bollinger Bands avec vos paramètres exacts.
+    Indicateur Bollinger Bands avec vos paramï¿½tres exacts.
     """
     
     def __init__(self):
@@ -23,9 +24,9 @@ class BollingerIndicator(BaseIndicator):
         Calcule les Bollinger Bands.
         
         Args:
-            data: Prix de clôture.
-            window: Période de calcul (défaut: 20).
-            std_dev: Nombre d'écarts-types (défaut: 2).
+            data: Prix de clï¿½ture.
+            window: Pï¿½riode de calcul (dï¿½faut: 20).
+            std_dev: Nombre d'ï¿½carts-types (dï¿½faut: 2).
             
         Returns:
             Dictionnaire avec upper, lower, middle, percent.
@@ -43,7 +44,7 @@ class BollingerIndicator(BaseIndicator):
         std_dev = std_dev or self.default_std_dev
         
         try:
-            # Utiliser ta (votre méthode)
+            # Utiliser ta (votre mï¿½thode)
             bb = BollingerBands(close=data, window=window, window_dev=std_dev)
             
             upper = bb.bollinger_hband()
@@ -80,10 +81,10 @@ class BollingerIndicator(BaseIndicator):
     
     def get_signals(self, bb_data: Dict[str, pd.Series], prices: pd.Series) -> dict:
         """
-        Génère les signaux Bollinger Bands.
+        Gï¿½nï¿½re les signaux Bollinger Bands.
         
         Args:
-            bb_data: Données Bollinger calculées.
+            bb_data: Donnï¿½es Bollinger calculï¿½es.
             prices: Prix actuels.
             
         Returns:
@@ -113,7 +114,7 @@ class BollingerIndicator(BaseIndicator):
         }
     
     def _is_squeeze(self, bb_data: Dict[str, pd.Series], lookback: int = 20) -> bool:
-        """Détecte un squeeze (bandes qui se resserrent)."""
+        """Dï¿½tecte un squeeze (bandes qui se resserrent)."""
         if len(bb_data['upper']) < lookback:
             return False
         
@@ -124,7 +125,7 @@ class BollingerIndicator(BaseIndicator):
         return current_width < (avg_width * 0.8)
     
     def _is_expansion(self, bb_data: Dict[str, pd.Series], lookback: int = 20) -> bool:
-        """Détecte une expansion (bandes qui s'élargissent)."""
+        """Dï¿½tecte une expansion (bandes qui s'ï¿½largissent)."""
         if len(bb_data['upper']) < lookback:
             return False
         
@@ -137,7 +138,7 @@ class BollingerIndicator(BaseIndicator):
 # Instance globale
 bollinger_indicator = BollingerIndicator()
 
-# Fonction de compatibilité
+# Fonction de compatibilitï¿½
 def calculate_bollinger_bands(prices: pd.Series, window: int = 20, std_dev: int = 2) -> Dict[str, pd.Series]:
-    """Fonction de compatibilité."""
+    """Fonction de compatibilitï¿½."""
     return bollinger_indicator.calculate(prices, window, std_dev)

@@ -9,7 +9,8 @@ from typing import Dict
 from .base_indicator import BaseIndicator
 
 class ADXIndicator_Custom(BaseIndicator):
-    """Indicateur ADX avec vos paramètres exacts."""
+    # -*- coding: utf-8 -*-
+    """Indicateur ADX avec vos paramï¿½tres exacts."""
     
     def __init__(self):
         super().__init__("ADX")
@@ -24,8 +25,8 @@ class ADXIndicator_Custom(BaseIndicator):
         Args:
             high: Prix les plus hauts.
             low: Prix les plus bas.
-            close: Prix de clôture.
-            window: Période de calcul.
+            close: Prix de clï¿½ture.
+            window: Pï¿½riode de calcul.
             
         Returns:
             Dict avec adx, di_plus, di_minus.
@@ -60,7 +61,7 @@ class ADXIndicator_Custom(BaseIndicator):
             }
     
     def get_trend_strength(self, adx_value: float) -> str:
-        """Détermine la force de la tendance."""
+        """Dï¿½termine la force de la tendance."""
         if adx_value >= self.strong_threshold:
             return "STRONG"
         elif adx_value >= 20:

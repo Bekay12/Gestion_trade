@@ -11,7 +11,7 @@ import yfinance as yf
 from config.settings import config
 from src.data.providers.yahoo_provider import YahooProvider
 from src.signals.signal_generator import SignalGenerator
-from src.backtesting.backtest_engine import BacktestEngine
+
 from src.signals.signal_saver import SignalSaver
 from src.utils.logger import get_logger
 
@@ -24,6 +24,7 @@ class SignalAnalyzer:
     """
     
     def __init__(self):
+        from src.backtesting.backtest_engine import BacktestEngine
         self.yahoo_provider = YahooProvider()
         self.signal_generator = SignalGenerator()
         self.backtest_engine = BacktestEngine()
@@ -135,6 +136,12 @@ class SignalAnalyzer:
         if reliable_signals and save_csv:
             self._save_signals(reliable_signals, mes_symbols, verbose)
         
+        # Affichage des résultats par secteur
+        self._display_sector_results(signals)
+
+        # Affichage des résultats des signaux fiables
+        self._display_reliable_signals_results(reliable_signals)
+        
         return {
             "signals": signals,
             "organized_signals": organized_signals,
@@ -245,7 +252,7 @@ class SignalAnalyzer:
         # Afficher les résultats de backtest
         if verbose and backtest_results:
             self._display_backtest_results(backtest_results, total_trades, total_gagnants, total_gain)
-        
+    
         return backtest_results
     
     def _display_backtest_results(self, backtest_results: List[Dict], total_trades: int, 
@@ -276,6 +283,21 @@ class SignalAnalyzer:
             logger.info(f" - Gain total net (après frais) = {gain_total_reel:.2f} $")
             logger.info("=" * 115)
     
+    def _display_sector_results(self, signals: List[Dict]):
+            """Affiche les résultats regroupés par domaine/secteur."""
+            from collections import defaultdict
+            sector_map = defaultdict(list)
+            for s in signals:
+                sector_map[s['Domaine']].append(s)
+            logger.info("=" * 115)
+            logger.info("RÉSULTATS PAR DOMAINE/SECTEUR")
+            logger.info("=" * 115)
+            for sector, sigs in sector_map.items():
+                logger.info(f"\n--- {sector} ---")
+                for s in sigs:
+                    logger.info(f"{s['Symbole']:<8} | {s['Signal']:<6} | Score: {s['Score']:<6.2f} | Prix: {s['Prix']:<8.2f} | RSI: {s['RSI']:<5.1f} | Tendance: {s['Tendance']:<7} | Volume: {s['Volume moyen']:<10,.0f}")
+            logger.info("=" * 115)
+    
     def _filter_reliable_signals(self, signals: List[Dict], backtest_results: List[Dict]) -> List[Dict]:
         """Filtre les signaux fiables (>=60% taux de réussite ou non évalués)."""
         # Créer un ensemble des symboles fiables
@@ -299,7 +321,7 @@ class SignalAnalyzer:
                 reliable_signals.append(signal_copy)
         
         return reliable_signals
-    
+
     def _save_signals(self, reliable_signals: List[Dict], mes_symbols: List[str], verbose: bool):
         """Sauvegarde les signaux fiables."""
         if verbose:
@@ -316,8 +338,21 @@ class SignalAnalyzer:
                 logger.info(f"💠 Sauvegarde de {len(mes_signaux_valides)} signaux personnels fiables dans {special_filename}")
             self.signal_saver.save_to_evolutive_csv(mes_signaux_valides, special_filename)
 
+    def _display_reliable_signals_results(self, reliable_signals: List[Dict]):
+        """Affiche les résultats des signaux fiables."""
+        logger.info("=" * 115)
+        logger.info("RÉSULTATS DES SIGNAUX FIABLES")
+        logger.info("=" * 115)
+        logger.info(f"{'Symbole':<8} {'Signal':<8} {'Score':<7} {'Prix':<10} {'Tendance':<10} {'RSI':<6} {'Volume moyen':<15} {'Domaine':<24} Fiabilité")
+        logger.info("-" * 115)
+        
+        for s in reliable_signals:
+            logger.info(f"{s['Symbole']:<8} {s['Signal']:<8} {s['Score']:<7.2f} {s['Prix']:<10.2f} {s['Tendance']:<10} {s['RSI']:<6.1f} {s['Volume moyen']:<15,.0f} {s['Domaine']:<24} {s['Fiabilite']}")
+        
+        logger.info("=" * 115)
+
 # Instance globale
-signal_analyzer = SignalAnalyzer()
+
 
 # Fonction de compatibilité
 def analyse_signaux_populaires(popular_symbols: List[str], mes_symbols: List[str],
@@ -325,6 +360,7 @@ def analyse_signaux_populaires(popular_symbols: List[str], mes_symbols: List[str
                               chunk_size: int = 20, verbose: bool = True,
                               save_csv: bool = True, plot_all: bool = False) -> Dict[str, Any]:
     """Fonction de compatibilité avec votre code existant."""
+    signal_analyzer = SignalAnalyzer()
     return signal_analyzer.analyze_popular_signals(
         popular_symbols, mes_symbols, period, afficher_graphiques, 
         chunk_size, verbose, save_csv, plot_all

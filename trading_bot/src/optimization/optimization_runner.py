@@ -2,9 +2,18 @@
 Lanceur d'optimisation complète pour tous les secteurs.
 Migration de la logique principale de votre optimisateur_boucle.
 """
+
+import sys
+from pathlib import Path
+
+# Correction pour les imports - ajouter la racine du projet au PYTHONPATH
+if __name__ == "__main__":
+    # Si exécuté directement, ajouter la racine du projet au path
+    project_root = Path(__file__).parent.parent.parent
+    sys.path.insert(0, str(project_root))
+
 import pandas as pd
 from typing import List, Dict
-from pathlib import Path
 
 from config.settings import config
 from src.utils.file_manager import SymbolFileManager
@@ -55,7 +64,6 @@ class OptimizationRunner:
 
         # Charger les symboles (votre logique)
         symbols = self.symbol_manager.load_symbols_from_txt(symbols_file)
-
         if not symbols:
             logger.error(f"❌ Aucun symbole trouvé dans {symbols_file}")
             return {}
@@ -69,7 +77,6 @@ class OptimizationRunner:
 
         # Lancer l'optimisation pour chaque secteur
         optimized_coeffs = {}
-
         for sector, sector_symbols in sectors.items():
             if not sector_symbols:
                 logger.info(f"🚫 Secteur {sector} vide, ignoré")
@@ -79,8 +86,8 @@ class OptimizationRunner:
 
             try:
                 coeffs, gain_total, success_rate, thresholds = self.sector_optimizer.optimize_sector_coefficients(
-                    sector_symbols, 
-                    sector, 
+                    sector_symbols,
+                    sector,
                     period=self.opt_config.period,
                     n_iterations=self.opt_config.n_iterations,
                     montant=self.opt_config.position_size,
@@ -91,12 +98,11 @@ class OptimizationRunner:
 
                 if coeffs:
                     optimized_coeffs[sector] = coeffs
-
                     logger.info(f"\n📊 Résultats pour {sector}:")
-                    logger.info(f"  Meilleurs coefficients: {coeffs}")
-                    logger.info(f"  Meilleurs seuils (achat, vente): {thresholds}")
-                    logger.info(f"  Gain total moyen: {gain_total:.2f}")
-                    logger.info(f"  Taux de réussite: {success_rate:.2f}%")
+                    logger.info(f" Meilleurs coefficients: {coeffs}")
+                    logger.info(f" Meilleurs seuils (achat, vente): {thresholds}")
+                    logger.info(f" Gain total moyen: {gain_total:.2f}")
+                    logger.info(f" Taux de réussite: {success_rate:.2f}%")
 
             except Exception as e:
                 logger.error(f"❌ Erreur optimisation secteur {sector}: {e}")
@@ -104,8 +110,8 @@ class OptimizationRunner:
 
         # Afficher le résumé final (votre format)
         self._display_final_summary(optimized_coeffs)
-
         logger.info("✅ Optimisation complète terminée")
+
         return optimized_coeffs
 
     def _assign_symbols_to_sectors(self, symbols: List[str]) -> Dict[str, List[str]]:
@@ -114,12 +120,10 @@ class OptimizationRunner:
         Migration de votre logique d'assignation.
         """
         sectors = self.available_sectors.copy()
-
         logger.info("\n📋 Assignation des secteurs:")
 
         for symbol in symbols:
             sector = self.sector_optimizer.get_sector(symbol)
-
             if sector in sectors:
                 sectors[sector].append(symbol)
             else:
@@ -128,7 +132,7 @@ class OptimizationRunner:
         # Afficher l'assignation (votre format)
         for sector, syms in sectors.items():
             if syms:  # N'afficher que les secteurs non vides
-                logger.info(f"  {sector}: {syms}")
+                logger.info(f" {sector}: {syms}")
 
         return sectors
 
@@ -143,13 +147,11 @@ class OptimizationRunner:
         logger.info("\n" + "="*80)
         logger.info("🎯 RÉSUMÉ FINAL DE L'OPTIMISATION")
         logger.info("="*80)
-
         logger.info("\nDictionnaire optimisé pour domain_coeffs:")
         logger.info("{")
         for sector, coeffs in optimized_coeffs.items():
-            logger.info(f"    '{sector}': {coeffs},")
+            logger.info(f" '{sector}': {coeffs},")
         logger.info("}")
-
         logger.info(f"\n📈 {len(optimized_coeffs)} secteurs optimisés avec succès")
         logger.info("="*80)
 
@@ -165,9 +167,8 @@ class OptimizationRunner:
             Tuple (coeffs, gain_total, success_rate, thresholds).
         """
         logger.info(f"🔧 Optimisation du secteur spécifique: {sector}")
-
         return self.sector_optimizer.optimize_sector_coefficients(
-            symbols, 
+            symbols,
             sector,
             period=self.opt_config.period,
             n_iterations=self.opt_config.n_iterations,
@@ -179,3 +180,11 @@ class OptimizationRunner:
 
 # Instance globale
 optimization_runner = OptimizationRunner()
+
+# Point d'entrée direct (pour debug)
+if __name__ == "__main__":
+    from src.utils.logger import setup_logging
+    setup_logging(config.logging)
+    logger.info("⚠️ Exécution directe - utilisez plutôt run_optimization.py")
+    results = optimization_runner.run_full_optimization()
+    print(f"📈 Résultats: {len(results)} secteurs optimisés")

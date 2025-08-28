@@ -1,3 +1,4 @@
+# -*- coding: utf-8 -*-
 """
 Classe de base pour tous les indicateurs techniques.
 """
@@ -18,7 +19,7 @@ class BaseIndicator(ABC):
         pass
     
     def validate_data(self, data: pd.Series, min_length: int = 1) -> bool:
-        """Valide les données d'entrée."""
+        """Valide les donnï¿½es d'entrï¿½e."""
         if not isinstance(data, pd.Series):
             return False
         

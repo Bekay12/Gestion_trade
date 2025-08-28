@@ -1,3 +1,4 @@
+# -*- coding: utf-8 -*-
 """
 Indicateur RSI (Relative Strength Index).
 """
@@ -9,7 +10,7 @@ from typing import Union
 from .base_indicator import BaseIndicator
 
 class RSIIndicator(BaseIndicator):
-    """Indicateur RSI avec vos paramètres exacts."""
+    """Indicateur RSI avec vos paramï¿½tres exacts."""
     
     def __init__(self):
         super().__init__("RSI")
@@ -23,7 +24,7 @@ class RSIIndicator(BaseIndicator):
         window = window or self.default_window
         
         try:
-            # Utiliser ta (votre méthode exacte)
+            # Utiliser ta (votre mï¿½thode exacte)
             rsi = ta.momentum.RSIIndicator(close=data, window=window).rsi()
             return rsi.fillna(50.0)  # Valeur neutre pour les NaN
         except Exception:
@@ -31,7 +32,7 @@ class RSIIndicator(BaseIndicator):
             return self._calculate_manual_rsi(data, window)
     
     def _calculate_manual_rsi(self, data: pd.Series, window: int) -> pd.Series:
-        """Calcul manuel du RSI en cas d'échec de ta."""
+        """Calcul manuel du RSI en cas d'ï¿½chec de ta."""
         delta = data.diff()
         gains = delta.where(delta > 0, 0.0)
         losses = (-delta).where(delta < 0, 0.0)
@@ -47,7 +48,7 @@ class RSIIndicator(BaseIndicator):
 # Instance globale
 rsi_indicator = RSIIndicator()
 
-# Fonction de compatibilité
+# Fonction de compatibilitï¿½
 def calculate_rsi(prices: pd.Series, window: int = 17) -> pd.Series:
-    """Fonction de compatibilité."""
+    """Fonction de compatibilitï¿½."""
     return rsi_indicator.calculate(prices, window)

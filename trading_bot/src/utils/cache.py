@@ -15,7 +15,7 @@ from .logger import get_logger
 
 logger = get_logger(__name__)
 
-class CacheManager:
+class DataCacheManager:
     """
     Gestionnaire de cache pour les données boursières.
     Migration directe de vos fonctions de cache.
@@ -23,10 +23,10 @@ class CacheManager:
 
     def __init__(self):
         self.cache_dir = config.paths.cache_dir
-        self.max_age_hours = config.trading.cache_max_age_hours
-        self.max_workers = config.trading.max_workers
+        self.default_cache_age_hours = getattr(config.data, 'default_cache_age_hours', 6)
+        self.max_workers = getattr(config.data, 'max_workers', 8)
 
-    def get_cached_data(self, symbol: str, period: str, 
+    def get_cached_data(self, symbol: str, period: str,
                        max_age_hours: Optional[int] = None,
                        offline_mode: bool = False) -> pd.DataFrame:
         """
@@ -43,7 +43,7 @@ class CacheManager:
             pd.DataFrame avec les données, ou DataFrame vide si échec.
         """
         if max_age_hours is None:
-            max_age_hours = self.max_age_hours
+            max_age_hours = self.default_cache_age_hours
 
         cache_file = self.cache_dir / f"{symbol}_{period}.pkl"
 
@@ -73,18 +73,14 @@ class CacheManager:
         try:
             logger.info(f"Téléchargement {symbol} ({period})...")
             data = yf.download(symbol, period=period)
-
             if not data.empty:
                 # Sauvegarder en cache
                 cache_file.parent.mkdir(parents=True, exist_ok=True)
                 data.to_pickle(cache_file)
                 logger.debug(f"Cache sauvegardé: {cache_file}")
-
             return data
-
         except Exception as e:
             logger.error(f"Erreur téléchargement {symbol}: {e}")
-
             # Essayer de charger un cache ancien
             if cache_file.exists():
                 try:
@@ -92,10 +88,9 @@ class CacheManager:
                     return pd.read_pickle(cache_file)
                 except Exception as cache_error:
                     logger.error(f"Erreur cache ancien {symbol}: {cache_error}")
-
             return pd.DataFrame()
 
-    def preload_batch(self, symbols: List[str], period: str) -> None:
+    def preload_cache(self, symbols: List[str], period: str) -> None:
         """
         Pré-charge le cache pour une liste de symboles.
         Migration de votre fonction preload_cache().
@@ -105,10 +100,10 @@ class CacheManager:
             period: Période des données.
         """
         logger.info(f"Pré-chargement du cache pour {len(symbols)} symboles...")
-
+        
         with ThreadPoolExecutor(max_workers=self.max_workers) as executor:
             futures = [
-                executor.submit(self.get_cached_data, symbol, period) 
+                executor.submit(self.get_cached_data, symbol, period)
                 for symbol in symbols
             ]
 
@@ -169,3 +164,15 @@ class CacheManager:
             "total_size_mb": round(total_size / (1024*1024), 2),
             "cache_dir": str(self.cache_dir)
         }
+
+# Instance globale pour compatibilité
+data_cache_manager = DataCacheManager()
+
+# Fonctions de compatibilité avec votre code original
+def get_cached_data(symbol: str, period: str, max_age_hours: int = 6, offline_mode: bool = False) -> pd.DataFrame:
+    """Fonction de compatibilité avec votre code original."""
+    return data_cache_manager.get_cached_data(symbol, period, max_age_hours, offline_mode)
+
+def preload_cache(symbols: List[str], period: str) -> None:
+    """Fonction de compatibilité avec votre code original."""
+    data_cache_manager.preload_cache(symbols, period)

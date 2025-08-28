@@ -9,7 +9,8 @@ from typing import Dict
 from .base_indicator import BaseIndicator
 
 class IchimokuIndicator_Custom(BaseIndicator):
-    """Indicateur Ichimoku avec vos paramètres exacts."""
+    # -*- coding: utf-8 -*-
+    """Indicateur Ichimoku avec vos paramï¿½tres exacts."""
     
     def __init__(self):
         super().__init__("Ichimoku")
@@ -26,10 +27,10 @@ class IchimokuIndicator_Custom(BaseIndicator):
         Args:
             high: Prix les plus hauts.
             low: Prix les plus bas.
-            close: Prix de clôture.
-            conversion_window: Période conversion line.
-            base_window: Période base line.
-            span_window: Période span.
+            close: Prix de clï¿½ture.
+            conversion_window: Pï¿½riode conversion line.
+            base_window: Pï¿½riode base line.
+            span_window: Pï¿½riode span.
             
         Returns:
             Dict avec conversion_line, base_line, span_a, span_b.

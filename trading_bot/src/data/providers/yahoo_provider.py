@@ -10,7 +10,7 @@ import time
 
 from config.settings import config
 from src.utils.logger import get_logger
-from src.utils.cache import CacheManager
+from src.utils.cache import DataCacheManager
 
 logger = get_logger(__name__)
 
@@ -21,10 +21,11 @@ class YahooProvider:
     """
     
     def __init__(self):
-        self.cache_manager = CacheManager()
-        self.batch_size = config.trading.batch_size
-        self.timeout = config.trading.timeout_seconds
-        self.max_workers = config.trading.max_workers
+        self.cache_manager = DataCacheManager()
+        self.batch_size = config.data.batch_size
+        self.timeout = config.data.timeout
+        self.max_workers = config.data.max_workers
+
         
         # Périodes valides (de votre code)
         self.valid_periods = [

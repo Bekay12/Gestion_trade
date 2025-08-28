@@ -1,0 +1,722 @@
+2025-08-18 03:13:56,223 - __main__ - INFO - 🚀 Lancement de l'optimisation complète
+2025-08-18 03:13:56,224 - src.optimization.optimization_runner - INFO - 🚀 Démarrage de l'optimisation complète des secteurs
+2025-08-18 03:13:56,227 - src.utils.file_manager - INFO - 📋 Chargé 88 symboles depuis optimisation_symbols.txt
+2025-08-18 03:13:56,227 - src.optimization.optimization_runner - INFO - 📋 88 symboles uniques chargés pour l'optimisation
+2025-08-18 03:13:56,228 - src.optimization.optimization_runner - INFO - 
+📋 Assignation des secteurs:
+2025-08-18 03:13:57,654 - src.optimization.optimizer - INFO - 📋 1177.HK: Secteur = Healthcare
+2025-08-18 03:13:58,008 - src.optimization.optimizer - INFO - 📋 2020.HK: Secteur = Consumer Cyclical
+2025-08-18 03:13:58,369 - src.optimization.optimizer - INFO - 📋 2318.HK: Secteur = Financial Services
+2025-08-18 03:13:58,733 - src.optimization.optimizer - INFO - 📋 AAPL: Secteur = Technology
+2025-08-18 03:13:59,100 - src.optimization.optimizer - INFO - 📋 ABBN.SW: Secteur = Industrials
+2025-08-18 03:13:59,623 - src.optimization.optimizer - INFO - 📋 AFX.DE: Secteur = Healthcare
+2025-08-18 03:14:00,135 - src.optimization.optimizer - INFO - 📋 ALDX: Secteur = Healthcare
+2025-08-18 03:14:00,728 - src.optimization.optimizer - INFO - 📋 AMD: Secteur = Technology
+2025-08-18 03:14:01,083 - src.optimization.optimizer - INFO - 📋 AMT: Secteur = Real Estate
+2025-08-18 03:14:01,451 - src.optimization.optimizer - INFO - 📋 AMZN: Secteur = Consumer Cyclical
+2025-08-18 03:14:01,810 - src.optimization.optimizer - INFO - 📋 ARCT: Secteur = Healthcare
+2025-08-18 03:14:02,170 - src.optimization.optimizer - INFO - 📋 ASML.AS: Secteur = Technology
+2025-08-18 03:14:02,521 - src.optimization.optimizer - INFO - 📋 AXSM: Secteur = Healthcare
+2025-08-18 03:14:02,878 - src.optimization.optimizer - INFO - 📋 BA: Secteur = Industrials
+2025-08-18 03:14:03,227 - src.optimization.optimizer - INFO - 📋 BABA: Secteur = Consumer Cyclical
+2025-08-18 03:14:03,592 - src.optimization.optimizer - INFO - 📋 BAC: Secteur = Financial Services
+2025-08-18 03:14:03,949 - src.optimization.optimizer - INFO - 📋 BATS.L: Secteur = Consumer Defensive
+2025-08-18 03:14:04,484 - src.optimization.optimizer - INFO - 📋 BHP: Secteur = Basic Materials
+2025-08-18 03:14:04,833 - src.optimization.optimizer - INFO - 📋 BMRN: Secteur = Healthcare
+2025-08-18 03:14:05,185 - src.optimization.optimizer - INFO - 📋 BP: Secteur = Energy
+2025-08-18 03:14:05,544 - src.optimization.optimizer - INFO - 📋 CACI: Secteur = Technology
+2025-08-18 03:14:05,898 - src.optimization.optimizer - INFO - 📋 CAT: Secteur = Industrials
+2025-08-18 03:14:06,259 - src.optimization.optimizer - INFO - 📋 CVX: Secteur = Energy
+2025-08-18 03:14:06,622 - src.optimization.optimizer - INFO - 📋 DBK.DE: Secteur = Financial Services
+2025-08-18 03:14:06,981 - src.optimization.optimizer - INFO - 📋 DDOG: Secteur = Technology
+2025-08-18 03:14:07,339 - src.optimization.optimizer - INFO - 📋 DUK: Secteur = Utilities
+2025-08-18 03:14:07,699 - src.optimization.optimizer - INFO - 📋 EEM: Secteur = ℹ️Inconnu!!
+2025-08-18 03:14:08,305 - src.optimization.optimizer - INFO - 📋 ENR.DE: Secteur = Industrials
+2025-08-18 03:14:08,655 - src.optimization.optimizer - INFO - 📋 ERJ: Secteur = Industrials
+2025-08-18 03:14:09,029 - src.optimization.optimizer - INFO - 📋 ETOR: Secteur = Financial Services
+2025-08-18 03:14:09,377 - src.optimization.optimizer - INFO - 📋 FCX: Secteur = Basic Materials
+2025-08-18 03:14:09,739 - src.optimization.optimizer - INFO - 📋 FLEX: Secteur = Technology
+2025-08-18 03:14:10,100 - src.optimization.optimizer - INFO - 📋 FNV.TO: Secteur = Basic Materials
+2025-08-18 03:14:10,460 - src.optimization.optimizer - INFO - 📋 GE: Secteur = Industrials
+2025-08-18 03:14:10,810 - src.optimization.optimizer - INFO - 📋 GILT: Secteur = Technology
+2025-08-18 03:14:11,179 - src.optimization.optimizer - INFO - 📋 GLD: Secteur = ℹ️Inconnu!!
+2025-08-18 03:14:11,533 - src.optimization.optimizer - INFO - 📋 GLW: Secteur = Technology
+2025-08-18 03:14:11,900 - src.optimization.optimizer - INFO - 📋 GOOGL: Secteur = Communication Services
+2025-08-18 03:14:12,259 - src.optimization.optimizer - INFO - 📋 GS: Secteur = Financial Services
+2025-08-18 03:14:12,649 - src.optimization.optimizer - INFO - 📋 HMY: Secteur = Basic Materials
+2025-08-18 03:14:13,028 - src.optimization.optimizer - INFO - 📋 INGA.AS: Secteur = Financial Services
+2025-08-18 03:14:13,468 - src.optimization.optimizer - INFO - 📋 INOD: Secteur = Technology
+2025-08-18 03:14:13,835 - src.optimization.optimizer - INFO - 📋 JNJ: Secteur = Healthcare
+2025-08-18 03:14:14,192 - src.optimization.optimizer - INFO - 📋 JPM: Secteur = Financial Services
+2025-08-18 03:14:14,557 - src.optimization.optimizer - INFO - 📋 META: Secteur = Communication Services
+2025-08-18 03:14:14,976 - src.optimization.optimizer - INFO - 📋 MP: Secteur = Basic Materials
+2025-08-18 03:14:15,376 - src.optimization.optimizer - INFO - 📋 MRK: Secteur = Healthcare
+2025-08-18 03:14:15,739 - src.optimization.optimizer - INFO - 📋 MSFT: Secteur = Technology
+2025-08-18 03:14:16,093 - src.optimization.optimizer - INFO - 📋 MU: Secteur = Technology
+2025-08-18 03:14:16,446 - src.optimization.optimizer - INFO - 📋 NEE: Secteur = Utilities
+2025-08-18 03:14:16,807 - src.optimization.optimizer - INFO - 📋 NEM: Secteur = Basic Materials
+2025-08-18 03:14:17,212 - src.optimization.optimizer - INFO - 📋 NKE: Secteur = Consumer Cyclical
+2025-08-18 03:14:17,780 - src.optimization.optimizer - INFO - 📋 NVDA: Secteur = Technology
+2025-08-18 03:14:18,135 - src.optimization.optimizer - INFO - 📋 OKTA: Secteur = Technology
+2025-08-18 03:14:18,486 - src.optimization.optimizer - INFO - 📋 OR.PA: Secteur = Consumer Defensive
+2025-08-18 03:14:18,854 - src.optimization.optimizer - INFO - 📋 PFE: Secteur = Healthcare
+2025-08-18 03:14:19,208 - src.optimization.optimizer - INFO - 📋 PLD: Secteur = Real Estate
+2025-08-18 03:14:19,614 - src.optimization.optimizer - INFO - 📋 PLTR: Secteur = Technology
+2025-08-18 03:14:19,991 - src.optimization.optimizer - INFO - 📋 PYPL: Secteur = Financial Services
+2025-08-18 03:14:20,352 - src.optimization.optimizer - INFO - 📋 QBTS: Secteur = Technology
+2025-08-18 03:14:21,069 - src.optimization.optimizer - INFO - 📋 QCOM: Secteur = Technology
+2025-08-18 03:14:21,605 - src.optimization.optimizer - INFO - 📋 QSI: Secteur = Healthcare
+2025-08-18 03:14:22,278 - src.optimization.optimizer - INFO - 📋 RHM.DE: Secteur = Industrials
+2025-08-18 03:14:23,225 - src.optimization.optimizer - INFO - 📋 SAP.DE: Secteur = Technology
+2025-08-18 03:14:23,676 - src.optimization.optimizer - INFO - 📋 SGMT: Secteur = Healthcare
+2025-08-18 03:14:24,031 - src.optimization.optimizer - INFO - 📋 SMCI: Secteur = Technology
+2025-08-18 03:14:24,431 - src.optimization.optimizer - INFO - 📋 SMSN.L: Secteur = Technology
+2025-08-18 03:14:24,982 - src.optimization.optimizer - INFO - 📋 SMTC: Secteur = Technology
+2025-08-18 03:14:25,349 - src.optimization.optimizer - INFO - 📋 SO: Secteur = Utilities
+2025-08-18 03:14:25,721 - src.optimization.optimizer - INFO - 📋 SPG: Secteur = Real Estate
+2025-08-18 03:14:26,081 - src.optimization.optimizer - INFO - 📋 SPOT: Secteur = Communication Services
+2025-08-18 03:14:26,442 - src.optimization.optimizer - INFO - 📋 SPY: Secteur = ℹ️Inconnu!!
+2025-08-18 03:14:26,844 - src.optimization.optimizer - INFO - 📋 SYM: Secteur = Industrials
+2025-08-18 03:14:27,273 - src.optimization.optimizer - INFO - 📋 T: Secteur = Communication Services
+2025-08-18 03:14:27,629 - src.optimization.optimizer - INFO - 📋 TBLA: Secteur = Communication Services
+2025-08-18 03:14:28,121 - src.optimization.optimizer - INFO - 📋 TM: Secteur = Consumer Cyclical
+2025-08-18 03:14:28,533 - src.optimization.optimizer - INFO - 📋 TMDX: Secteur = Healthcare
+2025-08-18 03:14:28,945 - src.optimization.optimizer - INFO - 📋 TSLA: Secteur = Consumer Cyclical
+2025-08-18 03:14:29,341 - src.optimization.optimizer - INFO - 📋 TSM: Secteur = Technology
+2025-08-18 03:14:29,770 - src.optimization.optimizer - INFO - 📋 UEC: Secteur = Energy
+2025-08-18 03:14:30,165 - src.optimization.optimizer - INFO - 📋 ULVR.L: Secteur = Consumer Defensive
+2025-08-18 03:14:30,543 - src.optimization.optimizer - INFO - 📋 V: Secteur = Financial Services
+2025-08-18 03:14:30,911 - src.optimization.optimizer - INFO - 📋 VOOG: Secteur = ℹ️Inconnu!!
+2025-08-18 03:14:31,295 - src.optimization.optimizer - INFO - 📋 VZ: Secteur = Communication Services
+2025-08-18 03:14:31,662 - src.optimization.optimizer - INFO - 📋 WELL: Secteur = Real Estate
+2025-08-18 03:14:32,071 - src.optimization.optimizer - INFO - 📋 WFC: Secteur = Financial Services
+2025-08-18 03:14:32,423 - src.optimization.optimizer - INFO - 📋 WMT: Secteur = Consumer Defensive
+2025-08-18 03:14:32,778 - src.optimization.optimizer - INFO - 📋 XOM: Secteur = Energy
+2025-08-18 03:14:32,779 - src.optimization.optimization_runner - INFO -  Technology: ['AAPL', 'AMD', 'ASML.AS', 'CACI', 'DDOG', 'FLEX', 'GILT', 'GLW', 'INOD', 'MSFT', 'MU', 'NVDA', 'OKTA', 'PLTR', 'QBTS', 'QCOM', 'SAP.DE', 'SMCI', 'SMSN.L', 'SMTC', 'TSM']
+2025-08-18 03:14:32,779 - src.optimization.optimization_runner - INFO -  Healthcare: ['1177.HK', 'AFX.DE', 'ALDX', 'ARCT', 'AXSM', 'BMRN', 'JNJ', 'MRK', 'PFE', 'QSI', 'SGMT', 'TMDX']
+2025-08-18 03:14:32,780 - src.optimization.optimization_runner - INFO -  Financial Services: ['2318.HK', 'BAC', 'DBK.DE', 'ETOR', 'GS', 'INGA.AS', 'JPM', 'PYPL', 'V', 'WFC']
+2025-08-18 03:14:32,780 - src.optimization.optimization_runner - INFO -  Consumer Cyclical: ['2020.HK', 'AMZN', 'BABA', 'NKE', 'TM', 'TSLA']
+2025-08-18 03:14:32,781 - src.optimization.optimization_runner - INFO -  Industrials: ['ABBN.SW', 'BA', 'CAT', 'ENR.DE', 'ERJ', 'GE', 'RHM.DE', 'SYM']
+2025-08-18 03:14:32,781 - src.optimization.optimization_runner - INFO -  Energy: ['BP', 'CVX', 'UEC', 'XOM']
+2025-08-18 03:14:32,782 - src.optimization.optimization_runner - INFO -  Basic Materials: ['BHP', 'FCX', 'FNV.TO', 'HMY', 'MP', 'NEM']
+2025-08-18 03:14:32,782 - src.optimization.optimization_runner - INFO -  Communication Services: ['GOOGL', 'META', 'SPOT', 'T', 'TBLA', 'VZ']
+2025-08-18 03:14:32,782 - src.optimization.optimization_runner - INFO -  Consumer Defensive: ['BATS.L', 'OR.PA', 'ULVR.L', 'WMT']
+2025-08-18 03:14:32,783 - src.optimization.optimization_runner - INFO -  Utilities: ['DUK', 'NEE', 'SO']
+2025-08-18 03:14:32,783 - src.optimization.optimization_runner - INFO -  Real Estate: ['AMT', 'PLD', 'SPG', 'WELL']
+2025-08-18 03:14:32,784 - src.optimization.optimization_runner - INFO -  ℹ️Inconnu!!: ['EEM', 'GLD', 'SPY', 'VOOG']
+2025-08-18 03:14:32,784 - src.optimization.optimization_runner - INFO - 
+🔧 Optimisation du secteur: Technology (21 symboles)
+2025-08-18 03:14:32,785 - src.data.providers.yahoo_provider - INFO - 📊 Traitement lot 1/1: 21 symboles
+2025-08-18 03:14:34,937 - src.data.providers.yahoo_provider - INFO - ✅ Données téléchargées pour 21 symboles
+2025-08-18 03:14:34,938 - src.optimization.optimizer - INFO - 📊 AAPL: 259 points de données
+2025-08-18 03:14:34,938 - src.optimization.optimizer - INFO - 📊 AMD: 259 points de données
+2025-08-18 03:14:34,938 - src.optimization.optimizer - INFO - 📊 ASML.AS: 259 points de données
+2025-08-18 03:14:34,939 - src.optimization.optimizer - INFO - 📊 CACI: 259 points de données
+2025-08-18 03:14:34,939 - src.optimization.optimizer - INFO - 📊 DDOG: 259 points de données
+2025-08-18 03:14:34,939 - src.optimization.optimizer - INFO - 📊 FLEX: 259 points de données
+2025-08-18 03:14:34,940 - src.optimization.optimizer - INFO - 📊 GILT: 259 points de données
+2025-08-18 03:14:34,940 - src.optimization.optimizer - INFO - 📊 GLW: 259 points de données
+2025-08-18 03:14:34,940 - src.optimization.optimizer - INFO - 📊 INOD: 259 points de données
+2025-08-18 03:14:34,940 - src.optimization.optimizer - INFO - 📊 MSFT: 259 points de données
+2025-08-18 03:14:34,940 - src.optimization.optimizer - INFO - 📊 MU: 259 points de données
+2025-08-18 03:14:34,940 - src.optimization.optimizer - INFO - 📊 NVDA: 259 points de données
+2025-08-18 03:14:34,941 - src.optimization.optimizer - INFO - 📊 OKTA: 259 points de données
+2025-08-18 03:14:34,941 - src.optimization.optimizer - INFO - 📊 PLTR: 259 points de données
+2025-08-18 03:14:34,941 - src.optimization.optimizer - INFO - 📊 QBTS: 259 points de données
+2025-08-18 03:14:34,941 - src.optimization.optimizer - INFO - 📊 QCOM: 259 points de données
+2025-08-18 03:14:34,941 - src.optimization.optimizer - INFO - 📊 SAP.DE: 259 points de données
+2025-08-18 03:14:34,941 - src.optimization.optimizer - INFO - 📊 SMCI: 259 points de données
+2025-08-18 03:14:34,941 - src.optimization.optimizer - INFO - 📊 SMSN.L: 259 points de données
+2025-08-18 03:14:34,942 - src.optimization.optimizer - INFO - 📊 SMTC: 259 points de données
+2025-08-18 03:14:34,942 - src.optimization.optimizer - INFO - 📊 TSM: 259 points de données
+2025-08-18 03:14:34,942 - src.optimization.optimizer - INFO - 🔍 Étape initiale : Optimisation globale pour Technology
+2025-08-18 03:14:37,642 - src.optimization.optimizer - INFO - 🔍 Étape initiale - Optimisation Technology démarrée avec 21 symboles
+2025-08-18 03:14:37,642 - src.optimization.optimizer - INFO - 📈 Itération 1: Gain moyen = -0.46, Trades = 18, Taux de réussite = 33.33%
+2025-08-18 03:15:01,875 - src.optimization.optimizer - INFO - 📊 Étape initiale - Nombre de doublons évités : 0
+2025-08-18 03:15:01,875 - src.optimization.optimizer - INFO - ✅ Étape initiale - Meilleurs coefficients : (np.float64(2.54), np.float64(0.81), np.float64(0.62), np.float64(1.48), np.float64(2.68), np.float64(2.7), np.float64(1.35), np.float64(0.91)), Seuils : (np.float64(5.54), np.float64(-2.64)), Gain moyen = 0.33
+2025-08-18 03:15:01,875 - src.optimization.optimizer - INFO - 
+🔄 Cycle 1/255 pour Technology
+2025-08-18 03:15:01,876 - src.optimization.optimizer - INFO - 🔍 Étape 1 : Optimisation des coefficients avec seuils (np.float64(5.54), np.float64(-2.64))
+2025-08-18 03:15:04,409 - src.optimization.optimizer - INFO - 🔍 Cycle 1 - Étape 1 - Optimisation Technology démarrée avec 21 symboles
+2025-08-18 03:15:04,409 - src.optimization.optimizer - INFO - 📈 Itération 1: Gain moyen = -0.57, Trades = 31, Taux de réussite = 45.16%
+2025-08-18 03:15:27,305 - src.optimization.optimizer - INFO - 📊 Cycle 1 - Étape 1 - Nombre de doublons évités : 0
+2025-08-18 03:15:27,306 - src.optimization.optimizer - INFO - ✅ Cycle 1 - Étape 1 - Meilleurs coefficients : (np.float64(0.72), np.float64(0.95), np.float64(0.77), np.float64(2.8), np.float64(1.22), np.float64(1.87), np.float64(2.12), np.float64(2.93)), Gain moyen = 0.32
+2025-08-18 03:15:27,306 - src.optimization.optimizer - INFO - 🔍 Étape 2 : Optimisation du seuil d'achat avec coefficients (np.float64(0.72), np.float64(0.95), np.float64(0.77), np.float64(2.8), np.float64(1.22), np.float64(1.87), np.float64(2.12), np.float64(2.93)) et seuil de vente -2.64
+2025-08-18 03:15:29,818 - src.optimization.optimizer - INFO - 🔍 Cycle 1 - Étape 2 - Optimisation Technology démarrée
+2025-08-18 03:15:29,818 - src.optimization.optimizer - INFO - 📈 Itération 1: Gain moyen = 0.32, Trades = 14
+2025-08-18 03:15:52,262 - src.optimization.optimizer - INFO - 📊 Cycle 1 - Étape 2 - Nombre de doublons évités : 0
+2025-08-18 03:15:52,262 - src.optimization.optimizer - INFO - ✅ Cycle 1 - Étape 2 - Meilleur seuil d'achat : 2.04, Gain moyen = 0.32
+2025-08-18 03:15:52,262 - src.optimization.optimizer - INFO - 🔍 Étape 3 : Optimisation du seuil de vente avec coefficients (np.float64(0.72), np.float64(0.95), np.float64(0.77), np.float64(2.8), np.float64(1.22), np.float64(1.87), np.float64(2.12), np.float64(2.93)) et seuil d'achat 2.04
+2025-08-18 03:15:54,787 - src.optimization.optimizer - INFO - 🔍 Cycle 1 - Étape 3 - Optimisation Technology démarrée
+2025-08-18 03:15:54,788 - src.optimization.optimizer - INFO - 📈 Itération 1: Gain moyen = 0.32, Trades = 14
+2025-08-18 03:16:17,351 - src.optimization.optimizer - INFO - 📊 Cycle 1 - Étape 3 - Nombre de doublons évités : 0
+2025-08-18 03:16:17,351 - src.optimization.optimizer - INFO - ✅ Cycle 1 - Étape 3 - Meilleur seuil de vente : -0.32, Gain moyen = 0.32
+2025-08-18 03:16:19,853 - src.optimization.optimizer - INFO - ✅ Cycle 1 - Aucune amélioration significative, arrêt anticipé
+2025-08-18 03:16:19,854 - src.optimization.parameter_manager - ERROR - ⚠️ Erreur lors de la sauvegarde dans le CSV: invalid index to scalar variable.
+2025-08-18 03:16:19,854 - src.optimization.optimization_runner - INFO - 
+📊 Résultats pour Technology:
+2025-08-18 03:16:19,854 - src.optimization.optimization_runner - INFO -  Meilleurs coefficients: (np.float64(0.72), np.float64(0.95), np.float64(0.77), np.float64(2.8), np.float64(1.22), np.float64(1.87), np.float64(2.12), np.float64(2.93))
+2025-08-18 03:16:19,854 - src.optimization.optimization_runner - INFO -  Meilleurs seuils (achat, vente): (np.float64(5.54), np.float64(-2.64))
+2025-08-18 03:16:19,854 - src.optimization.optimization_runner - INFO -  Gain total moyen: 0.33
+2025-08-18 03:16:19,855 - src.optimization.optimization_runner - INFO -  Taux de réussite: 53.33%
+2025-08-18 03:16:19,855 - src.optimization.optimization_runner - INFO - 
+🔧 Optimisation du secteur: Healthcare (12 symboles)
+2025-08-18 03:16:19,855 - src.data.providers.yahoo_provider - INFO - 📊 Traitement lot 1/1: 12 symboles
+2025-08-18 03:16:20,438 - src.data.providers.yahoo_provider - INFO - ✅ Données téléchargées pour 12 symboles
+2025-08-18 03:16:20,438 - src.optimization.optimizer - INFO - 📊 1177.HK: 260 points de données
+2025-08-18 03:16:20,439 - src.optimization.optimizer - INFO - 📊 AFX.DE: 260 points de données
+2025-08-18 03:16:20,439 - src.optimization.optimizer - INFO - 📊 ALDX: 260 points de données
+2025-08-18 03:16:20,439 - src.optimization.optimizer - INFO - 📊 ARCT: 260 points de données
+2025-08-18 03:16:20,439 - src.optimization.optimizer - INFO - 📊 AXSM: 260 points de données
+2025-08-18 03:16:20,440 - src.optimization.optimizer - INFO - 📊 BMRN: 260 points de données
+2025-08-18 03:16:20,440 - src.optimization.optimizer - INFO - 📊 JNJ: 260 points de données
+2025-08-18 03:16:20,440 - src.optimization.optimizer - INFO - 📊 MRK: 260 points de données
+2025-08-18 03:16:20,440 - src.optimization.optimizer - INFO - 📊 PFE: 260 points de données
+2025-08-18 03:16:20,440 - src.optimization.optimizer - INFO - 📊 QSI: 260 points de données
+2025-08-18 03:16:20,440 - src.optimization.optimizer - INFO - 📊 SGMT: 260 points de données
+2025-08-18 03:16:20,441 - src.optimization.optimizer - INFO - 📊 TMDX: 260 points de données
+2025-08-18 03:16:20,441 - src.optimization.optimizer - INFO - 🔍 Étape initiale : Optimisation globale pour Healthcare
+2025-08-18 03:16:22,120 - src.optimization.optimizer - INFO - 🔍 Étape initiale - Optimisation Healthcare démarrée avec 12 symboles
+2025-08-18 03:16:22,121 - src.optimization.optimizer - INFO - 📈 Itération 1: Gain moyen = 0.16, Trades = 13, Taux de réussite = 46.15%
+2025-08-18 03:16:37,387 - src.optimization.optimizer - INFO - 📊 Étape initiale - Nombre de doublons évités : 0
+2025-08-18 03:16:37,387 - src.optimization.optimizer - INFO - ✅ Étape initiale - Meilleurs coefficients : (np.float64(2.34), np.float64(1.33), np.float64(2.45), np.float64(1.75), np.float64(2.38), np.float64(2.85), np.float64(1.41), np.float64(1.44)), Seuils : (np.float64(4.53), np.float64(-2.86)), Gain moyen = 0.16
+2025-08-18 03:16:37,387 - src.optimization.optimizer - INFO - 
+🔄 Cycle 1/255 pour Healthcare
+2025-08-18 03:16:37,387 - src.optimization.optimizer - INFO - 🔍 Étape 1 : Optimisation des coefficients avec seuils (np.float64(4.53), np.float64(-2.86))
+2025-08-18 03:16:39,278 - src.optimization.optimizer - INFO - 🔍 Cycle 1 - Étape 1 - Optimisation Healthcare démarrée avec 12 symboles
+2025-08-18 03:16:39,278 - src.optimization.optimizer - INFO - 📈 Itération 1: Gain moyen = -3.27, Trades = 20, Taux de réussite = 20.00%
+2025-08-18 03:16:54,780 - src.optimization.optimizer - INFO - 📊 Cycle 1 - Étape 1 - Nombre de doublons évités : 0
+2025-08-18 03:16:54,781 - src.optimization.optimizer - INFO - ✅ Cycle 1 - Étape 1 - Meilleurs coefficients : (np.float64(1.28), np.float64(1.7), np.float64(2.92), np.float64(1.19), np.float64(0.53), np.float64(2.06), np.float64(2.96), np.float64(1.48)), Gain moyen = 0.26
+2025-08-18 03:16:54,781 - src.optimization.optimizer - INFO - 🔍 Étape 2 : Optimisation du seuil d'achat avec coefficients (np.float64(1.28), np.float64(1.7), np.float64(2.92), np.float64(1.19), np.float64(0.53), np.float64(2.06), np.float64(2.96), np.float64(1.48)) et seuil de vente -2.86
+2025-08-18 03:16:56,477 - src.optimization.optimizer - INFO - 🔍 Cycle 1 - Étape 2 - Optimisation Healthcare démarrée
+2025-08-18 03:16:56,477 - src.optimization.optimizer - INFO - 📈 Itération 1: Gain moyen = 0.26, Trades = 8
+2025-08-18 03:17:11,908 - src.optimization.optimizer - INFO - 📊 Cycle 1 - Étape 2 - Nombre de doublons évités : 0
+2025-08-18 03:17:11,908 - src.optimization.optimizer - INFO - ✅ Cycle 1 - Étape 2 - Meilleur seuil d'achat : 5.61, Gain moyen = 0.26
+2025-08-18 03:17:11,908 - src.optimization.optimizer - INFO - 🔍 Étape 3 : Optimisation du seuil de vente avec coefficients (np.float64(1.28), np.float64(1.7), np.float64(2.92), np.float64(1.19), np.float64(0.53), np.float64(2.06), np.float64(2.96), np.float64(1.48)) et seuil d'achat 5.61
+2025-08-18 03:17:13,581 - src.optimization.optimizer - INFO - 🔍 Cycle 1 - Étape 3 - Optimisation Healthcare démarrée
+2025-08-18 03:17:13,581 - src.optimization.optimizer - INFO - 📈 Itération 1: Gain moyen = 0.26, Trades = 8
+2025-08-18 03:17:28,857 - src.optimization.optimizer - INFO - 📊 Cycle 1 - Étape 3 - Nombre de doublons évités : 0
+2025-08-18 03:17:28,858 - src.optimization.optimizer - INFO - ✅ Cycle 1 - Étape 3 - Meilleur seuil de vente : -1.87, Gain moyen = 0.26
+2025-08-18 03:17:30,544 - src.optimization.optimizer - INFO - ✅ Cycle 1 - Amélioration du gain : 0.10
+2025-08-18 03:17:30,545 - src.optimization.parameter_manager - ERROR - ⚠️ Erreur lors de la sauvegarde dans le CSV: invalid index to scalar variable.
+2025-08-18 03:17:30,545 - src.optimization.optimizer - INFO - 
+🔄 Cycle 2/255 pour Healthcare
+2025-08-18 03:17:30,545 - src.optimization.optimizer - INFO - 🔍 Étape 1 : Optimisation des coefficients avec seuils (np.float64(5.61), np.float64(-1.87))
+2025-08-18 03:17:32,248 - src.optimization.optimizer - INFO - 🔍 Cycle 2 - Étape 1 - Optimisation Healthcare démarrée avec 12 symboles
+2025-08-18 03:17:32,249 - src.optimization.optimizer - INFO - 📈 Itération 1: Gain moyen = -0.52, Trades = 25, Taux de réussite = 40.00%
+2025-08-18 03:17:47,507 - src.optimization.optimizer - INFO - 📊 Cycle 2 - Étape 1 - Nombre de doublons évités : 0
+2025-08-18 03:17:47,507 - src.optimization.optimizer - INFO - ✅ Cycle 2 - Étape 1 - Meilleurs coefficients : (np.float64(0.93), np.float64(1.84), np.float64(1.87), np.float64(2.74), np.float64(0.96), np.float64(2.85), np.float64(2.71), np.float64(2.22)), Gain moyen = 0.06
+2025-08-18 03:17:47,508 - src.optimization.optimizer - INFO - 🔍 Étape 2 : Optimisation du seuil d'achat avec coefficients (np.float64(0.93), np.float64(1.84), np.float64(1.87), np.float64(2.74), np.float64(0.96), np.float64(2.85), np.float64(2.71), np.float64(2.22)) et seuil de vente -1.87
+2025-08-18 03:17:49,205 - src.optimization.optimizer - INFO - 🔍 Cycle 2 - Étape 2 - Optimisation Healthcare démarrée
+2025-08-18 03:17:49,206 - src.optimization.optimizer - INFO - 📈 Itération 1: Gain moyen = 0.06, Trades = 8
+2025-08-18 03:18:04,479 - src.optimization.optimizer - INFO - 📊 Cycle 2 - Étape 2 - Nombre de doublons évités : 0
+2025-08-18 03:18:04,479 - src.optimization.optimizer - INFO - ✅ Cycle 2 - Étape 2 - Meilleur seuil d'achat : 4.76, Gain moyen = 0.06
+2025-08-18 03:18:04,479 - src.optimization.optimizer - INFO - 🔍 Étape 3 : Optimisation du seuil de vente avec coefficients (np.float64(0.93), np.float64(1.84), np.float64(1.87), np.float64(2.74), np.float64(0.96), np.float64(2.85), np.float64(2.71), np.float64(2.22)) et seuil d'achat 4.76
+2025-08-18 03:18:06,422 - src.optimization.optimizer - INFO - 🔍 Cycle 2 - Étape 3 - Optimisation Healthcare démarrée
+2025-08-18 03:18:06,423 - src.optimization.optimizer - INFO - 📈 Itération 1: Gain moyen = 0.06, Trades = 8
+2025-08-18 03:18:21,806 - src.optimization.optimizer - INFO - 📊 Cycle 2 - Étape 3 - Nombre de doublons évités : 0
+2025-08-18 03:18:21,806 - src.optimization.optimizer - INFO - ✅ Cycle 2 - Étape 3 - Meilleur seuil de vente : -2.26, Gain moyen = 0.06
+2025-08-18 03:18:23,731 - src.optimization.optimizer - INFO - ✅ Cycle 2 - Aucune amélioration significative, arrêt anticipé
+2025-08-18 03:18:23,731 - src.optimization.parameter_manager - ERROR - ⚠️ Erreur lors de la sauvegarde dans le CSV: invalid index to scalar variable.
+2025-08-18 03:18:23,732 - src.optimization.optimization_runner - INFO - 
+📊 Résultats pour Healthcare:
+2025-08-18 03:18:23,732 - src.optimization.optimization_runner - INFO -  Meilleurs coefficients: (np.float64(0.93), np.float64(1.84), np.float64(1.87), np.float64(2.74), np.float64(0.96), np.float64(2.85), np.float64(2.71), np.float64(2.22))
+2025-08-18 03:18:23,732 - src.optimization.optimization_runner - INFO -  Meilleurs seuils (achat, vente): (np.float64(5.61), np.float64(-1.87))
+2025-08-18 03:18:23,732 - src.optimization.optimization_runner - INFO -  Gain total moyen: 0.26
+2025-08-18 03:18:23,733 - src.optimization.optimization_runner - INFO -  Taux de réussite: 50.00%
+2025-08-18 03:18:23,733 - src.optimization.optimization_runner - INFO - 
+🔧 Optimisation du secteur: Financial Services (10 symboles)
+2025-08-18 03:18:23,733 - src.data.providers.yahoo_provider - INFO - 📊 Traitement lot 1/1: 10 symboles
+2025-08-18 03:18:24,340 - src.data.providers.yahoo_provider - INFO - ✅ Données téléchargées pour 10 symboles
+2025-08-18 03:18:24,340 - src.optimization.optimizer - INFO - 📊 2318.HK: 260 points de données
+2025-08-18 03:18:24,341 - src.optimization.optimizer - INFO - 📊 BAC: 260 points de données
+2025-08-18 03:18:24,341 - src.optimization.optimizer - INFO - 📊 DBK.DE: 260 points de données
+2025-08-18 03:18:24,341 - src.optimization.optimizer - INFO - 📊 ETOR: 260 points de données
+2025-08-18 03:18:24,342 - src.optimization.optimizer - INFO - 📊 GS: 260 points de données
+2025-08-18 03:18:24,342 - src.optimization.optimizer - INFO - 📊 INGA.AS: 260 points de données
+2025-08-18 03:18:24,342 - src.optimization.optimizer - INFO - 📊 JPM: 260 points de données
+2025-08-18 03:18:24,343 - src.optimization.optimizer - INFO - 📊 PYPL: 260 points de données
+2025-08-18 03:18:24,343 - src.optimization.optimizer - INFO - 📊 V: 260 points de données
+2025-08-18 03:18:24,343 - src.optimization.optimizer - INFO - 📊 WFC: 260 points de données
+2025-08-18 03:18:24,343 - src.optimization.optimizer - INFO - 🔍 Étape initiale : Optimisation globale pour Financial Services
+2025-08-18 03:18:27,291 - src.optimization.optimizer - INFO - 🔍 Étape initiale - Optimisation Financial Services démarrée avec 10 symboles
+2025-08-18 03:18:27,291 - src.optimization.optimizer - INFO - 📈 Itération 1: Gain moyen = -2.09, Trades = 20, Taux de réussite = 45.00%
+2025-08-18 03:19:00,110 - src.optimization.optimizer - INFO - 📊 Étape initiale - Nombre de doublons évités : 0
+2025-08-18 03:19:00,110 - src.optimization.optimizer - INFO - ✅ Étape initiale - Meilleurs coefficients : (np.float64(2.06), np.float64(0.82), np.float64(0.64), np.float64(1.8), np.float64(1.72), np.float64(0.65), np.float64(0.76), np.float64(1.38)), Seuils : (np.float64(2.37), np.float64(-2.79)), Gain moyen = 0.23
+2025-08-18 03:19:00,110 - src.optimization.optimizer - INFO - 
+🔄 Cycle 1/255 pour Financial Services
+2025-08-18 03:19:00,110 - src.optimization.optimizer - INFO - 🔍 Étape 1 : Optimisation des coefficients avec seuils (np.float64(2.37), np.float64(-2.79))
+2025-08-18 03:19:02,743 - src.optimization.optimizer - INFO - 🔍 Cycle 1 - Étape 1 - Optimisation Financial Services démarrée avec 10 symboles
+2025-08-18 03:19:02,744 - src.optimization.optimizer - INFO - 📈 Itération 1: Gain moyen = -0.76, Trades = 15, Taux de réussite = 53.33%
+2025-08-18 03:19:26,513 - src.optimization.optimizer - INFO - 📊 Cycle 1 - Étape 1 - Nombre de doublons évités : 0
+2025-08-18 03:19:26,513 - src.optimization.optimizer - INFO - ✅ Cycle 1 - Étape 1 - Meilleurs coefficients : (np.float64(0.73), np.float64(1.48), np.float64(1.52), np.float64(2.96), np.float64(1.16), np.float64(0.59), np.float64(0.61), np.float64(2.75)), Gain moyen = 1.00
+2025-08-18 03:19:26,514 - src.optimization.optimizer - INFO - 🔍 Étape 2 : Optimisation du seuil d'achat avec coefficients (np.float64(0.73), np.float64(1.48), np.float64(1.52), np.float64(2.96), np.float64(1.16), np.float64(0.59), np.float64(0.61), np.float64(2.75)) et seuil de vente -2.79
+2025-08-18 03:19:29,181 - src.optimization.optimizer - INFO - 🔍 Cycle 1 - Étape 2 - Optimisation Financial Services démarrée
+2025-08-18 03:19:29,181 - src.optimization.optimizer - INFO - 📈 Itération 1: Gain moyen = 1.00, Trades = 15
+2025-08-18 03:19:52,363 - src.optimization.optimizer - INFO - 📊 Cycle 1 - Étape 2 - Nombre de doublons évités : 0
+2025-08-18 03:19:52,363 - src.optimization.optimizer - INFO - ✅ Cycle 1 - Étape 2 - Meilleur seuil d'achat : 5.41, Gain moyen = 1.00
+2025-08-18 03:19:52,363 - src.optimization.optimizer - INFO - 🔍 Étape 3 : Optimisation du seuil de vente avec coefficients (np.float64(0.73), np.float64(1.48), np.float64(1.52), np.float64(2.96), np.float64(1.16), np.float64(0.59), np.float64(0.61), np.float64(2.75)) et seuil d'achat 5.41
+2025-08-18 03:19:54,927 - src.optimization.optimizer - INFO - 🔍 Cycle 1 - Étape 3 - Optimisation Financial Services démarrée
+2025-08-18 03:19:54,927 - src.optimization.optimizer - INFO - 📈 Itération 1: Gain moyen = 1.00, Trades = 15
+2025-08-18 03:20:17,688 - src.optimization.optimizer - INFO - 📊 Cycle 1 - Étape 3 - Nombre de doublons évités : 0
+2025-08-18 03:20:17,689 - src.optimization.optimizer - INFO - ✅ Cycle 1 - Étape 3 - Meilleur seuil de vente : -1.79, Gain moyen = 1.00
+2025-08-18 03:20:20,265 - src.optimization.optimizer - INFO - ✅ Cycle 1 - Amélioration du gain : 0.77
+2025-08-18 03:20:20,265 - src.optimization.parameter_manager - ERROR - ⚠️ Erreur lors de la sauvegarde dans le CSV: invalid index to scalar variable.
+2025-08-18 03:20:20,266 - src.optimization.optimizer - INFO - 
+🔄 Cycle 2/255 pour Financial Services
+2025-08-18 03:20:20,266 - src.optimization.optimizer - INFO - 🔍 Étape 1 : Optimisation des coefficients avec seuils (np.float64(5.41), np.float64(-1.79))
+2025-08-18 03:20:22,733 - src.optimization.optimizer - INFO - 🔍 Cycle 2 - Étape 1 - Optimisation Financial Services démarrée avec 10 symboles
+2025-08-18 03:20:22,733 - src.optimization.optimizer - INFO - 📈 Itération 1: Gain moyen = -2.21, Trades = 27, Taux de réussite = 44.44%
+2025-08-18 03:20:45,444 - src.optimization.optimizer - INFO - 📊 Cycle 2 - Étape 1 - Nombre de doublons évités : 0
+2025-08-18 03:20:45,445 - src.optimization.optimizer - INFO - ✅ Cycle 2 - Étape 1 - Meilleurs coefficients : (np.float64(1.18), np.float64(1.44), np.float64(0.72), np.float64(1.94), np.float64(0.82), np.float64(2.8), np.float64(2.12), np.float64(2.94)), Gain moyen = 0.03
+2025-08-18 03:20:45,445 - src.optimization.optimizer - INFO - 🔍 Étape 2 : Optimisation du seuil d'achat avec coefficients (np.float64(1.18), np.float64(1.44), np.float64(0.72), np.float64(1.94), np.float64(0.82), np.float64(2.8), np.float64(2.12), np.float64(2.94)) et seuil de vente -1.79
+2025-08-18 03:20:47,960 - src.optimization.optimizer - INFO - 🔍 Cycle 2 - Étape 2 - Optimisation Financial Services démarrée
+2025-08-18 03:20:47,961 - src.optimization.optimizer - INFO - 📈 Itération 1: Gain moyen = 0.03, Trades = 3
+2025-08-18 03:21:10,907 - src.optimization.optimizer - INFO - 📊 Cycle 2 - Étape 2 - Nombre de doublons évités : 0
+2025-08-18 03:21:10,907 - src.optimization.optimizer - INFO - ✅ Cycle 2 - Étape 2 - Meilleur seuil d'achat : 4.4, Gain moyen = 0.03
+2025-08-18 03:21:10,907 - src.optimization.optimizer - INFO - 🔍 Étape 3 : Optimisation du seuil de vente avec coefficients (np.float64(1.18), np.float64(1.44), np.float64(0.72), np.float64(1.94), np.float64(0.82), np.float64(2.8), np.float64(2.12), np.float64(2.94)) et seuil d'achat 4.4
+2025-08-18 03:21:13,553 - src.optimization.optimizer - INFO - 🔍 Cycle 2 - Étape 3 - Optimisation Financial Services démarrée
+2025-08-18 03:21:13,553 - src.optimization.optimizer - INFO - 📈 Itération 1: Gain moyen = 0.03, Trades = 3
+2025-08-18 03:21:36,613 - src.optimization.optimizer - INFO - 📊 Cycle 2 - Étape 3 - Nombre de doublons évités : 0
+2025-08-18 03:21:36,613 - src.optimization.optimizer - INFO - ✅ Cycle 2 - Étape 3 - Meilleur seuil de vente : -2.37, Gain moyen = 0.03
+2025-08-18 03:21:39,268 - src.optimization.optimizer - INFO - ✅ Cycle 2 - Aucune amélioration significative, arrêt anticipé
+2025-08-18 03:21:39,269 - src.optimization.parameter_manager - ERROR - ⚠️ Erreur lors de la sauvegarde dans le CSV: invalid index to scalar variable.
+2025-08-18 03:21:39,270 - src.optimization.optimization_runner - INFO - 
+📊 Résultats pour Financial Services:
+2025-08-18 03:21:39,270 - src.optimization.optimization_runner - INFO -  Meilleurs coefficients: (np.float64(1.18), np.float64(1.44), np.float64(0.72), np.float64(1.94), np.float64(0.82), np.float64(2.8), np.float64(2.12), np.float64(2.94))
+2025-08-18 03:21:39,270 - src.optimization.optimization_runner - INFO -  Meilleurs seuils (achat, vente): (np.float64(5.41), np.float64(-1.79))
+2025-08-18 03:21:39,271 - src.optimization.optimization_runner - INFO -  Gain total moyen: 1.00
+2025-08-18 03:21:39,271 - src.optimization.optimization_runner - INFO -  Taux de réussite: 46.67%
+2025-08-18 03:21:39,271 - src.optimization.optimization_runner - INFO - 
+🔧 Optimisation du secteur: Consumer Cyclical (6 symboles)
+2025-08-18 03:21:39,271 - src.data.providers.yahoo_provider - INFO - 📊 Traitement lot 1/1: 6 symboles
+2025-08-18 03:21:39,836 - src.data.providers.yahoo_provider - INFO - ✅ Données téléchargées pour 6 symboles
+2025-08-18 03:21:39,837 - src.optimization.optimizer - INFO - 📊 2020.HK: 260 points de données
+2025-08-18 03:21:39,837 - src.optimization.optimizer - INFO - 📊 AMZN: 260 points de données
+2025-08-18 03:21:39,837 - src.optimization.optimizer - INFO - 📊 BABA: 260 points de données
+2025-08-18 03:21:39,838 - src.optimization.optimizer - INFO - 📊 NKE: 260 points de données
+2025-08-18 03:21:39,838 - src.optimization.optimizer - INFO - 📊 TM: 260 points de données
+2025-08-18 03:21:39,838 - src.optimization.optimizer - INFO - 📊 TSLA: 260 points de données
+2025-08-18 03:21:39,838 - src.optimization.optimizer - INFO - 🔍 Étape initiale : Optimisation globale pour Consumer Cyclical
+2025-08-18 03:21:40,749 - src.optimization.optimizer - INFO - 🔍 Étape initiale - Optimisation Consumer Cyclical démarrée avec 6 symboles
+2025-08-18 03:21:40,749 - src.optimization.optimizer - INFO - 📈 Itération 1: Gain moyen = -1.10, Trades = 3, Taux de réussite = 0.00%
+2025-08-18 03:21:48,363 - src.optimization.optimizer - INFO - 📊 Étape initiale - Nombre de doublons évités : 0
+2025-08-18 03:21:48,364 - src.optimization.optimizer - INFO - ✅ Étape initiale - Meilleurs coefficients : (np.float64(1.04), np.float64(1.41), np.float64(2.13), np.float64(0.53), np.float64(0.75), np.float64(1.63), np.float64(2.38), np.float64(1.77)), Seuils : (np.float64(4.97), np.float64(-0.5)), Gain moyen = -0.09
+2025-08-18 03:21:48,364 - src.optimization.optimizer - INFO - 
+🔄 Cycle 1/255 pour Consumer Cyclical
+2025-08-18 03:21:48,364 - src.optimization.optimizer - INFO - 🔍 Étape 1 : Optimisation des coefficients avec seuils (np.float64(4.97), np.float64(-0.5))
+2025-08-18 03:21:49,217 - src.optimization.optimizer - INFO - 🔍 Cycle 1 - Étape 1 - Optimisation Consumer Cyclical démarrée avec 6 symboles
+2025-08-18 03:21:49,218 - src.optimization.optimizer - INFO - 📈 Itération 1: Gain moyen = -0.09, Trades = 8, Taux de réussite = 50.00%
+2025-08-18 03:21:56,838 - src.optimization.optimizer - INFO - 📊 Cycle 1 - Étape 1 - Nombre de doublons évités : 0
+2025-08-18 03:21:56,838 - src.optimization.optimizer - INFO - ✅ Cycle 1 - Étape 1 - Meilleurs coefficients : (np.float64(0.56), np.float64(0.92), np.float64(2.24), np.float64(1.69), np.float64(0.6), np.float64(1.84), np.float64(1.44), np.float64(0.87)), Gain moyen = 0.00
+2025-08-18 03:21:56,838 - src.optimization.optimizer - INFO - 🔍 Étape 2 : Optimisation du seuil d'achat avec coefficients (np.float64(0.56), np.float64(0.92), np.float64(2.24), np.float64(1.69), np.float64(0.6), np.float64(1.84), np.float64(1.44), np.float64(0.87)) et seuil de vente -0.5
+2025-08-18 03:21:57,695 - src.optimization.optimizer - INFO - 🔍 Cycle 1 - Étape 2 - Optimisation Consumer Cyclical démarrée
+2025-08-18 03:21:57,695 - src.optimization.optimizer - INFO - 📈 Itération 1: Gain moyen = 0.00, Trades = 0
+2025-08-18 03:22:05,484 - src.optimization.optimizer - INFO - 📊 Cycle 1 - Étape 2 - Nombre de doublons évités : 0
+2025-08-18 03:22:05,484 - src.optimization.optimizer - INFO - ✅ Cycle 1 - Étape 2 - Meilleur seuil d'achat : 3.94, Gain moyen = 0.00
+2025-08-18 03:22:05,484 - src.optimization.optimizer - INFO - 🔍 Étape 3 : Optimisation du seuil de vente avec coefficients (np.float64(0.56), np.float64(0.92), np.float64(2.24), np.float64(1.69), np.float64(0.6), np.float64(1.84), np.float64(1.44), np.float64(0.87)) et seuil d'achat 3.94
+2025-08-18 03:22:06,332 - src.optimization.optimizer - INFO - 🔍 Cycle 1 - Étape 3 - Optimisation Consumer Cyclical démarrée
+2025-08-18 03:22:06,332 - src.optimization.optimizer - INFO - 📈 Itération 1: Gain moyen = 0.00, Trades = 0
+2025-08-18 03:22:13,970 - src.optimization.optimizer - INFO - 📊 Cycle 1 - Étape 3 - Nombre de doublons évités : 0
+2025-08-18 03:22:13,970 - src.optimization.optimizer - INFO - ✅ Cycle 1 - Étape 3 - Meilleur seuil de vente : -0.15, Gain moyen = 0.00
+2025-08-18 03:22:14,807 - src.optimization.optimizer - INFO - ✅ Cycle 1 - Amélioration du gain : 0.09
+2025-08-18 03:22:14,807 - src.optimization.parameter_manager - ERROR - ⚠️ Erreur lors de la sauvegarde dans le CSV: 'float' object is not subscriptable
+2025-08-18 03:22:14,808 - src.optimization.optimizer - INFO - 
+🔄 Cycle 2/255 pour Consumer Cyclical
+2025-08-18 03:22:14,808 - src.optimization.optimizer - INFO - 🔍 Étape 1 : Optimisation des coefficients avec seuils (np.float64(3.94), np.float64(-0.15))
+2025-08-18 03:22:15,664 - src.optimization.optimizer - INFO - 🔍 Cycle 2 - Étape 1 - Optimisation Consumer Cyclical démarrée avec 6 symboles
+2025-08-18 03:22:15,664 - src.optimization.optimizer - INFO - 📈 Itération 1: Gain moyen = -0.53, Trades = 3, Taux de réussite = 0.00%
+2025-08-18 03:22:23,257 - src.optimization.optimizer - INFO - 📊 Cycle 2 - Étape 1 - Nombre de doublons évités : 0
+2025-08-18 03:22:23,257 - src.optimization.optimizer - INFO - ✅ Cycle 2 - Étape 1 - Meilleurs coefficients : (np.float64(0.75), np.float64(1.49), np.float64(1.26), np.float64(2.63), np.float64(1.6), np.float64(0.92), np.float64(2.48), np.float64(1.88)), Gain moyen = 0.00
+2025-08-18 03:22:23,258 - src.optimization.optimizer - INFO - 🔍 Étape 2 : Optimisation du seuil d'achat avec coefficients (np.float64(0.75), np.float64(1.49), np.float64(1.26), np.float64(2.63), np.float64(1.6), np.float64(0.92), np.float64(2.48), np.float64(1.88)) et seuil de vente -0.15
+2025-08-18 03:22:24,116 - src.optimization.optimizer - INFO - 🔍 Cycle 2 - Étape 2 - Optimisation Consumer Cyclical démarrée
+2025-08-18 03:22:24,116 - src.optimization.optimizer - INFO - 📈 Itération 1: Gain moyen = 0.00, Trades = 0
+2025-08-18 03:22:31,782 - src.optimization.optimizer - INFO - 📊 Cycle 2 - Étape 2 - Nombre de doublons évités : 0
+2025-08-18 03:22:31,782 - src.optimization.optimizer - INFO - ✅ Cycle 2 - Étape 2 - Meilleur seuil d'achat : 4.58, Gain moyen = 0.00
+2025-08-18 03:22:31,782 - src.optimization.optimizer - INFO - 🔍 Étape 3 : Optimisation du seuil de vente avec coefficients (np.float64(0.75), np.float64(1.49), np.float64(1.26), np.float64(2.63), np.float64(1.6), np.float64(0.92), np.float64(2.48), np.float64(1.88)) et seuil d'achat 4.58
+2025-08-18 03:22:32,630 - src.optimization.optimizer - INFO - 🔍 Cycle 2 - Étape 3 - Optimisation Consumer Cyclical démarrée
+2025-08-18 03:22:32,631 - src.optimization.optimizer - INFO - 📈 Itération 1: Gain moyen = 0.00, Trades = 0
+2025-08-18 03:22:40,330 - src.optimization.optimizer - INFO - 📊 Cycle 2 - Étape 3 - Nombre de doublons évités : 0
+2025-08-18 03:22:40,330 - src.optimization.optimizer - INFO - ✅ Cycle 2 - Étape 3 - Meilleur seuil de vente : -0.59, Gain moyen = 0.00
+2025-08-18 03:22:41,200 - src.optimization.optimizer - INFO - ✅ Cycle 2 - Aucune amélioration significative, arrêt anticipé
+2025-08-18 03:22:41,201 - src.optimization.parameter_manager - ERROR - ⚠️ Erreur lors de la sauvegarde dans le CSV: 'float' object is not subscriptable
+2025-08-18 03:22:41,201 - src.optimization.optimization_runner - INFO - 
+📊 Résultats pour Consumer Cyclical:
+2025-08-18 03:22:41,202 - src.optimization.optimization_runner - INFO -  Meilleurs coefficients: (np.float64(0.75), np.float64(1.49), np.float64(1.26), np.float64(2.63), np.float64(1.6), np.float64(0.92), np.float64(2.48), np.float64(1.88))
+2025-08-18 03:22:41,202 - src.optimization.optimization_runner - INFO -  Meilleurs seuils (achat, vente): (np.float64(3.94), np.float64(-0.15))
+2025-08-18 03:22:41,202 - src.optimization.optimization_runner - INFO -  Gain total moyen: 0.00
+2025-08-18 03:22:41,202 - src.optimization.optimization_runner - INFO -  Taux de réussite: 0.00%
+2025-08-18 03:22:41,203 - src.optimization.optimization_runner - INFO - 
+🔧 Optimisation du secteur: Industrials (8 symboles)
+2025-08-18 03:22:41,203 - src.data.providers.yahoo_provider - INFO - 📊 Traitement lot 1/1: 8 symboles
+2025-08-18 03:22:41,792 - src.data.providers.yahoo_provider - INFO - ✅ Données téléchargées pour 8 symboles
+2025-08-18 03:22:41,792 - src.optimization.optimizer - INFO - 📊 ABBN.SW: 259 points de données
+2025-08-18 03:22:41,792 - src.optimization.optimizer - INFO - 📊 BA: 259 points de données
+2025-08-18 03:22:41,793 - src.optimization.optimizer - INFO - 📊 CAT: 259 points de données
+2025-08-18 03:22:41,793 - src.optimization.optimizer - INFO - 📊 ENR.DE: 259 points de données
+2025-08-18 03:22:41,793 - src.optimization.optimizer - INFO - 📊 ERJ: 259 points de données
+2025-08-18 03:22:41,794 - src.optimization.optimizer - INFO - 📊 GE: 259 points de données
+2025-08-18 03:22:41,794 - src.optimization.optimizer - INFO - 📊 RHM.DE: 259 points de données
+2025-08-18 03:22:41,794 - src.optimization.optimizer - INFO - 📊 SYM: 259 points de données
+2025-08-18 03:22:41,794 - src.optimization.optimizer - INFO - 🔍 Étape initiale : Optimisation globale pour Industrials
+2025-08-18 03:22:44,299 - src.optimization.optimizer - INFO - 🔍 Étape initiale - Optimisation Industrials démarrée avec 8 symboles
+2025-08-18 03:22:44,300 - src.optimization.optimizer - INFO - 📈 Itération 1: Gain moyen = 0.28, Trades = 11, Taux de réussite = 36.36%
+2025-08-18 03:23:07,116 - src.optimization.optimizer - INFO - 📊 Étape initiale - Nombre de doublons évités : 0
+2025-08-18 03:23:07,117 - src.optimization.optimizer - INFO - ✅ Étape initiale - Meilleurs coefficients : (np.float64(1.15), np.float64(1.59), np.float64(0.53), np.float64(0.99), np.float64(0.59), np.float64(0.95), np.float64(2.44), np.float64(1.25)), Seuils : (np.float64(3.83), np.float64(-0.78)), Gain moyen = 2.14
+2025-08-18 03:23:07,117 - src.optimization.optimizer - INFO - 
+🔄 Cycle 1/255 pour Industrials
+2025-08-18 03:23:07,117 - src.optimization.optimizer - INFO - 🔍 Étape 1 : Optimisation des coefficients avec seuils (np.float64(3.83), np.float64(-0.78))
+2025-08-18 03:23:09,650 - src.optimization.optimizer - INFO - 🔍 Cycle 1 - Étape 1 - Optimisation Industrials démarrée avec 8 symboles
+2025-08-18 03:23:09,650 - src.optimization.optimizer - INFO - 📈 Itération 1: Gain moyen = 1.12, Trades = 12, Taux de réussite = 66.67%
+2025-08-18 03:23:32,120 - src.optimization.optimizer - INFO - 📊 Cycle 1 - Étape 1 - Nombre de doublons évités : 0
+2025-08-18 03:23:32,120 - src.optimization.optimizer - INFO - ✅ Cycle 1 - Étape 1 - Meilleurs coefficients : (np.float64(2.7), np.float64(1.61), np.float64(1.67), np.float64(2.18), np.float64(2.68), np.float64(2.08), np.float64(2.07), np.float64(1.98)), Gain moyen = 1.30
+2025-08-18 03:23:32,120 - src.optimization.optimizer - INFO - 🔍 Étape 2 : Optimisation du seuil d'achat avec coefficients (np.float64(2.7), np.float64(1.61), np.float64(1.67), np.float64(2.18), np.float64(2.68), np.float64(2.08), np.float64(2.07), np.float64(1.98)) et seuil de vente -0.78
+2025-08-18 03:23:34,612 - src.optimization.optimizer - INFO - 🔍 Cycle 1 - Étape 2 - Optimisation Industrials démarrée
+2025-08-18 03:23:34,613 - src.optimization.optimizer - INFO - 📈 Itération 1: Gain moyen = 1.30, Trades = 11
+2025-08-18 03:23:57,082 - src.optimization.optimizer - INFO - 📊 Cycle 1 - Étape 2 - Nombre de doublons évités : 0
+2025-08-18 03:23:57,083 - src.optimization.optimizer - INFO - ✅ Cycle 1 - Étape 2 - Meilleur seuil d'achat : 3.29, Gain moyen = 1.30
+2025-08-18 03:23:57,083 - src.optimization.optimizer - INFO - 🔍 Étape 3 : Optimisation du seuil de vente avec coefficients (np.float64(2.7), np.float64(1.61), np.float64(1.67), np.float64(2.18), np.float64(2.68), np.float64(2.08), np.float64(2.07), np.float64(1.98)) et seuil d'achat 3.29
+2025-08-18 03:23:59,572 - src.optimization.optimizer - INFO - 🔍 Cycle 1 - Étape 3 - Optimisation Industrials démarrée
+2025-08-18 03:23:59,572 - src.optimization.optimizer - INFO - 📈 Itération 1: Gain moyen = 1.30, Trades = 11
+2025-08-18 03:24:24,552 - src.optimization.optimizer - INFO - 📊 Cycle 1 - Étape 3 - Nombre de doublons évités : 0
+2025-08-18 03:24:24,553 - src.optimization.optimizer - INFO - ✅ Cycle 1 - Étape 3 - Meilleur seuil de vente : -0.41, Gain moyen = 1.30
+2025-08-18 03:24:27,911 - src.optimization.optimizer - INFO - ✅ Cycle 1 - Aucune amélioration significative, arrêt anticipé
+2025-08-18 03:24:27,912 - src.optimization.parameter_manager - ERROR - ⚠️ Erreur lors de la sauvegarde dans le CSV: invalid index to scalar variable.
+2025-08-18 03:24:27,912 - src.optimization.optimization_runner - INFO - 
+📊 Résultats pour Industrials:
+2025-08-18 03:24:27,912 - src.optimization.optimization_runner - INFO -  Meilleurs coefficients: (np.float64(2.7), np.float64(1.61), np.float64(1.67), np.float64(2.18), np.float64(2.68), np.float64(2.08), np.float64(2.07), np.float64(1.98))
+2025-08-18 03:24:27,912 - src.optimization.optimization_runner - INFO -  Meilleurs seuils (achat, vente): (np.float64(3.83), np.float64(-0.78))
+2025-08-18 03:24:27,913 - src.optimization.optimization_runner - INFO -  Gain total moyen: 2.14
+2025-08-18 03:24:27,913 - src.optimization.optimization_runner - INFO -  Taux de réussite: 50.00%
+2025-08-18 03:24:27,913 - src.optimization.optimization_runner - INFO - 
+🔧 Optimisation du secteur: Energy (4 symboles)
+2025-08-18 03:24:27,913 - src.data.providers.yahoo_provider - INFO - 📊 Traitement lot 1/1: 4 symboles
+2025-08-18 03:24:28,489 - src.data.providers.yahoo_provider - INFO - ✅ Données téléchargées pour 4 symboles
+2025-08-18 03:24:28,490 - src.optimization.optimizer - INFO - 📊 BP: 250 points de données
+2025-08-18 03:24:28,490 - src.optimization.optimizer - INFO - 📊 CVX: 250 points de données
+2025-08-18 03:24:28,491 - src.optimization.optimizer - INFO - 📊 UEC: 250 points de données
+2025-08-18 03:24:28,491 - src.optimization.optimizer - INFO - 📊 XOM: 250 points de données
+2025-08-18 03:24:28,491 - src.optimization.optimizer - INFO - 🔍 Étape initiale : Optimisation globale pour Energy
+2025-08-18 03:24:32,597 - src.optimization.optimizer - INFO - 🔍 Étape initiale - Optimisation Energy démarrée avec 4 symboles
+2025-08-18 03:24:32,597 - src.optimization.optimizer - INFO - 📈 Itération 1: Gain moyen = -0.95, Trades = 12, Taux de réussite = 41.67%
+2025-08-18 03:25:08,758 - src.optimization.optimizer - INFO - 📊 Étape initiale - Nombre de doublons évités : 0
+2025-08-18 03:25:08,759 - src.optimization.optimizer - INFO - ✅ Étape initiale - Meilleurs coefficients : (np.float64(2.73), np.float64(1.67), np.float64(1.73), np.float64(1.33), np.float64(0.75), np.float64(2.53), np.float64(2.19), np.float64(1.45)), Seuils : (np.float64(5.84), np.float64(-1.69)), Gain moyen = -0.34
+2025-08-18 03:25:08,759 - src.optimization.optimizer - INFO - 
+🔄 Cycle 1/255 pour Energy
+2025-08-18 03:25:08,759 - src.optimization.optimizer - INFO - 🔍 Étape 1 : Optimisation des coefficients avec seuils (np.float64(5.84), np.float64(-1.69))
+2025-08-18 03:25:12,408 - src.optimization.optimizer - INFO - 🔍 Cycle 1 - Étape 1 - Optimisation Energy démarrée avec 4 symboles
+2025-08-18 03:25:12,409 - src.optimization.optimizer - INFO - 📈 Itération 1: Gain moyen = -4.38, Trades = 15, Taux de réussite = 40.00%
+2025-08-18 03:25:48,098 - src.optimization.optimizer - INFO - 📊 Cycle 1 - Étape 1 - Nombre de doublons évités : 0
+2025-08-18 03:25:48,099 - src.optimization.optimizer - INFO - ✅ Cycle 1 - Étape 1 - Meilleurs coefficients : (np.float64(1.71), np.float64(0.58), np.float64(2.94), np.float64(1.83), np.float64(0.62), np.float64(1.08), np.float64(1.87), np.float64(0.9)), Gain moyen = -1.20
+2025-08-18 03:25:48,099 - src.optimization.optimizer - INFO - 🔍 Étape 2 : Optimisation du seuil d'achat avec coefficients (np.float64(1.71), np.float64(0.58), np.float64(2.94), np.float64(1.83), np.float64(0.62), np.float64(1.08), np.float64(1.87), np.float64(0.9)) et seuil de vente -1.69
+2025-08-18 03:25:51,876 - src.optimization.optimizer - INFO - 🔍 Cycle 1 - Étape 2 - Optimisation Energy démarrée
+2025-08-18 03:25:51,876 - src.optimization.optimizer - INFO - 📈 Itération 1: Gain moyen = -1.20, Trades = 6
+2025-08-18 03:26:28,855 - src.optimization.optimizer - INFO - 📊 Cycle 1 - Étape 2 - Nombre de doublons évités : 0
+2025-08-18 03:26:28,855 - src.optimization.optimizer - INFO - ✅ Cycle 1 - Étape 2 - Meilleur seuil d'achat : 5.14, Gain moyen = -1.20
+2025-08-18 03:26:28,855 - src.optimization.optimizer - INFO - 🔍 Étape 3 : Optimisation du seuil de vente avec coefficients (np.float64(1.71), np.float64(0.58), np.float64(2.94), np.float64(1.83), np.float64(0.62), np.float64(1.08), np.float64(1.87), np.float64(0.9)) et seuil d'achat 5.14
+2025-08-18 03:26:32,793 - src.optimization.optimizer - INFO - 🔍 Cycle 1 - Étape 3 - Optimisation Energy démarrée
+2025-08-18 03:26:32,794 - src.optimization.optimizer - INFO - 📈 Itération 1: Gain moyen = -1.20, Trades = 6
+2025-08-18 03:27:08,101 - src.optimization.optimizer - INFO - 📊 Cycle 1 - Étape 3 - Nombre de doublons évités : 0
+2025-08-18 03:27:08,101 - src.optimization.optimizer - INFO - ✅ Cycle 1 - Étape 3 - Meilleur seuil de vente : -2.46, Gain moyen = -1.20
+2025-08-18 03:27:12,471 - src.optimization.optimizer - INFO - ✅ Cycle 1 - Aucune amélioration significative, arrêt anticipé
+2025-08-18 03:27:12,472 - src.optimization.parameter_manager - ERROR - ⚠️ Erreur lors de la sauvegarde dans le CSV: invalid index to scalar variable.
+2025-08-18 03:27:12,472 - src.optimization.optimization_runner - INFO - 
+📊 Résultats pour Energy:
+2025-08-18 03:27:12,473 - src.optimization.optimization_runner - INFO -  Meilleurs coefficients: (np.float64(1.71), np.float64(0.58), np.float64(2.94), np.float64(1.83), np.float64(0.62), np.float64(1.08), np.float64(1.87), np.float64(0.9))
+2025-08-18 03:27:12,473 - src.optimization.optimization_runner - INFO -  Meilleurs seuils (achat, vente): (np.float64(5.84), np.float64(-1.69))
+2025-08-18 03:27:12,473 - src.optimization.optimization_runner - INFO -  Gain total moyen: -0.34
+2025-08-18 03:27:12,474 - src.optimization.optimization_runner - INFO -  Taux de réussite: 50.00%
+2025-08-18 03:27:12,474 - src.optimization.optimization_runner - INFO - 
+🔧 Optimisation du secteur: Basic Materials (6 symboles)
+2025-08-18 03:27:12,474 - src.data.providers.yahoo_provider - INFO - 📊 Traitement lot 1/1: 6 symboles
+2025-08-18 03:27:12,993 - src.data.providers.yahoo_provider - INFO - ✅ Données téléchargées pour 6 symboles
+2025-08-18 03:27:12,993 - src.optimization.optimizer - INFO - 📊 BHP: 257 points de données
+2025-08-18 03:27:12,993 - src.optimization.optimizer - INFO - 📊 FCX: 257 points de données
+2025-08-18 03:27:12,994 - src.optimization.optimizer - INFO - 📊 FNV.TO: 257 points de données
+2025-08-18 03:27:12,994 - src.optimization.optimizer - INFO - 📊 HMY: 257 points de données
+2025-08-18 03:27:12,994 - src.optimization.optimizer - INFO - 📊 MP: 257 points de données
+2025-08-18 03:27:12,994 - src.optimization.optimizer - INFO - 📊 NEM: 257 points de données
+2025-08-18 03:27:12,995 - src.optimization.optimizer - INFO - 🔍 Étape initiale : Optimisation globale pour Basic Materials
+2025-08-18 03:27:14,354 - src.optimization.optimizer - INFO - 🔍 Étape initiale - Optimisation Basic Materials démarrée avec 6 symboles
+2025-08-18 03:27:14,354 - src.optimization.optimizer - INFO - 📈 Itération 1: Gain moyen = -0.04, Trades = 3, Taux de réussite = 66.67%
+2025-08-18 03:27:24,692 - src.optimization.optimizer - INFO - 📊 Étape initiale - Nombre de doublons évités : 0
+2025-08-18 03:27:24,692 - src.optimization.optimizer - INFO - ✅ Étape initiale - Meilleurs coefficients : (np.float64(2.54), np.float64(2.42), np.float64(2.09), np.float64(1.12), np.float64(1.18), np.float64(0.87), np.float64(2.59), np.float64(0.89)), Seuils : (np.float64(5.09), np.float64(-2.66)), Gain moyen = 0.43
+2025-08-18 03:27:24,692 - src.optimization.optimizer - INFO - 
+🔄 Cycle 1/255 pour Basic Materials
+2025-08-18 03:27:24,693 - src.optimization.optimizer - INFO - 🔍 Étape 1 : Optimisation des coefficients avec seuils (np.float64(5.09), np.float64(-2.66))
+2025-08-18 03:27:25,672 - src.optimization.optimizer - INFO - 🔍 Cycle 1 - Étape 1 - Optimisation Basic Materials démarrée avec 6 symboles
+2025-08-18 03:27:25,672 - src.optimization.optimizer - INFO - 📈 Itération 1: Gain moyen = -0.20, Trades = 9, Taux de réussite = 66.67%
+2025-08-18 03:27:34,594 - src.optimization.optimizer - INFO - 📊 Cycle 1 - Étape 1 - Nombre de doublons évités : 0
+2025-08-18 03:27:34,595 - src.optimization.optimizer - INFO - ✅ Cycle 1 - Étape 1 - Meilleurs coefficients : (np.float64(2.29), np.float64(2.0), np.float64(0.57), np.float64(2.89), np.float64(2.4), np.float64(2.76), np.float64(2.13), np.float64(2.71)), Gain moyen = 0.21
+2025-08-18 03:27:34,595 - src.optimization.optimizer - INFO - 🔍 Étape 2 : Optimisation du seuil d'achat avec coefficients (np.float64(2.29), np.float64(2.0), np.float64(0.57), np.float64(2.89), np.float64(2.4), np.float64(2.76), np.float64(2.13), np.float64(2.71)) et seuil de vente -2.66
+2025-08-18 03:27:35,601 - src.optimization.optimizer - INFO - 🔍 Cycle 1 - Étape 2 - Optimisation Basic Materials démarrée
+2025-08-18 03:27:35,602 - src.optimization.optimizer - INFO - 📈 Itération 1: Gain moyen = 0.21, Trades = 2
+2025-08-18 03:27:44,794 - src.optimization.optimizer - INFO - 📊 Cycle 1 - Étape 2 - Nombre de doublons évités : 0
+2025-08-18 03:27:44,794 - src.optimization.optimizer - INFO - ✅ Cycle 1 - Étape 2 - Meilleur seuil d'achat : 5.71, Gain moyen = 0.21
+2025-08-18 03:27:44,795 - src.optimization.optimizer - INFO - 🔍 Étape 3 : Optimisation du seuil de vente avec coefficients (np.float64(2.29), np.float64(2.0), np.float64(0.57), np.float64(2.89), np.float64(2.4), np.float64(2.76), np.float64(2.13), np.float64(2.71)) et seuil d'achat 5.71
+2025-08-18 03:27:45,835 - src.optimization.optimizer - INFO - 🔍 Cycle 1 - Étape 3 - Optimisation Basic Materials démarrée
+2025-08-18 03:27:45,835 - src.optimization.optimizer - INFO - 📈 Itération 1: Gain moyen = 0.21, Trades = 2
+2025-08-18 03:27:54,942 - src.optimization.optimizer - INFO - 📊 Cycle 1 - Étape 3 - Nombre de doublons évités : 0
+2025-08-18 03:27:54,943 - src.optimization.optimizer - INFO - ✅ Cycle 1 - Étape 3 - Meilleur seuil de vente : -1.91, Gain moyen = 0.21
+2025-08-18 03:27:55,834 - src.optimization.optimizer - INFO - ✅ Cycle 1 - Aucune amélioration significative, arrêt anticipé
+2025-08-18 03:27:55,834 - src.optimization.parameter_manager - ERROR - ⚠️ Erreur lors de la sauvegarde dans le CSV: invalid index to scalar variable.
+2025-08-18 03:27:55,835 - src.optimization.optimization_runner - INFO - 
+📊 Résultats pour Basic Materials:
+2025-08-18 03:27:55,835 - src.optimization.optimization_runner - INFO -  Meilleurs coefficients: (np.float64(2.29), np.float64(2.0), np.float64(0.57), np.float64(2.89), np.float64(2.4), np.float64(2.76), np.float64(2.13), np.float64(2.71))
+2025-08-18 03:27:55,836 - src.optimization.optimization_runner - INFO -  Meilleurs seuils (achat, vente): (np.float64(5.09), np.float64(-2.66))
+2025-08-18 03:27:55,836 - src.optimization.optimization_runner - INFO -  Gain total moyen: 0.43
+2025-08-18 03:27:55,836 - src.optimization.optimization_runner - INFO -  Taux de réussite: 100.00%
+2025-08-18 03:27:55,836 - src.optimization.optimization_runner - INFO - 
+🔧 Optimisation du secteur: Communication Services (6 symboles)
+2025-08-18 03:27:55,837 - src.data.providers.yahoo_provider - INFO - 📊 Traitement lot 1/1: 6 symboles
+2025-08-18 03:27:56,576 - src.data.providers.yahoo_provider - INFO - ✅ Données téléchargées pour 6 symboles
+2025-08-18 03:27:56,577 - src.optimization.optimizer - INFO - 📊 GOOGL: 250 points de données
+2025-08-18 03:27:56,577 - src.optimization.optimizer - INFO - 📊 META: 250 points de données
+2025-08-18 03:27:56,578 - src.optimization.optimizer - INFO - 📊 SPOT: 250 points de données
+2025-08-18 03:27:56,578 - src.optimization.optimizer - INFO - 📊 T: 250 points de données
+2025-08-18 03:27:56,579 - src.optimization.optimizer - INFO - 📊 TBLA: 250 points de données
+2025-08-18 03:27:56,579 - src.optimization.optimizer - INFO - 📊 VZ: 250 points de données
+2025-08-18 03:27:56,579 - src.optimization.optimizer - INFO - 🔍 Étape initiale : Optimisation globale pour Communication Services
+2025-08-18 03:28:02,394 - src.optimization.optimizer - INFO - 🔍 Étape initiale - Optimisation Communication Services démarrée avec 6 symboles
+2025-08-18 03:28:02,394 - src.optimization.optimizer - INFO - 📈 Itération 1: Gain moyen = -1.88, Trades = 37, Taux de réussite = 29.73%
+2025-08-18 03:28:54,958 - src.optimization.optimizer - INFO - 📊 Étape initiale - Nombre de doublons évités : 0
+2025-08-18 03:28:54,959 - src.optimization.optimizer - INFO - ✅ Étape initiale - Meilleurs coefficients : (np.float64(2.23), np.float64(1.16), np.float64(1.05), np.float64(1.27), np.float64(1.16), np.float64(0.57), np.float64(1.26), np.float64(1.47)), Seuils : (np.float64(5.63), np.float64(-0.01)), Gain moyen = 0.84
+2025-08-18 03:28:54,959 - src.optimization.optimizer - INFO - 
+🔄 Cycle 1/255 pour Communication Services
+2025-08-18 03:28:54,959 - src.optimization.optimizer - INFO - 🔍 Étape 1 : Optimisation des coefficients avec seuils (np.float64(5.63), np.float64(-0.01))
+2025-08-18 03:29:00,932 - src.optimization.optimizer - INFO - 🔍 Cycle 1 - Étape 1 - Optimisation Communication Services démarrée avec 6 symboles
+2025-08-18 03:29:00,932 - src.optimization.optimizer - INFO - 📈 Itération 1: Gain moyen = -2.68, Trades = 16, Taux de réussite = 25.00%
+2025-08-18 03:29:53,363 - src.optimization.optimizer - INFO - 📊 Cycle 1 - Étape 1 - Nombre de doublons évités : 0
+2025-08-18 03:29:53,363 - src.optimization.optimizer - INFO - ✅ Cycle 1 - Étape 1 - Meilleurs coefficients : (np.float64(0.97), np.float64(0.51), np.float64(1.53), np.float64(2.66), np.float64(2.25), np.float64(2.41), np.float64(0.71), np.float64(1.9)), Gain moyen = -0.29
+2025-08-18 03:29:53,363 - src.optimization.optimizer - INFO - 🔍 Étape 2 : Optimisation du seuil d'achat avec coefficients (np.float64(0.97), np.float64(0.51), np.float64(1.53), np.float64(2.66), np.float64(2.25), np.float64(2.41), np.float64(0.71), np.float64(1.9)) et seuil de vente -0.01
+2025-08-18 03:29:59,025 - src.optimization.optimizer - INFO - 🔍 Cycle 1 - Étape 2 - Optimisation Communication Services démarrée
+2025-08-18 03:29:59,026 - src.optimization.optimizer - INFO - 📈 Itération 1: Gain moyen = -0.29, Trades = 10
+2025-08-18 03:30:56,415 - src.optimization.optimizer - INFO - 📊 Cycle 1 - Étape 2 - Nombre de doublons évités : 0
+2025-08-18 03:30:56,416 - src.optimization.optimizer - INFO - ✅ Cycle 1 - Étape 2 - Meilleur seuil d'achat : 5.85, Gain moyen = -0.29
+2025-08-18 03:30:56,416 - src.optimization.optimizer - INFO - 🔍 Étape 3 : Optimisation du seuil de vente avec coefficients (np.float64(0.97), np.float64(0.51), np.float64(1.53), np.float64(2.66), np.float64(2.25), np.float64(2.41), np.float64(0.71), np.float64(1.9)) et seuil d'achat 5.85
+2025-08-18 03:31:02,025 - src.optimization.optimizer - INFO - 🔍 Cycle 1 - Étape 3 - Optimisation Communication Services démarrée
+2025-08-18 03:31:02,026 - src.optimization.optimizer - INFO - 📈 Itération 1: Gain moyen = -0.29, Trades = 10
+2025-08-18 03:31:54,217 - src.optimization.optimizer - INFO - 📊 Cycle 1 - Étape 3 - Nombre de doublons évités : 0
+2025-08-18 03:31:54,218 - src.optimization.optimizer - INFO - ✅ Cycle 1 - Étape 3 - Meilleur seuil de vente : -0.82, Gain moyen = -0.29
+2025-08-18 03:32:00,292 - src.optimization.optimizer - INFO - ✅ Cycle 1 - Aucune amélioration significative, arrêt anticipé
+2025-08-18 03:32:00,293 - src.optimization.parameter_manager - ERROR - ⚠️ Erreur lors de la sauvegarde dans le CSV: invalid index to scalar variable.
+2025-08-18 03:32:00,293 - src.optimization.optimization_runner - INFO - 
+📊 Résultats pour Communication Services:
+2025-08-18 03:32:00,294 - src.optimization.optimization_runner - INFO -  Meilleurs coefficients: (np.float64(0.97), np.float64(0.51), np.float64(1.53), np.float64(2.66), np.float64(2.25), np.float64(2.41), np.float64(0.71), np.float64(1.9))
+2025-08-18 03:32:00,294 - src.optimization.optimization_runner - INFO -  Meilleurs seuils (achat, vente): (np.float64(5.63), np.float64(-0.01))
+2025-08-18 03:32:00,295 - src.optimization.optimization_runner - INFO -  Gain total moyen: 0.84
+2025-08-18 03:32:00,295 - src.optimization.optimization_runner - INFO -  Taux de réussite: 47.83%
+2025-08-18 03:32:00,295 - src.optimization.optimization_runner - INFO - 
+🔧 Optimisation du secteur: Consumer Defensive (4 symboles)
+2025-08-18 03:32:00,296 - src.data.providers.yahoo_provider - INFO - 📊 Traitement lot 1/1: 4 symboles
+2025-08-18 03:32:00,872 - src.data.providers.yahoo_provider - INFO - ✅ Données téléchargées pour 4 symboles
+2025-08-18 03:32:00,872 - src.optimization.optimizer - INFO - 📊 BATS.L: 259 points de données
+2025-08-18 03:32:00,872 - src.optimization.optimizer - INFO - 📊 OR.PA: 259 points de données
+2025-08-18 03:32:00,872 - src.optimization.optimizer - INFO - 📊 ULVR.L: 259 points de données
+2025-08-18 03:32:00,873 - src.optimization.optimizer - INFO - 📊 WMT: 259 points de données
+2025-08-18 03:32:00,873 - src.optimization.optimizer - INFO - 🔍 Étape initiale : Optimisation globale pour Consumer Defensive
+2025-08-18 03:32:04,011 - src.optimization.optimizer - INFO - 🔍 Étape initiale - Optimisation Consumer Defensive démarrée avec 4 symboles
+2025-08-18 03:32:04,012 - src.optimization.optimizer - INFO - 📈 Itération 1: Gain moyen = -1.92, Trades = 21, Taux de réussite = 28.57%
+2025-08-18 03:32:32,716 - src.optimization.optimizer - INFO - 📊 Étape initiale - Nombre de doublons évités : 0
+2025-08-18 03:32:32,717 - src.optimization.optimizer - INFO - ✅ Étape initiale - Meilleurs coefficients : (np.float64(1.31), np.float64(2.33), np.float64(2.0), np.float64(2.93), np.float64(1.72), np.float64(0.72), np.float64(2.92), np.float64(1.2)), Seuils : (np.float64(4.88), np.float64(-1.6)), Gain moyen = 0.08
+2025-08-18 03:32:32,717 - src.optimization.optimizer - INFO - 
+🔄 Cycle 1/255 pour Consumer Defensive
+2025-08-18 03:32:32,717 - src.optimization.optimizer - INFO - 🔍 Étape 1 : Optimisation des coefficients avec seuils (np.float64(4.88), np.float64(-1.6))
+2025-08-18 03:32:35,716 - src.optimization.optimizer - INFO - 🔍 Cycle 1 - Étape 1 - Optimisation Consumer Defensive démarrée avec 4 symboles
+2025-08-18 03:32:35,716 - src.optimization.optimizer - INFO - 📈 Itération 1: Gain moyen = -0.21, Trades = 5, Taux de réussite = 40.00%
+2025-08-18 03:33:04,183 - src.optimization.optimizer - INFO - 📊 Cycle 1 - Étape 1 - Nombre de doublons évités : 0
+2025-08-18 03:33:04,183 - src.optimization.optimizer - INFO - ✅ Cycle 1 - Étape 1 - Meilleurs coefficients : (np.float64(1.03), np.float64(2.28), np.float64(1.8), np.float64(2.63), np.float64(0.62), np.float64(1.8), np.float64(0.73), np.float64(0.69)), Gain moyen = 0.61
+2025-08-18 03:33:04,183 - src.optimization.optimizer - INFO - 🔍 Étape 2 : Optimisation du seuil d'achat avec coefficients (np.float64(1.03), np.float64(2.28), np.float64(1.8), np.float64(2.63), np.float64(0.62), np.float64(1.8), np.float64(0.73), np.float64(0.69)) et seuil de vente -1.6
+2025-08-18 03:33:07,501 - src.optimization.optimizer - INFO - 🔍 Cycle 1 - Étape 2 - Optimisation Consumer Defensive démarrée
+2025-08-18 03:33:07,501 - src.optimization.optimizer - INFO - 📈 Itération 1: Gain moyen = 0.61, Trades = 10
+2025-08-18 03:33:36,782 - src.optimization.optimizer - INFO - 📊 Cycle 1 - Étape 2 - Nombre de doublons évités : 0
+2025-08-18 03:33:36,783 - src.optimization.optimizer - INFO - ✅ Cycle 1 - Étape 2 - Meilleur seuil d'achat : 3.1, Gain moyen = 0.61
+2025-08-18 03:33:36,783 - src.optimization.optimizer - INFO - 🔍 Étape 3 : Optimisation du seuil de vente avec coefficients (np.float64(1.03), np.float64(2.28), np.float64(1.8), np.float64(2.63), np.float64(0.62), np.float64(1.8), np.float64(0.73), np.float64(0.69)) et seuil d'achat 3.1
+2025-08-18 03:33:39,742 - src.optimization.optimizer - INFO - 🔍 Cycle 1 - Étape 3 - Optimisation Consumer Defensive démarrée
+2025-08-18 03:33:39,743 - src.optimization.optimizer - INFO - 📈 Itération 1: Gain moyen = 0.61, Trades = 10
+2025-08-18 03:34:08,911 - src.optimization.optimizer - INFO - 📊 Cycle 1 - Étape 3 - Nombre de doublons évités : 0
+2025-08-18 03:34:08,911 - src.optimization.optimizer - INFO - ✅ Cycle 1 - Étape 3 - Meilleur seuil de vente : -2.06, Gain moyen = 0.61
+2025-08-18 03:34:11,965 - src.optimization.optimizer - INFO - ✅ Cycle 1 - Amélioration du gain : 0.53
+2025-08-18 03:34:11,966 - src.optimization.parameter_manager - ERROR - ⚠️ Erreur lors de la sauvegarde dans le CSV: invalid index to scalar variable.
+2025-08-18 03:34:11,966 - src.optimization.optimizer - INFO - 
+🔄 Cycle 2/255 pour Consumer Defensive
+2025-08-18 03:34:11,966 - src.optimization.optimizer - INFO - 🔍 Étape 1 : Optimisation des coefficients avec seuils (np.float64(3.1), np.float64(-2.06))
+2025-08-18 03:34:14,888 - src.optimization.optimizer - INFO - 🔍 Cycle 2 - Étape 1 - Optimisation Consumer Defensive démarrée avec 4 symboles
+2025-08-18 03:34:14,889 - src.optimization.optimizer - INFO - 📈 Itération 1: Gain moyen = 0.78, Trades = 4, Taux de réussite = 50.00%
+2025-08-18 03:34:43,197 - src.optimization.optimizer - INFO - 📊 Cycle 2 - Étape 1 - Nombre de doublons évités : 0
+2025-08-18 03:34:43,197 - src.optimization.optimizer - INFO - ✅ Cycle 2 - Étape 1 - Meilleurs coefficients : (np.float64(0.75), np.float64(1.16), np.float64(1.47), np.float64(2.76), np.float64(0.63), np.float64(2.26), np.float64(0.99), np.float64(1.18)), Gain moyen = 0.78
+2025-08-18 03:34:43,198 - src.optimization.optimizer - INFO - 🔍 Étape 2 : Optimisation du seuil d'achat avec coefficients (np.float64(0.75), np.float64(1.16), np.float64(1.47), np.float64(2.76), np.float64(0.63), np.float64(2.26), np.float64(0.99), np.float64(1.18)) et seuil de vente -2.06
+2025-08-18 03:34:46,498 - src.optimization.optimizer - INFO - 🔍 Cycle 2 - Étape 2 - Optimisation Consumer Defensive démarrée
+2025-08-18 03:34:46,498 - src.optimization.optimizer - INFO - 📈 Itération 1: Gain moyen = 0.78, Trades = 4
+2025-08-18 03:35:14,924 - src.optimization.optimizer - INFO - 📊 Cycle 2 - Étape 2 - Nombre de doublons évités : 0
+2025-08-18 03:35:14,924 - src.optimization.optimizer - INFO - ✅ Cycle 2 - Étape 2 - Meilleur seuil d'achat : 5.03, Gain moyen = 0.78
+2025-08-18 03:35:14,924 - src.optimization.optimizer - INFO - 🔍 Étape 3 : Optimisation du seuil de vente avec coefficients (np.float64(0.75), np.float64(1.16), np.float64(1.47), np.float64(2.76), np.float64(0.63), np.float64(2.26), np.float64(0.99), np.float64(1.18)) et seuil d'achat 5.03
+2025-08-18 03:35:18,046 - src.optimization.optimizer - INFO - 🔍 Cycle 2 - Étape 3 - Optimisation Consumer Defensive démarrée
+2025-08-18 03:35:18,046 - src.optimization.optimizer - INFO - 📈 Itération 1: Gain moyen = 0.78, Trades = 4
+2025-08-18 03:35:44,571 - src.optimization.optimizer - INFO - 📊 Cycle 2 - Étape 3 - Nombre de doublons évités : 0
+2025-08-18 03:35:44,572 - src.optimization.optimizer - INFO - ✅ Cycle 2 - Étape 3 - Meilleur seuil de vente : -0.62, Gain moyen = 0.78
+2025-08-18 03:35:47,508 - src.optimization.optimizer - INFO - ✅ Cycle 2 - Amélioration du gain : 0.17
+2025-08-18 03:35:47,509 - src.optimization.parameter_manager - ERROR - ⚠️ Erreur lors de la sauvegarde dans le CSV: invalid index to scalar variable.
+2025-08-18 03:35:47,509 - src.optimization.optimizer - INFO - 
+🔄 Cycle 3/255 pour Consumer Defensive
+2025-08-18 03:35:47,509 - src.optimization.optimizer - INFO - 🔍 Étape 1 : Optimisation des coefficients avec seuils (np.float64(5.03), np.float64(-0.62))
+2025-08-18 03:35:50,854 - src.optimization.optimizer - INFO - 🔍 Cycle 3 - Étape 1 - Optimisation Consumer Defensive démarrée avec 4 symboles
+2025-08-18 03:35:50,854 - src.optimization.optimizer - INFO - 📈 Itération 1: Gain moyen = -0.53, Trades = 4, Taux de réussite = 25.00%
+2025-08-18 03:36:20,874 - src.optimization.optimizer - INFO - 📊 Cycle 3 - Étape 1 - Nombre de doublons évités : 0
+2025-08-18 03:36:20,875 - src.optimization.optimizer - INFO - ✅ Cycle 3 - Étape 1 - Meilleurs coefficients : (np.float64(0.74), np.float64(1.06), np.float64(1.14), np.float64(2.51), np.float64(0.51), np.float64(1.41), np.float64(2.79), np.float64(2.3)), Gain moyen = 0.23
+2025-08-18 03:36:20,875 - src.optimization.optimizer - INFO - 🔍 Étape 2 : Optimisation du seuil d'achat avec coefficients (np.float64(0.74), np.float64(1.06), np.float64(1.14), np.float64(2.51), np.float64(0.51), np.float64(1.41), np.float64(2.79), np.float64(2.3)) et seuil de vente -0.62
+2025-08-18 03:36:24,072 - src.optimization.optimizer - INFO - 🔍 Cycle 3 - Étape 2 - Optimisation Consumer Defensive démarrée
+2025-08-18 03:36:24,072 - src.optimization.optimizer - INFO - 📈 Itération 1: Gain moyen = 0.23, Trades = 4
+2025-08-18 03:36:52,414 - src.optimization.optimizer - INFO - 📊 Cycle 3 - Étape 2 - Nombre de doublons évités : 0
+2025-08-18 03:36:52,415 - src.optimization.optimizer - INFO - ✅ Cycle 3 - Étape 2 - Meilleur seuil d'achat : 5.69, Gain moyen = 0.23
+2025-08-18 03:36:52,415 - src.optimization.optimizer - INFO - 🔍 Étape 3 : Optimisation du seuil de vente avec coefficients (np.float64(0.74), np.float64(1.06), np.float64(1.14), np.float64(2.51), np.float64(0.51), np.float64(1.41), np.float64(2.79), np.float64(2.3)) et seuil d'achat 5.69
+2025-08-18 03:36:55,432 - src.optimization.optimizer - INFO - 🔍 Cycle 3 - Étape 3 - Optimisation Consumer Defensive démarrée
+2025-08-18 03:36:55,432 - src.optimization.optimizer - INFO - 📈 Itération 1: Gain moyen = 0.23, Trades = 4
+2025-08-18 03:37:23,346 - src.optimization.optimizer - INFO - 📊 Cycle 3 - Étape 3 - Nombre de doublons évités : 0
+2025-08-18 03:37:23,346 - src.optimization.optimizer - INFO - ✅ Cycle 3 - Étape 3 - Meilleur seuil de vente : -0.84, Gain moyen = 0.23
+2025-08-18 03:37:26,175 - src.optimization.optimizer - INFO - ✅ Cycle 3 - Aucune amélioration significative, arrêt anticipé
+2025-08-18 03:37:26,175 - src.optimization.parameter_manager - ERROR - ⚠️ Erreur lors de la sauvegarde dans le CSV: invalid index to scalar variable.
+2025-08-18 03:37:26,176 - src.optimization.optimization_runner - INFO - 
+📊 Résultats pour Consumer Defensive:
+2025-08-18 03:37:26,176 - src.optimization.optimization_runner - INFO -  Meilleurs coefficients: (np.float64(0.74), np.float64(1.06), np.float64(1.14), np.float64(2.51), np.float64(0.51), np.float64(1.41), np.float64(2.79), np.float64(2.3))
+2025-08-18 03:37:26,176 - src.optimization.optimization_runner - INFO -  Meilleurs seuils (achat, vente): (np.float64(5.03), np.float64(-0.62))
+2025-08-18 03:37:26,177 - src.optimization.optimization_runner - INFO -  Gain total moyen: 0.78
+2025-08-18 03:37:26,177 - src.optimization.optimization_runner - INFO -  Taux de réussite: 50.00%
+2025-08-18 03:37:26,177 - src.optimization.optimization_runner - INFO - 
+🔧 Optimisation du secteur: Utilities (3 symboles)
+2025-08-18 03:37:26,177 - src.data.providers.yahoo_provider - INFO - 📊 Traitement lot 1/1: 3 symboles
+2025-08-18 03:37:26,659 - src.data.providers.yahoo_provider - INFO - ✅ Données téléchargées pour 3 symboles
+2025-08-18 03:37:26,659 - src.optimization.optimizer - INFO - 📊 DUK: 250 points de données
+2025-08-18 03:37:26,660 - src.optimization.optimizer - INFO - 📊 NEE: 250 points de données
+2025-08-18 03:37:26,660 - src.optimization.optimizer - INFO - 📊 SO: 250 points de données
+2025-08-18 03:37:26,660 - src.optimization.optimizer - INFO - 🔍 Étape initiale : Optimisation globale pour Utilities
+2025-08-18 03:37:29,558 - src.optimization.optimizer - INFO - 🔍 Étape initiale - Optimisation Utilities démarrée avec 3 symboles
+2025-08-18 03:37:29,559 - src.optimization.optimizer - INFO - 📈 Itération 1: Gain moyen = -2.50, Trades = 20, Taux de réussite = 40.00%
+2025-08-18 03:37:55,895 - src.optimization.optimizer - INFO - 📊 Étape initiale - Nombre de doublons évités : 0
+2025-08-18 03:37:55,895 - src.optimization.optimizer - INFO - ✅ Étape initiale - Meilleurs coefficients : (np.float64(1.97), np.float64(0.96), np.float64(1.36), np.float64(2.78), np.float64(0.77), np.float64(0.55), np.float64(1.8), np.float64(1.68)), Seuils : (np.float64(5.25), np.float64(-1.55)), Gain moyen = 1.32
+2025-08-18 03:37:55,896 - src.optimization.optimizer - INFO - 
+🔄 Cycle 1/255 pour Utilities
+2025-08-18 03:37:55,896 - src.optimization.optimizer - INFO - 🔍 Étape 1 : Optimisation des coefficients avec seuils (np.float64(5.25), np.float64(-1.55))
+2025-08-18 03:37:58,792 - src.optimization.optimizer - INFO - 🔍 Cycle 1 - Étape 1 - Optimisation Utilities démarrée avec 3 symboles
+2025-08-18 03:37:58,793 - src.optimization.optimizer - INFO - 📈 Itération 1: Gain moyen = 0.00, Trades = 0, Taux de réussite = 0.00%
+2025-08-18 03:38:24,968 - src.optimization.optimizer - INFO - 📊 Cycle 1 - Étape 1 - Nombre de doublons évités : 0
+2025-08-18 03:38:24,968 - src.optimization.optimizer - INFO - ✅ Cycle 1 - Étape 1 - Meilleurs coefficients : (np.float64(0.79), np.float64(0.69), np.float64(2.75), np.float64(2.22), np.float64(1.12), np.float64(1.61), np.float64(0.99), np.float64(2.63)), Gain moyen = 0.00
+2025-08-18 03:38:24,968 - src.optimization.optimizer - INFO - 🔍 Étape 2 : Optimisation du seuil d'achat avec coefficients (np.float64(0.79), np.float64(0.69), np.float64(2.75), np.float64(2.22), np.float64(1.12), np.float64(1.61), np.float64(0.99), np.float64(2.63)) et seuil de vente -1.55
+2025-08-18 03:38:27,706 - src.optimization.optimizer - INFO - 🔍 Cycle 1 - Étape 2 - Optimisation Utilities démarrée
+2025-08-18 03:38:27,707 - src.optimization.optimizer - INFO - 📈 Itération 1: Gain moyen = 0.00, Trades = 0
+2025-08-18 03:38:53,934 - src.optimization.optimizer - INFO - 📊 Cycle 1 - Étape 2 - Nombre de doublons évités : 0
+2025-08-18 03:38:53,934 - src.optimization.optimizer - INFO - ✅ Cycle 1 - Étape 2 - Meilleur seuil d'achat : 2.03, Gain moyen = 0.00
+2025-08-18 03:38:53,934 - src.optimization.optimizer - INFO - 🔍 Étape 3 : Optimisation du seuil de vente avec coefficients (np.float64(0.79), np.float64(0.69), np.float64(2.75), np.float64(2.22), np.float64(1.12), np.float64(1.61), np.float64(0.99), np.float64(2.63)) et seuil d'achat 2.03
+2025-08-18 03:38:56,772 - src.optimization.optimizer - INFO - 🔍 Cycle 1 - Étape 3 - Optimisation Utilities démarrée
+2025-08-18 03:38:56,772 - src.optimization.optimizer - INFO - 📈 Itération 1: Gain moyen = 0.00, Trades = 0
+2025-08-18 03:39:24,724 - src.optimization.optimizer - INFO - 📊 Cycle 1 - Étape 3 - Nombre de doublons évités : 0
+2025-08-18 03:39:24,724 - src.optimization.optimizer - INFO - ✅ Cycle 1 - Étape 3 - Meilleur seuil de vente : -0.68, Gain moyen = 0.00
+2025-08-18 03:39:27,402 - src.optimization.optimizer - INFO - ✅ Cycle 1 - Aucune amélioration significative, arrêt anticipé
+2025-08-18 03:39:27,403 - src.optimization.parameter_manager - ERROR - ⚠️ Erreur lors de la sauvegarde dans le CSV: invalid index to scalar variable.
+2025-08-18 03:39:27,404 - src.optimization.optimization_runner - INFO - 
+📊 Résultats pour Utilities:
+2025-08-18 03:39:27,404 - src.optimization.optimization_runner - INFO -  Meilleurs coefficients: (np.float64(0.79), np.float64(0.69), np.float64(2.75), np.float64(2.22), np.float64(1.12), np.float64(1.61), np.float64(0.99), np.float64(2.63))
+2025-08-18 03:39:27,404 - src.optimization.optimization_runner - INFO -  Meilleurs seuils (achat, vente): (np.float64(5.25), np.float64(-1.55))
+2025-08-18 03:39:27,405 - src.optimization.optimization_runner - INFO -  Gain total moyen: 1.32
+2025-08-18 03:39:27,405 - src.optimization.optimization_runner - INFO -  Taux de réussite: 100.00%
+2025-08-18 03:39:27,405 - src.optimization.optimization_runner - INFO - 
+🔧 Optimisation du secteur: Real Estate (4 symboles)
+2025-08-18 03:39:27,406 - src.data.providers.yahoo_provider - INFO - 📊 Traitement lot 1/1: 4 symboles
+2025-08-18 03:39:27,884 - src.data.providers.yahoo_provider - INFO - ✅ Données téléchargées pour 4 symboles
+2025-08-18 03:39:27,885 - src.optimization.optimizer - INFO - 📊 AMT: 250 points de données
+2025-08-18 03:39:27,885 - src.optimization.optimizer - INFO - 📊 PLD: 250 points de données
+2025-08-18 03:39:27,885 - src.optimization.optimizer - INFO - 📊 SPG: 250 points de données
+2025-08-18 03:39:27,885 - src.optimization.optimizer - INFO - 📊 WELL: 250 points de données
+2025-08-18 03:39:27,886 - src.optimization.optimizer - INFO - 🔍 Étape initiale : Optimisation globale pour Real Estate
+2025-08-18 03:39:31,764 - src.optimization.optimizer - INFO - 🔍 Étape initiale - Optimisation Real Estate démarrée avec 4 symboles
+2025-08-18 03:39:31,764 - src.optimization.optimizer - INFO - 📈 Itération 1: Gain moyen = -2.06, Trades = 4, Taux de réussite = 50.00%
+2025-08-18 03:40:06,165 - src.optimization.optimizer - INFO - 📊 Étape initiale - Nombre de doublons évités : 0
+2025-08-18 03:40:06,165 - src.optimization.optimizer - INFO - ✅ Étape initiale - Meilleurs coefficients : (np.float64(1.29), np.float64(0.95), np.float64(0.96), np.float64(2.51), np.float64(1.08), np.float64(2.13), np.float64(2.75), np.float64(1.17)), Seuils : (np.float64(3.55), np.float64(-1.31)), Gain moyen = 0.16
+2025-08-18 03:40:06,165 - src.optimization.optimizer - INFO - 
+🔄 Cycle 1/255 pour Real Estate
+2025-08-18 03:40:06,165 - src.optimization.optimizer - INFO - 🔍 Étape 1 : Optimisation des coefficients avec seuils (np.float64(3.55), np.float64(-1.31))
+2025-08-18 03:40:10,060 - src.optimization.optimizer - INFO - 🔍 Cycle 1 - Étape 1 - Optimisation Real Estate démarrée avec 4 symboles
+2025-08-18 03:40:10,060 - src.optimization.optimizer - INFO - 📈 Itération 1: Gain moyen = -0.68, Trades = 10, Taux de réussite = 50.00%
+2025-08-18 03:40:46,102 - src.optimization.optimizer - INFO - 📊 Cycle 1 - Étape 1 - Nombre de doublons évités : 0
+2025-08-18 03:40:46,102 - src.optimization.optimizer - INFO - ✅ Cycle 1 - Étape 1 - Meilleurs coefficients : (np.float64(1.44), np.float64(1.55), np.float64(2.44), np.float64(2.97), np.float64(2.29), np.float64(1.78), np.float64(1.95), np.float64(0.9)), Gain moyen = -0.37
+2025-08-18 03:40:46,103 - src.optimization.optimizer - INFO - 🔍 Étape 2 : Optimisation du seuil d'achat avec coefficients (np.float64(1.44), np.float64(1.55), np.float64(2.44), np.float64(2.97), np.float64(2.29), np.float64(1.78), np.float64(1.95), np.float64(0.9)) et seuil de vente -1.31
+2025-08-18 03:40:50,105 - src.optimization.optimizer - INFO - 🔍 Cycle 1 - Étape 2 - Optimisation Real Estate démarrée
+2025-08-18 03:40:50,106 - src.optimization.optimizer - INFO - 📈 Itération 1: Gain moyen = -0.37, Trades = 8
+2025-08-18 03:41:25,179 - src.optimization.optimizer - INFO - 📊 Cycle 1 - Étape 2 - Nombre de doublons évités : 0
+2025-08-18 03:41:25,180 - src.optimization.optimizer - INFO - ✅ Cycle 1 - Étape 2 - Meilleur seuil d'achat : 4.89, Gain moyen = -0.37
+2025-08-18 03:41:25,180 - src.optimization.optimizer - INFO - 🔍 Étape 3 : Optimisation du seuil de vente avec coefficients (np.float64(1.44), np.float64(1.55), np.float64(2.44), np.float64(2.97), np.float64(2.29), np.float64(1.78), np.float64(1.95), np.float64(0.9)) et seuil d'achat 4.89
+2025-08-18 03:41:29,040 - src.optimization.optimizer - INFO - 🔍 Cycle 1 - Étape 3 - Optimisation Real Estate démarrée
+2025-08-18 03:41:29,041 - src.optimization.optimizer - INFO - 📈 Itération 1: Gain moyen = -0.37, Trades = 8
+2025-08-18 03:42:03,758 - src.optimization.optimizer - INFO - 📊 Cycle 1 - Étape 3 - Nombre de doublons évités : 0
+2025-08-18 03:42:03,758 - src.optimization.optimizer - INFO - ✅ Cycle 1 - Étape 3 - Meilleur seuil de vente : -1.82, Gain moyen = -0.37
+2025-08-18 03:42:08,154 - src.optimization.optimizer - INFO - ✅ Cycle 1 - Aucune amélioration significative, arrêt anticipé
+2025-08-18 03:42:08,154 - src.optimization.parameter_manager - ERROR - ⚠️ Erreur lors de la sauvegarde dans le CSV: invalid index to scalar variable.
+2025-08-18 03:42:08,155 - src.optimization.optimization_runner - INFO - 
+📊 Résultats pour Real Estate:
+2025-08-18 03:42:08,155 - src.optimization.optimization_runner - INFO -  Meilleurs coefficients: (np.float64(1.44), np.float64(1.55), np.float64(2.44), np.float64(2.97), np.float64(2.29), np.float64(1.78), np.float64(1.95), np.float64(0.9))
+2025-08-18 03:42:08,156 - src.optimization.optimization_runner - INFO -  Meilleurs seuils (achat, vente): (np.float64(3.55), np.float64(-1.31))
+2025-08-18 03:42:08,156 - src.optimization.optimization_runner - INFO -  Gain total moyen: 0.16
+2025-08-18 03:42:08,156 - src.optimization.optimization_runner - INFO -  Taux de réussite: 40.00%
+2025-08-18 03:42:08,156 - src.optimization.optimization_runner - INFO - 
+🔧 Optimisation du secteur: ℹ️Inconnu!! (4 symboles)
+2025-08-18 03:42:08,156 - src.data.providers.yahoo_provider - INFO - 📊 Traitement lot 1/1: 4 symboles
+2025-08-18 03:42:08,656 - src.data.providers.yahoo_provider - INFO - ✅ Données téléchargées pour 4 symboles
+2025-08-18 03:42:08,657 - src.optimization.optimizer - INFO - 📊 EEM: 250 points de données
+2025-08-18 03:42:08,657 - src.optimization.optimizer - INFO - 📊 GLD: 250 points de données
+2025-08-18 03:42:08,658 - src.optimization.optimizer - INFO - 📊 SPY: 250 points de données
+2025-08-18 03:42:08,658 - src.optimization.optimizer - INFO - 📊 VOOG: 250 points de données
+2025-08-18 03:42:08,658 - src.optimization.optimizer - INFO - 🔍 Étape initiale : Optimisation globale pour ℹ️Inconnu!!
+2025-08-18 03:42:12,598 - src.optimization.optimizer - INFO - 🔍 Étape initiale - Optimisation ℹ️Inconnu!! démarrée avec 4 symboles
+2025-08-18 03:42:12,599 - src.optimization.optimizer - INFO - 📈 Itération 1: Gain moyen = -1.55, Trades = 22, Taux de réussite = 54.55%
+2025-08-18 03:42:51,599 - src.optimization.optimizer - INFO - 📊 Étape initiale - Nombre de doublons évités : 0
+2025-08-18 03:42:51,599 - src.optimization.optimizer - INFO - ✅ Étape initiale - Meilleurs coefficients : (np.float64(2.58), np.float64(1.07), np.float64(0.99), np.float64(2.36), np.float64(0.61), np.float64(1.07), np.float64(2.31), np.float64(0.52)), Seuils : (np.float64(2.54), np.float64(-2.3)), Gain moyen = -0.00
+2025-08-18 03:42:51,599 - src.optimization.optimizer - INFO - 
+🔄 Cycle 1/255 pour ℹ️Inconnu!!
+2025-08-18 03:42:51,600 - src.optimization.optimizer - INFO - 🔍 Étape 1 : Optimisation des coefficients avec seuils (np.float64(2.54), np.float64(-2.3))
+2025-08-18 03:42:55,490 - src.optimization.optimizer - INFO - 🔍 Cycle 1 - Étape 1 - Optimisation ℹ️Inconnu!! démarrée avec 4 symboles
+2025-08-18 03:42:55,490 - src.optimization.optimizer - INFO - 📈 Itération 1: Gain moyen = -2.21, Trades = 24, Taux de réussite = 54.17%
+2025-08-18 03:43:26,313 - src.optimization.optimizer - INFO - 📊 Cycle 1 - Étape 1 - Nombre de doublons évités : 0
+2025-08-18 03:43:26,314 - src.optimization.optimizer - INFO - ✅ Cycle 1 - Étape 1 - Meilleurs coefficients : (np.float64(2.6), np.float64(0.87), np.float64(2.4), np.float64(2.88), np.float64(1.28), np.float64(1.25), np.float64(1.02), np.float64(2.03)), Gain moyen = -0.46
+2025-08-18 03:43:26,314 - src.optimization.optimizer - INFO - 🔍 Étape 2 : Optimisation du seuil d'achat avec coefficients (np.float64(2.6), np.float64(0.87), np.float64(2.4), np.float64(2.88), np.float64(1.28), np.float64(1.25), np.float64(1.02), np.float64(2.03)) et seuil de vente -2.3
+2025-08-18 03:43:31,415 - src.optimization.optimizer - INFO - 🔍 Cycle 1 - Étape 2 - Optimisation ℹ️Inconnu!! démarrée
+2025-08-18 03:43:31,416 - src.optimization.optimizer - INFO - 📈 Itération 1: Gain moyen = -0.46, Trades = 11
+2025-08-18 03:44:16,739 - src.optimization.optimizer - INFO - 📊 Cycle 1 - Étape 2 - Nombre de doublons évités : 0
+2025-08-18 03:44:16,740 - src.optimization.optimizer - INFO - ✅ Cycle 1 - Étape 2 - Meilleur seuil d'achat : 2.62, Gain moyen = -0.46
+2025-08-18 03:44:16,740 - src.optimization.optimizer - INFO - 🔍 Étape 3 : Optimisation du seuil de vente avec coefficients (np.float64(2.6), np.float64(0.87), np.float64(2.4), np.float64(2.88), np.float64(1.28), np.float64(1.25), np.float64(1.02), np.float64(2.03)) et seuil d'achat 2.62
+2025-08-18 03:44:19,967 - src.optimization.optimizer - INFO - 🔍 Cycle 1 - Étape 3 - Optimisation ℹ️Inconnu!! démarrée
+2025-08-18 03:44:19,968 - src.optimization.optimizer - INFO - 📈 Itération 1: Gain moyen = -0.46, Trades = 11
+2025-08-18 03:44:48,879 - src.optimization.optimizer - INFO - 📊 Cycle 1 - Étape 3 - Nombre de doublons évités : 0
+2025-08-18 03:44:48,880 - src.optimization.optimizer - INFO - ✅ Cycle 1 - Étape 3 - Meilleur seuil de vente : -1.74, Gain moyen = -0.46
+2025-08-18 03:44:52,112 - src.optimization.optimizer - INFO - ✅ Cycle 1 - Aucune amélioration significative, arrêt anticipé
+2025-08-18 03:44:52,112 - src.optimization.parameter_manager - ERROR - ⚠️ Erreur lors de la sauvegarde dans le CSV: invalid index to scalar variable.
+2025-08-18 03:44:52,112 - src.optimization.optimization_runner - INFO - 
+📊 Résultats pour ℹ️Inconnu!!:
+2025-08-18 03:44:52,112 - src.optimization.optimization_runner - INFO -  Meilleurs coefficients: (np.float64(2.6), np.float64(0.87), np.float64(2.4), np.float64(2.88), np.float64(1.28), np.float64(1.25), np.float64(1.02), np.float64(2.03))
+2025-08-18 03:44:52,113 - src.optimization.optimization_runner - INFO -  Meilleurs seuils (achat, vente): (np.float64(2.54), np.float64(-2.3))
+2025-08-18 03:44:52,113 - src.optimization.optimization_runner - INFO -  Gain total moyen: -0.00
+2025-08-18 03:44:52,113 - src.optimization.optimization_runner - INFO -  Taux de réussite: 66.67%
+2025-08-18 03:44:52,113 - src.optimization.optimization_runner - INFO - 
+================================================================================
+2025-08-18 03:44:52,113 - src.optimization.optimization_runner - INFO - 🎯 RÉSUMÉ FINAL DE L'OPTIMISATION
+2025-08-18 03:44:52,113 - src.optimization.optimization_runner - INFO - ================================================================================
+2025-08-18 03:44:52,113 - src.optimization.optimization_runner - INFO - 
+Dictionnaire optimisé pour domain_coeffs:
+2025-08-18 03:44:52,114 - src.optimization.optimization_runner - INFO - {
+2025-08-18 03:44:52,114 - src.optimization.optimization_runner - INFO -  'Technology': (np.float64(0.72), np.float64(0.95), np.float64(0.77), np.float64(2.8), np.float64(1.22), np.float64(1.87), np.float64(2.12), np.float64(2.93)),
+2025-08-18 03:44:52,114 - src.optimization.optimization_runner - INFO -  'Healthcare': (np.float64(0.93), np.float64(1.84), np.float64(1.87), np.float64(2.74), np.float64(0.96), np.float64(2.85), np.float64(2.71), np.float64(2.22)),
+2025-08-18 03:44:52,114 - src.optimization.optimization_runner - INFO -  'Financial Services': (np.float64(1.18), np.float64(1.44), np.float64(0.72), np.float64(1.94), np.float64(0.82), np.float64(2.8), np.float64(2.12), np.float64(2.94)),
+2025-08-18 03:44:52,114 - src.optimization.optimization_runner - INFO -  'Consumer Cyclical': (np.float64(0.75), np.float64(1.49), np.float64(1.26), np.float64(2.63), np.float64(1.6), np.float64(0.92), np.float64(2.48), np.float64(1.88)),
+2025-08-18 03:44:52,115 - src.optimization.optimization_runner - INFO -  'Industrials': (np.float64(2.7), np.float64(1.61), np.float64(1.67), np.float64(2.18), np.float64(2.68), np.float64(2.08), np.float64(2.07), np.float64(1.98)),
+2025-08-18 03:44:52,115 - src.optimization.optimization_runner - INFO -  'Energy': (np.float64(1.71), np.float64(0.58), np.float64(2.94), np.float64(1.83), np.float64(0.62), np.float64(1.08), np.float64(1.87), np.float64(0.9)),
+2025-08-18 03:44:52,115 - src.optimization.optimization_runner - INFO -  'Basic Materials': (np.float64(2.29), np.float64(2.0), np.float64(0.57), np.float64(2.89), np.float64(2.4), np.float64(2.76), np.float64(2.13), np.float64(2.71)),
+2025-08-18 03:44:52,115 - src.optimization.optimization_runner - INFO -  'Communication Services': (np.float64(0.97), np.float64(0.51), np.float64(1.53), np.float64(2.66), np.float64(2.25), np.float64(2.41), np.float64(0.71), np.float64(1.9)),
+2025-08-18 03:44:52,115 - src.optimization.optimization_runner - INFO -  'Consumer Defensive': (np.float64(0.74), np.float64(1.06), np.float64(1.14), np.float64(2.51), np.float64(0.51), np.float64(1.41), np.float64(2.79), np.float64(2.3)),
+2025-08-18 03:44:52,116 - src.optimization.optimization_runner - INFO -  'Utilities': (np.float64(0.79), np.float64(0.69), np.float64(2.75), np.float64(2.22), np.float64(1.12), np.float64(1.61), np.float64(0.99), np.float64(2.63)),
+2025-08-18 03:44:52,116 - src.optimization.optimization_runner - INFO -  'Real Estate': (np.float64(1.44), np.float64(1.55), np.float64(2.44), np.float64(2.97), np.float64(2.29), np.float64(1.78), np.float64(1.95), np.float64(0.9)),
+2025-08-18 03:44:52,116 - src.optimization.optimization_runner - INFO -  'ℹ️Inconnu!!': (np.float64(2.6), np.float64(0.87), np.float64(2.4), np.float64(2.88), np.float64(1.28), np.float64(1.25), np.float64(1.02), np.float64(2.03)),
+2025-08-18 03:44:52,116 - src.optimization.optimization_runner - INFO - }
+2025-08-18 03:44:52,116 - src.optimization.optimization_runner - INFO - 
+📈 12 secteurs optimisés avec succès
+2025-08-18 03:44:52,116 - src.optimization.optimization_runner - INFO - ================================================================================
+2025-08-18 03:44:52,117 - src.optimization.optimization_runner - INFO - ✅ Optimisation complète terminée
+2025-08-18 03:44:52,117 - __main__ - INFO - ✅ Optimisation terminée avec succès
