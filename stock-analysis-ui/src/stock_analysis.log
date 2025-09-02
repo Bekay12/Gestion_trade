@@ -2087,3 +2087,18 @@
 1 Failed download:
 2025-08-28 20:37:19,529 - ERROR - ['COMP-USD']: YFPricesMissingError('possibly delisted; no price data found  (period=12mo)')
 2025-08-28 20:50:48,246 - ERROR - Failed to perform, curl: (16) . See https://curl.se/libcurl/c/libcurl-errors.html first for more details.
+2025-08-30 00:36:39,445 - ERROR - 
+1 Failed download:
+2025-08-30 00:36:39,445 - ERROR - ['COMP-USD']: YFPricesMissingError('possibly delisted; no price data found  (period=12mo)')
+2025-08-30 07:36:45,098 - ERROR - 
+1 Failed download:
+2025-08-30 07:36:45,099 - ERROR - ['COMP-USD']: YFPricesMissingError('possibly delisted; no price data found  (period=12mo)')
+2025-08-30 14:36:44,452 - ERROR - 
+1 Failed download:
+2025-08-30 14:36:44,454 - ERROR - ['COMP-USD']: YFPricesMissingError('possibly delisted; no price data found  (period=12mo)')
+2025-08-30 21:36:37,978 - ERROR - 
+1 Failed download:
+2025-08-30 21:36:37,980 - ERROR - ['COMP-USD']: YFPricesMissingError('possibly delisted; no price data found  (period=12mo)')
+2025-09-02 12:28:56,582 - ERROR - 
+1 Failed download:
+2025-09-02 12:28:56,583 - ERROR - ['COMP-USD']: YFPricesMissingError('possibly delisted; no price data found  (period=12mo)')
