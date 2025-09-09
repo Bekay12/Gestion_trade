@@ -2102,3 +2102,209 @@
 2025-09-02 12:28:56,582 - ERROR - 
 1 Failed download:
 2025-09-02 12:28:56,583 - ERROR - ['COMP-USD']: YFPricesMissingError('possibly delisted; no price data found  (period=12mo)')
+2025-09-03 02:35:56,550 - ERROR - 
+1 Failed download:
+2025-09-03 02:35:56,550 - ERROR - ['AGS']: YFPricesMissingError('possibly delisted; no price data found  (period=12mo) (Yahoo error = "No data found, symbol may be delisted")')
+2025-09-03 02:36:34,999 - ERROR - 
+1 Failed download:
+2025-09-03 02:36:35,000 - ERROR - ['COMP-USD']: YFPricesMissingError('possibly delisted; no price data found  (period=12mo)')
+2025-09-03 09:35:53,579 - ERROR - HTTP Error 404: 
+2025-09-03 09:40:06,321 - ERROR - 
+1 Failed download:
+2025-09-03 09:40:06,321 - ERROR - ['AGS']: YFPricesMissingError('possibly delisted; no price data found  (period=12mo) (Yahoo error = "No data found, symbol may be delisted")')
+2025-09-03 12:43:44,249 - ERROR - HTTP Error 404: 
+2025-09-03 12:48:17,077 - ERROR - 
+1 Failed download:
+2025-09-03 12:48:17,077 - ERROR - ['AGS']: YFPricesMissingError('possibly delisted; no price data found  (period=12mo) (Yahoo error = "No data found, symbol may be delisted")')
+2025-09-03 16:36:16,541 - ERROR - 
+1 Failed download:
+2025-09-03 16:36:16,542 - ERROR - ['AGS']: YFPricesMissingError('possibly delisted; no price data found  (period=12mo) (Yahoo error = "No data found, symbol may be delisted")')
+2025-09-03 16:37:06,742 - ERROR - 
+1 Failed download:
+2025-09-03 16:37:06,743 - ERROR - ['COMP-USD']: YFPricesMissingError('possibly delisted; no price data found  (period=12mo)')
+2025-09-03 17:11:21,409 - ERROR - HTTP Error 404: 
+2025-09-03 17:11:22,005 - ERROR - 
+1 Failed download:
+2025-09-03 17:11:22,005 - ERROR - ['ETORO']: YFPricesMissingError('possibly delisted; no price data found  (period=12mo) (Yahoo error = "No data found, symbol may be delisted")')
+2025-09-04 06:34:19,863 - ERROR - 
+1 Failed download:
+2025-09-04 06:34:19,864 - ERROR - ['AGS']: YFPricesMissingError('possibly delisted; no price data found  (period=12mo) (Yahoo error = "No data found, symbol may be delisted")')
+2025-09-04 06:34:53,331 - ERROR - 
+1 Failed download:
+2025-09-04 06:34:53,331 - ERROR - ['COMP-USD']: YFPricesMissingError('possibly delisted; no price data found  (period=12mo)')
+2025-09-04 06:36:12,255 - ERROR - HTTP Error 404: 
+2025-09-04 06:40:13,736 - ERROR - 
+1 Failed download:
+2025-09-04 06:40:13,736 - ERROR - ['AGS']: YFPricesMissingError('possibly delisted; no price data found  (period=12mo) (Yahoo error = "No data found, symbol may be delisted")')
+2025-09-04 13:36:04,480 - ERROR - HTTP Error 404: 
+2025-09-04 13:39:52,893 - ERROR - 
+1 Failed download:
+2025-09-04 13:39:52,893 - ERROR - ['AGS']: YFPricesMissingError('possibly delisted; no price data found  (period=12mo) (Yahoo error = "No data found, symbol may be delisted")')
+2025-09-04 20:35:58,477 - ERROR - 
+1 Failed download:
+2025-09-04 20:35:58,477 - ERROR - ['AGS']: YFPricesMissingError('possibly delisted; no price data found  (period=12mo) (Yahoo error = "No data found, symbol may be delisted")')
+2025-09-04 20:36:33,604 - ERROR - 
+1 Failed download:
+2025-09-04 20:36:33,604 - ERROR - ['COMP-USD']: YFPricesMissingError('possibly delisted; no price data found  (period=12mo)')
+2025-09-05 03:40:02,124 - ERROR - 
+1 Failed download:
+2025-09-05 03:40:02,124 - ERROR - ['AGS']: YFPricesMissingError('possibly delisted; no price data found  (period=12mo) (Yahoo error = "No data found, symbol may be delisted")')
+2025-09-05 10:36:02,104 - ERROR - 
+1 Failed download:
+2025-09-05 10:36:02,104 - ERROR - ['AGS']: YFPricesMissingError('possibly delisted; no price data found  (period=12mo) (Yahoo error = "No data found, symbol may be delisted")')
+2025-09-05 10:36:38,794 - ERROR - 
+1 Failed download:
+2025-09-05 10:36:38,794 - ERROR - ['COMP-USD']: YFPricesMissingError('possibly delisted; no price data found  (period=12mo)')
+2025-09-05 17:40:48,950 - ERROR - 
+1 Failed download:
+2025-09-05 17:40:48,950 - ERROR - ['AGS']: YFPricesMissingError('possibly delisted; no price data found  (period=12mo) (Yahoo error = "No data found, symbol may be delisted")')
+2025-09-06 00:36:08,923 - ERROR - 
+1 Failed download:
+2025-09-06 00:36:08,923 - ERROR - ['AGS']: YFPricesMissingError('possibly delisted; no price data found  (period=12mo) (Yahoo error = "No data found, symbol may be delisted")')
+2025-09-06 00:36:42,078 - ERROR - 
+1 Failed download:
+2025-09-06 00:36:42,078 - ERROR - ['COMP-USD']: YFPricesMissingError('possibly delisted; no price data found  (period=12mo)')
+2025-09-06 07:39:35,471 - ERROR - 
+1 Failed download:
+2025-09-06 07:39:35,471 - ERROR - ['AGS']: YFPricesMissingError('possibly delisted; no price data found  (period=12mo) (Yahoo error = "No data found, symbol may be delisted")')
+2025-09-06 14:35:53,509 - ERROR - 
+1 Failed download:
+2025-09-06 14:35:53,509 - ERROR - ['AGS']: YFPricesMissingError('possibly delisted; no price data found  (period=12mo) (Yahoo error = "No data found, symbol may be delisted")')
+2025-09-06 14:36:26,511 - ERROR - 
+1 Failed download:
+2025-09-06 14:36:26,511 - ERROR - ['COMP-USD']: YFPricesMissingError('possibly delisted; no price data found  (period=12mo)')
+2025-09-06 21:40:01,016 - ERROR - 
+1 Failed download:
+2025-09-06 21:40:01,016 - ERROR - ['AGS']: YFPricesMissingError('possibly delisted; no price data found  (period=12mo) (Yahoo error = "No data found, symbol may be delisted")')
+2025-09-07 04:36:01,028 - ERROR - 
+1 Failed download:
+2025-09-07 04:36:01,028 - ERROR - ['AGS']: YFPricesMissingError('possibly delisted; no price data found  (period=12mo) (Yahoo error = "No data found, symbol may be delisted")')
+2025-09-07 04:36:33,108 - ERROR - 
+1 Failed download:
+2025-09-07 04:36:33,108 - ERROR - ['COMP-USD']: YFPricesMissingError('possibly delisted; no price data found  (period=12mo)')
+2025-09-07 11:40:12,459 - ERROR - 
+1 Failed download:
+2025-09-07 11:40:12,459 - ERROR - ['AGS']: YFPricesMissingError('possibly delisted; no price data found  (period=12mo) (Yahoo error = "No data found, symbol may be delisted")')
+2025-09-07 18:35:57,156 - ERROR - 
+1 Failed download:
+2025-09-07 18:35:57,172 - ERROR - ['AGS']: YFPricesMissingError('possibly delisted; no price data found  (period=12mo) (Yahoo error = "No data found, symbol may be delisted")')
+2025-09-07 18:36:33,654 - ERROR - 
+1 Failed download:
+2025-09-07 18:36:33,654 - ERROR - ['COMP-USD']: YFPricesMissingError('possibly delisted; no price data found  (period=12mo)')
+2025-09-08 01:39:36,062 - ERROR - 
+1 Failed download:
+2025-09-08 01:39:36,062 - ERROR - ['AGS']: YFPricesMissingError('possibly delisted; no price data found  (period=12mo) (Yahoo error = "No data found, symbol may be delisted")')
+2025-09-08 08:35:59,754 - ERROR - 
+1 Failed download:
+2025-09-08 08:35:59,754 - ERROR - ['AGS']: YFPricesMissingError('possibly delisted; no price data found  (period=12mo) (Yahoo error = "No data found, symbol may be delisted")')
+2025-09-08 08:36:42,032 - ERROR - 
+1 Failed download:
+2025-09-08 08:36:42,032 - ERROR - ['COMP-USD']: YFPricesMissingError('possibly delisted; no price data found  (period=12mo)')
+2025-09-08 15:40:47,993 - ERROR - 
+1 Failed download:
+2025-09-08 15:40:48,001 - ERROR - ['AGS']: YFPricesMissingError('possibly delisted; no price data found  (period=12mo) (Yahoo error = "No data found, symbol may be delisted")')
+2025-09-08 22:39:42,735 - ERROR - 
+20 Failed downloads:
+2025-09-08 22:39:42,735 - ERROR - ['1COV.DE', '0011.HK', '2318.HK', '0027.HK', '0038.HK', '2385.HK', '0700.HK', '1299.HK', '2386.HK', '2319.HK', '0101.HK', '0005.HK', '1211.HK', '1810.HK', '2020.HK', '0120.HK', '2382.HK', '1177.HK', '0066.HK', '0083.HK']: DNSError('Failed to perform, curl: (6) Could not resolve host: query1.finance.yahoo.com. See https://curl.se/libcurl/c/libcurl-errors.html first for more details.')
+2025-09-08 22:43:44,682 - ERROR - 
+20 Failed downloads:
+2025-09-08 22:43:44,682 - ERROR - ['ADSK', 'ABBN.SW', '3988.HK', 'ABG', 'AG', 'ADBE', 'ABBV', '3690.HK', 'AAPL', 'ADYEN.AS', 'ABT', 'AEO', '2388.HK', '9618.HK', '9988.HK', '2628.HK', 'AEM', '3328.HK', 'ABR', 'AAL']: DNSError('Failed to perform, curl: (6) Could not resolve host: query1.finance.yahoo.com. See https://curl.se/libcurl/c/libcurl-errors.html first for more details.')
+2025-09-08 22:47:46,764 - ERROR - 
+20 Failed downloads:
+2025-09-08 22:47:46,764 - ERROR - ['ALDX', 'ALV.DE', 'AGM', 'AGS', 'ALHF.PA', 'AGQ', 'ALB', 'AMD', 'AMC', 'AMT', 'AGL', 'AIR.PA', 'AGO', 'AGI', 'AGI.TO', 'ALTD.PA', 'AMZN', 'AGX', 'ALK', 'ALAB']: DNSError('Failed to perform, curl: (6) Could not resolve host: query1.finance.yahoo.com. See https://curl.se/libcurl/c/libcurl-errors.html first for more details.')
+2025-09-08 22:57:28,404 - ERROR - 
+20 Failed downloads:
+2025-09-08 22:57:28,404 - ERROR - ['0005.HK', '1177.HK', '0011.HK', '1COV.DE', '2385.HK', '1211.HK', '0700.HK', '2020.HK', '0101.HK', '0066.HK', '2318.HK', '2386.HK', '0120.HK', '0027.HK', '2382.HK', '0038.HK', '2319.HK', '1810.HK', '0083.HK', '1299.HK']: DNSError('Failed to perform, curl: (6) Could not resolve host: query1.finance.yahoo.com. See https://curl.se/libcurl/c/libcurl-errors.html first for more details.')
+2025-09-08 22:57:29,603 - ERROR - 
+20 Failed downloads:
+2025-09-08 22:57:29,603 - ERROR - ['ABBN.SW', '3690.HK', '9618.HK', 'ADBE', 'AG', 'ABT', 'AAL', 'AAPL', 'ADYEN.AS', 'ABBV', '9988.HK', '2388.HK', 'AEM', '3988.HK', '2628.HK', 'ABR', 'ADSK', 'AEO', 'ABG', '3328.HK']: DNSError('Failed to perform, curl: (6) Could not resolve host: query1.finance.yahoo.com. See https://curl.se/libcurl/c/libcurl-errors.html first for more details.')
+2025-09-08 22:57:30,806 - ERROR - 
+20 Failed downloads:
+2025-09-08 22:57:30,806 - ERROR - ['AGX', 'AGI', 'AGM', 'AMT', 'ALB', 'AGS', 'AGL', 'ALTD.PA', 'ALV.DE', 'ALAB', 'AMZN', 'AGO', 'AGI.TO', 'AGQ', 'AIR.PA', 'ALK', 'AMC', 'ALHF.PA', 'AMD', 'ALDX']: DNSError('Failed to perform, curl: (6) Could not resolve host: query1.finance.yahoo.com. See https://curl.se/libcurl/c/libcurl-errors.html first for more details.')
+2025-09-08 22:57:32,024 - ERROR - 
+20 Failed downloads:
+2025-09-08 22:57:32,024 - ERROR - ['AN', 'BATS.L', 'BARC.L', 'ATOM', 'ARG.PA', 'AXSM', 'BABA', 'ARCC', 'AVGO', 'ASML.AS', 'AOS', 'ANF', 'AU', 'AZN.L', 'BAS.DE', 'ARCT', 'BAX', 'AVB', 'BA', 'ATOM-USD']: DNSError('Failed to perform, curl: (6) Could not resolve host: query1.finance.yahoo.com. See https://curl.se/libcurl/c/libcurl-errors.html first for more details.')
+2025-09-08 22:57:33,265 - ERROR - 
+20 Failed downloads:
+2025-09-08 22:57:33,265 - ERROR - ['BFLY', 'BURL', 'BITF', 'BILI', 'CACI', 'BTC-USD', 'BOE', 'BZ=F', 'BRK-B', 'BIDU', 'BP.L', 'BYDDF', 'BNP.PA', 'BIIB', 'BB', 'CAP.PA', 'BMRN', 'BMW.DE', 'BAYN.DE', 'BTC']: DNSError('Failed to perform, curl: (6) Could not resolve host: query1.finance.yahoo.com. See https://curl.se/libcurl/c/libcurl-errors.html first for more details.')
+2025-09-08 22:57:34,456 - ERROR - 
+20 Failed downloads:
+2025-09-08 22:57:34,456 - ERROR - ['CARS', 'CMRE', 'CRIS', 'CCI', 'CAR', 'COMP-USD', 'CDNS', 'COMP', 'CCRD', 'COST', 'CARG', 'CCJ', 'COLL', 'CL=F', 'CDE', 'CARR', 'CCCC', 'CGC', 'CARV', 'CAT']: DNSError('Failed to perform, curl: (6) Could not resolve host: query1.finance.yahoo.com. See https://curl.se/libcurl/c/libcurl-errors.html first for more details.')
+2025-09-08 22:57:35,658 - ERROR - 
+20 Failed downloads:
+2025-09-08 22:57:35,658 - ERROR - ['CYTK', 'DHI', 'CRWD', 'DES', 'DDOG', 'DEO', 'DAC', 'DBK.DE', 'CVS', 'DE', 'CTSH', 'CRON', 'CVX', 'DAL', 'CRSR', 'CRL', 'CVNA', 'CSX', 'CRM', 'CSCO']: DNSError('Failed to perform, curl: (6) Could not resolve host: query1.finance.yahoo.com. See https://curl.se/libcurl/c/libcurl-errors.html first for more details.')
+2025-09-08 22:57:36,875 - ERROR - 
+20 Failed downloads:
+2025-09-08 22:57:36,875 - ERROR - ['EQR', 'EA', 'DTE.DE', 'DIA', 'ENGI.PA', 'DHT', 'ETH', 'ETH-USD', 'DOCN', 'ESS', 'DLR', 'EMR', 'ENR.DE', 'ETN', 'EEM', 'DIS', 'DHR', 'DOCU', 'ETOR', 'ETSY']: DNSError('Failed to perform, curl: (6) Could not resolve host: query1.finance.yahoo.com. See https://curl.se/libcurl/c/libcurl-errors.html first for more details.')
+2025-09-08 22:57:38,115 - ERROR - 
+20 Failed downloads:
+2025-09-08 22:57:38,115 - ERROR - ['FSLY', 'FNV.TO', 'FDUS', 'FATE', 'FME.DE', 'FNV', 'FINV', 'FLEX', 'FAST', 'FTNT', 'FORM', 'EXK', 'FRO', 'FSK', 'EXEL', 'F', 'FRE.DE', 'EXAS', 'EZPW', 'EXR']: DNSError('Failed to perform, curl: (6) Could not resolve host: query1.finance.yahoo.com. See https://curl.se/libcurl/c/libcurl-errors.html first for more details.')
+2025-09-08 22:57:39,319 - ERROR - 
+20 Failed downloads:
+2025-09-08 22:57:39,319 - ERROR - ['GDX', 'GILT', 'GBDC', 'GE', 'GFI', 'GLDM', 'GDXU', 'GASS', 'FVRR', 'GETY', 'GLD', 'GM', 'GD', 'GDXJ', 'GLNG', 'GLW', 'GILD', 'GME', 'GDXD', 'GC=F']: DNSError('Failed to perform, curl: (6) Could not resolve host: query1.finance.yahoo.com. See https://curl.se/libcurl/c/libcurl-errors.html first for more details.')
+2025-09-08 22:57:40,557 - ERROR - 
+20 Failed downloads:
+2025-09-08 22:57:40,557 - ERROR - ['HII', 'HD', 'HSBA.L', 'IAU', 'GRPN', 'HMY', 'HNI', 'GPI', 'HEI.DE', 'IBM', 'GOGL.OL', 'GOOGL', 'HL', 'HON', 'HEN3.DE', 'HUT', 'HMC', 'GSK.L', 'HG=F', 'GS']: DNSError('Failed to perform, curl: (6) Could not resolve host: query1.finance.yahoo.com. See https://curl.se/libcurl/c/libcurl-errors.html first for more details.')
+2025-09-08 22:57:41,798 - ERROR - 
+20 Failed downloads:
+2025-09-08 22:57:41,798 - ERROR - ['INTC', 'KMX', 'IWM', 'INTU', 'IONQ', 'INGA.AS', 'JPM', 'KBH', 'JBLU', 'JOBY', 'JD', 'IMB.L', 'ILMN', 'INCY', 'INOD', 'JCI', 'IDXX', 'JAKK', 'KGC', 'INSM']: DNSError('Failed to perform, curl: (6) Could not resolve host: query1.finance.yahoo.com. See https://curl.se/libcurl/c/libcurl-errors.html first for more details.')
+2025-09-08 22:57:43,007 - ERROR - 
+20 Failed downloads:
+2025-09-08 22:57:43,007 - ERROR - ['LMB', 'KO', 'LINK', 'LLOY.L', 'LCID', 'LAC', 'LIN.DE', 'LLY', 'LHX', 'KTOS', 'LB', 'KPTI', 'LHA.DE', 'LINK-USD', 'LAD', 'LEU', 'LI', 'KSS', 'LMT', 'LEN']: DNSError('Failed to perform, curl: (6) Could not resolve host: query1.finance.yahoo.com. See https://curl.se/libcurl/c/libcurl-errors.html first for more details.')
+2025-09-08 22:57:44,237 - ERROR - 
+20 Failed downloads:
+2025-09-08 22:57:44,237 - ERROR - ['LSEG.L', 'META', 'LTC', 'MC.PA', 'LRCX', 'MCD', 'MMM', 'MARA', 'MDT', 'MELI', 'MAA', 'LONN.SW', 'ML.PA', 'MP', 'MOH.BE', 'LTC-USD', 'LUV', 'LYFT', 'MA', 'MAIN']: DNSError('Failed to perform, curl: (6) Could not resolve host: query1.finance.yahoo.com. See https://curl.se/libcurl/c/libcurl-errors.html first for more details.')
+2025-09-08 22:57:45,465 - ERROR - 
+20 Failed downloads:
+2025-09-08 22:57:45,465 - ERROR - ['NEM', 'NOVN.SW', 'NTES', 'NFLX', 'NG=F', 'NTRA', 'NOC', 'NVDA', 'MRNA', 'NTLA', 'NOK', 'NOW', 'NKE', 'MSFT', 'MU', 'MRVL', 'MTCH', 'MRK', 'NBIX', 'NIO']: DNSError('Failed to perform, curl: (6) Could not resolve host: query1.finance.yahoo.com. See https://curl.se/libcurl/c/libcurl-errors.html first for more details.')
+2025-09-08 22:57:46,692 - ERROR - 
+20 Failed downloads:
+2025-09-08 22:57:46,692 - ERROR - ['PG', 'PAYX', 'PFC.L', 'PBR', 'OR.PA', 'PA=F', 'PFE', 'NVR', 'ORCL', 'OKTA', 'OTIS', 'O', 'ORC', 'NXE', 'PDD', 'PEP', 'PAG', 'PATH', 'PANW', 'OPEN']: DNSError('Failed to perform, curl: (6) Could not resolve host: query1.finance.yahoo.com. See https://curl.se/libcurl/c/libcurl-errors.html first for more details.')
+2025-09-08 22:57:47,913 - ERROR - 
+20 Failed downloads:
+2025-09-08 22:57:47,913 - ERROR - ['PHIA.AS', 'PTON', 'PH', 'PLD', 'PSA', 'PHYS', 'PINS', 'PNR', 'PGEN', 'QCOM', 'QBTQ.CN', 'PLL', 'PHM', 'PYPL', 'PSEC', 'PUM.DE', 'QQQ', 'QBTS', 'PL=F', 'PLTR']: DNSError('Failed to perform, curl: (6) Could not resolve host: query1.finance.yahoo.com. See https://curl.se/libcurl/c/libcurl-errors.html first for more details.')
+2025-09-08 22:57:49,147 - ERROR - 
+20 Failed downloads:
+2025-09-08 22:57:49,147 - ERROR - ['RBLX', 'RIVN', 'RR.L', 'REGN', 'QUBT', 'RGTI', 'RGEN', 'ROKU', 'RNO.PA', 'ROST', 'RIO.L', 'ROG.SW', 'QSI', 'RHM.DE', 'RGLD', 'RIOT', 'RKLB', 'RBRK', 'RMAX', 'RMS.PA']: DNSError('Failed to perform, curl: (6) Could not resolve host: query1.finance.yahoo.com. See https://curl.se/libcurl/c/libcurl-errors.html first for more details.')
+2025-09-08 22:57:50,360 - ERROR - 
+20 Failed downloads:
+2025-09-08 22:57:50,360 - ERROR - ['SBUX', 'RTX', 'SAND', 'SAGE', 'SLV', 'RUSHB', 'SFL', 'RWE.DE', 'SAN.PA', 'SAH', 'RUSHA', 'SHOP', 'SI=F', 'SBRA', 'SAP.DE', 'SIL', 'SGOL', 'SCSC', 'SGMT', 'SBLK']: DNSError('Failed to perform, curl: (6) Could not resolve host: query1.finance.yahoo.com. See https://curl.se/libcurl/c/libcurl-errors.html first for more details.')
+2025-09-08 22:57:51,561 - ERROR - 
+20 Failed downloads:
+2025-09-08 22:57:51,561 - ERROR - ['TDOC', 'SQM', 'SYM', 'TCEHY', 'SMR', 'SNY', 'SOL', 'SNAP', 'SSTK', 'SPY', 'SNOW', 'SWK', 'SMTC', 'SPOT', 'SOL-USD', 'SMCI', 'STNG', 'SMSN.L', 'T', 'STAN.L']: DNSError('Failed to perform, curl: (6) Could not resolve host: query1.finance.yahoo.com. See https://curl.se/libcurl/c/libcurl-errors.html first for more details.')
+2025-09-08 22:57:52,781 - ERROR - 
+20 Failed downloads:
+2025-09-08 22:57:52,781 - ERROR - ['TGTX', 'TM', 'TTWO', 'TLRY', 'TXT', 'TGT', 'TOL', 'TSM', 'TMO', 'TRX-USD', 'TDY', 'TJX', 'TSLA', 'UDMY', 'UBER', 'TRX', 'TNK', 'UBSG.SW', 'UAL', 'TMDX']: DNSError('Failed to perform, curl: (6) Could not resolve host: query1.finance.yahoo.com. See https://curl.se/libcurl/c/libcurl-errors.html first for more details.')
+2025-09-08 22:57:53,991 - ERROR - 
+20 Failed downloads:
+2025-09-08 22:57:53,991 - ERROR - ['ULVR.L', 'UDR', 'VNA.DE', 'VOW3.DE', 'VICI', 'VOD.L', 'VMEO', 'VRSN', 'VOW.DE', 'URBN', 'WDO.TO', 'UNH', 'VYX', 'VYGR', 'V', 'UEC', 'VKTX', 'VEEV', 'WDAY', 'VZ']: DNSError('Failed to perform, curl: (6) Could not resolve host: query1.finance.yahoo.com. See https://curl.se/libcurl/c/libcurl-errors.html first for more details.')
+2025-09-08 22:57:55,210 - ERROR - 
+20 Failed downloads:
+2025-09-08 22:57:55,210 - ERROR - ['XLC', 'WMT', 'XPEV', 'XLV', 'XBI', 'WELL', 'XLK', 'WFC', 'WPM', 'XOM', 'XLP', 'XLY', 'XRT', 'XLF', 'XYL', 'XLB', 'XLI', 'XHB', 'XMTR', 'Z']: DNSError('Failed to perform, curl: (6) Could not resolve host: query1.finance.yahoo.com. See https://curl.se/libcurl/c/libcurl-errors.html first for more details.')
+2025-09-08 22:57:56,321 - ERROR - 
+8 Failed downloads:
+2025-09-08 22:57:56,321 - ERROR - ['ZL=F', 'ZS', 'ZTS', 'ZC=F', 'ZS=F', 'ZURN.SW', 'ZM', 'ZIM']: DNSError('Failed to perform, curl: (6) Could not resolve host: query1.finance.yahoo.com. See https://curl.se/libcurl/c/libcurl-errors.html first for more details.')
+2025-09-09 05:36:11,733 - ERROR - 
+1 Failed download:
+2025-09-09 05:36:11,744 - ERROR - ['AGS']: YFPricesMissingError('possibly delisted; no price data found  (period=12mo) (Yahoo error = "No data found, symbol may be delisted")')
+2025-09-09 05:36:53,193 - ERROR - 
+1 Failed download:
+2025-09-09 05:36:53,193 - ERROR - ['COMP-USD']: YFPricesMissingError('possibly delisted; no price data found  (period=12mo)')
+2025-09-09 17:15:28,222 - ERROR - 
+1 Failed download:
+2025-09-09 17:15:28,222 - ERROR - ['2020.HK']: DNSError('Failed to perform, curl: (6) Could not resolve host: query1.finance.yahoo.com. See https://curl.se/libcurl/c/libcurl-errors.html first for more details.')
+2025-09-09 17:15:28,239 - ERROR - 
+1 Failed download:
+2025-09-09 17:15:28,239 - ERROR - ['2318.HK']: DNSError('Failed to perform, curl: (6) Could not resolve host: query1.finance.yahoo.com. See https://curl.se/libcurl/c/libcurl-errors.html first for more details.')
+2025-09-09 17:19:29,935 - ERROR - 
+1 Failed download:
+2025-09-09 17:19:29,935 - ERROR - ['ABBN.SW']: DNSError('Failed to perform, curl: (6) Could not resolve host: query1.finance.yahoo.com. See https://curl.se/libcurl/c/libcurl-errors.html first for more details.')
+2025-09-09 17:21:09,226 - ERROR - 
+1 Failed download:
+2025-09-09 17:21:09,226 - ERROR - ['AGS']: DNSError('Failed to perform, curl: (6) Could not resolve host: query1.finance.yahoo.com. See https://curl.se/libcurl/c/libcurl-errors.html first for more details.')
+2025-09-09 19:16:49,278 - ERROR - 
+1 Failed download:
+2025-09-09 19:16:49,605 - ERROR - ['AMC']: Timeout('Failed to perform, curl: (28) Resolving timed out after 24447 milliseconds. See https://curl.se/libcurl/c/libcurl-errors.html first for more details.')
+2025-09-09 19:17:54,018 - ERROR - 
+1 Failed download:
+2025-09-09 19:17:54,019 - ERROR - ['AMZN']: Timeout('Failed to perform, curl: (28) Resolving timed out after 25212 milliseconds. See https://curl.se/libcurl/c/libcurl-errors.html first for more details.')
