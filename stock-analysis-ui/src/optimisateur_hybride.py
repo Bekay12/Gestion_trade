@@ -5,7 +5,11 @@ import pandas as pd
 import numpy as np
 from datetime import datetime, timedelta
 import random
-from qsi import backtest_signals, download_stock_data, modify_symbols_file, load_symbols_from_txt, extract_best_parameters
+import sys
+from pathlib import Path
+sys.path.append("C:\\Users\\berti\\Desktop\\Mes documents\\Gestion_trade\\stock-analysis-ui\\src\\trading_c_acceleration")
+from qsi import download_stock_data, load_symbols_from_txt, extract_best_parameters
+from qsi_optimized import backtest_signals, extract_best_parameters
 from pathlib import Path
 from tqdm import tqdm
 import yfinance as yf
