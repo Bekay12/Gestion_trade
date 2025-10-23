@@ -17,12 +17,52 @@ from typing import List, Dict, Union
 from concurrent.futures import ThreadPoolExecutor
 
 # Import du module C (après compilation)
-try:
-    import trading_c
-    C_ACCELERATION = True
-    print("✅ Module C chargé - Accélération 50-200x activée !")
-except ImportError:
-    C_ACCELERATION = False
+import sys
+import os
+import traceback
+
+def _diagnose_import(module_name: str):
+    """Tentative d'import et diagnostic si échec."""
+    try:
+        mod = __import__(module_name)
+        print(f"✅ Module {module_name} chargé - Accélération C activée !")
+        return mod, True
+    except Exception as e:
+        print(f"⚠️ Échec import {module_name}: {e!s}")
+        print("--- Environment diagnostic ---")
+        try:
+            print(f"Python executable: {sys.executable}")
+            print(f"CWD: {os.getcwd()}")
+            print(f"sys.path:")
+            for p in sys.path:
+                print(f"  {p}")
+        except Exception:
+            pass
+        print("Traceback:")
+        traceback.print_exc()
+
+        # Lister les fichiers compilés possibles près du module
+        try:
+            base_dir = os.path.join(os.path.dirname(__file__))
+            candidates = []
+            for fname in os.listdir(base_dir):
+                if fname.startswith(module_name) and (fname.endswith('.pyd') or fname.endswith('.so') or fname.endswith('.dll')):
+                    candidates.append(os.path.join(base_dir, fname))
+            if candidates:
+                print("Fichiers compilés trouvés dans module dir:")
+                for c in candidates:
+                    print(f"  {c}")
+            else:
+                print("Aucun .pyd/.so/.dll trouvé dans le dossier du module")
+        except Exception:
+            pass
+
+        return None, False
+
+
+# Try import with diagnostics
+trading_c, C_ACCELERATION = _diagnose_import('trading_c')
+if not C_ACCELERATION:
     print("⚠️ Module C non disponible - Mode Python standard")
     print("   Compilez avec: python setup.py build_ext --inplace")
 

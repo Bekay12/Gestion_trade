@@ -17,6 +17,10 @@ from pathlib import Path
 from datetime import datetime, timedelta
 from typing import List, Dict, Union
 from concurrent.futures import ThreadPoolExecutor
+import sys
+from pathlib import Path
+sys.path.append("C:\\Users\\berti\\Desktop\\Mes documents\\Gestion_trade\\stock-analysis-ui\\src\\trading_c_acceleration")
+from qsi_optimized import backtest_signals, extract_best_parameters
 
 # Supprimer les avertissements FutureWarning de yfinance
 warnings.filterwarnings("ignore", category=FutureWarning)
@@ -174,7 +178,7 @@ def extract_best_parameters(csv_path: str = 'signaux/optimization_hist_4stp.csv'
         return {}
 
 def get_trading_signal(prices, volumes, domaine, domain_coeffs=None,
-                      variation_seuil=-20, volume_seuil=100000):
+                      variation_seuil=-20, volume_seuil=100000, return_derivatives: bool = False):
     """Détermine les signaux de trading avec validation des données"""
     # Conversion explicite en Series scalaires
     if isinstance(prices, pd.DataFrame):
@@ -404,6 +408,62 @@ def get_trading_signal(prices, volumes, domaine, domain_coeffs=None,
         signal = "VENTE"
     else:
         signal = "NEUTRE"
+
+
+    # Helper: compute robust numerical derivatives (slope) for series
+    def compute_derivatives(series_dict, window: int = 8):
+        """
+        Compute slope (units per period) and relative slope (slope / last_value)
+        using a linear fit (polyfit degree 1) on the last `window` points when possible.
+
+        Returns a dict with keys like '<name>_slope' and '<name>_slope_rel'.
+        """
+        deriv = {}
+        for name, ser in series_dict.items():
+            try:
+                if not isinstance(ser, (pd.Series, pd.DataFrame)):
+                    arr = np.asarray(ser)
+                else:
+                    arr = ser.dropna().values.astype(float)
+
+                n = len(arr)
+                if n >= 2:
+                    k = min(window, n)
+                    y = arr[-k:]
+                    x = np.arange(k, dtype=float)
+                    # linear fit: slope is coefficient
+                    try:
+                        p = np.polyfit(x, y, 1)
+                        slope = float(p[0])
+                    except Exception:
+                        # fallback to simple diff
+                        slope = float(y[-1] - y[-2]) if k >= 2 else 0.0
+
+                    last = float(arr[-1]) if n > 0 else 0.0
+                    rel = float(slope / last) if last != 0 else 0.0
+                else:
+                    slope = 0.0
+                    rel = 0.0
+
+                deriv[f"{name}_slope"] = slope
+                deriv[f"{name}_slope_rel"] = rel
+            except Exception:
+                deriv[f"{name}_slope"] = 0.0
+                deriv[f"{name}_slope_rel"] = 0.0
+        return deriv
+
+    if return_derivatives:
+        series_dict = {
+            'price': prices,
+            'ema20': ema20,
+            'ema50': ema50,
+            'macd': macd,
+            'signal_line': signal_line,
+            'rsi': rsi,
+            'volume': volumes
+        }
+        derivatives = compute_derivatives(series_dict, window=8)
+        return signal, last_close, last_close > last_ema20, round(last_rsi, 2), round(volume_mean, 2), round(score, 3), derivatives
 
     return signal, last_close, last_close > last_ema20, round(last_rsi, 2), round(volume_mean, 2), round(score, 3)
 
@@ -848,109 +908,109 @@ def download_stock_data(symbols: List[str], period: str) -> Dict[str, Dict[str, 
     
     return valid_data
 
-def backtest_signals(prices: Union[pd.Series, pd.DataFrame], volumes: Union[pd.Series, pd.DataFrame],
-                     domaine: str, montant: float = 50, transaction_cost: float = 0.00, domain_coeffs=None, seuil_achat=None, seuil_vente=None) -> Dict:
-    """
-    Effectue un backtest sur la série de prix.
-    Un 'trade' correspond à un cycle complet ACHAT puis VENTE (entrée puis sortie).
-    Le gain est calculé pour chaque cycle, avec prise en compte des frais de transaction.
+# def backtest_signals(prices: Union[pd.Series, pd.DataFrame], volumes: Union[pd.Series, pd.DataFrame],
+#                      domaine: str, montant: float = 50, transaction_cost: float = 0.00, domain_coeffs=None, seuil_achat=None, seuil_vente=None) -> Dict:
+#     """
+#     Effectue un backtest sur la série de prix.
+#     Un 'trade' correspond à un cycle complet ACHAT puis VENTE (entrée puis sortie).
+#     Le gain est calculé pour chaque cycle, avec prise en compte des frais de transaction.
 
-    Args:
-        prices: Série ou DataFrame des prix de clôture.
-        volumes: Série ou DataFrame des volumes.
-        domaine: Secteur de l'actif (ex: 'Technology').
-        montant: Montant investi par trade (défaut: 50).
-        transaction_cost: Frais de transaction par trade (défaut: 0.1%).
+#     Args:
+#         prices: Série ou DataFrame des prix de clôture.
+#         volumes: Série ou DataFrame des volumes.
+#         domaine: Secteur de l'actif (ex: 'Technology').
+#         montant: Montant investi par trade (défaut: 50).
+#         transaction_cost: Frais de transaction par trade (défaut: 0.1%).
 
-    Returns:
-        Dict avec les métriques: trades, gagnants, taux_reussite, gain_total, gain_moyen, drawdown_max.
-    """
-    # Validation des entrées
-    if not isinstance(prices, (pd.Series, pd.DataFrame)) or not isinstance(volumes, (pd.Series, pd.DataFrame)):
-        return {
-            "trades": 0,
-            "gagnants": 0,
-            "taux_reussite": 0,
-            "gain_total": 0.0,
-            "gain_moyen": 0.0,
-            "drawdown_max": 0.0
-        }
+#     Returns:
+#         Dict avec les métriques: trades, gagnants, taux_reussite, gain_total, gain_moyen, drawdown_max.
+#     """
+#     # Validation des entrées
+#     if not isinstance(prices, (pd.Series, pd.DataFrame)) or not isinstance(volumes, (pd.Series, pd.DataFrame)):
+#         return {
+#             "trades": 0,
+#             "gagnants": 0,
+#             "taux_reussite": 0,
+#             "gain_total": 0.0,
+#             "gain_moyen": 0.0,
+#             "drawdown_max": 0.0
+#         }
 
-    if isinstance(prices, pd.DataFrame):
-        prices = prices.squeeze()
-    if isinstance(volumes, pd.DataFrame):
-        volumes = volumes.squeeze()
+#     if isinstance(prices, pd.DataFrame):
+#         prices = prices.squeeze()
+#     if isinstance(volumes, pd.DataFrame):
+#         volumes = volumes.squeeze()
 
-    if len(prices) < 50 or len(volumes) < 50 or prices.isna().any() or volumes.isna().any():
-        return {
-            "trades": 0,
-            "gagnants": 0,
-            "taux_reussite": 0,
-            "gain_total": 0.0,
-            "gain_moyen": 0.0,
-            "drawdown_max": 0.0
-        }
+#     if len(prices) < 50 or len(volumes) < 50 or prices.isna().any() or volumes.isna().any():
+#         return {
+#             "trades": 0,
+#             "gagnants": 0,
+#             "taux_reussite": 0,
+#             "gain_total": 0.0,
+#             "gain_moyen": 0.0,
+#             "drawdown_max": 0.0
+#         }
 
-    # Pré-calculer les signaux pour toute la série
-    signals = []
-    for i in range(50, len(prices)):
-        signal, *_ = get_trading_signal(prices[:i], volumes[:i], domaine, domain_coeffs=domain_coeffs,)
-        signals.append(signal)
+#     # Pré-calculer les signaux pour toute la série
+#     signals = []
+#     for i in range(50, len(prices)):
+#         signal, *_ = get_trading_signal(prices[:i], volumes[:i], domaine, domain_coeffs=domain_coeffs,)
+#         signals.append(signal)
 
-    signals = pd.Series(signals, index=prices.index[50:])
+#     signals = pd.Series(signals, index=prices.index[50:])
 
-    # Simuler les trades
-    positions = []
-    for i in range(len(signals)):
-        if signals.iloc[i] == "ACHAT":
-            positions.append({"entry": prices.iloc[i + 50], "entry_idx": i + 50, "type": "buy"})
-        elif signals.iloc[i] == "VENTE" and positions and "exit" not in positions[-1]:
-            positions[-1]["exit"] = prices.iloc[i + 50]
-            positions[-1]["exit_idx"] = i + 50
+#     # Simuler les trades
+#     positions = []
+#     for i in range(len(signals)):
+#         if signals.iloc[i] == "ACHAT":
+#             positions.append({"entry": prices.iloc[i + 50], "entry_idx": i + 50, "type": "buy"})
+#         elif signals.iloc[i] == "VENTE" and positions and "exit" not in positions[-1]:
+#             positions[-1]["exit"] = prices.iloc[i + 50]
+#             positions[-1]["exit_idx"] = i + 50
 
-    # Fermer les positions ouvertes avec le dernier prix
-    # if positions and "exit" not in positions[-1]:
-    #     positions[-1]["exit"] = prices.iloc[-1]
-    #     positions[-1]["exit_idx"] = len(prices) - 1
+#     # Fermer les positions ouvertes avec le dernier prix
+#     # if positions and "exit" not in positions[-1]:
+#     #     positions[-1]["exit"] = prices.iloc[-1]
+#     #     positions[-1]["exit_idx"] = len(prices) - 1
 
-    # Calculer les métriques
-    nb_trades = 0
-    nb_gagnants = 0
-    gain_total = 0.0
-    gains = []
-    portfolio_values = [montant]  # Suivi de la valeur du portefeuille
+#     # Calculer les métriques
+#     nb_trades = 0
+#     nb_gagnants = 0
+#     gain_total = 0.0
+#     gains = []
+#     portfolio_values = [montant]  # Suivi de la valeur du portefeuille
 
-    for pos in positions:
-        if "exit" in pos:
-            nb_trades += 1
-            entry = pos["entry"]
-            exit = pos["exit"]
-            rendement = (exit - entry) / entry
+#     for pos in positions:
+#         if "exit" in pos:
+#             nb_trades += 1
+#             entry = pos["entry"]
+#             exit = pos["exit"]
+#             rendement = (exit - entry) / entry
 
-            # Ajuster pour les frais de transaction (entrée + sortie)
-            gain = montant * rendement * (1 - 2 * transaction_cost)
-            gain_total += gain
-            gains.append(gain)
+#             # Ajuster pour les frais de transaction (entrée + sortie)
+#             gain = montant * rendement * (1 - 2 * transaction_cost)
+#             gain_total += gain
+#             gains.append(gain)
 
-            if gain > 0:
-                nb_gagnants += 1
+#             if gain > 0:
+#                 nb_gagnants += 1
 
-            portfolio_values.append(portfolio_values[-1] + gain)
+#             portfolio_values.append(portfolio_values[-1] + gain)
 
-    # Calculer le drawdown maximum
-    portfolio_series = pd.Series(portfolio_values)
-    rolling_max = portfolio_series.cummax()
-    drawdowns = (portfolio_series - rolling_max) / rolling_max
-    drawdown_max = drawdowns.min() * 100 if len(drawdowns) > 0 else 0.0
+#     # Calculer le drawdown maximum
+#     portfolio_series = pd.Series(portfolio_values)
+#     rolling_max = portfolio_series.cummax()
+#     drawdowns = (portfolio_series - rolling_max) / rolling_max
+#     drawdown_max = drawdowns.min() * 100 if len(drawdowns) > 0 else 0.0
 
-    return {
-        "trades": nb_trades,
-        "gagnants": nb_gagnants,
-        "taux_reussite": (nb_gagnants / nb_trades * 100) if nb_trades else 0,
-        "gain_total": round(gain_total, 2),
-        "gain_moyen": round(np.mean(gains), 2) if gains else 0.0,
-        "drawdown_max": round(drawdown_max, 2)
-    }
+#     return {
+#         "trades": nb_trades,
+#         "gagnants": nb_gagnants,
+#         "taux_reussite": (nb_gagnants / nb_trades * 100) if nb_trades else 0,
+#         "gain_total": round(gain_total, 2),
+#         "gain_moyen": round(np.mean(gains), 2) if gains else 0.0,
+#         "drawdown_max": round(drawdown_max, 2)
+#     }
 
 def plot_unified_chart(symbol, prices, volumes, ax, show_xaxis=False):
     """Trace un graphique unifié avec prix, MACD et RSI intégré"""
@@ -1027,8 +1087,8 @@ def plot_unified_chart(symbol, prices, volumes, ax, show_xaxis=False):
     info = yf.Ticker(symbol).info
     domaine = info.get("sector", "Inconnu")
 
-    # Ajout des signaux trading
-    signal, last_price, trend, last_rsi, volume_moyen, score = get_trading_signal(prices, volumes, domaine=domaine)
+    # Ajout des signaux trading (demande des dérivées pour affichage)
+    signal, last_price, trend, last_rsi, volume_moyen, score, derivatives = get_trading_signal(prices, volumes, domaine=domaine, return_derivatives=True)
 
     # Calcul de la progression en pourcentage, en évitant la division par zéro ou NaN
     if len(prices) > 1 and not pd.isna(prices.iloc[0]) and prices.iloc[0] != 0:
@@ -1043,10 +1103,21 @@ def plot_unified_chart(symbol, prices, volumes, ax, show_xaxis=False):
         rsi_status = "SURACH" if last_rsi > 70 else "SURVENTE" if last_rsi < 30 else "NEUTRE"
         signal_color = 'green' if signal == "ACHAT" else 'red' if signal == "VENTE" else 'black'
 
+        # Compose a compact derivative summary for the title
+        try:
+            p_s = derivatives.get('price_slope', 0.0)
+            m_s = derivatives.get('macd_slope', 0.0)
+            r_s = derivatives.get('rsi_slope', 0.0)
+            v_s = derivatives.get('volume_slope_rel', 0.0)
+            deriv_str = f" | dPrice:{p_s:.3f} dMACD:{m_s:.3f} dRSI:{r_s:.3f} vRel:{v_s:.3f}"
+        except Exception:
+            deriv_str = ""
+
         title = (
             f"{symbol} | Prix: {last_price:.2f} | Signal: {signal} ({score}) | "
             f"Tendance: {trend_symbol} | RSI: {last_rsi:.1f} ({rsi_status}) | "
-            f"Progression: {progression:+.2f}% | Vol. moyen: {volume_moyen:,.0f} units "
+            f"Progression: {progression:+.2f}% | Vol. moyen: {volume_moyen:,.0f} units" 
+            f"{deriv_str}"
         )
 
         ax.set_title(title, fontsize=12, fontweight='bold', color=signal_color)
@@ -1799,6 +1870,7 @@ def analyse_signaux_populaires(
 # ===================================================================
 
 if __name__ == "__main__":
+
     print("🛠️ OUTILS DE DIAGNOSTIC QSI INTELLIGENTE")
     print("=" * 50)
     print("Fonctions disponibles:")

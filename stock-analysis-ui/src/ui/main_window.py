@@ -3,7 +3,12 @@ import sys
 import os
 import math
 import matplotlib.pyplot as plt
-sys.path.append(os.path.abspath(os.path.join(os.path.dirname(__file__), '..', '..')))
+
+# Ensure project `src` root is on sys.path so imports like `from qsi import ...` work
+# Calculate the absolute path two levels up from this file (src/ui -> src)
+PROJECT_SRC = os.path.abspath(os.path.join(os.path.dirname(__file__), '..'))
+if PROJECT_SRC not in sys.path:
+    sys.path.insert(0, PROJECT_SRC)
 from qsi import analyse_et_affiche, analyse_signaux_populaires, popular_symbols, mes_symbols, period
 
 class MainWindow(QMainWindow):
