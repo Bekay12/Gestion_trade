@@ -1087,8 +1087,8 @@ def plot_unified_chart(symbol, prices, volumes, ax, show_xaxis=False):
     info = yf.Ticker(symbol).info
     domaine = info.get("sector", "Inconnu")
 
-    # Ajout des signaux trading (demande des dérivées pour affichage)
-    signal, last_price, trend, last_rsi, volume_moyen, score, derivatives = get_trading_signal(prices, volumes, domaine=domaine, return_derivatives=True)
+    # Ajout des signaux trading (ne pas demander les dérivées ici — elles seront consommées par l'UI)
+    signal, last_price, trend, last_rsi, volume_moyen, score = get_trading_signal(prices, volumes, domaine=domaine)
 
     # Calcul de la progression en pourcentage, en évitant la division par zéro ou NaN
     if len(prices) > 1 and not pd.isna(prices.iloc[0]) and prices.iloc[0] != 0:
@@ -1104,20 +1104,10 @@ def plot_unified_chart(symbol, prices, volumes, ax, show_xaxis=False):
         signal_color = 'green' if signal == "ACHAT" else 'red' if signal == "VENTE" else 'black'
 
         # Compose a compact derivative summary for the title
-        try:
-            p_s = derivatives.get('price_slope', 0.0)
-            m_s = derivatives.get('macd_slope', 0.0)
-            r_s = derivatives.get('rsi_slope', 0.0)
-            v_s = derivatives.get('volume_slope_rel', 0.0)
-            deriv_str = f" | dPrice:{p_s:.3f} dMACD:{m_s:.3f} dRSI:{r_s:.3f} vRel:{v_s:.3f}"
-        except Exception:
-            deriv_str = ""
-
         title = (
             f"{symbol} | Prix: {last_price:.2f} | Signal: {signal} ({score}) | "
             f"Tendance: {trend_symbol} | RSI: {last_rsi:.1f} ({rsi_status}) | "
-            f"Progression: {progression:+.2f}% | Vol. moyen: {volume_moyen:,.0f} units" 
-            f"{deriv_str}"
+            f"Progression: {progression:+.2f}% | Vol. moyen: {volume_moyen:,.0f} units"
         )
 
         ax.set_title(title, fontsize=12, fontweight='bold', color=signal_color)
@@ -1175,7 +1165,28 @@ def save_symbols_to_txt(symbols: List[str], filename: str):
 def load_symbols_from_txt(filename: str) -> List[str]:
     """Charge la liste de symboles depuis un fichier texte"""
     try:
-        with open(filename, 'r', encoding='utf-8') as f:
+        # Prefer files located next to this module (package root)
+        script_dir = Path(__file__).parent
+        file_path = script_dir / filename
+
+        # If not found next to the module, fall back to given path (cwd-based)
+        if not file_path.exists():
+            alt_path = Path(filename)
+            if alt_path.exists():
+                file_path = alt_path
+
+        # If still not found, create an empty file next to the module to avoid repeated errors
+        if not file_path.exists():
+            try:
+                file_path.parent.mkdir(parents=True, exist_ok=True)
+                file_path.write_text('', encoding='utf-8')
+                print(f"Notice: '{filename}' not found — created empty file at {file_path}")
+            except Exception as e:
+                # Fall back to returning empty list but report error
+                print(f"Erreur de lecture/creation du fichier {filename} : {e}")
+                return []
+
+        with open(file_path, 'r', encoding='utf-8') as f:
             return [line.strip() for line in f if line.strip()]
     except Exception as e:
         print(f"Erreur de lecture du fichier {filename} : {e}")

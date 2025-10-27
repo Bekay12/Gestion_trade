@@ -3636,3 +3636,47 @@
 2025-10-23 11:51:05,330 - ERROR - 
 1 Failed download:
 2025-10-23 11:51:05,331 - ERROR - ['GOGL.OL']: YFPricesMissingError('possibly delisted; no price data found  (period=12mo) (Yahoo error = "No data found, symbol may be delisted")')
+2025-10-23 13:41:47,231 - ERROR - HTTP Error 404: 
+2025-10-23 13:45:30,833 - ERROR - 
+1 Failed download:
+2025-10-23 13:45:30,886 - ERROR - ['GOGL.OL']: YFPricesMissingError('possibly delisted; no price data found  (period=12mo) (Yahoo error = "No data found, symbol may be delisted")')
+2025-10-23 22:21:44,926 - ERROR - HTTP Error 404: 
+2025-10-23 22:25:14,933 - ERROR - 
+1 Failed download:
+2025-10-23 22:25:14,933 - ERROR - ['GOGL.OL']: YFPricesMissingError('possibly delisted; no price data found  (period=12mo) (Yahoo error = "No data found, symbol may be delisted")')
+2025-10-26 20:30:26,525 - ERROR - 
+1 Failed download:
+2025-10-26 20:30:26,567 - ERROR - ['AGS']: YFPricesMissingError('possibly delisted; no price data found  (period=12mo) (Yahoo error = "No data found, symbol may be delisted")')
+2025-10-27 08:42:42,843 - ERROR - 
+1 Failed download:
+2025-10-27 08:42:42,844 - ERROR - ['AGS']: YFPricesMissingError('possibly delisted; no price data found  (period=12mo) (Yahoo error = "No data found, symbol may be delisted")')
+2025-10-27 08:43:45,892 - ERROR - 
+1 Failed download:
+2025-10-27 08:43:45,892 - ERROR - ['COMP-USD']: YFPricesMissingError('possibly delisted; no price data found  (period=12mo)')
+2025-10-27 08:44:46,338 - ERROR - 
+1 Failed download:
+2025-10-27 08:44:46,338 - ERROR - ['GOGL.OL']: YFPricesMissingError('possibly delisted; no price data found  (period=12mo) (Yahoo error = "No data found, symbol may be delisted")')
+2025-10-27 08:47:02,316 - ERROR - 
+1 Failed download:
+2025-10-27 08:47:02,318 - ERROR - ['SAGE']: YFPricesMissingError('possibly delisted; no price data found  (period=12mo) (Yahoo error = "No data found, symbol may be delisted")')
+2025-10-27 10:01:31,118 - ERROR - HTTP Error 404: 
+2025-10-27 10:12:49,990 - ERROR - HTTP Error 404: 
+2025-10-27 10:12:50,466 - ERROR - 
+1 Failed download:
+2025-10-27 10:12:50,466 - ERROR - ['KOSPI']: YFPricesMissingError('possibly delisted; no price data found  (period=12mo) (Yahoo error = "No data found, symbol may be delisted")')
+2025-10-27 10:12:58,827 - ERROR - HTTP Error 404: 
+2025-10-27 10:12:59,093 - ERROR - 
+1 Failed download:
+2025-10-27 10:12:59,094 - ERROR - ['KOSPI']: YFPricesMissingError('possibly delisted; no price data found  (period=12mo) (Yahoo error = "No data found, symbol may be delisted")')
+2025-10-27 10:50:08,963 - ERROR - HTTP Error 404: 
+2025-10-27 10:54:41,724 - ERROR - 
+1 Failed download:
+2025-10-27 10:54:41,724 - ERROR - ['GOGL.OL']: YFPricesMissingError('possibly delisted; no price data found  (period=12mo) (Yahoo error = "No data found, symbol may be delisted")')
+2025-10-27 11:36:00,718 - ERROR - HTTP Error 404: 
+2025-10-27 11:40:06,494 - ERROR - 
+1 Failed download:
+2025-10-27 11:40:06,494 - ERROR - ['GOGL.OL']: YFPricesMissingError('possibly delisted; no price data found  (period=12mo) (Yahoo error = "No data found, symbol may be delisted")')
+2025-10-27 12:10:20,527 - ERROR - HTTP Error 404: 
+2025-10-27 12:14:55,057 - ERROR - 
+1 Failed download:
+2025-10-27 12:14:55,057 - ERROR - ['GOGL.OL']: YFPricesMissingError('possibly delisted; no price data found  (period=12mo) (Yahoo error = "No data found, symbol may be delisted")')
