@@ -3683,3 +3683,21 @@
 2025-10-28 16:00:27,349 - ERROR - 
 1 Failed download:
 2025-10-28 16:00:27,350 - ERROR - ['CCI']: DNSError('Failed to perform, curl: (6) Could not resolve host: query1.finance.yahoo.com. See https://curl.se/libcurl/c/libcurl-errors.html first for more details.')
+2025-10-28 17:05:24,479 - ERROR - 
+1 Failed download:
+2025-10-28 17:05:24,481 - ERROR - ['AGS']: YFPricesMissingError('possibly delisted; no price data found  (period=24mo) (Yahoo error = "No data found, symbol may be delisted")')
+2025-10-28 17:06:02,911 - ERROR - 
+1 Failed download:
+2025-10-28 17:06:02,912 - ERROR - ['COMP-USD']: YFPricesMissingError('possibly delisted; no price data found  (period=24mo)')
+2025-10-28 17:07:18,519 - ERROR - 
+1 Failed download:
+2025-10-28 17:07:18,519 - ERROR - ['GOGL.OL']: YFPricesMissingError('possibly delisted; no price data found  (period=24mo) (Yahoo error = "No data found, symbol may be delisted")')
+2025-10-28 17:09:19,846 - ERROR - 
+1 Failed download:
+2025-10-28 17:09:19,846 - ERROR - ['SAGE']: YFPricesMissingError('possibly delisted; no price data found  (period=24mo) (Yahoo error = "No data found, symbol may be delisted")')
+2025-10-28 17:42:20,395 - ERROR - 
+1 Failed download:
+2025-10-28 17:42:20,397 - ERROR - ['AGS']: YFPricesMissingError('possibly delisted; no price data found  (period=12mo) (Yahoo error = "No data found, symbol may be delisted")')
+2025-10-28 18:28:32,030 - ERROR - 
+1 Failed download:
+2025-10-28 18:28:32,031 - ERROR - ['COMP-USD']: YFPricesMissingError('possibly delisted; no price data found  (period=12mo)')

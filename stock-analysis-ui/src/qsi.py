@@ -1143,6 +1143,63 @@ def plot_unified_chart(symbol, prices, volumes, ax, show_xaxis=False):
 
     return ax2
 
+
+def generate_trade_events(prices: pd.Series, volumes: pd.Series, domaine: str) -> List[Dict]:
+    """
+    Simule rapidement les signaux sur la série pour produire une liste d'événements de trade
+    (entrée / sortie) utilisables pour l'affichage des marqueurs sur les graphiques.
+
+    Retourne une liste d'événements de la forme:
+      [{ 'date': Timestamp, 'type': 'BUY'|'SELL', 'price': float, 'idx': int }, ...]
+
+    Cette fonction utilise la logique get_trading_signal sur des fenêtres progressives
+    et ne remplace pas le backtest complet (agrégé) qui peut rester accéleré en C.
+    """
+    events = []
+    try:
+        if isinstance(prices, pd.DataFrame):
+            prices = prices.squeeze()
+        if isinstance(volumes, pd.DataFrame):
+            volumes = volumes.squeeze()
+
+        n = len(prices)
+        if n < 60:
+            return events
+
+        open_pos = False
+        entry_idx = None
+
+        # On commence à 50 (cohérent avec le backtest minimal)
+        for i in range(50, n - 1):
+            window_prices = prices.iloc[:i]
+            window_vols = volumes.iloc[:i]
+            try:
+                sig, *_ = get_trading_signal(window_prices, window_vols, domaine)
+            except Exception:
+                sig = "NEUTRE"
+
+            # Nous enregistrons l'exécution effective au prix suivant (i)
+            exec_price = float(prices.iloc[i])
+            exec_date = prices.index[i]
+
+            if sig == "ACHAT" and not open_pos:
+                open_pos = True
+                entry_idx = i
+                events.append({"date": exec_date, "type": "BUY", "price": exec_price, "idx": i})
+            elif sig == "VENTE" and open_pos:
+                open_pos = False
+                events.append({"date": exec_date, "type": "SELL", "price": exec_price, "idx": i})
+
+        # Optionnel: si position ouverte à la fin, on peut la fermer au dernier prix
+        if open_pos and entry_idx is not None:
+            last_idx = n - 1
+            events.append({"date": prices.index[last_idx], "type": "SELL", "price": float(prices.iloc[-1]), "idx": last_idx})
+
+    except Exception:
+        return events
+
+    return events
+
 def analyse_et_affiche(symbols, period="12mo"):
     """
     Télécharge les données pour les symboles donnés et affiche les graphiques d'analyse technique.
@@ -1170,6 +1227,25 @@ def analyse_et_affiche(symbols, period="12mo"):
 
         show_xaxis = (i == len(data) - 1)  # True seulement pour le dernier subplot
         plot_unified_chart(symbol, prices, volumes, axes[i], show_xaxis=show_xaxis)
+
+        # Dessiner les marqueurs d'achat/vente générés par la simulation rapide
+        try:
+            try:
+                info = yf.Ticker(symbol).info
+                domaine = info.get("sector", "Inconnu")
+            except Exception:
+                domaine = "Inconnu"
+
+            events = generate_trade_events(prices, volumes, domaine)
+            for ev in events:
+                if ev.get('type') == 'BUY':
+                    axes[i].scatter(ev['date'], ev['price'], marker='^', s=80, color='green', edgecolor='black', zorder=6)
+                    axes[i].annotate('BUY', (ev['date'], ev['price']), textcoords='offset points', xytext=(0,8), ha='center', fontsize=8, color='green')
+                elif ev.get('type') == 'SELL':
+                    axes[i].scatter(ev['date'], ev['price'], marker='v', s=80, color='red', edgecolor='black', zorder=6)
+                    axes[i].annotate('SELL', (ev['date'], ev['price']), textcoords='offset points', xytext=(0,-10), ha='center', fontsize=8, color='red')
+        except Exception:
+            pass
 
     plt.tight_layout()
     plt.subplots_adjust(top=0.92, hspace=0.152, bottom=0.032)
@@ -1797,6 +1873,25 @@ def analyse_signaux_populaires(
             show_xaxis = (i == len(top_achats_fiables) - 1)  # True seulement pour le dernier subplot
             plot_unified_chart(s['Symbole'], prices, volumes, axes[i], show_xaxis=show_xaxis)
 
+            # Dessiner les marqueurs d'achat/vente
+            try:
+                try:
+                    info = yf.Ticker(s['Symbole']).info
+                    domaine = info.get("sector", "Inconnu")
+                except Exception:
+                    domaine = "Inconnu"
+
+                events = generate_trade_events(prices, volumes, domaine)
+                for ev in events:
+                    if ev.get('type') == 'BUY':
+                        axes[i].scatter(ev['date'], ev['price'], marker='^', s=80, color='green', edgecolor='black', zorder=6)
+                        axes[i].annotate('BUY', (ev['date'], ev['price']), textcoords='offset points', xytext=(0,8), ha='center', fontsize=8, color='green')
+                    elif ev.get('type') == 'SELL':
+                        axes[i].scatter(ev['date'], ev['price'], marker='v', s=80, color='red', edgecolor='black', zorder=6)
+                        axes[i].annotate('SELL', (ev['date'], ev['price']), textcoords='offset points', xytext=(0,-10), ha='center', fontsize=8, color='red')
+            except Exception:
+                pass
+
             if len(prices) > 1:
                 progression = ((prices.iloc[-1] - prices.iloc[0]) / prices.iloc[0]) * 100
                 if isinstance(progression, pd.Series):
@@ -1847,6 +1942,25 @@ def analyse_signaux_populaires(
 
             show_xaxis = (i == len(top_ventes_fiables) - 1)  # True seulement pour le dernier subplot
             plot_unified_chart(s['Symbole'], prices, volumes, axes[i], show_xaxis=show_xaxis)
+
+            # Dessiner les marqueurs d'achat/vente
+            try:
+                try:
+                    info = yf.Ticker(s['Symbole']).info
+                    domaine = info.get("sector", "Inconnu")
+                except Exception:
+                    domaine = "Inconnu"
+
+                events = generate_trade_events(prices, volumes, domaine)
+                for ev in events:
+                    if ev.get('type') == 'BUY':
+                        axes[i].scatter(ev['date'], ev['price'], marker='^', s=80, color='green', edgecolor='black', zorder=6)
+                        axes[i].annotate('BUY', (ev['date'], ev['price']), textcoords='offset points', xytext=(0,8), ha='center', fontsize=8, color='green')
+                    elif ev.get('type') == 'SELL':
+                        axes[i].scatter(ev['date'], ev['price'], marker='v', s=80, color='red', edgecolor='black', zorder=6)
+                        axes[i].annotate('SELL', (ev['date'], ev['price']), textcoords='offset points', xytext=(0,-10), ha='center', fontsize=8, color='red')
+            except Exception:
+                pass
 
             if len(prices) > 1:
                 progression = ((prices.iloc[-1] - prices.iloc[0]) / prices.iloc[0]) * 100

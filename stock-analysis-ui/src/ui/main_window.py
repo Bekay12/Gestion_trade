@@ -4,6 +4,7 @@ from PyQt5.QtWidgets import (
     QMessageBox, QProgressDialog, QScrollArea, QSizePolicy, QTableWidget,
     QTableWidgetItem, QComboBox, QHeaderView, QSpinBox, QCheckBox
 )
+from PyQt5.QtWidgets import QAbstractItemView
 from PyQt5.QtCore import QThread, pyqtSignal, Qt
 from matplotlib.backends.backend_qt5agg import FigureCanvasQTAgg as FigureCanvas
 from matplotlib.figure import Figure
@@ -16,7 +17,7 @@ PROJECT_SRC = os.path.abspath(os.path.join(os.path.dirname(__file__), '..'))
 if PROJECT_SRC not in sys.path:
     sys.path.insert(0, PROJECT_SRC)
 from qsi import analyse_signaux_populaires, analyse_et_affiche, popular_symbols, mes_symbols, period
-from qsi import download_stock_data, backtest_signals, plot_unified_chart, get_trading_signal
+from qsi import download_stock_data, backtest_signals, plot_unified_chart, get_trading_signal, generate_trade_events
 
 
 class AnalysisThread(QThread):
@@ -33,11 +34,14 @@ class AnalysisThread(QThread):
         try:
             # ...
             while not self._stop_requested:
+                # Run analysis without opening matplotlib GUIs (we'll embed charts in the main thread)
                 result = analyse_signaux_populaires(
                     self.symbols,
                     self.mes_symbols,
                     period=self.period,
-                    plot_all=False
+                    afficher_graphiques=False,
+                    plot_all=False,
+                    verbose=False
                 )
                 self.finished.emit(result)
                 break  # ou return
@@ -120,32 +124,32 @@ class MainWindow(QMainWindow):
 
         
     def setup_ui(self):
-        # Titre
+        # Title
         title_label = QLabel("Stock Analysis Tool")
         title_label.setStyleSheet("font-size: 16px; font-weight: bold; margin: 10px;")
         self.layout.addWidget(title_label)
-        
+
         # Input de symbole
         self.symbol_input = QLineEdit()
         self.symbol_input.setPlaceholderText("Enter stock symbol (e.g., AAPL)")
         self.layout.addWidget(self.symbol_input)
-        
+
         # Listes de symboles
         lists_container = QHBoxLayout()
-        
+
         # Liste populaire
         popular_layout = QVBoxLayout()
         popular_layout.addWidget(QLabel("Symboles populaires:"))
         self.popular_list = QListWidget()
-        # Reduce list height to free more room for plots
         self.popular_list.setMaximumHeight(110)
         for s in popular_symbols:
             if s:
                 item = QListWidgetItem(s)
                 item.setData(Qt.UserRole, s)
                 self.popular_list.addItem(item)
+        self.popular_list.setSelectionMode(QAbstractItemView.ExtendedSelection)
         popular_layout.addWidget(self.popular_list)
-        
+
         pop_btns = QHBoxLayout()
         self.pop_add_btn = QPushButton("Ajouter")
         self.pop_del_btn = QPushButton("Supprimer")
@@ -154,22 +158,22 @@ class MainWindow(QMainWindow):
         pop_btns.addWidget(self.pop_del_btn)
         pop_btns.addWidget(self.pop_show_btn)
         popular_layout.addLayout(pop_btns)
-        
+
         lists_container.addLayout(popular_layout)
-        
+
         # Liste personnelle
         mes_layout = QVBoxLayout()
         mes_layout.addWidget(QLabel("Mes symboles:"))
         self.mes_list = QListWidget()
-        # Reduce list height to free more room for plots
         self.mes_list.setMaximumHeight(110)
         for s in mes_symbols:
             if s:
                 item = QListWidgetItem(s)
                 item.setData(Qt.UserRole, s)
                 self.mes_list.addItem(item)
+        self.mes_list.setSelectionMode(QAbstractItemView.ExtendedSelection)
         mes_layout.addWidget(self.mes_list)
-        
+
         mes_btns = QHBoxLayout()
         self.mes_add_btn = QPushButton("Ajouter")
         self.mes_del_btn = QPushButton("Supprimer")
@@ -178,66 +182,57 @@ class MainWindow(QMainWindow):
         mes_btns.addWidget(self.mes_del_btn)
         mes_btns.addWidget(self.mes_show_btn)
         mes_layout.addLayout(mes_btns)
-        
+
         lists_container.addLayout(mes_layout)
         self.layout.addLayout(lists_container)
-        
+
         # Période d'analyse
         period_layout = QHBoxLayout()
         period_layout.addWidget(QLabel("Période d'analyse:"))
         self.period_input = QLineEdit(period)
         period_layout.addWidget(self.period_input)
         self.layout.addLayout(period_layout)
-        
-        # Boutons d'analyse dans un layout horizontal
+
+        # Boutons d'analyse
         buttons_layout = QHBoxLayout()
-        
-        # Bouton d'analyse simple
         self.analyze_button = QPushButton("Analyze")
         self.analyze_button.clicked.connect(self.analyze_stock)
         buttons_layout.addWidget(self.analyze_button)
-        
-        # Bouton de backtest
         self.backtest_button = QPushButton("Analyze and Backtest")
         self.backtest_button.clicked.connect(self.analyse_and_backtest)
         buttons_layout.addWidget(self.backtest_button)
-        
-        # Bouton analyse populaire
         self.popular_signals_button = QPushButton("Analyser mouvements fiables (populaires)")
         self.popular_signals_button.clicked.connect(self.analyze_popular_signals)
         buttons_layout.addWidget(self.popular_signals_button)
-        
+        # Toggle details (collapse/expand bottom panels)
+        self.toggle_bottom_btn = QPushButton("Masquer détails")
+        self.toggle_bottom_btn.setCheckable(True)
+        self.toggle_bottom_btn.clicked.connect(self.toggle_bottom)
+        buttons_layout.addWidget(self.toggle_bottom_btn)
         self.layout.addLayout(buttons_layout)
-        
+
         # Options de tri
         sort_layout = QHBoxLayout()
         sort_layout.addWidget(QLabel("Trier par:"))
         self.sort_combo = QComboBox()
         self.sort_combo.addItems([
-            "Prix (croissant)", 
-            "Prix (décroissant)",
-            "Score (croissant)",
-            "Score (décroissant)",
-            "RSI (croissant)",
-            "RSI (décroissant)",
-            "Volume (croissant)",
-            "Volume (décroissant)",
-            "Fiabilité (croissant)",
-            "Fiabilité (décroissant)"
+            "Prix (croissant)", "Prix (décroissant)",
+            "Score (croissant)", "Score (décroissant)",
+            "RSI (croissant)", "RSI (décroissant)",
+            "Volume (croissant)", "Volume (décroissant)",
+            "Fiabilité (croissant)", "Fiabilité (décroissant)"
         ])
         self.sort_combo.currentIndexChanged.connect(self.sort_results)
         sort_layout.addWidget(self.sort_combo)
         self.layout.addLayout(sort_layout)
 
-        # Filtres de fiabilité et nombre de trades pour backtest & signaux populaires
+        # Filtres
         filterlayout = QHBoxLayout()
         filterlayout.addWidget(QLabel("Fiabilité min (%):"))
         self.min_fiabilite_spin = QSpinBox()
         self.min_fiabilite_spin.setRange(0, 100)
         self.min_fiabilite_spin.setValue(60)
         filterlayout.addWidget(self.min_fiabilite_spin)
-
-        # NOUVEAU: Ajout du filtre sur nombre de trades
         filterlayout.addWidget(QLabel("  Nb trades min:"))
         self.min_trades_spin = QSpinBox()
         self.min_trades_spin.setRange(0, 100)
@@ -248,36 +243,62 @@ class MainWindow(QMainWindow):
         filterlayout.addWidget(self.include_none_val_chk)
         self.layout.addLayout(filterlayout)
 
-        
-        # Zone de défilement pour les graphiques (embeddés dans l'interface)
+        # Plots area
         self.plots_scroll = QScrollArea()
         self.plots_scroll.setWidgetResizable(True)
-        # Make plots area expand and prefer more vertical space
         self.plots_scroll.setSizePolicy(QSizePolicy.Expanding, QSizePolicy.Expanding)
         self.plots_container = QWidget()
         self.plots_layout = QVBoxLayout(self.plots_container)
         self.plots_scroll.setWidget(self.plots_container)
-        # Increase the minimum height so plots get priority
-        self.plots_scroll.setMinimumHeight(520)
-        self.layout.addWidget(self.plots_scroll)
+        self.plots_scroll.setMinimumHeight(420)
 
-        # Tableau de résultats
-        self.results_table = QTableWidget()
-        # Keep results table but reduce its vertical footprint so plots get more space
-        self.results_table.setMinimumHeight(180)
-        self.results_table.setSizePolicy(QSizePolicy.Expanding, QSizePolicy.Minimum)
-        # Add derivative columns + Fiabilité and NbTrades to the results
-        # We have 14 columns now
-        self.results_table.setColumnCount(14)
-        self.results_table.setHorizontalHeaderLabels([
-            "Symbole", "Signal", "Score", "Prix", "Tendance",
-            "RSI", "Volume moyen", "Domaine",
-            "Fiabilité", "Nb Trades", "dPrice", "dMACD", "dRSI", "dVolRel"
-        ])
-        header = self.results_table.horizontalHeader()
-        header.setSectionResizeMode(QHeaderView.ResizeToContents)
-        self.layout.addWidget(self.results_table)
-        
+        # Use a vertical splitter so plots remain visible
+        from PyQt5.QtWidgets import QSplitter, QTextEdit
+        self.splitter = QSplitter(Qt.Vertical)
+        self.splitter.addWidget(self.plots_scroll)
+
+        # Bottom container
+        bottom_container = QWidget()
+        bottom_layout = QVBoxLayout(bottom_container)
+
+        self.summary_text = QTextEdit()
+        self.summary_text.setReadOnly(True)
+        self.summary_text.setMinimumHeight(80)
+        self.summary_text.setMaximumHeight(160)
+        bottom_layout.addWidget(self.summary_text)
+        # Single merged table combining signals + backtest metrics
+        self.merged_table = QTableWidget()
+        self.merged_table.setMinimumHeight(280)
+        self.merged_table.setSizePolicy(QSizePolicy.Expanding, QSizePolicy.Minimum)
+        merged_columns = [
+            'Symbole','Signal','Score','Prix','Tendance','RSI','Volume moyen','Domaine',
+            'Fiabilite','Nb Trades','dPrice','dMACD','dRSI','dVolRel',
+            'Trades','Gagnants','Taux réussite (%)','Gain total ($)','Gain moyen ($)','Drawdown max (%)'
+        ]
+        self.merged_table.setColumnCount(len(merged_columns))
+        self.merged_table.setHorizontalHeaderLabels(merged_columns)
+        self.merged_table.horizontalHeader().setSectionResizeMode(QHeaderView.ResizeToContents)
+        # Allow sorting by clicking headers (we also provide numeric data via Qt.EditRole)
+        self.merged_table.setSortingEnabled(True)
+        bottom_layout.addWidget(self.merged_table)
+
+        # Keep a reference to bottom container to toggle visibility later
+        self.bottom_container = bottom_container
+
+        self.splitter.addWidget(bottom_container)
+        self.splitter.setStretchFactor(0, 3)
+        self.splitter.setStretchFactor(1, 1)
+        # Try to set an initial sensible ratio so plots are visible by default
+        try:
+            total_h = max(600, self.height())
+            top_h = int(total_h * 0.72)
+            bottom_h = total_h - top_h
+            self.splitter.setSizes([top_h, bottom_h])
+        except Exception:
+            pass
+
+        self.layout.addWidget(self.splitter)
+
         # Connexions des boutons
         self.pop_add_btn.clicked.connect(lambda: self.add_symbol(self.popular_list, "popular_symbols.txt"))
         self.pop_del_btn.clicked.connect(lambda: self.remove_selected(self.popular_list, "popular_symbols.txt"))
@@ -285,7 +306,7 @@ class MainWindow(QMainWindow):
         self.mes_add_btn.clicked.connect(lambda: self.add_symbol(self.mes_list, "mes_symbols.txt"))
         self.mes_del_btn.clicked.connect(lambda: self.remove_selected(self.mes_list, "mes_symbols.txt"))
         self.mes_show_btn.clicked.connect(lambda: self.show_selected(self.mes_list))
-        
+
     def add_symbol(self, list_widget, filename):
         text, ok = QInputDialog.getText(self, "Ajouter symbole", "Symbole (ex: AAPL):")
         if ok and text:
@@ -329,8 +350,11 @@ class MainWindow(QMainWindow):
         self.symbol_input.setText(", ".join(symbols))
 
     def analyze_popular_signals(self):
-        popular_symbols = [self.popular_list.item(i).text() for i in range(self.popular_list.count())]
-        mes_symbols = [self.mes_list.item(i).text() for i in range(self.mes_list.count())]
+        # Use selected items if any, otherwise fallback to full lists
+        selected_pop = [it.data(Qt.UserRole) if it.data(Qt.UserRole) is not None else it.text() for it in self.popular_list.selectedItems()]
+        popular_symbols = selected_pop if selected_pop else [self.popular_list.item(i).text() for i in range(self.popular_list.count())]
+        selected_mes = [it.data(Qt.UserRole) if it.data(Qt.UserRole) is not None else it.text() for it in self.mes_list.selectedItems()]
+        mes_symbols = selected_mes if selected_mes else [self.mes_list.item(i).text() for i in range(self.mes_list.count())]
         period = self.period_input.text().strip()
         
         if not period:
@@ -500,7 +524,7 @@ class MainWindow(QMainWindow):
                     ax.set_title(sym)
 
                 canvas = FigureCanvas(fig)
-                canvas.setMinimumHeight(280)
+                canvas.setMinimumHeight(180)
                 self.plots_layout.addWidget(canvas)
         except Exception:
             # Fallback: external plotting (analyse_et_affiche shows plots in separate windows)
@@ -538,6 +562,14 @@ class MainWindow(QMainWindow):
 
         # Finalize results displayed in table
         self.update_results_table()
+        # If backtest results present, render the backtest summary and table
+        try:
+            backtests = result.get('backtest_results', []) if isinstance(result, dict) else []
+            if backtests:
+                # current_results contains signal rows with Domaine if available
+                self.render_backtest_summary_and_table(backtests, self.current_results)
+        except Exception:
+            pass
 
     def on_analysis_progress(self, message):
         if self.progress:
@@ -556,8 +588,110 @@ class MainWindow(QMainWindow):
         # Stocker les résultats
         self.current_results = result.get('signals', [])
         
+        # Enrichir les résultats (calculer les dérivées si non présentes)
+        try:
+            # If signals came without derivatives, compute them by downloading data per symbol
+            for r in self.current_results:
+                # Only compute if dPrice not present or zero
+                if not r.get('dPrice') or float(r.get('dPrice', 0)) == 0.0:
+                    sym = r.get('Symbole')
+                    if not sym:
+                        continue
+                    try:
+                        data = download_stock_data([sym], self.period_input.text().strip() or '12mo').get(sym)
+                        if data is None:
+                            continue
+                        prices = data['Close']
+                        volumes = data['Volume']
+                        try:
+                            _sig, _last_price, _trend, _last_rsi, _vol_mean, _score, derivatives = get_trading_signal(prices, volumes, domaine=r.get('Domaine', 'Inconnu'), return_derivatives=True)
+                        except Exception:
+                            derivatives = {}
+
+                        r['dPrice'] = round(derivatives.get('price_slope', 0.0), 6)
+                        r['dMACD'] = round(derivatives.get('macd_slope', 0.0), 6)
+                        r['dRSI'] = round(derivatives.get('rsi_slope', 0.0), 6)
+                        r['dVolRel'] = round(derivatives.get('volume_slope_rel', 0.0), 6)
+                    except Exception:
+                        # leave defaults
+                        r.setdefault('dPrice', 0.0)
+                        r.setdefault('dMACD', 0.0)
+                        r.setdefault('dRSI', 0.0)
+                        r.setdefault('dVolRel', 0.0)
+        except Exception:
+            pass
+
         # Afficher les résultats
         self.update_results_table()
+        # Also embed the final analysis charts (top buys / sells) returned by the analysis
+        try:
+            # Clear existing plots
+            self.clear_plots()
+
+            top_buys = result.get('top_achats_fiables', []) if isinstance(result, dict) else []
+            top_sells = result.get('top_ventes_fiables', []) if isinstance(result, dict) else []
+
+            # Helper to embed a list of symbols as canvases
+            def embed_symbol_list(symbol_list, title_prefix=""):
+                if not symbol_list:
+                    return
+                for i, s in enumerate(symbol_list):
+                    sym = s['Symbole'] if isinstance(s, dict) and 'Symbole' in s else s
+                    try:
+                        stock_data = download_stock_data([sym], period=self.period_input.text().strip() or '12mo').get(sym)
+                        if not stock_data:
+                            continue
+                        prices = stock_data['Close']
+                        volumes = stock_data['Volume']
+
+                        fig = Figure(figsize=(10, 3))
+                        ax = fig.add_subplot(111)
+                        show_xaxis = True
+                        try:
+                            plot_unified_chart(sym, prices, volumes, ax, show_xaxis=show_xaxis)
+                        except Exception:
+                            ax.plot(prices.index, prices.values)
+                            ax.set_title(sym)
+
+                        # Add trade markers based on the lightweight simulator
+                        try:
+                            try:
+                                info = None
+                                import yfinance as yf
+                                info = yf.Ticker(sym).info
+                                domaine = info.get('sector', 'Inconnu') if info else 'Inconnu'
+                            except Exception:
+                                domaine = 'Inconnu'
+
+                            events = generate_trade_events(prices, volumes, domaine)
+                            for ev in events:
+                                if ev.get('type') == 'BUY':
+                                    ax.scatter(ev['date'], ev['price'], marker='^', s=80, color='green', edgecolor='black', zorder=6)
+                                elif ev.get('type') == 'SELL':
+                                    ax.scatter(ev['date'], ev['price'], marker='v', s=80, color='red', edgecolor='black', zorder=6)
+                        except Exception:
+                            pass
+
+                        canvas = FigureCanvas(fig)
+                        canvas.setMinimumHeight(240)
+                        self.plots_layout.addWidget(canvas)
+                    except Exception:
+                        continue
+
+            # Embed buys then sells (if any)
+            embed_symbol_list(top_buys, "Top ACHAT")
+            embed_symbol_list(top_sells, "Top VENTE")
+        except Exception:
+            # If anything fails, silently ignore — table already updated
+            pass
+        # Render backtest summary/table if present in the result
+        try:
+            backtests = result.get('backtest_results', []) if isinstance(result, dict) else []
+            signals = result.get('signals', []) if isinstance(result, dict) else []
+            if backtests:
+                self.render_backtest_summary_and_table(backtests, signals)
+        except Exception:
+            pass
 
     def on_analysis_error(self, error_msg):
         self.analyze_button.setEnabled(True)
@@ -567,8 +701,14 @@ class MainWindow(QMainWindow):
         QMessageBox.critical(self, "Erreur", f"Erreur pendant l'analyse:\n{error_msg}")
 
     def analyze_stock(self):
-        # Get list of symbols from input
+        # Get list of symbols from input or from selection in lists
         symbols = [s.strip().upper() for s in self.symbol_input.text().split(",") if s.strip()]
+        if not symbols:
+            # If no manual input, use selected items from the lists (popular first, then mes)
+            selected = [it.data(Qt.UserRole) if it.data(Qt.UserRole) is not None else it.text() for it in self.popular_list.selectedItems()]
+            if not selected:
+                selected = [it.data(Qt.UserRole) if it.data(Qt.UserRole) is not None else it.text() for it in self.mes_list.selectedItems()]
+            symbols = [s.strip().upper() for s in selected if s]
         if not symbols:
             QMessageBox.warning(self, "Erreur", "Veuillez entrer au moins un symbole")
             return
@@ -600,8 +740,17 @@ class MainWindow(QMainWindow):
         self.download_thread.start()
 
     def analyse_and_backtest(self):
-        # Get list of symbols from input
+        # For consistency with 'Analyser mouvements fiables', run the full
+        # analyse_signaux_populaires pipeline (which includes backtests) and
+        # embed the same charts + detailed backtest info in the UI.
+
+        # Get list of symbols from input or from selection in lists
         symbols = [s.strip().upper() for s in self.symbol_input.text().split(",") if s.strip()]
+        if not symbols:
+            selected = [it.data(Qt.UserRole) if it.data(Qt.UserRole) is not None else it.text() for it in self.popular_list.selectedItems()]
+            if not selected:
+                selected = [it.data(Qt.UserRole) if it.data(Qt.UserRole) is not None else it.text() for it in self.mes_list.selectedItems()]
+            symbols = [s.strip().upper() for s in selected if s]
         if not symbols:
             QMessageBox.warning(self, "Erreur", "Veuillez entrer au moins un symbole")
             return
@@ -617,71 +766,160 @@ class MainWindow(QMainWindow):
         self.popular_signals_button.setEnabled(False)
 
         # Progress dialog
-        self.progress = QProgressDialog("Téléchargement et backtest...", "Annuler", 0, 0, self)
-        self.progress.setWindowTitle("Backtest")
+        self.progress = QProgressDialog("Analyse et backtest en cours...", "Annuler", 0, 0, self)
+        self.progress.setWindowTitle("Analyse + Backtest")
         self.progress.setWindowModality(Qt.WindowModal)
         self.progress.setMinimumDuration(0)
         self.progress.setAutoClose(False)
         self.progress.setMinimumWidth(400)
 
-        # Launch download thread with backtest true
-        self.download_thread = DownloadThread(symbols, period, do_backtest=True)
-        self.download_thread.finished.connect(self.on_download_complete)
-        self.download_thread.error.connect(self.on_analysis_error)
-        self.download_thread.progress.connect(self.on_analysis_progress)
-        self.download_thread.start()
+        # Use the AnalysisThread which calls analyse_signaux_populaires (no plt.show()
+        # in background). Pass the selected symbols as the "popular_symbols" input
+        # so the function analyzes/backtests those symbols and returns the same
+        # result structure used for the "Analyser mouvements fiables" flow.
+        selected_pop = symbols
+        selected_mes = []
+
+        self.analysis_thread = AnalysisThread(selected_pop, selected_mes, period)
+        self.analysis_thread.finished.connect(self.on_analysis_complete)
+        self.analysis_thread.error.connect(self.on_analysis_error)
+        self.analysis_thread.progress.connect(self.on_analysis_progress)
+        self.analysis_thread.start()
 
     def update_results_table(self):
-        """Remplit `self.results_table` avec `self.current_results` (ou `self.filtered_results`)."""
-        self.results_table.setRowCount(0)
+        """Fill the merged table (`self.merged_table`) with current results plus backtest metrics.
+        Numeric values are stored via Qt.EditRole to enable correct numeric sorting."""
         if not hasattr(self, 'current_results'):
             return
 
-        # Utiliser filtered_results si disponible, sinon current_results
+        self.merged_table.setRowCount(0)
         results_to_display = getattr(self, 'filtered_results', self.current_results)
+        bt_map = getattr(self, 'backtest_map', {})
 
-        for idx, signal in enumerate(results_to_display):
-            row = self.results_table.rowCount()
-            self.results_table.insertRow(row)
-
-            # Colonnes de base
+        for signal in results_to_display:
             try:
-                self.results_table.setItem(row, 0, QTableWidgetItem(signal['Symbole']))
-                self.results_table.setItem(row, 1, QTableWidgetItem(signal['Signal']))
-                self.results_table.setItem(row, 2, QTableWidgetItem(f"{signal['Score']:.2f}"))
-                self.results_table.setItem(row, 3, QTableWidgetItem(f"{signal['Prix']:.2f}"))
-                self.results_table.setItem(row, 4, QTableWidgetItem(signal['Tendance']))
-                self.results_table.setItem(row, 5, QTableWidgetItem(f"{signal['RSI']:.2f}"))
-                self.results_table.setItem(row, 6, QTableWidgetItem(f"{signal['Volume moyen']:,.0f}"))
-                self.results_table.setItem(row, 7, QTableWidgetItem(signal.get('Domaine', '')))
+                row = self.merged_table.rowCount()
+                self.merged_table.insertRow(row)
+                sym = signal.get('Symbole', '')
 
-                # Fiabilité
-                fiab = signal.get('Fiabilite', 'N/A')
+                # Basic columns
+                self.merged_table.setItem(row, 0, QTableWidgetItem(str(sym)))
+                self.merged_table.setItem(row, 1, QTableWidgetItem(str(signal.get('Signal', ''))))
+
+                score = float(signal.get('Score', 0.0) or 0.0)
+                item = QTableWidgetItem(f"{score:.2f}")
+                item.setData(Qt.EditRole, score)
+                self.merged_table.setItem(row, 2, item)
+
+                prix = float(signal.get('Prix', 0.0) or 0.0)
+                item = QTableWidgetItem(f"{prix:.2f}")
+                item.setData(Qt.EditRole, prix)
+                self.merged_table.setItem(row, 3, item)
+
+                self.merged_table.setItem(row, 4, QTableWidgetItem(str(signal.get('Tendance', ''))))
+
+                rsi = float(signal.get('RSI', 0.0) or 0.0)
+                item = QTableWidgetItem(f"{rsi:.2f}")
+                item.setData(Qt.EditRole, rsi)
+                self.merged_table.setItem(row, 5, item)
+
+                vol = signal.get('Volume moyen', 0.0) or 0.0
+                item = QTableWidgetItem(f"{vol:,.0f}")
+                item.setData(Qt.EditRole, float(vol))
+                self.merged_table.setItem(row, 6, item)
+
+                self.merged_table.setItem(row, 7, QTableWidgetItem(str(signal.get('Domaine', ''))))
+
+                # Fiabilite and NbTrades (from signal or backtest)
+                fiab = signal.get('Fiabilite')
+                nb_trades = signal.get('NbTrades')
+                # if missing, check backtest map
+                bt = bt_map.get(sym, {})
+                if (fiab is None or fiab == 'N/A') and bt:
+                    fiab = bt.get('taux_reussite', 'N/A')
+                if (nb_trades is None or nb_trades == 0) and bt:
+                    nb_trades = bt.get('trades', 0)
+
+                # Fiabilité display
+                if fiab is None or fiab == 'N/A':
+                    fiab_text = 'N/A'
+                    fiab_val = None
+                else:
+                    try:
+                        fiab_val = float(fiab)
+                        fiab_text = f"{fiab_val:.0f}%"
+                    except Exception:
+                        fiab_text = str(fiab)
+                        fiab_val = None
+
+                item = QTableWidgetItem(fiab_text)
+                if fiab_val is not None:
+                    item.setData(Qt.EditRole, fiab_val)
+                self.merged_table.setItem(row, 8, item)
+
+                # NbTrades
                 try:
-                    fiab_text = f"{float(fiab):.0f}%" if fiab != 'N/A' else 'N/A'
+                    nb_int = int(nb_trades or 0)
                 except Exception:
-                    fiab_text = str(fiab)
-                self.results_table.setItem(row, 8, QTableWidgetItem(fiab_text))
+                    nb_int = 0
+                item = QTableWidgetItem(str(nb_int))
+                item.setData(Qt.EditRole, nb_int)
+                self.merged_table.setItem(row, 9, item)
 
-                # Nb Trades (NOUVELLE COLONNE)
-                nb_trades = signal.get('NbTrades', 0)
-                try:
-                    nb_trades_text = f"{int(nb_trades)}"
-                except Exception:
-                    nb_trades_text = "0"
-                self.results_table.setItem(row, 9, QTableWidgetItem(nb_trades_text))
+                # Derivatives
+                dprice = float(signal.get('dPrice', 0.0) or 0.0)
+                item = QTableWidgetItem(f"{dprice:.6f}")
+                item.setData(Qt.EditRole, dprice)
+                self.merged_table.setItem(row, 10, item)
 
-                # Colonnes dérivées
-                dprice = signal.get('dPrice', 0.0)
-                dmacd = signal.get('dMACD', 0.0)
-                drsi = signal.get('dRSI', 0.0)
-                dvol = signal.get('dVolRel', 0.0)
-                self.results_table.setItem(row, 10, QTableWidgetItem(f"{dprice:.6f}"))
-                self.results_table.setItem(row, 11, QTableWidgetItem(f"{dmacd:.6f}"))
-                self.results_table.setItem(row, 12, QTableWidgetItem(f"{drsi:.6f}"))
-                self.results_table.setItem(row, 13, QTableWidgetItem(f"{dvol:.6f}"))
+                dmacd = float(signal.get('dMACD', 0.0) or 0.0)
+                item = QTableWidgetItem(f"{dmacd:.6f}")
+                item.setData(Qt.EditRole, dmacd)
+                self.merged_table.setItem(row, 11, item)
+
+                drsi = float(signal.get('dRSI', 0.0) or 0.0)
+                item = QTableWidgetItem(f"{drsi:.6f}")
+                item.setData(Qt.EditRole, drsi)
+                self.merged_table.setItem(row, 12, item)
+
+                dvol = float(signal.get('dVolRel', 0.0) or 0.0)
+                item = QTableWidgetItem(f"{dvol:.6f}")
+                item.setData(Qt.EditRole, dvol)
+                self.merged_table.setItem(row, 13, item)
+
+                # Backtest metrics (if available)
+                trades = int(bt.get('trades', 0)) if bt else 0
+                gagnants = int(bt.get('gagnants', 0)) if bt else 0
+                taux = float(bt.get('taux_reussite', 0.0)) if bt else 0.0
+                gain_total = float(bt.get('gain_total', 0.0)) if bt else 0.0
+                gain_moy = float(bt.get('gain_moyen', 0.0)) if bt else 0.0
+                drawdown = float(bt.get('drawdown_max', 0.0)) if bt else 0.0
+
+                item = QTableWidgetItem(str(trades))
+                item.setData(Qt.EditRole, trades)
+                self.merged_table.setItem(row, 14, item)
+
+                item = QTableWidgetItem(str(gagnants))
+                item.setData(Qt.EditRole, gagnants)
+                self.merged_table.setItem(row, 15, item)
+
+                item = QTableWidgetItem(f"{taux:.1f}")
+                item.setData(Qt.EditRole, taux)
+                self.merged_table.setItem(row, 16, item)
+
+                item = QTableWidgetItem(f"{gain_total:.2f}")
+                item.setData(Qt.EditRole, gain_total)
+                self.merged_table.setItem(row, 17, item)
+
+                item = QTableWidgetItem(f"{gain_moy:.2f}")
+                item.setData(Qt.EditRole, gain_moy)
+                self.merged_table.setItem(row, 18, item)
+
+                item = QTableWidgetItem(f"{drawdown:.2f}")
+                item.setData(Qt.EditRole, drawdown)
+                self.merged_table.setItem(row, 19, item)
+
             except Exception:
-                # Ignore per-row errors and continue
                 continue
     
     def sort_results(self, index):
@@ -728,6 +966,122 @@ class MainWindow(QMainWindow):
                     return float(v)
                 except Exception:
                     return float('-inf') if not reverse else float('inf')
+
+    def toggle_bottom(self, checked: bool):
+        """Hide/show the bottom summary/backtest/results panel."""
+        try:
+            if checked:
+                # hide bottom container and expand plots
+                if hasattr(self, 'bottom_container'):
+                    self.bottom_container.setVisible(False)
+                self.toggle_bottom_btn.setText("Afficher détails")
+                try:
+                    self.splitter.setSizes([self.height(), 0])
+                except Exception:
+                    pass
+            else:
+                if hasattr(self, 'bottom_container'):
+                    self.bottom_container.setVisible(True)
+                self.toggle_bottom_btn.setText("Masquer détails")
+                try:
+                    total_h = max(600, self.height())
+                    top_h = int(total_h * 0.72)
+                    bottom_h = total_h - top_h
+                    self.splitter.setSizes([top_h, bottom_h])
+                except Exception:
+                    pass
+        except Exception:
+            pass
+
+    def render_backtest_summary_and_table(self, backtest_results: list, signals: list):
+        """Build the summary text and populate an internal backtest map used by the merged table.
+
+        This no longer writes to a separate backtest table; instead it stores results in
+        `self.backtest_map` and injects Fiabilité/NbTrades back into `self.current_results` so
+        the merged table can display and sort them.
+        """
+        try:
+            total_trades = 0
+            total_gagnants = 0
+            total_gain = 0.0
+
+            # Map symbol to domain from signals list
+            domain_map = {s.get('Symbole'): s.get('Domaine', 'Inconnu') for s in signals if isinstance(s, dict)}
+
+            domain_stats = {}
+
+            # Build backtest map
+            self.backtest_map = {}
+            for br in backtest_results:
+                sym = br.get('Symbole')
+                trades = int(br.get('trades', 0))
+                gagnants = int(br.get('gagnants', 0))
+                gain_total = float(br.get('gain_total', 0.0))
+                gain_moyen = float(br.get('gain_moyen', 0.0))
+                drawdown = float(br.get('drawdown_max', 0.0))
+                taux = float(br.get('taux_reussite', 0.0))
+
+                self.backtest_map[sym] = {
+                    'trades': trades,
+                    'gagnants': gagnants,
+                    'taux_reussite': taux,
+                    'gain_total': gain_total,
+                    'gain_moyen': gain_moyen,
+                    'drawdown_max': drawdown
+                }
+
+                total_trades += trades
+                total_gagnants += gagnants
+                total_gain += gain_total
+
+                # Domain aggregation
+                domain = domain_map.get(sym, 'Inconnu')
+                if domain not in domain_stats:
+                    domain_stats[domain] = {'trades': 0, 'gagnants': 0, 'gain': 0.0}
+                domain_stats[domain]['trades'] += trades
+                domain_stats[domain]['gagnants'] += gagnants
+                domain_stats[domain]['gain'] += gain_total
+
+            taux_global = (total_gagnants / total_trades * 100) if total_trades else 0.0
+
+            # Inject Fiabilite/NbTrades into current_results so merged table shows them
+            try:
+                for r in getattr(self, 'current_results', []):
+                    sym = r.get('Symbole')
+                    bt = self.backtest_map.get(sym)
+                    if bt:
+                        r['Fiabilite'] = bt.get('taux_reussite', 'N/A')
+                        r['NbTrades'] = bt.get('trades', 0)
+                    else:
+                        r.setdefault('Fiabilite', 'N/A')
+                        r.setdefault('NbTrades', 0)
+            except Exception:
+                pass
+
+            # Build summary text
+            lines = []
+            lines.append(f"🌍 Résultat global :\n - Taux de réussite = {taux_global:.1f}%\n - Nombre de trades = {total_trades}\n - Gain total brut = {total_gain:.2f} $")
+            lines.append("\n📊 Taux de réussite par domaine:")
+            for dom, stats in sorted(domain_stats.items(), key=lambda x: -x[1]['trades']):
+                trades = stats['trades']
+                gagnants = stats['gagnants']
+                taux = (gagnants / trades * 100) if trades else 0.0
+                gain_dom = stats['gain']
+                lines.append(f" - {dom}: Trades={trades} | Gagnants={gagnants} | Taux={taux:.1f}% | Gain brut={gain_dom:.2f} $")
+
+            self.summary_text.setPlainText('\n'.join(lines))
+
+            # Refresh merged table to display updated fiabilite/nb trades
+            try:
+                self.update_results_table()
+            except Exception:
+                pass
+
+        except Exception:
+            try:
+                self.summary_text.setPlainText('')
+            except Exception:
+                pass
     
     def closeEvent(self, event):
         # Stop analysis thread if running
