@@ -846,6 +846,25 @@ def download_stock_data(symbols: List[str], period: str) -> Dict[str, Dict[str, 
                             data = all_data[symbol] if symbol in all_data.columns.levels[0] else None
                         
                         if data is not None and not data.empty:
+                            # --- Normalisation des colonnes yfinance ---
+                            # yfinance peut parfois retourner un DataFrame à colonnes MultiIndex
+                            # (par ex. niveau sup: ticker ou 'Price'), ce qui empêche les tests
+                            # "'Close' in data.columns". Ici on gère ces cas en extrayant la
+                            # tranche correcte (data[symbol]) si présente, ou en aplatissant
+                            # vers le niveau des noms de colonnes (Open/High/Low/Close/Volume).
+                            try:
+                                if hasattr(data, 'columns') and isinstance(data.columns, pd.MultiIndex):
+                                    # Si le premier niveau contient le ticker, on extrait
+                                    if symbol in data.columns.get_level_values(0):
+                                        data = data[symbol]
+                                    else:
+                                        # Aplatir en ne conservant que le dernier niveau
+                                        data.columns = data.columns.get_level_values(-1)
+                            except Exception:
+                                # Si la normalisation échoue, on continue et laissera
+                                # la validation suivante filtrer le dataset.
+                                pass
+
                             # Validation et nettoyage
                             if 'Close' in data.columns and 'Volume' in data.columns:
                                 if len(data) >= 50:  # Minimum requis pour get_trading_signal

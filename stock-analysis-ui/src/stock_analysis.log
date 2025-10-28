@@ -3680,3 +3680,6 @@
 2025-10-27 12:14:55,057 - ERROR - 
 1 Failed download:
 2025-10-27 12:14:55,057 - ERROR - ['GOGL.OL']: YFPricesMissingError('possibly delisted; no price data found  (period=12mo) (Yahoo error = "No data found, symbol may be delisted")')
+2025-10-28 16:00:27,349 - ERROR - 
+1 Failed download:
+2025-10-28 16:00:27,350 - ERROR - ['CCI']: DNSError('Failed to perform, curl: (6) Could not resolve host: query1.finance.yahoo.com. See https://curl.se/libcurl/c/libcurl-errors.html first for more details.')

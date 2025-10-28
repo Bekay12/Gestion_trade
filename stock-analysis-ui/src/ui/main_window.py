@@ -17,45 +17,35 @@ if PROJECT_SRC not in sys.path:
     sys.path.insert(0, PROJECT_SRC)
 from qsi import analyse_signaux_populaires, analyse_et_affiche, popular_symbols, mes_symbols, period
 from qsi import download_stock_data, backtest_signals, plot_unified_chart, get_trading_signal
-from qsi import analyse_et_affiche
+
 
 class AnalysisThread(QThread):
-    """Thread for running long analyses without blocking the GUI."""
-    finished = pyqtSignal(dict)  # Emitted when analysis completes
-    error = pyqtSignal(str)      # Emitted on error
-    progress = pyqtSignal(str)   # Emitted to update progress message
-    
+    finished = pyqtSignal(dict)
+    error = pyqtSignal(str)
+    progress = pyqtSignal(str)
     def __init__(self, symbols, mes_symbols, period="12mo"):
         super().__init__()
         self.symbols = symbols
         self.mes_symbols = mes_symbols
         self.period = period
-    
+        self._stop_requested = False
     def run(self):
         try:
-            # Patch the print function to capture progress
-            original_print = print
-            def custom_print(*args, **kwargs):
-                message = ' '.join(str(arg) for arg in args)
-                self.progress.emit(message)
-                original_print(*args, **kwargs)
-            
-            import builtins
-            builtins.print = custom_print
-            
-            try:
+            # ...
+            while not self._stop_requested:
                 result = analyse_signaux_populaires(
                     self.symbols,
                     self.mes_symbols,
                     period=self.period,
-                    plot_all=False  # Désactive l'affichage des graphiques
+                    plot_all=False
                 )
                 self.finished.emit(result)
-            finally:
-                builtins.print = original_print
-                
+                break  # ou return
         except Exception as e:
             self.error.emit(str(e))
+    def stop(self):
+        self._stop_requested = True
+
 
 class DownloadThread(QThread):
     """Thread to download stock data (and optionally run backtests) without blocking UI.
@@ -125,6 +115,9 @@ class MainWindow(QMainWindow):
         self.layout = QVBoxLayout(self.central_widget)
         
         self.setup_ui()
+
+        self.current_results = []
+
         
     def setup_ui(self):
         # Titre
@@ -236,19 +229,25 @@ class MainWindow(QMainWindow):
         sort_layout.addWidget(self.sort_combo)
         self.layout.addLayout(sort_layout)
 
-        # Filtre de fiabilité (pour backtest / signaux populaires)
-        filter_layout = QHBoxLayout()
-        filter_layout.addWidget(QLabel("Fiabilité min (%):"))
+        # Filtres de fiabilité et nombre de trades pour backtest & signaux populaires
+        filterlayout = QHBoxLayout()
+        filterlayout.addWidget(QLabel("Fiabilité min (%):"))
         self.min_fiabilite_spin = QSpinBox()
         self.min_fiabilite_spin.setRange(0, 100)
         self.min_fiabilite_spin.setValue(60)
-        filter_layout.addWidget(self.min_fiabilite_spin)
+        filterlayout.addWidget(self.min_fiabilite_spin)
 
-        self.include_non_eval_chk = QCheckBox("Inclure non évaluées")
-        self.include_non_eval_chk.setChecked(True)
-        filter_layout.addWidget(self.include_non_eval_chk)
+        # NOUVEAU: Ajout du filtre sur nombre de trades
+        filterlayout.addWidget(QLabel("  Nb trades min:"))
+        self.min_trades_spin = QSpinBox()
+        self.min_trades_spin.setRange(0, 100)
+        self.min_trades_spin.setValue(5)
+        filterlayout.addWidget(self.min_trades_spin)
+        self.include_none_val_chk = QCheckBox("Inclure non évalués")
+        self.include_none_val_chk.setChecked(True)
+        filterlayout.addWidget(self.include_none_val_chk)
+        self.layout.addLayout(filterlayout)
 
-        self.layout.addLayout(filter_layout)
         
         # Zone de défilement pour les graphiques (embeddés dans l'interface)
         self.plots_scroll = QScrollArea()
@@ -265,14 +264,15 @@ class MainWindow(QMainWindow):
         # Tableau de résultats
         self.results_table = QTableWidget()
         # Keep results table but reduce its vertical footprint so plots get more space
-        self.results_table.setMinimumHeight(120)
+        self.results_table.setMinimumHeight(180)
         self.results_table.setSizePolicy(QSizePolicy.Expanding, QSizePolicy.Minimum)
-        # Add derivative columns + Fiabilité to the results
-        self.results_table.setColumnCount(13)
+        # Add derivative columns + Fiabilité and NbTrades to the results
+        # We have 14 columns now
+        self.results_table.setColumnCount(14)
         self.results_table.setHorizontalHeaderLabels([
             "Symbole", "Signal", "Score", "Prix", "Tendance",
             "RSI", "Volume moyen", "Domaine",
-            "Fiabilité", "dPrice", "dMACD", "dRSI", "dVolRel"
+            "Fiabilité", "Nb Trades", "dPrice", "dMACD", "dRSI", "dVolRel"
         ])
         header = self.results_table.horizontalHeader()
         header.setSectionResizeMode(QHeaderView.ResizeToContents)
@@ -414,55 +414,70 @@ class MainWindow(QMainWindow):
             except Exception:
                 continue
 
-        # Attach fiabilite from backtests if present
+        # Attach fiabilite AND nb_trades from backtests if present
         if backtests:
             bt_map = {b['Symbole']: b for b in backtests}
             for r in self.current_results:
                 sym = r['Symbole']
                 if sym in bt_map:
                     r['Fiabilite'] = bt_map[sym].get('taux_reussite', 'N/A')
+                    r['NbTrades'] = bt_map[sym].get('trades', 0)
                 else:
                     r['Fiabilite'] = 'N/A'
+                    r['NbTrades'] = 0
         else:
             for r in self.current_results:
                 r['Fiabilite'] = 'N/A'
+                r['NbTrades'] = 0
 
-        # Apply fiabilité filter as requested by user
+
+        # Apply fiabilité and nb trades filters
         min_f = getattr(self, 'min_fiabilite_spin', None)
-        include_non = getattr(self, 'include_non_eval_chk', None)
+        min_t = getattr(self, 'min_trades_spin', None)
+        include_non = getattr(self, 'include_none_val_chk', None)
         try:
             min_val = int(min_f.value()) if min_f is not None else 60
         except Exception:
             min_val = 60
         try:
-            include_non_eval = bool(include_non.isChecked()) if include_non is not None else True
+            min_trades = int(min_t.value()) if min_t is not None else 5
         except Exception:
-            include_non_eval = True
+            min_trades = 5
+        try:
+            include_none_val = bool(include_non.isChecked()) if include_non is not None else True
+        except Exception:
+            include_none_val = True
 
         filtered = []
         for r in self.current_results:
             fiab = r.get('Fiabilite', 'N/A')
+            nb_trades = r.get('NbTrades', 0)
+
+            # Filtre sur nb trades
+            try:
+                # If nb_trades == 0 (no backtest), allow inclusion when include_none_val is True
+                if int(nb_trades) == 0:
+                    if not include_none_val:
+                        continue
+                else:
+                    if int(nb_trades) < min_trades:
+                        continue
+            except Exception:
+                # If we can't parse nb_trades, only include when include_none_val is True
+                if not include_none_val:
+                    continue
+
+            # Filtre sur fiabilité
             try:
                 if fiab == 'N/A':
-                    if include_non_eval:
+                    if include_none_val:
                         filtered.append(r)
                 else:
-                    # numeric
                     if float(fiab) >= float(min_val):
                         filtered.append(r)
             except Exception:
-                # fallback include
-                if include_non_eval:
+                if include_none_val:
                     filtered.append(r)
-
-        # Replace the symbol lists area with the filtered symbols (popular list) to match user's request
-        try:
-            self.popular_list.clear()
-            self.mes_list.clear()
-            for r in filtered:
-                self.popular_list.addItem(QListWidgetItem(r['Symbole']))
-        except Exception:
-            pass
 
         # Render plots only for filtered symbols (embedded). If embedding fails, fallback to external plots.
         self.clear_plots()
@@ -495,20 +510,33 @@ class MainWindow(QMainWindow):
             except Exception:
                 pass
 
-        # Before updating table, make popular_list display include fiabilité in text
+        # NOTE: Do not replace the user's popular/mes lists with filtered results.
+        # Instead, we can optionally update item tooltips to show fiabilité without
+        # modifying the list contents. Keep original lists intact so the user
+        # doesn't lose their configured popular symbols.
         try:
-            self.popular_list.clear()
-            for r in filtered:
-                fiab = r.get('Fiabilite', 'N/A')
-                display = f"{r['Symbole']} ({fiab})"
-                item = QListWidgetItem(display)
-                item.setData(Qt.UserRole, r['Symbole'])
-                self.popular_list.addItem(item)
+            # Map fiabilité by symbol for quick lookup
+            fiab_map = {r['Symbole']: r.get('Fiabilite', 'N/A') for r in filtered}
+            # Update tooltip for items in popular_list only (non-destructive)
+            for i in range(self.popular_list.count()):
+                item = self.popular_list.item(i)
+                sym = item.data(Qt.UserRole) if item.data(Qt.UserRole) is not None else item.text()
+                if sym in fiab_map:
+                    item.setToolTip(f"Fiabilité: {fiab_map[sym]}")
+                else:
+                    item.setToolTip("")
+            # Do the same for mes_list
+            for i in range(self.mes_list.count()):
+                item = self.mes_list.item(i)
+                sym = item.data(Qt.UserRole) if item.data(Qt.UserRole) is not None else item.text()
+                if sym in fiab_map:
+                    item.setToolTip(f"Fiabilité: {fiab_map[sym]}")
+                else:
+                    item.setToolTip("")
         except Exception:
             pass
 
         # Finalize results displayed in table
-        self.current_results = filtered
         self.update_results_table()
 
     def on_analysis_progress(self, message):
@@ -602,41 +630,59 @@ class MainWindow(QMainWindow):
         self.download_thread.error.connect(self.on_analysis_error)
         self.download_thread.progress.connect(self.on_analysis_progress)
         self.download_thread.start()
-    
+
     def update_results_table(self):
-        self.results_table.setRowCount(0)  # Clear table
+        """Remplit `self.results_table` avec `self.current_results` (ou `self.filtered_results`)."""
+        self.results_table.setRowCount(0)
         if not hasattr(self, 'current_results'):
             return
-            
-        for signal in self.current_results:
+
+        # Utiliser filtered_results si disponible, sinon current_results
+        results_to_display = getattr(self, 'filtered_results', self.current_results)
+
+        for idx, signal in enumerate(results_to_display):
             row = self.results_table.rowCount()
             self.results_table.insertRow(row)
-            
-            # Ajouter les données
-            self.results_table.setItem(row, 0, QTableWidgetItem(signal['Symbole']))
-            self.results_table.setItem(row, 1, QTableWidgetItem(signal['Signal']))
-            self.results_table.setItem(row, 2, QTableWidgetItem(f"{signal['Score']:.2f}"))
-            self.results_table.setItem(row, 3, QTableWidgetItem(f"{signal['Prix']:.2f}"))
-            self.results_table.setItem(row, 4, QTableWidgetItem(signal['Tendance']))
-            self.results_table.setItem(row, 5, QTableWidgetItem(f"{signal['RSI']:.2f}"))
-            self.results_table.setItem(row, 6, QTableWidgetItem(f"{signal['Volume moyen']:,.0f}"))
-            self.results_table.setItem(row, 7, QTableWidgetItem(signal['Domaine']))
-            # Fiabilité then derivative columns (may be missing on older results)
-            fiab = signal.get('Fiabilite', 'N/A')
-            try:
-                fiab_text = f"{float(fiab):.0f}%" if fiab != 'N/A' else 'N/A'
-            except Exception:
-                fiab_text = str(fiab)
-            self.results_table.setItem(row, 8, QTableWidgetItem(fiab_text))
 
-            dprice = signal.get('dPrice', 0.0)
-            dmacd = signal.get('dMACD', 0.0)
-            drsi = signal.get('dRSI', 0.0)
-            dvol = signal.get('dVolRel', 0.0)
-            self.results_table.setItem(row, 9, QTableWidgetItem(f"{dprice:.6f}"))
-            self.results_table.setItem(row, 10, QTableWidgetItem(f"{dmacd:.6f}"))
-            self.results_table.setItem(row, 11, QTableWidgetItem(f"{drsi:.6f}"))
-            self.results_table.setItem(row, 12, QTableWidgetItem(f"{dvol:.6f}"))
+            # Colonnes de base
+            try:
+                self.results_table.setItem(row, 0, QTableWidgetItem(signal['Symbole']))
+                self.results_table.setItem(row, 1, QTableWidgetItem(signal['Signal']))
+                self.results_table.setItem(row, 2, QTableWidgetItem(f"{signal['Score']:.2f}"))
+                self.results_table.setItem(row, 3, QTableWidgetItem(f"{signal['Prix']:.2f}"))
+                self.results_table.setItem(row, 4, QTableWidgetItem(signal['Tendance']))
+                self.results_table.setItem(row, 5, QTableWidgetItem(f"{signal['RSI']:.2f}"))
+                self.results_table.setItem(row, 6, QTableWidgetItem(f"{signal['Volume moyen']:,.0f}"))
+                self.results_table.setItem(row, 7, QTableWidgetItem(signal.get('Domaine', '')))
+
+                # Fiabilité
+                fiab = signal.get('Fiabilite', 'N/A')
+                try:
+                    fiab_text = f"{float(fiab):.0f}%" if fiab != 'N/A' else 'N/A'
+                except Exception:
+                    fiab_text = str(fiab)
+                self.results_table.setItem(row, 8, QTableWidgetItem(fiab_text))
+
+                # Nb Trades (NOUVELLE COLONNE)
+                nb_trades = signal.get('NbTrades', 0)
+                try:
+                    nb_trades_text = f"{int(nb_trades)}"
+                except Exception:
+                    nb_trades_text = "0"
+                self.results_table.setItem(row, 9, QTableWidgetItem(nb_trades_text))
+
+                # Colonnes dérivées
+                dprice = signal.get('dPrice', 0.0)
+                dmacd = signal.get('dMACD', 0.0)
+                drsi = signal.get('dRSI', 0.0)
+                dvol = signal.get('dVolRel', 0.0)
+                self.results_table.setItem(row, 10, QTableWidgetItem(f"{dprice:.6f}"))
+                self.results_table.setItem(row, 11, QTableWidgetItem(f"{dmacd:.6f}"))
+                self.results_table.setItem(row, 12, QTableWidgetItem(f"{drsi:.6f}"))
+                self.results_table.setItem(row, 13, QTableWidgetItem(f"{dvol:.6f}"))
+            except Exception:
+                # Ignore per-row errors and continue
+                continue
     
     def sort_results(self, index):
         if not hasattr(self, 'current_results'):
@@ -674,10 +720,55 @@ class MainWindow(QMainWindow):
             self.current_results.sort(key=keyfn, reverse=reverse)
             self.update_results_table()
 
+            def keyfn(x):
+                v = x.get(key, None)
+                if v is None or v == 'N/A':
+                    return float('-inf') if not reverse else float('inf')
+                try:
+                    return float(v)
+                except Exception:
+                    return float('-inf') if not reverse else float('inf')
+    
+    def closeEvent(self, event):
+        # Stop analysis thread if running
+        try:
+            if hasattr(self, 'analysis_thread') and self.analysis_thread.isRunning():
+                self.analysis_thread.stop()
+                self.analysis_thread.wait(2000)
+        except Exception:
+            pass
+        try:
+            if hasattr(self, 'download_thread') and self.download_thread.isRunning():
+                self.download_thread.quit()
+                self.download_thread.wait(2000)
+        except Exception:
+            pass
+        event.accept()
+
+    def clear_plots(self):
+        for i in reversed(range(self.plots_layout.count())):
+            w = self.plots_layout.itemAt(i).widget()
+            if w:
+                if hasattr(w, 'figure'):
+                    w.figure.clear()
+                    try:
+                        w.close()
+                    except Exception:
+                        pass
+                w.setParent(None)
+        import gc
+        gc.collect()
+
+
+
+
+
+
+
 if __name__ == "__main__":
     app = QApplication(sys.argv)
     window = MainWindow()
-    analyse_signaux_populaires(popular_symbols, mes_symbols, period=period, plot_all=True)
+    #analyse_signaux_populaires(popular_symbols, mes_symbols, period=period, plot_all=True)
     window.setWindowTitle("Stock Analysis Tool")
     window.show()
     sys.exit(app.exec_())
