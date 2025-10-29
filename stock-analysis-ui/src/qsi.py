@@ -1499,6 +1499,7 @@ period = "12mo"  # Variable globale pour la période d'analyse ne pas commenter
 popular_symbols = load_symbols_from_txt("popular_symbols.txt")
 mes_symbols = load_symbols_from_txt("mes_symbols.txt")
 
+#todo: ajouter le parametre taux de reussite minimum pour le backtest
 def analyse_signaux_populaires(
     popular_symbols, mes_symbols,
     period="12mo", afficher_graphiques=True,
@@ -1732,7 +1733,13 @@ def analyse_signaux_populaires(
     print("="*115)
 
     # Évaluation supplémentaire : stratégie filtrée
-    filtres = [res for res in backtest_results if res['taux_reussite'] >= 60 and res['gain_total'] > 0]
+
+    # Appliquer les conditions
+    # todo: ajuster les conditions selon les besoins
+    # todo: creer un parametre pour le taux de reussite minimal actuel=60
+    # todo: en faire un parametre de la fonction analyse_signaux_populaires
+    taux_reussite_min = 30  # Valeur par défaut
+    filtres = [res for res in backtest_results if res['taux_reussite'] >= taux_reussite_min and res['gain_total'] > 0]
     nb_actions_filtrees = len(filtres)
     total_trades_filtre = sum(res['trades'] for res in filtres)
     total_gagnants_filtre = sum(res['gagnants'] for res in filtres)
@@ -1743,7 +1750,7 @@ def analyse_signaux_populaires(
 
     if verbose:
         print("\n" + "="*115)
-        print("🔎 Évaluation si investissement SEULEMENT sur les actions à taux de réussite >= 60% ET gain total positif :")
+        print(f"🔎 Évaluation si investissement SEULEMENT sur les actions à taux de réussite >= {taux_reussite_min}% ET gain total positif :")
         print(f" - Nombre d'actions sélectionnées = {nb_actions_filtrees}")
         print(f" - Nombre de trades = {total_trades_filtre}")
         print(f" - Taux de réussite global = {(total_gagnants_filtre / total_trades_filtre * 100) if total_trades_filtre else 0:.1f}%")
@@ -1753,7 +1760,9 @@ def analyse_signaux_populaires(
         print(f" - Gain total net (après frais) = {gain_total_reel_filtre:.2f} $")
         print("="*115)
 
-    # Tableau des signaux pour actions fiables (>=60% taux de réussite) ou non encore évaluables
+    # Tableau des signaux pour actions fiables (>={taux_reussite_min}% taux de réussite) ou non encore évaluables
+
+
     fiables_ou_non_eval = set()
     for res in backtest_results:
         symbole = res['Symbole']
@@ -1767,14 +1776,14 @@ def analyse_signaux_populaires(
             seuil_achat = seuils[0]
             seuil_vente = seuils[1]
             
-            # Appliquer les conditions
-            if res['taux_reussite'] >= 60 or (res['trades'] == 0 and (signal_info['Score'] > 2 * seuil_achat or signal_info['Score'] < 2 * seuil_vente)):
+            if res['taux_reussite'] >= taux_reussite_min or (res['trades'] == 0 and (signal_info['Score'] > 2 * seuil_achat or signal_info['Score'] < 2 * seuil_vente)):
                 fiables_ou_non_eval.add(res['Symbole'])
 
 
     if verbose:
         print("\n" + "=" * 115)
-        print("SIGNES UNIQUEMENT POUR ACTIONS FIABLES (>=60% taux de réussite) OU NON ÉVALUÉES")
+        # todo: ajuster le texte selon les conditions appliquées ci-dessus
+        print(f"SIGNES UNIQUEMENT POUR ACTIONS FIABLES (>={taux_reussite_min}% taux de réussite) OU NON ÉVALUÉES")
         print("=" * 115)
         print(f"{'Symbole':<8} {'Signal':<8} {'Score':<7} {'Prix':<10} {'Tendance':<10} {'RSI':<6} {'Volume moyen':<15} {'Domaine':<24} Analyse")
         print("-" * 115)
@@ -1853,8 +1862,8 @@ def analyse_signaux_populaires(
             else:
                 top_ventes_fiables.extend(filtered)
 
-    top_achats_fiables = top_achats_fiables[:5]
-    top_ventes_fiables = top_ventes_fiables[:5]
+    top_achats_fiables = top_achats_fiables[:15]
+    top_ventes_fiables = top_ventes_fiables[:15]
 
     fiabilite_dict = {res['Symbole']: res['taux_reussite'] for res in backtest_results}
 

@@ -125,9 +125,9 @@ class MainWindow(QMainWindow):
         
     def setup_ui(self):
         # Title
-        title_label = QLabel("Stock Analysis Tool")
-        title_label.setStyleSheet("font-size: 16px; font-weight: bold; margin: 10px;")
-        self.layout.addWidget(title_label)
+        # title_label = QLabel("Stock Analysis Tool")
+        # title_label.setStyleSheet("font-size: 16px; font-weight: bold; margin: 10px;")
+        # self.layout.addWidget(title_label)
 
         # Input de symbole
         self.symbol_input = QLineEdit()
@@ -141,7 +141,7 @@ class MainWindow(QMainWindow):
         popular_layout = QVBoxLayout()
         popular_layout.addWidget(QLabel("Symboles populaires:"))
         self.popular_list = QListWidget()
-        self.popular_list.setMaximumHeight(110)
+        self.popular_list.setMaximumHeight(70)
         for s in popular_symbols:
             if s:
                 item = QListWidgetItem(s)
@@ -165,7 +165,7 @@ class MainWindow(QMainWindow):
         mes_layout = QVBoxLayout()
         mes_layout.addWidget(QLabel("Mes symboles:"))
         self.mes_list = QListWidget()
-        self.mes_list.setMaximumHeight(110)
+        self.mes_list.setMaximumHeight(70)
         for s in mes_symbols:
             if s:
                 item = QListWidgetItem(s)
@@ -250,7 +250,7 @@ class MainWindow(QMainWindow):
         self.plots_container = QWidget()
         self.plots_layout = QVBoxLayout(self.plots_container)
         self.plots_scroll.setWidget(self.plots_container)
-        self.plots_scroll.setMinimumHeight(420)
+        self.plots_scroll.setMinimumHeight(340)
 
         # Use a vertical splitter so plots remain visible
         from PyQt5.QtWidgets import QSplitter, QTextEdit
@@ -306,6 +306,18 @@ class MainWindow(QMainWindow):
         self.mes_add_btn.clicked.connect(lambda: self.add_symbol(self.mes_list, "mes_symbols.txt"))
         self.mes_del_btn.clicked.connect(lambda: self.remove_selected(self.mes_list, "mes_symbols.txt"))
         self.mes_show_btn.clicked.connect(lambda: self.show_selected(self.mes_list))
+    
+    def validate_ticker(self, symbol):
+        """Validation rapide mais moins fiable"""
+        import yfinance as yf
+        try:
+            ticker = yf.Ticker(symbol)
+            info = ticker.info
+            # Vérifier juste la présence de 'regularMarketPrice' ou 'symbol'
+            return info.get('regularMarketPrice') is not None or info.get('symbol') is not None
+        except:
+            return False
+
 
     def add_symbol(self, list_widget, filename):
         text, ok = QInputDialog.getText(self, "Ajouter symbole", "Symbole (ex: AAPL):")
@@ -317,6 +329,26 @@ class MainWindow(QMainWindow):
             if exists:
                 QMessageBox.information(self, "Info", f"{symbol} existe déjà dans la liste")
                 return
+            
+             # Afficher un dialogue de progression pendant la validation
+            progress = QProgressDialog(f"Validation de {symbol}...", None, 0, 0, self)
+            progress.setWindowModality(Qt.WindowModal)
+            progress.setMinimumDuration(0)
+            progress.show()
+            QApplication.processEvents()
+            
+            is_valid = self.validate_ticker(symbol)
+            progress.close()
+            
+            if not is_valid:
+                QMessageBox.warning(
+                    self, 
+                    "Ticker invalide", 
+                    f"Le symbole '{symbol}' n'est pas valide.\n"
+                    "Vérifiez l'orthographe ou consultez Yahoo Finance."
+                )
+                return
+        
             item = QListWidgetItem(symbol)
             item.setData(Qt.UserRole, symbol)
             list_widget.addItem(item)
@@ -524,7 +556,7 @@ class MainWindow(QMainWindow):
                     ax.set_title(sym)
 
                 canvas = FigureCanvas(fig)
-                canvas.setMinimumHeight(180)
+                canvas.setMinimumHeight(200)
                 self.plots_layout.addWidget(canvas)
         except Exception:
             # Fallback: external plotting (analyse_et_affiche shows plots in separate windows)
