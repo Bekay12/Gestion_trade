@@ -3815,3 +3815,32 @@
 1 Failed download:
 2025-10-29 00:56:27,451 - ERROR - ['CARR,MOD,JCI,ETN,SU,ASTK,EQIX,DLR,NVDA']: YFPricesMissingError('possibly delisted; no price data found  (period=24mo) (Yahoo error = "No data found, symbol may be delisted")')
 2025-10-29 01:32:52,990 - ERROR - HTTP Error 404: 
+2025-10-30 00:02:30,625 - ERROR - 
+1 Failed download:
+2025-10-30 00:02:30,626 - ERROR - ['AGS']: YFPricesMissingError('possibly delisted; no price data found  (period=12mo) (Yahoo error = "No data found, symbol may be delisted")')
+2025-10-30 00:03:03,107 - ERROR - 
+1 Failed download:
+2025-10-30 00:03:03,107 - ERROR - ['COMP-USD']: YFPricesMissingError('possibly delisted; no price data found  (period=12mo)')
+2025-10-30 00:04:00,276 - ERROR - 
+1 Failed download:
+2025-10-30 00:04:00,277 - ERROR - ['GOGL.OL']: YFPricesMissingError('possibly delisted; no price data found  (period=12mo) (Yahoo error = "No data found, symbol may be delisted")')
+2025-10-30 00:05:31,243 - ERROR - 
+1 Failed download:
+2025-10-30 00:05:31,244 - ERROR - ['SAGE']: YFPricesMissingError('possibly delisted; no price data found  (period=12mo) (Yahoo error = "No data found, symbol may be delisted")')
+2025-10-30 00:26:32,500 - ERROR - HTTP Error 404: 
+2025-10-30 00:26:33,080 - ERROR - 
+1 Failed download:
+2025-10-30 00:26:33,081 - ERROR - ['4018']: YFPricesMissingError('possibly delisted; no price data found  (period=12mo) (Yahoo error = "No data found, symbol may be delisted")')
+2025-10-30 00:27:42,985 - ERROR - HTTP Error 404: 
+2025-10-30 00:27:43,513 - ERROR - 
+1 Failed download:
+2025-10-30 00:27:43,514 - ERROR - ['TOM2']: YFPricesMissingError('possibly delisted; no price data found  (period=12mo) (Yahoo error = "No data found, symbol may be delisted")')
+2025-10-30 00:27:53,426 - ERROR - 
+1 Failed download:
+2025-10-30 00:27:53,427 - ERROR - ['TOM2']: YFPricesMissingError('possibly delisted; no price data found  (period=12mo) (Yahoo error = "No data found, symbol may be delisted")')
+2025-10-30 00:27:58,766 - ERROR - 
+1 Failed download:
+2025-10-30 00:27:58,767 - ERROR - ['TOM2']: YFPricesMissingError('possibly delisted; no price data found  (period=12mo) (Yahoo error = "No data found, symbol may be delisted")')
+2025-10-30 00:28:22,910 - ERROR - 
+1 Failed download:
+2025-10-30 00:28:22,910 - ERROR - ['TOM2']: YFPricesMissingError('possibly delisted; no price data found  (period=12mo) (Yahoo error = "No data found, symbol may be delisted")')

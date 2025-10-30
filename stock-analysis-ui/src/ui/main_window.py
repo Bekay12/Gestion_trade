@@ -211,37 +211,41 @@ class MainWindow(QMainWindow):
         buttons_layout.addWidget(self.toggle_bottom_btn)
         self.layout.addLayout(buttons_layout)
 
-        # Options de tri
-        sort_layout = QHBoxLayout()
-        sort_layout.addWidget(QLabel("Trier par:"))
-        self.sort_combo = QComboBox()
-        self.sort_combo.addItems([
-            "Prix (croissant)", "Prix (décroissant)",
-            "Score (croissant)", "Score (décroissant)",
-            "RSI (croissant)", "RSI (décroissant)",
-            "Volume (croissant)", "Volume (décroissant)",
-            "Fiabilité (croissant)", "Fiabilité (décroissant)"
-        ])
-        self.sort_combo.currentIndexChanged.connect(self.sort_results)
-        sort_layout.addWidget(self.sort_combo)
-        self.layout.addLayout(sort_layout)
+        # # Options de tri
+        # sort_layout = QHBoxLayout()
+        # sort_layout.addWidget(QLabel("Trier par:"))
+        # self.sort_combo = QComboBox()
+        # self.sort_combo.addItems([
+        #     "Prix (croissant)", "Prix (décroissant)",
+        #     "Score (croissant)", "Score (décroissant)",
+        #     "RSI (croissant)", "RSI (décroissant)",
+        #     "Volume (croissant)", "Volume (décroissant)",
+        #     "Fiabilité (croissant)", "Fiabilité (décroissant)",
+        #     "Rev. Growth (%) (décroissant)", "Rev. Growth (%) (croissant)",
+        #     "Gross Margin (%) (décroissant)", "Gross Margin (%) (croissant)",
+        #     "FCF (B$) (décroissant)", "D/E Ratio (croissant)",
+        #     "Market Cap (B$) (décroissant)", "Market Cap (B$) (croissant)",
+        # ])
+        # self.sort_combo.currentIndexChanged.connect(self.sort_results)
+        # sort_layout.addWidget(self.sort_combo)
+        # self.layout.addLayout(sort_layout)
 
-        # Filtres
-        filterlayout = QHBoxLayout()
-        filterlayout.addWidget(QLabel("Fiabilité min (%):"))
-        self.min_fiabilite_spin = QSpinBox()
-        self.min_fiabilite_spin.setRange(0, 100)
-        self.min_fiabilite_spin.setValue(60)
-        filterlayout.addWidget(self.min_fiabilite_spin)
-        filterlayout.addWidget(QLabel("  Nb trades min:"))
-        self.min_trades_spin = QSpinBox()
-        self.min_trades_spin.setRange(0, 100)
-        self.min_trades_spin.setValue(5)
-        filterlayout.addWidget(self.min_trades_spin)
-        self.include_none_val_chk = QCheckBox("Inclure non évalués")
-        self.include_none_val_chk.setChecked(True)
-        filterlayout.addWidget(self.include_none_val_chk)
-        self.layout.addLayout(filterlayout)
+        # # Filtres
+        # filterlayout = QHBoxLayout()
+        # filterlayout.addWidget(QLabel("Fiabilité min (%):"))
+        # self.min_fiabilite_spin = QSpinBox()
+        # self.min_fiabilite_spin.setRange(0, 100)
+        # self.min_fiabilite_spin.setValue(60)
+        # filterlayout.addWidget(self.min_fiabilite_spin)
+        # filterlayout.addWidget(QLabel("  Nb trades min:"))
+        # self.min_trades_spin = QSpinBox()
+        # self.min_trades_spin.setRange(0, 100)
+        # self.min_trades_spin.setValue(5)
+        # filterlayout.addWidget(self.min_trades_spin)
+        # self.include_none_val_chk = QCheckBox("Inclure non évalués")
+        # self.include_none_val_chk.setChecked(True)
+        # filterlayout.addWidget(self.include_none_val_chk)
+        # self.layout.addLayout(filterlayout)
 
         # Plots area
         self.plots_scroll = QScrollArea()
@@ -250,7 +254,7 @@ class MainWindow(QMainWindow):
         self.plots_container = QWidget()
         self.plots_layout = QVBoxLayout(self.plots_container)
         self.plots_scroll.setWidget(self.plots_container)
-        self.plots_scroll.setMinimumHeight(340)
+        self.plots_scroll.setMinimumHeight(390)
 
         # Use a vertical splitter so plots remain visible
         from PyQt5.QtWidgets import QSplitter, QTextEdit
@@ -271,10 +275,17 @@ class MainWindow(QMainWindow):
         self.merged_table.setMinimumHeight(280)
         self.merged_table.setSizePolicy(QSizePolicy.Expanding, QSizePolicy.Minimum)
         merged_columns = [
-            'Symbole','Signal','Score','Prix','Tendance','RSI','Volume moyen','Domaine',
-            'Fiabilite','Nb Trades','dPrice','dMACD','dRSI','dVolRel',
-            'Trades','Gagnants','Taux réussite (%)','Gain total ($)','Gain moyen ($)','Drawdown max (%)'
+        'Symbole','Signal','Score','Prix','Tendance','RSI','Volume moyen','Domaine',
+        'Fiabilite','Nb Trades','Gagnants',
+        # COLONNES FINANCIÈRES
+        'Rev. Growth (%)','Gross Margin (%)','FCF (B$)','D/E Ratio','Market Cap (B$)',
+        # COLONNES DERIVÉES
+        'dPrice','dMACD','dRSI','dVolRel',
+        # COLONNES BACKTEST
+        # 'Trades','Gagnants','Taux réussite (%)','Gain total ($)','Gain moyen ($)'#,'Drawdown max (%)'
+        'Gain total ($)','Gain moyen ($)'#,'Drawdown max (%)'
         ]
+
         self.merged_table.setColumnCount(len(merged_columns))
         self.merged_table.setHorizontalHeaderLabels(merged_columns)
         self.merged_table.horizontalHeader().setSectionResizeMode(QHeaderView.ResizeToContents)
@@ -440,13 +451,82 @@ class MainWindow(QMainWindow):
                 # domain best-effort
                 try:
                     import yfinance as yf
-                    info = yf.Ticker(symbol).info
+                    ticker_obj = yf.Ticker(symbol)
+                    info = ticker_obj.info
                     domaine = info.get('sector', 'Inconnu')
+
+                    # Try to extract financial metrics (robust fallbacks)
+                    market_cap_val = 0.0
+                    debt_to_equity_val = 0.0
+                    gross_margin_val = 0.0
+                    fcf_val = 0.0
+                    rev_growth_val = 0.0
+
+                    try:
+                        mc = info.get('marketCap') or info.get('market_cap') or 0
+                        if mc:
+                            market_cap_val = float(mc) / 1e9
+                    except Exception:
+                        market_cap_val = 0.0
+
+                    try:
+                        debt_to_equity_val = float(info.get('debtToEquity') or info.get('debtToEquityRatio') or 0.0)
+                    except Exception:
+                        debt_to_equity_val = 0.0
+
+                    try:
+                        gm = info.get('grossMargins')
+                        if gm is None:
+                            gm = info.get('grossMargin')
+                        if gm is not None:
+                            gross_margin_val = float(gm) * 100.0 if abs(gm) <= 1 else float(gm)
+                    except Exception:
+                        gross_margin_val = 0.0
+
+                    try:
+                        # free cash flow naming varies
+                        fcf_val = float(info.get('freeCashflow') or info.get('freeCashFlow') or 0.0)
+                        # try cashflow statement if missing
+                        if not fcf_val:
+                            try:
+                                cf = ticker_obj.cashflow
+                                # common index names: 'Free Cash Flow' or 'freeCashFlow'
+                                for candidate in ['Free Cash Flow', 'freeCashFlow', 'FreeCashFlow']:
+                                    if candidate in cf.index:
+                                        fcf_val = float(cf.loc[candidate].iloc[0])
+                                        break
+                            except Exception:
+                                pass
+                        # convert to billions for display
+                        if fcf_val:
+                            fcf_val = fcf_val / 1e9
+                    except Exception:
+                        fcf_val = 0.0
+
+                    try:
+                        # revenue growth via financials: compare most recent two periods
+                        try:
+                            fin = ticker_obj.financials
+                            # common labels for revenue
+                            rev_candidates = ['Total Revenue', 'Revenue', 'totalRevenue', 'TotalRevenue']
+                            rev_vals = None
+                            for cand in rev_candidates:
+                                if cand in fin.index:
+                                    rev_vals = fin.loc[cand].dropna()
+                                    break
+                            if rev_vals is not None and len(rev_vals) >= 2:
+                                rev_growth_val = ((float(rev_vals.iloc[0]) - float(rev_vals.iloc[1])) / float(rev_vals.iloc[1])) * 100.0
+                        except Exception:
+                            rev_growth_val = 0.0
+                    except Exception:
+                        rev_growth_val = 0.0
                 except Exception:
                     domaine = 'Inconnu'
 
                 try:
-                    sig, last_price, trend, last_rsi, volume_mean, score, derivatives = get_trading_signal(prices, volumes, domaine=domaine, return_derivatives=True)
+                    sig, last_price, trend, last_rsi, volume_mean, score, derivatives = get_trading_signal(
+                        prices, volumes, domaine=domaine, return_derivatives=True, symbol=symbol  # Ajouter symbol
+                    )
                 except Exception:
                     sig, last_price, trend, last_rsi, volume_mean, score = ("NEUTRE", 0.0, False, 0.0, 0.0, 0.0)
                     derivatives = {}
@@ -463,7 +543,13 @@ class MainWindow(QMainWindow):
                     'dPrice': round(derivatives.get('price_slope', 0.0), 6),
                     'dMACD': round(derivatives.get('macd_slope', 0.0), 6),
                     'dRSI': round(derivatives.get('rsi_slope', 0.0), 6),
-                    'dVolRel': round(derivatives.get('volume_slope_rel', 0.0), 6)
+                    'dVolRel': round(derivatives.get('volume_slope_rel', 0.0), 6),
+                    # NOUVELLES COLONNES FINANCIÈRES
+                    'Rev. Growth (%)': round(float(derivatives.get('rev_growth_val')) if derivatives.get('rev_growth_val') else float(rev_growth_val or 0.0), 2),
+                    'Gross Margin (%)': round(float(derivatives.get('gross_margin_val')) if derivatives.get('gross_margin_val') else float(gross_margin_val or 0.0), 2),
+                    'FCF (B$)': round(float(derivatives.get('fcf_val')) if derivatives.get('fcf_val') else float(fcf_val or 0.0), 2),
+                    'D/E Ratio': round(float(derivatives.get('debt_to_equity_val')) if derivatives.get('debt_to_equity_val') else float(debt_to_equity_val or 0.0), 2),
+                    'Market Cap (B$)': round(float(derivatives.get('market_cap_val')) if derivatives.get('market_cap_val') else float(market_cap_val or 0.0), 2)
                 }
 
                 self.current_results.append(row_info)
@@ -636,7 +722,7 @@ class MainWindow(QMainWindow):
                         prices = data['Close']
                         volumes = data['Volume']
                         try:
-                            _sig, _last_price, _trend, _last_rsi, _vol_mean, _score, derivatives = get_trading_signal(prices, volumes, domaine=r.get('Domaine', 'Inconnu'), return_derivatives=True)
+                            _sig, _last_price, _trend, _last_rsi, _vol_mean, _score, derivatives = get_trading_signal(prices, volumes, domaine=r.get('Domaine', 'Inconnu'), return_derivatives=True,symbol=sym)
                         except Exception:
                             derivatives = {}
 
@@ -898,58 +984,91 @@ class MainWindow(QMainWindow):
                 item.setData(Qt.EditRole, nb_int)
                 self.merged_table.setItem(row, 9, item)
 
+                # Gagnants
+                gagnants = int(bt.get('gagnants', 0)) if bt else 0
+                item = QTableWidgetItem(str(gagnants))
+                item.setData(Qt.EditRole, gagnants)
+                self.merged_table.setItem(row, 10, item)
+                
+                # Colonnes Techniques 
+                # Colonne 14: Rev. Growth (%)
+                rev_growth = float(signal.get('Rev. Growth (%)', 0.0) or 0.0)
+                item = QTableWidgetItem(f"{rev_growth:.2f}")
+                item.setData(Qt.EditRole, rev_growth)
+                self.merged_table.setItem(row, 11, item)
+
+                # Colonne 15: Gross Margin (%)
+                gross_margin = float(signal.get('Gross Margin (%)', 0.0) or 0.0)
+                item = QTableWidgetItem(f"{gross_margin:.2f}")
+                item.setData(Qt.EditRole, gross_margin)
+                self.merged_table.setItem(row, 12, item)
+
+                # Colonne 16: FCF (B$)
+                fcf = float(signal.get('FCF (B$)', 0.0) or 0.0)
+                item = QTableWidgetItem(f"{fcf:.2f}")
+                item.setData(Qt.EditRole, fcf)
+                self.merged_table.setItem(row, 13, item)
+
+                # Colonne 17: D/E Ratio
+                de_ratio = float(signal.get('D/E Ratio', 0.0) or 0.0)
+                item = QTableWidgetItem(f"{de_ratio:.2f}")
+                item.setData(Qt.EditRole, de_ratio)
+                self.merged_table.setItem(row, 14, item)
+
+                # Colonne 18: Market Cap (B$)
+                market_cap = float(signal.get('Market Cap (B$)', 0.0) or 0.0)
+                item = QTableWidgetItem(f"{market_cap:.2f}")
+                item.setData(Qt.EditRole, market_cap)
+                self.merged_table.setItem(row, 15, item)
+
                 # Derivatives
                 dprice = float(signal.get('dPrice', 0.0) or 0.0)
                 item = QTableWidgetItem(f"{dprice:.6f}")
                 item.setData(Qt.EditRole, dprice)
-                self.merged_table.setItem(row, 10, item)
+                self.merged_table.setItem(row, 16, item)
 
                 dmacd = float(signal.get('dMACD', 0.0) or 0.0)
                 item = QTableWidgetItem(f"{dmacd:.6f}")
                 item.setData(Qt.EditRole, dmacd)
-                self.merged_table.setItem(row, 11, item)
+                self.merged_table.setItem(row, 17, item)
 
                 drsi = float(signal.get('dRSI', 0.0) or 0.0)
                 item = QTableWidgetItem(f"{drsi:.6f}")
                 item.setData(Qt.EditRole, drsi)
-                self.merged_table.setItem(row, 12, item)
+                self.merged_table.setItem(row, 18, item)
 
                 dvol = float(signal.get('dVolRel', 0.0) or 0.0)
                 item = QTableWidgetItem(f"{dvol:.6f}")
                 item.setData(Qt.EditRole, dvol)
-                self.merged_table.setItem(row, 13, item)
+                self.merged_table.setItem(row, 19, item)
 
                 # Backtest metrics (if available)
                 trades = int(bt.get('trades', 0)) if bt else 0
-                gagnants = int(bt.get('gagnants', 0)) if bt else 0
                 taux = float(bt.get('taux_reussite', 0.0)) if bt else 0.0
                 gain_total = float(bt.get('gain_total', 0.0)) if bt else 0.0
                 gain_moy = float(bt.get('gain_moyen', 0.0)) if bt else 0.0
-                drawdown = float(bt.get('drawdown_max', 0.0)) if bt else 0.0
+                #drawdown = float(bt.get('drawdown_max', 0.0)) if bt else 0.0
 
-                item = QTableWidgetItem(str(trades))
-                item.setData(Qt.EditRole, trades)
-                self.merged_table.setItem(row, 14, item)
+                # Place backtest metrics in their proper columns (19-23)
+                # item = QTableWidgetItem(str(trades))
+                # item.setData(Qt.EditRole, trades)
+                # self.merged_table.setItem(row, 19, item)
 
-                item = QTableWidgetItem(str(gagnants))
-                item.setData(Qt.EditRole, gagnants)
-                self.merged_table.setItem(row, 15, item)
-
-                item = QTableWidgetItem(f"{taux:.1f}")
-                item.setData(Qt.EditRole, taux)
-                self.merged_table.setItem(row, 16, item)
+                # item = QTableWidgetItem(f"{taux:.1f}")
+                # item.setData(Qt.EditRole, taux)
+                # self.merged_table.setItem(row, 21, item)
 
                 item = QTableWidgetItem(f"{gain_total:.2f}")
                 item.setData(Qt.EditRole, gain_total)
-                self.merged_table.setItem(row, 17, item)
+                self.merged_table.setItem(row, 20, item)
 
                 item = QTableWidgetItem(f"{gain_moy:.2f}")
                 item.setData(Qt.EditRole, gain_moy)
-                self.merged_table.setItem(row, 18, item)
+                self.merged_table.setItem(row, 21, item)
 
-                item = QTableWidgetItem(f"{drawdown:.2f}")
-                item.setData(Qt.EditRole, drawdown)
-                self.merged_table.setItem(row, 19, item)
+                # item = QTableWidgetItem(f"{drawdown:.2f}")
+                # item.setData(Qt.EditRole, drawdown)
+                # self.merged_table.setItem(row, 19, item)
 
             except Exception:
                 continue
@@ -968,7 +1087,15 @@ class MainWindow(QMainWindow):
             6: ('Volume moyen', False),  # Volume croissant
             7: ('Volume moyen', True),    # Volume décroissant
             8: ('Fiabilite', False),      # Fiabilité croissant
-            9: ('Fiabilite', True)        # Fiabilité décroissant
+            9: ('Fiabilite', True),       # Fiabilité décroissant
+            10: ('rev_growth_val', True),  # Rev. Growth décroissant
+            11: ('rev_growth_val', False), # Rev. Growth croissant
+            12: ('gross_margin_val', True),# Gross Margin décroissant
+            13: ('gross_margin_val', False),# Gross Margin croissant
+            14: ('market_cap_val', True),   # Market Cap décroissant
+            15: ('market_cap_val', False),  # Market Cap croissant
+            16: ('fcf_val', True),         # FCF décroissant
+            17: ('debt_to_equity_val', False) # D/E Ratio croissant
         }
         
         if index in sort_options:
@@ -1050,7 +1177,7 @@ class MainWindow(QMainWindow):
                 gagnants = int(br.get('gagnants', 0))
                 gain_total = float(br.get('gain_total', 0.0))
                 gain_moyen = float(br.get('gain_moyen', 0.0))
-                drawdown = float(br.get('drawdown_max', 0.0))
+                #drawdown = float(br.get('drawdown_max', 0.0))
                 taux = float(br.get('taux_reussite', 0.0))
 
                 self.backtest_map[sym] = {
@@ -1059,7 +1186,7 @@ class MainWindow(QMainWindow):
                     'taux_reussite': taux,
                     'gain_total': gain_total,
                     'gain_moyen': gain_moyen,
-                    'drawdown_max': drawdown
+                    #'drawdown_max': drawdown
                 }
 
                 total_trades += trades

@@ -178,7 +178,7 @@ def extract_best_parameters(csv_path: str = 'signaux/optimization_hist_4stp.csv'
         return {}
 
 def get_trading_signal(prices, volumes, domaine, domain_coeffs=None,
-                      variation_seuil=-20, volume_seuil=100000, return_derivatives: bool = False):
+                      variation_seuil=-20, volume_seuil=100000, return_derivatives: bool = False, symbol: str = None):
     """Détermine les signaux de trading avec validation des données"""
     # Conversion explicite en Series scalaires
     if isinstance(prices, pd.DataFrame):
@@ -463,9 +463,180 @@ def get_trading_signal(prices, volumes, domaine, domain_coeffs=None,
             'volume': volumes
         }
         derivatives = compute_derivatives(series_dict, window=8)
+    
+        # Ajouter les dérivées financières si symbol fourni
+        # todo : a adapter pour eviter les try/except inutiles
+        if symbol:
+            try:
+                fin_deriv = compute_financial_derivatives(symbol, lookback_quarters=4)
+                derivatives.update(fin_deriv)
+            except Exception:
+                # Ajouter des valeurs par défaut si erreur
+                derivatives['rev_growth_val'] = None
+                derivatives['gross_margin_val'] = None
+                derivatives['fcf_val'] = None
+                derivatives['debt_to_equity_val'] = None
+                derivatives['market_cap_val'] = None
+        
         return signal, last_close, last_close > last_ema20, round(last_rsi, 2), round(volume_mean, 2), round(score, 3), derivatives
 
     return signal, last_close, last_close > last_ema20, round(last_rsi, 2), round(volume_mean, 2), round(score, 3)
+
+# ====================================================================
+# MÉTRIQUES FINANCIÈRES CLÉS ET LEURS DÉRIVÉES
+# =======================================================================
+
+def get_financial_metrics(symbol: str) -> dict:
+    """
+    Récupère les 5 métriques financières clés d'une action via yfinance.
+    
+    Retourne un dictionnaire avec:
+    - revenue_growth: Croissance du chiffre d'affaires (%)
+    - gross_margin: Marge brute (%)
+    - free_cash_flow: Free Cash Flow (milliards $)
+    - debt_to_equity: Ratio Dette/Équité
+    - market_cap: Capitalisation boursière (milliards $)
+    """
+    metrics = {
+        'revenue_growth': None,
+        'gross_margin': None,
+        'free_cash_flow': None,
+        'debt_to_equity': None,
+        'market_cap': None
+    }
+    
+    try:
+        ticker = yf.Ticker(symbol)
+        info = ticker.info
+        
+        # 1. Capitalisation boursière
+        market_cap = info.get('marketCap')
+        if market_cap:
+            metrics['market_cap'] = float(market_cap) / 1e9
+        
+        # 2. Ratio Dette/Équité
+        debt_to_equity = info.get('debtToEquity')
+        if debt_to_equity:
+            metrics['debt_to_equity'] = float(debt_to_equity)
+        
+        # États financiers trimestriels
+        financials = ticker.quarterly_financials
+        cashflow = ticker.quarterly_cashflow
+        
+        if not financials.empty:
+            # 3. Croissance du chiffre d'affaires
+            try:
+                revenues = financials.loc['Total Revenue']
+                if len(revenues) >= 2:
+                    # ✅ CORRECTION 1: Ajouter  pour accéder à la première valeur
+                    rev_growth = (((revenues.iloc[0] - revenues.iloc[-1]) / revenues.iloc[-1]) * 100)
+                    metrics['revenue_growth'] = rev_growth
+            except Exception:
+                pass
+            
+            # 4. Marge brute
+            try:
+                gross_profit = financials.loc['Gross Profit']
+                total_revenue = financials.loc['Total Revenue']
+                if not gross_profit.empty and not total_revenue.empty:
+                    # ✅ CORRECTION 2 & 3: Ajouter  pour accéder aux premières valeurs
+                    latest_gp = gross_profit.iloc[0]
+                    latest_rev = total_revenue.iloc[0]
+                    if latest_rev != 0:
+                        margin = (latest_gp / latest_rev * 100)
+                        metrics['gross_margin'] = margin
+            except Exception:
+                pass
+        
+        # 5. Free Cash Flow
+        if not cashflow.empty:
+            try:
+                if 'Free Cash Flow' in cashflow.index:
+                    # ✅ CORRECTION 4: Ajouter  pour accéder à la première valeur
+                    fcf = cashflow.loc['Free Cash Flow'].iloc[0]
+                    metrics['free_cash_flow'] = float(fcf) / 1e9
+            except Exception:
+                pass
+    
+    except Exception:
+        pass
+    
+    return metrics
+
+def compute_financial_derivatives(symbol: str, lookback_quarters: int = 4) -> dict:
+    """
+    Calcule les dérivées (pentes) des métriques financières sur les derniers trimestres.
+    Idéal pour intégrer dans les calculs de score.
+    """
+    derivatives = {
+    'rev_growth_slope': 0.0,
+    'gross_margin_slope': 0.0,
+    'fcf_slope': 0.0,
+    'debt_to_equity_val': 0.0,
+    'market_cap_val': 0.0,
+    }
+
+    try:
+        ticker = yf.Ticker(symbol)
+        financials = ticker.quarterly_financials
+        cashflow = ticker.quarterly_cashflow
+        info = ticker.info
+        
+        # Croissance du chiffre d'affaires - pente sur derniers trimestres
+        if not financials.empty and 'Total Revenue' in financials.index:
+            revenues = financials.loc['Total Revenue'].head(lookback_quarters)
+            if len(revenues) >= 2:
+                growth_rates = revenues.pct_change() * 100
+                growth_rates = growth_rates.dropna()
+                if len(growth_rates) >= 2:
+                    x = np.arange(len(growth_rates), dtype=float)
+                    y = growth_rates.values.astype(float)
+                    try:
+                        p = np.polyfit(x, y, 1)
+                        derivatives['rev_growth_slope'] = float(p)
+                    except Exception:
+                        pass
+        
+        # Marge brute - pente sur derniers trimestres
+        if not financials.empty:
+            try:
+                gp = financials.loc['Gross Profit'].head(lookback_quarters)
+                rev = financials.loc['Total Revenue'].head(lookback_quarters)
+                if len(gp) >= 2 and len(rev) >= 2:
+                    margins = (gp / rev * 100).dropna()
+                    if len(margins) >= 2:
+                        x = np.arange(len(margins), dtype=float)
+                        y = margins.values.astype(float)
+                        p = np.polyfit(x, y, 1)
+                        derivatives['gross_margin_slope'] = float(p)
+            except Exception:
+                pass
+        
+        # Free Cash Flow - pente sur derniers trimestres
+        if not cashflow.empty and 'Free Cash Flow' in cashflow.index:
+            fcf_data = (cashflow.loc['Free Cash Flow'].head(lookback_quarters) / 1e9).dropna()
+            if len(fcf_data) >= 2:
+                x = np.arange(len(fcf_data), dtype=float)
+                y = fcf_data.values.astype(float)
+                try:
+                    p = np.polyfit(x, y, 1)
+                    derivatives['fcf_slope'] = float(p)
+                except Exception:
+                    pass
+        
+        # Ratio Dette/Équité et Market Cap (valeurs actuelles)
+        debt_to_equity = info.get('debtToEquity')
+        if debt_to_equity:
+            derivatives['debt_to_equity_val'] = float(debt_to_equity)
+        
+        market_cap = info.get('marketCap')
+        if market_cap:
+            derivatives['market_cap_val'] = float(market_cap) / 1e9
+
+    except Exception:
+        pass
+
+    return derivatives
 
 # ===================================================================
 # SYSTÈME DE CACHE INTELLIGENT INTÉGRÉ
