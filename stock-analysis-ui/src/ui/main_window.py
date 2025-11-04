@@ -1,5 +1,5 @@
 from PyQt5.QtWidgets import (
-    QApplication, QMainWindow, QVBoxLayout, QHBoxLayout, QWidget,
+    QApplication, QMainWindow, QSpacerItem, QVBoxLayout, QHBoxLayout, QWidget,
     QPushButton, QLabel, QLineEdit, QInputDialog, QListWidget, QListWidgetItem,
     QMessageBox, QProgressDialog, QScrollArea, QSizePolicy, QTableWidget,
     QTableWidgetItem, QComboBox, QHeaderView, QSpinBox, QCheckBox
@@ -136,9 +136,11 @@ class MainWindow(QMainWindow):
 
         # Listes de symboles
         lists_container = QHBoxLayout()
+        lists_container.setSpacing(24)  # Ajuste ce chiffre, ex: 24px entre les trois zones
 
         # Liste populaire
-        popular_layout = QVBoxLayout()
+        popular_layout = QHBoxLayout()
+        popular_listcol = QVBoxLayout()
         popular_layout.addWidget(QLabel("Symboles populaires:"))
         self.popular_list = QListWidget()
         self.popular_list.setMaximumHeight(70)
@@ -148,9 +150,11 @@ class MainWindow(QMainWindow):
                 item.setData(Qt.UserRole, s)
                 self.popular_list.addItem(item)
         self.popular_list.setSelectionMode(QAbstractItemView.ExtendedSelection)
-        popular_layout.addWidget(self.popular_list)
+        popular_listcol.addWidget(self.popular_list)
+        popular_layout.addLayout(popular_listcol)
 
-        pop_btns = QHBoxLayout()
+        pop_btns = QVBoxLayout()
+        pop_btns.setSpacing(2)
         self.pop_add_btn = QPushButton("Ajouter")
         self.pop_del_btn = QPushButton("Supprimer")
         self.pop_show_btn = QPushButton("Afficher")
@@ -160,9 +164,12 @@ class MainWindow(QMainWindow):
         popular_layout.addLayout(pop_btns)
 
         lists_container.addLayout(popular_layout)
+       
+        lists_container.addItem(QSpacerItem(48, 20, QSizePolicy.MinimumExpanding, QSizePolicy.Minimum))  # espace “élastique” mais raisonnable
 
         # Liste personnelle
-        mes_layout = QVBoxLayout()
+        mes_layout = QHBoxLayout()
+        mes_listcol = QVBoxLayout()
         mes_layout.addWidget(QLabel("Mes symboles:"))
         self.mes_list = QListWidget()
         self.mes_list.setMaximumHeight(70)
@@ -172,9 +179,11 @@ class MainWindow(QMainWindow):
                 item.setData(Qt.UserRole, s)
                 self.mes_list.addItem(item)
         self.mes_list.setSelectionMode(QAbstractItemView.ExtendedSelection)
-        mes_layout.addWidget(self.mes_list)
+        mes_listcol.addWidget(self.mes_list)
+        mes_layout.addLayout(mes_listcol)
 
-        mes_btns = QHBoxLayout()
+        mes_btns = QVBoxLayout()
+        mes_btns.setSpacing(2)
         self.mes_add_btn = QPushButton("Ajouter")
         self.mes_del_btn = QPushButton("Supprimer")
         self.mes_show_btn = QPushButton("Afficher")
@@ -192,6 +201,10 @@ class MainWindow(QMainWindow):
         self.period_input = QLineEdit(period)
         period_layout.addWidget(self.period_input)
         self.layout.addLayout(period_layout)
+
+        self.popular_list.setMaximumWidth(280)
+        self.mes_list.setMaximumWidth(280)
+
 
         # Boutons d'analyse
         buttons_layout = QHBoxLayout()
@@ -268,7 +281,7 @@ class MainWindow(QMainWindow):
         self.summary_text = QTextEdit()
         self.summary_text.setReadOnly(True)
         self.summary_text.setMinimumHeight(80)
-        self.summary_text.setMaximumHeight(160)
+        self.summary_text.setSizePolicy(QSizePolicy.Expanding, QSizePolicy.Expanding)
         bottom_layout.addWidget(self.summary_text)
         # Single merged table combining signals + backtest metrics
         self.merged_table = QTableWidget()
@@ -1271,8 +1284,6 @@ class MainWindow(QMainWindow):
                 w.setParent(None)
         import gc
         gc.collect()
-
-
 
 
 

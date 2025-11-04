@@ -3844,3 +3844,17 @@
 2025-10-30 00:28:22,910 - ERROR - 
 1 Failed download:
 2025-10-30 00:28:22,910 - ERROR - ['TOM2']: YFPricesMissingError('possibly delisted; no price data found  (period=12mo) (Yahoo error = "No data found, symbol may be delisted")')
+2025-10-30 13:18:32,449 - ERROR - Failed to get ticker 'LLM' reason: Failed to perform, curl: (6) Could not resolve host: query1.finance.yahoo.com. See https://curl.se/libcurl/c/libcurl-errors.html first for more details.
+2025-10-30 13:18:32,465 - ERROR - 
+1 Failed download:
+2025-10-30 13:18:32,465 - ERROR - ['LLM']: DNSError('Failed to perform, curl: (6) Could not resolve host: query1.finance.yahoo.com. See https://curl.se/libcurl/c/libcurl-errors.html first for more details.')
+2025-10-30 13:19:03,459 - ERROR - 
+1 Failed download:
+2025-10-30 13:19:03,459 - ERROR - ['LLM']: YFPricesMissingError('possibly delisted; no price data found  (period=12mo)')
+2025-10-30 13:20:40,492 - ERROR - HTTP Error 404: 
+2025-10-30 13:20:41,230 - ERROR - 
+1 Failed download:
+2025-10-30 13:20:41,230 - ERROR - ['LLMO']: YFPricesMissingError('possibly delisted; no price data found  (period=12mo) (Yahoo error = "No data found, symbol may be delisted")')
+2025-11-04 11:01:21,867 - ERROR - 
+1 Failed download:
+2025-11-04 11:01:21,868 - ERROR - ['AGS']: YFPricesMissingError('possibly delisted; no price data found  (period=12mo) (Yahoo error = "No data found, symbol may be delisted")')
