@@ -195,70 +195,47 @@ class MainWindow(QMainWindow):
         lists_container.addLayout(mes_layout)
         self.layout.addLayout(lists_container)
 
-        # Période d'analyse
-        period_layout = QHBoxLayout()
-        period_layout.addWidget(QLabel("Période d'analyse:"))
+        top_controls = QHBoxLayout()
+
+        # Période d'analyse à gauche
+        top_controls.addWidget(QLabel("Période d'analyse:"))
         self.period_input = QLineEdit(period)
-        period_layout.addWidget(self.period_input)
-        self.layout.addLayout(period_layout)
+        self.period_input.setMaximumWidth(80)
+        top_controls.addWidget(self.period_input)
 
-        self.popular_list.setMaximumWidth(280)
-        self.mes_list.setMaximumWidth(280)
+        top_controls.addSpacing(24)  # Petit espace pour l'esthétique
 
-
-        # Boutons d'analyse
-        buttons_layout = QHBoxLayout()
+        # Boutons d'analyse sur la même ligne
         self.analyze_button = QPushButton("Analyze")
         self.analyze_button.clicked.connect(self.analyze_stock)
-        buttons_layout.addWidget(self.analyze_button)
+        top_controls.addWidget(self.analyze_button)
+
         self.backtest_button = QPushButton("Analyze and Backtest")
         self.backtest_button.clicked.connect(self.analyse_and_backtest)
-        buttons_layout.addWidget(self.backtest_button)
+        top_controls.addWidget(self.backtest_button)
+
         self.popular_signals_button = QPushButton("Analyser mouvements fiables (populaires)")
         self.popular_signals_button.clicked.connect(self.analyze_popular_signals)
-        buttons_layout.addWidget(self.popular_signals_button)
-        # Toggle details (collapse/expand bottom panels)
+        top_controls.addWidget(self.popular_signals_button)
+
         self.toggle_bottom_btn = QPushButton("Masquer détails")
         self.toggle_bottom_btn.setCheckable(True)
         self.toggle_bottom_btn.clicked.connect(self.toggle_bottom)
-        buttons_layout.addWidget(self.toggle_bottom_btn)
-        self.layout.addLayout(buttons_layout)
+        top_controls.addWidget(self.toggle_bottom_btn)
 
-        # # Options de tri
-        # sort_layout = QHBoxLayout()
-        # sort_layout.addWidget(QLabel("Trier par:"))
-        # self.sort_combo = QComboBox()
-        # self.sort_combo.addItems([
-        #     "Prix (croissant)", "Prix (décroissant)",
-        #     "Score (croissant)", "Score (décroissant)",
-        #     "RSI (croissant)", "RSI (décroissant)",
-        #     "Volume (croissant)", "Volume (décroissant)",
-        #     "Fiabilité (croissant)", "Fiabilité (décroissant)",
-        #     "Rev. Growth (%) (décroissant)", "Rev. Growth (%) (croissant)",
-        #     "Gross Margin (%) (décroissant)", "Gross Margin (%) (croissant)",
-        #     "FCF (B$) (décroissant)", "D/E Ratio (croissant)",
-        #     "Market Cap (B$) (décroissant)", "Market Cap (B$) (croissant)",
-        # ])
-        # self.sort_combo.currentIndexChanged.connect(self.sort_results)
-        # sort_layout.addWidget(self.sort_combo)
-        # self.layout.addLayout(sort_layout)
+        top_controls = QHBoxLayout()
+        top_controls.addWidget(QLabel("Période d'analyse:"))
+        self.period_input = QLineEdit(period)
+        self.period_input.setMaximumWidth(80)
+        top_controls.addWidget(self.period_input)
 
-        # # Filtres
-        # filterlayout = QHBoxLayout()
-        # filterlayout.addWidget(QLabel("Fiabilité min (%):"))
-        # self.min_fiabilite_spin = QSpinBox()
-        # self.min_fiabilite_spin.setRange(0, 100)
-        # self.min_fiabilite_spin.setValue(60)
-        # filterlayout.addWidget(self.min_fiabilite_spin)
-        # filterlayout.addWidget(QLabel("  Nb trades min:"))
-        # self.min_trades_spin = QSpinBox()
-        # self.min_trades_spin.setRange(0, 100)
-        # self.min_trades_spin.setValue(5)
-        # filterlayout.addWidget(self.min_trades_spin)
-        # self.include_none_val_chk = QCheckBox("Inclure non évalués")
-        # self.include_none_val_chk.setChecked(True)
-        # filterlayout.addWidget(self.include_none_val_chk)
-        # self.layout.addLayout(filterlayout)
+        top_controls.addSpacing(24)
+
+        for btn in [self.analyze_button, self.backtest_button, self.popular_signals_button, self.toggle_bottom_btn]:
+            btn.setSizePolicy(QSizePolicy.Expanding, QSizePolicy.Preferred)
+            top_controls.addWidget(btn)
+
+        self.layout.addLayout(top_controls)
 
         # Plots area
         self.plots_scroll = QScrollArea()
@@ -344,44 +321,143 @@ class MainWindow(QMainWindow):
 
 
     def add_symbol(self, list_widget, filename):
-        text, ok = QInputDialog.getText(self, "Ajouter symbole", "Symbole (ex: AAPL):")
-        if ok and text:
-            symbol = text.strip().upper()
-            if not symbol:
-                return
-            exists = any(list_widget.item(i).text() == symbol for i in range(list_widget.count()))
-            if exists:
-                QMessageBox.information(self, "Info", f"{symbol} existe déjà dans la liste")
-                return
-            
-             # Afficher un dialogue de progression pendant la validation
-            progress = QProgressDialog(f"Validation de {symbol}...", None, 0, 0, self)
-            progress.setWindowModality(Qt.WindowModal)
-            progress.setMinimumDuration(0)
-            progress.show()
-            QApplication.processEvents()
-            
-            is_valid = self.validate_ticker(symbol)
-            progress.close()
-            
-            if not is_valid:
-                QMessageBox.warning(
-                    self, 
-                    "Ticker invalide", 
-                    f"Le symbole '{symbol}' n'est pas valide.\n"
-                    "Vérifiez l'orthographe ou consultez Yahoo Finance."
-                )
-                return
+        """Ajoute un ou plusieurs symboles (séparés par des virgules) à la liste.
+        Les symboles sont validés, ajoutés individuellement, et la liste est 
+        triée alphabétiquement. Si c'est mes_symbols, ils sont aussi ajoutés 
+        automatiquement aux symboles populaires.
+        """
+        text, ok = QInputDialog.getText(
+            self, 
+            "Ajouter symbole(s)", 
+            "Symbole(s) (ex: AAPL ou AAPL, MSFT, GOOGL):"
+        )
         
-            item = QListWidgetItem(symbol)
-            item.setData(Qt.UserRole, symbol)
-            list_widget.addItem(item)
+        if ok and text:
+            # Identifier si c'est la liste mes_symbols
+            is_mes_list = (list_widget == self.mes_list)
+            main_list = list_widget
+            secondary_list = self.popular_list if is_mes_list else None
+            
+            # Parser les symboles séparés par des virgules
+            symbols = [s.strip().upper() for s in text.split(",") if s.strip()]
+            
+            if not symbols:
+                return
+            
+            # Ajouter chaque symbole individuellement
+            added_symbols = []
+            
+            for symbol in symbols:
+                if not symbol:
+                    continue
+                
+                # Vérifier que le symbole n'existe pas déjà
+                exists_main = any(
+                    main_list.item(i).text() == symbol 
+                    for i in range(main_list.count())
+                )
+                
+                if exists_main:
+                    QMessageBox.information(
+                        self, 
+                        "Info", 
+                        f"{symbol} existe déjà dans la liste principale"
+                    )
+                    continue
+                
+                # Validation du ticker
+                progress = QProgressDialog(
+                    f"Validation de {symbol}...", 
+                    None, 0, 0, self
+                )
+                progress.setWindowModality(Qt.WindowModal)
+                progress.setMinimumDuration(0)
+                progress.show()
+                QApplication.processEvents()
+                
+                is_valid = self.validate_ticker(symbol)
+                progress.close()
+                
+                if not is_valid:
+                    QMessageBox.warning(
+                        self,
+                        "Ticker invalide",
+                        f"Le symbole '{symbol}' n'est pas valide.\\n"
+                        "Vérifiez l'orthographe ou consultez Yahoo Finance."
+                    )
+                    continue
+                
+                # Ajouter à la liste principale
+                item = QListWidgetItem(symbol)
+                item.setData(Qt.UserRole, symbol)
+                main_list.addItem(item)
+                added_symbols.append(symbol)
+                
+                # Si c'est mes_symbols, ajouter aussi automatiquement aux populaires
+                if is_mes_list and secondary_list:
+                    exists_secondary = any(
+                        secondary_list.item(i).text() == symbol 
+                        for i in range(secondary_list.count())
+                    )
+                    
+                    if not exists_secondary:
+                        item_pop = QListWidgetItem(symbol)
+                        item_pop.setData(Qt.UserRole, symbol)
+                        secondary_list.addItem(item_pop)
+            
+            # Trier les deux listes alphabétiquement
+            self._sort_list_alphabetically(main_list)
+            if secondary_list:
+                self._sort_list_alphabetically(secondary_list)
+            
+            # Sauvegarder les listes triées
             try:
                 from qsi import save_symbols_to_txt
-                symbols = [list_widget.item(i).data(Qt.UserRole) if list_widget.item(i).data(Qt.UserRole) is not None else list_widget.item(i).text() for i in range(list_widget.count())]
-                save_symbols_to_txt(symbols, filename)
+                
+                symbols_main = [
+                    main_list.item(i).data(Qt.UserRole) 
+                    if main_list.item(i).data(Qt.UserRole) is not None 
+                    else main_list.item(i).text() 
+                    for i in range(main_list.count())
+                ]
+                save_symbols_to_txt(symbols_main, filename)
+                
+                if secondary_list:
+                    filename_secondary = "popular_symbols.txt"
+                    symbols_secondary = [
+                        secondary_list.item(i).data(Qt.UserRole) 
+                        if secondary_list.item(i).data(Qt.UserRole) is not None 
+                        else secondary_list.item(i).text() 
+                        for i in range(secondary_list.count())
+                    ]
+                    save_symbols_to_txt(symbols_secondary, filename_secondary)
+            
             except Exception:
                 pass
+
+    def _sort_list_alphabetically(self, list_widget):
+        """Trie les éléments d'une QListWidget alphabétiquement."""
+        items = []
+        
+        # Récupérer tous les éléments
+        for i in range(list_widget.count()):
+            item = list_widget.item(i)
+            text = item.text()
+            data = item.data(Qt.UserRole)
+            items.append((text, data))
+        
+        # Trier alphabétiquement
+        items.sort(key=lambda x: x)
+        
+        # Vider la liste
+        list_widget.clear()
+        
+        # Réajouter les éléments triés
+        for text, data in items:
+            item = QListWidgetItem(text)
+            item.setData(Qt.UserRole, data)
+            list_widget.addItem(item)
+
 
     def remove_selected(self, list_widget, filename):
         items = list_widget.selectedItems()
@@ -645,7 +721,7 @@ class MainWindow(QMainWindow):
                 prices = stock_data['Close']
                 volumes = stock_data['Volume']
 
-                fig = Figure(figsize=(10, 3))
+                fig = Figure(figsize=(10, 5))
                 ax = fig.add_subplot(111)
                 show_xaxis = True if i == len(filtered_symbols) - 1 else False
                 try:
@@ -655,7 +731,7 @@ class MainWindow(QMainWindow):
                     ax.set_title(sym)
 
                 canvas = FigureCanvas(fig)
-                canvas.setMinimumHeight(200)
+                canvas.setMinimumHeight(240)
                 self.plots_layout.addWidget(canvas)
         except Exception:
             # Fallback: external plotting (analyse_et_affiche shows plots in separate windows)
@@ -775,7 +851,7 @@ class MainWindow(QMainWindow):
                         prices = stock_data['Close']
                         volumes = stock_data['Volume']
 
-                        fig = Figure(figsize=(10, 3))
+                        fig = Figure(figsize=(10, 5))
                         ax = fig.add_subplot(111)
                         show_xaxis = True
                         try:
@@ -804,7 +880,7 @@ class MainWindow(QMainWindow):
                             pass
 
                         canvas = FigureCanvas(fig)
-                        canvas.setMinimumHeight(240)
+                        canvas.setMinimumHeight(280)
                         self.plots_layout.addWidget(canvas)
                     except Exception:
                         continue
@@ -1296,3 +1372,12 @@ if __name__ == "__main__":
     window.setWindowTitle("Stock Analysis Tool")
     window.show()
     sys.exit(app.exec_())
+
+    #TODO:
+    # - Ajouter dates d'annonces / résultats dans les signaux (ex: earnings date)
+    # - harmoniser l'affichage des plots (embedded + external)
+    # - améliorer le threading / gestion des erreurs
+    # - Reparer l'affichage des resultats (Margin, FCF, D/E, Market Cap) dans le tableau
+    # - Ajouter le earning dates et tous les autres nouveaux criteres a l'analyse et au backtest
+    # - Ajouter un bouton pour exporter les resultats (CSV/Excel)
+    # - Ajouter un bouton pour choisir si backup des resultats avant analyse ou pas

@@ -3858,3 +3858,88 @@
 2025-11-04 11:01:21,867 - ERROR - 
 1 Failed download:
 2025-11-04 11:01:21,868 - ERROR - ['AGS']: YFPricesMissingError('possibly delisted; no price data found  (period=12mo) (Yahoo error = "No data found, symbol may be delisted")')
+2025-11-04 22:29:45,312 - ERROR - 
+1 Failed download:
+2025-11-04 22:29:45,324 - ERROR - ['SEMR']: DNSError('Failed to perform, curl: (6) Could not resolve host: query1.finance.yahoo.com. See https://curl.se/libcurl/c/libcurl-errors.html first for more details.')
+2025-11-04 22:37:46,663 - ERROR - 
+1 Failed download:
+2025-11-04 22:37:46,663 - ERROR - ['SEMR']: DNSError('Failed to perform, curl: (6) Could not resolve host: query1.finance.yahoo.com. See https://curl.se/libcurl/c/libcurl-errors.html first for more details.')
+2025-11-04 22:37:54,313 - ERROR - 
+1 Failed download:
+2025-11-04 22:37:54,313 - ERROR - ['SEMR']: DNSError('Failed to perform, curl: (6) Could not resolve host: query1.finance.yahoo.com. See https://curl.se/libcurl/c/libcurl-errors.html first for more details.')
+2025-11-04 22:37:56,525 - ERROR - 
+1 Failed download:
+2025-11-04 22:37:56,526 - ERROR - ['SEMR']: DNSError('Failed to perform, curl: (6) Could not resolve host: query1.finance.yahoo.com. See https://curl.se/libcurl/c/libcurl-errors.html first for more details.')
+2025-11-04 22:37:57,068 - ERROR - 
+1 Failed download:
+2025-11-04 22:37:57,068 - ERROR - ['SEMR']: DNSError('Failed to perform, curl: (6) Could not resolve host: query1.finance.yahoo.com. See https://curl.se/libcurl/c/libcurl-errors.html first for more details.')
+2025-11-04 22:37:57,377 - ERROR - 
+1 Failed download:
+2025-11-04 22:37:57,377 - ERROR - ['SEMR']: DNSError('Failed to perform, curl: (6) Could not resolve host: query1.finance.yahoo.com. See https://curl.se/libcurl/c/libcurl-errors.html first for more details.')
+2025-11-04 22:39:05,626 - ERROR - 
+1 Failed download:
+2025-11-04 22:39:05,626 - ERROR - ['SEMR']: DNSError('Failed to perform, curl: (6) Could not resolve host: query1.finance.yahoo.com. See https://curl.se/libcurl/c/libcurl-errors.html first for more details.')
+2025-11-05 22:34:45,203 - ERROR - Failed to get ticker 'TIGR' reason: Failed to perform, curl: (6) Could not resolve host: query1.finance.yahoo.com. See https://curl.se/libcurl/c/libcurl-errors.html first for more details.
+2025-11-05 22:34:45,217 - ERROR - 
+1 Failed download:
+2025-11-05 22:34:45,218 - ERROR - ['TIGR']: DNSError('Failed to perform, curl: (6) Could not resolve host: query1.finance.yahoo.com. See https://curl.se/libcurl/c/libcurl-errors.html first for more details.')
+2025-11-05 22:40:59,334 - ERROR - 
+1 Failed download:
+2025-11-05 22:40:59,335 - ERROR - ['GMD']: YFPricesMissingError('possibly delisted; no price data found  (period=12mo)')
+2025-11-05 22:42:21,627 - ERROR - 
+1 Failed download:
+2025-11-05 22:42:21,627 - ERROR - ['GMD']: YFPricesMissingError('possibly delisted; no price data found  (period=12mo)')
+2025-11-05 22:45:49,800 - ERROR - 
+1 Failed download:
+2025-11-05 22:45:49,801 - ERROR - ['GMD']: YFPricesMissingError('possibly delisted; no price data found  (period=12mo)')
+2025-11-05 22:48:34,507 - ERROR - 
+1 Failed download:
+2025-11-05 22:48:34,507 - ERROR - ['GMD']: YFPricesMissingError('possibly delisted; no price data found  (period=12mo)')
+2025-11-05 22:51:11,878 - ERROR - 
+1 Failed download:
+2025-11-05 22:51:11,879 - ERROR - ['GMD']: YFPricesMissingError('possibly delisted; no price data found  (period=12mo)')
+2025-11-05 22:55:28,251 - ERROR - 
+1 Failed download:
+2025-11-05 22:55:28,251 - ERROR - ['GMD']: YFPricesMissingError('possibly delisted; no price data found  (period=24mo)')
+2025-11-05 23:06:57,402 - ERROR - 
+1 Failed download:
+2025-11-05 23:06:57,403 - ERROR - ['GMD']: YFPricesMissingError('possibly delisted; no price data found  (period=12mo)')
+2025-11-05 23:10:08,762 - ERROR - 
+1 Failed download:
+2025-11-05 23:10:08,762 - ERROR - ['GMD']: YFPricesMissingError('possibly delisted; no price data found  (period=12mo)')
+2025-11-05 23:26:32,234 - ERROR - HTTP Error 404: 
+2025-11-05 23:26:33,034 - ERROR - 
+2 Failed downloads:
+2025-11-05 23:26:33,034 - ERROR - ['GMD']: YFPricesMissingError('possibly delisted; no price data found  (period=12mo)')
+2025-11-05 23:26:33,035 - ERROR - ['MANTA']: YFPricesMissingError('possibly delisted; no price data found  (period=12mo) (Yahoo error = "No data found, symbol may be delisted")')
+2025-11-05 23:29:09,423 - ERROR - HTTP Error 404: 
+2025-11-05 23:29:10,088 - ERROR - 
+2 Failed downloads:
+2025-11-05 23:29:10,088 - ERROR - ['GMD']: YFPricesMissingError('possibly delisted; no price data found  (period=12mo)')
+2025-11-05 23:29:10,088 - ERROR - ['MANTA']: YFPricesMissingError('possibly delisted; no price data found  (period=12mo) (Yahoo error = "No data found, symbol may be delisted")')
+2025-11-05 23:31:05,253 - ERROR - 
+2 Failed downloads:
+2025-11-05 23:31:05,254 - ERROR - ['GMD']: YFPricesMissingError('possibly delisted; no price data found  (period=12mo)')
+2025-11-05 23:31:05,254 - ERROR - ['MANTA']: YFPricesMissingError('possibly delisted; no price data found  (period=12mo) (Yahoo error = "No data found, symbol may be delisted")')
+2025-11-06 00:02:44,483 - ERROR - 
+1 Failed download:
+2025-11-06 00:02:44,484 - ERROR - ['ORCP']: YFPricesMissingError('possibly delisted; no price data found  (period=12mo) (Yahoo error = "No data found, symbol may be delisted")')
+2025-11-06 00:02:51,933 - ERROR - 
+1 Failed download:
+2025-11-06 00:02:51,933 - ERROR - ['ORCP']: YFPricesMissingError('possibly delisted; no price data found  (period=12mo) (Yahoo error = "No data found, symbol may be delisted")')
+2025-11-06 01:38:03,691 - ERROR - 
+1 Failed download:
+2025-11-06 01:38:03,693 - ERROR - ['"NOD']: YFPricesMissingError('possibly delisted; no price data found  (period=12mo) (Yahoo error = "No data found, symbol may be delisted")')
+2025-11-06 01:38:53,455 - ERROR - HTTP Error 404: 
+2025-11-06 01:38:53,934 - ERROR - 
+1 Failed download:
+2025-11-06 01:38:53,934 - ERROR - ['"NOD']: YFPricesMissingError('possibly delisted; no price data found  (period=12mo) (Yahoo error = "No data found, symbol may be delisted")')
+2025-11-06 01:47:00,336 - ERROR - HTTP Error 404: 
+2025-11-06 01:47:00,944 - ERROR - 
+1 Failed download:
+2025-11-06 01:47:00,945 - ERROR - ['"NOD']: YFPricesMissingError('possibly delisted; no price data found  (period=12mo) (Yahoo error = "No data found, symbol may be delisted")')
+2025-11-06 01:47:16,877 - ERROR - HTTP Error 404: 
+2025-11-06 01:53:29,021 - ERROR - HTTP Error 404: 
+2025-11-06 01:56:18,826 - ERROR - Failed to get ticker 'INGM' reason: Failed to perform, curl: (28) Operation timed out after 10001 milliseconds with 0 bytes received. See https://curl.se/libcurl/c/libcurl-errors.html first for more details.
+2025-11-06 01:56:18,853 - ERROR - Failed to get ticker 'SARO' reason: Failed to perform, curl: (28) Operation timed out after 10003 milliseconds with 0 bytes received. See https://curl.se/libcurl/c/libcurl-errors.html first for more details.
+2025-11-06 01:56:18,873 - ERROR - Failed to get ticker 'AS' reason: Failed to perform, curl: (28) Operation timed out after 10003 milliseconds with 0 bytes received. See https://curl.se/libcurl/c/libcurl-errors.html first for more details.
