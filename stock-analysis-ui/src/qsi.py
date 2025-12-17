@@ -20,7 +20,7 @@ from concurrent.futures import ThreadPoolExecutor
 import sys
 from pathlib import Path
 sys.path.append("C:\\Users\\berti\\Desktop\\Mes documents\\Gestion_trade\\stock-analysis-ui\\src\\trading_c_acceleration")
-from qsi_optimized import backtest_signals, extract_best_parameters
+from qsi_optimized import backtest_signals, extract_best_parameters, backtest_signals_with_events
 
 # ✨ V2.0 Imports - REAL METRICS
 try:
@@ -732,6 +732,9 @@ def compute_financial_derivatives(symbol: str, lookback_quarters: int = 4) -> di
 CACHE_DIR = Path("data_cache")
 CACHE_DIR.mkdir(exist_ok=True)
 
+# Âge maximum d'un cache avant re-téléchargement (heures)
+CACHE_MAX_AGE_HOURS = 4
+
 # Configuration globale pour le mode offline
 OFFLINE_MODE = False
 
@@ -927,7 +930,7 @@ def analyze_cache_status(symbols: List[str], period: str, max_age_hours: int) ->
         "total_count": len(symbols)
     }
 
-def get_cached_data(symbol: str, period: str, max_age_hours: int = 24, force_offline: bool = False) -> pd.DataFrame:
+def get_cached_data(symbol: str, period: str, max_age_hours: int = CACHE_MAX_AGE_HOURS, force_offline: bool = False) -> pd.DataFrame:
     """Récupère les données en cache si elles existent et sont récentes, sinon télécharge."""
     
     cache_file = CACHE_DIR / f"{symbol}_{period}.pkl"
@@ -1037,20 +1040,17 @@ def download_stock_data(symbols: List[str], period: str) -> Dict[str, Dict[str, 
     
     # ÉTAPE 2: CLASSIFICATION INTELLIGENTE
     classification = get_symbol_classification(clean_symbols)
-    max_age_hours = classification["max_age_hours"]
+    max_age_hours = min(classification.get("max_age_hours", CACHE_MAX_AGE_HOURS), CACHE_MAX_AGE_HOURS)
     
     # ÉTAPE 3: ANALYSE DU CACHE
     cache_status = analyze_cache_status(clean_symbols, period, max_age_hours)
-    
-    # ÉTAPE 4: DÉCISION DOWNLOAD vs CACHE
-    use_cache_mode = cache_status["fresh_ratio"] >= 0.7  # 70% frais
     
     # ÉTAPE 5: LOG DES NOUVEAUX SYMBOLES
     if "new_symbols" in classification and classification["new_symbols"]:
         log_new_symbols(classification["new_symbols"], classification.get("source", "unknown"))
     
     # ÉTAPE 6: AFFICHAGE STATUS (optionnel, pour debug)
-    status_icon = "🚀" if use_cache_mode else "🌐"
+    status_icon = "🚀" if cache_status["fresh_ratio"] >= 0.7 else "🌐"
     # print(f"{status_icon} {classification['source']}: {cache_status['fresh_count']}/{cache_status['total_count']} frais ({cache_status['fresh_ratio']:.1%})")
     
     if "new_symbols" in classification and classification["new_symbols"] and len(classification["new_symbols"]) <= 5:
@@ -1059,22 +1059,28 @@ def download_stock_data(symbols: List[str], period: str) -> Dict[str, Dict[str, 
     
     # ÉTAPE 7: TÉLÉCHARGEMENT OPTIMISÉ
     valid_data = {}
-    
-    if use_cache_mode:
-        # Mode cache prioritaire
-        for symbol in clean_symbols:
-            try:
-                data = get_cached_data(symbol, period, max_age_hours, force_offline=True)
-                if not data.empty and 'Close' in data.columns and 'Volume' in data.columns:
-                    valid_data[symbol] = {
-                        'Close': data['Close'].squeeze(),
-                        'Volume': data['Volume'].squeeze()
-                    }
-            except Exception as e:
-                # print(f"⚠️ Erreur cache pour {symbol}: {e}")
-                pass
-    
-    # Compléter avec téléchargements manquants
+
+    # Toujours essayer d'utiliser le cache frais (< CACHE_MAX_AGE_HOURS);
+    # get_cached_data télécharge automatiquement si le cache est trop vieux.
+    for symbol in clean_symbols:
+        try:
+            data = get_cached_data(symbol, period, max_age_hours, force_offline=False)
+            if not data.empty and 'Close' in data.columns and 'Volume' in data.columns:
+                if len(data) >= 50:
+                    clean_data = data[['Close', 'Volume']].copy()
+                    clean_data['Close'] = clean_data['Close'].ffill()
+                    clean_data['Volume'] = clean_data['Volume'].fillna(0)
+
+                    if not clean_data['Close'].isna().all():
+                        valid_data[symbol] = {
+                            'Close': clean_data['Close'].squeeze(),
+                            'Volume': clean_data['Volume'].squeeze()
+                        }
+                        continue
+        except Exception:
+            pass
+
+    # Compléter avec téléchargements manquants (échec cache/téléchargement individuel)
     missing_symbols = [s for s in clean_symbols if s not in valid_data]
     
     if missing_symbols:
@@ -1411,16 +1417,13 @@ def plot_unified_chart(symbol, prices, volumes, ax, show_xaxis=False):
     return ax2
 
 
-def generate_trade_events(prices: pd.Series, volumes: pd.Series, domaine: str) -> List[Dict]:
+def generate_trade_events(prices: pd.Series, volumes: pd.Series, domaine: str, domain_coeffs=None, domain_thresholds=None) -> List[Dict]:
     """
-    Simule rapidement les signaux sur la série pour produire une liste d'événements de trade
-    (entrée / sortie) utilisables pour l'affichage des marqueurs sur les graphiques.
+    Simule rapidement les signaux sur la série pour produire une liste d'événements de trade.
+    SYNCHRONISÉ avec backtest_signals_original pour afficher EXACTEMENT les mêmes trades.
 
     Retourne une liste d'événements de la forme:
       [{ 'date': Timestamp, 'type': 'BUY'|'SELL', 'price': float, 'idx': int }, ...]
-
-    Cette fonction utilise la logique get_trading_signal sur des fenêtres progressives
-    et ne remplace pas le backtest complet (agrégé) qui peut rester accéleré en C.
     """
     events = []
     try:
@@ -1433,32 +1436,47 @@ def generate_trade_events(prices: pd.Series, volumes: pd.Series, domaine: str) -
         if n < 60:
             return events
 
-        open_pos = False
+        position = 0
         entry_idx = None
+        debug_mode = False  # Set to True to debug
 
-        # On commence à 50 (cohérent avec le backtest minimal)
-        for i in range(50, n - 1):
+        # 🔧 Synchronisé avec backtest_signals_original : boucle 50 à n
+        for i in range(50, n):
             window_prices = prices.iloc[:i]
             window_vols = volumes.iloc[:i]
             try:
-                sig, *_ = get_trading_signal(window_prices, window_vols, domaine)
-            except Exception:
+                sig, last_close, *_ = get_trading_signal(window_prices, window_vols, domaine, domain_coeffs=domain_coeffs, domain_thresholds=domain_thresholds)
+                if debug_mode and i == 50:
+                    print(f"  🔧 {domaine}: i={i}, sig={sig}, last_close={last_close}")
+            except TypeError:
+                # fallback older signature
+                try:
+                    sig, last_close, *_ = get_trading_signal(window_prices, window_vols, domaine, domain_coeffs=domain_coeffs)
+                except Exception as e:
+                    if debug_mode and i == 50:
+                        print(f"  ⚠️ TypeError/Exception: {e}")
+                    sig = "NEUTRE"
+                    last_close = float(prices.iloc[i])
+            except Exception as e:
+                if debug_mode and i == 50:
+                    print(f"  ⚠️ Exception: {e}")
                 sig = "NEUTRE"
+                last_close = float(prices.iloc[i])
 
-            # Nous enregistrons l'exécution effective au prix suivant (i)
             exec_price = float(prices.iloc[i])
             exec_date = prices.index[i]
 
-            if sig == "ACHAT" and not open_pos:
-                open_pos = True
+            # Logique IDENTIQUE au backtest
+            if sig == 'ACHAT' and position == 0:
+                position = 1
                 entry_idx = i
                 events.append({"date": exec_date, "type": "BUY", "price": exec_price, "idx": i})
-            elif sig == "VENTE" and open_pos:
-                open_pos = False
+            elif sig == 'VENTE' and position == 1:
+                position = 0
                 events.append({"date": exec_date, "type": "SELL", "price": exec_price, "idx": i})
 
-        # Optionnel: si position ouverte à la fin, on peut la fermer au dernier prix
-        if open_pos and entry_idx is not None:
+        # Fermer la position si ouverte à la fin (comme le backtest)
+        if position == 1 and entry_idx is not None:
             last_idx = n - 1
             events.append({"date": prices.index[last_idx], "type": "SELL", "price": float(prices.iloc[-1]), "idx": last_idx})
 
@@ -1705,7 +1723,7 @@ def warmup_cache(symbol_lists: List[str] = None, period: str = "1y"):
     successful = 0
     for symbol in all_symbols:
         try:
-            data = get_cached_data(symbol, period, max_age_hours=24)
+            data = get_cached_data(symbol, period, max_age_hours=CACHE_MAX_AGE_HOURS)
             if not data.empty:
                 successful += 1
             print(f"\r🔄 Progression: {successful}/{len(all_symbols)}", end="", flush=True)
@@ -1899,7 +1917,22 @@ def analyse_signaux_populaires(
                     print(f"{s['Symbole']:<8} : Données insuffisantes pour le backtest")
                 continue
 
-            resultats = backtest_signals(prices, volumes, domaine, montant=50)
+            # Paramètres optimisés (8 seuils features uniquement)
+            try:
+                best_params = extract_best_parameters()
+            except Exception:
+                best_params = {}
+
+            coeffs, thresholds, _ = best_params.get(domaine, (None, None, None))
+            domain_coeffs = {domaine: coeffs} if coeffs else None
+            feature_thresholds = thresholds[:8] if thresholds and len(thresholds) >= 8 else None
+            domain_thresholds = {domaine: feature_thresholds} if feature_thresholds else None
+
+            resultats, events = backtest_signals_with_events(
+                prices, volumes, domaine, montant=50,
+                domain_coeffs=domain_coeffs, domain_thresholds=domain_thresholds
+            )
+
             backtest_results.append({
                 "Symbole": s['Symbole'],
                 "trades": resultats['trades'],
@@ -1907,7 +1940,9 @@ def analyse_signaux_populaires(
                 "taux_reussite": resultats['taux_reussite'],
                 "gain_total": resultats['gain_total'],
                 "gain_moyen": resultats['gain_moyen'],
-                "drawdown_max": resultats['drawdown_max']
+                "drawdown_max": resultats['drawdown_max'],
+                "Domaine": domaine,
+                "events": events
             })
 
             total_trades += resultats['trades']

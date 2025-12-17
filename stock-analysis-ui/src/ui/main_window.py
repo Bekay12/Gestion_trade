@@ -19,28 +19,6 @@ if PROJECT_SRC not in sys.path:
 from qsi import analyse_signaux_populaires, analyse_et_affiche, popular_symbols, mes_symbols, period
 from qsi import download_stock_data, backtest_signals, plot_unified_chart, get_trading_signal, generate_trade_events
 
-# ✨ V2.0 RÉELLE - Metrics réelles et fondamentaux
-try:
-    from v2_signal_bridge import get_v2_signal_generator
-    from v2_real_metrics import RealMetricsV2
-    from v2_integration import (
-        get_v2_trading_signals, 
-        get_feature_analysis,
-        load_optimized_params,
-        DEFAULT_WEIGHTS,
-        DEFAULT_THRESHOLDS
-    )
-    V2_REAL_AVAILABLE = True
-except ImportError as e:
-    V2_REAL_AVAILABLE = False
-    get_v2_signal_generator = None
-    RealMetricsV2 = None
-    get_v2_trading_signals = None
-    get_feature_analysis = None
-    load_optimized_params = None
-    DEFAULT_WEIGHTS = {}
-    DEFAULT_THRESHOLDS = {}
-
 
 class AnalysisThread(QThread):
     finished = pyqtSignal(dict)
@@ -54,21 +32,34 @@ class AnalysisThread(QThread):
         self._stop_requested = False
     def run(self):
         try:
-            # ...
+            import builtins
+            original_print = print
+            def custom_print(*args, **kwargs):
+                message = ' '.join(str(arg) for arg in args)
+                self.progress.emit(message)
+                original_print(*args, **kwargs)
+
+            builtins.print = custom_print
+
             while not self._stop_requested:
-                # Run analysis without opening matplotlib GUIs (we'll embed charts in the main thread)
+                # Run analysis without opening matplotlib GUIs; keep verbose to surface progress
                 result = analyse_signaux_populaires(
                     self.symbols,
                     self.mes_symbols,
                     period=self.period,
                     afficher_graphiques=False,
                     plot_all=False,
-                    verbose=False
+                    verbose=True
                 )
                 self.finished.emit(result)
                 break  # ou return
         except Exception as e:
             self.error.emit(str(e))
+        finally:
+            try:
+                builtins.print = original_print
+            except Exception:
+                pass
     def stop(self):
         self._stop_requested = True
 
@@ -84,12 +75,6 @@ class DownloadThread(QThread):
         self.symbols = symbols
         self.period = period
         self.do_backtest = do_backtest
-        
-        # ✨ V2.0 REAL: Utiliser les paramètres optimisés
-        self.optimized_coeffs = {}
-        self.optimized_thresholds = {}
-        if V2_REAL_AVAILABLE:
-            self.progress.emit(f"✅ V2.0 REAL: Système de métriques réelles activé")
 
     def run(self):
         try:
@@ -162,13 +147,6 @@ class MainWindow(QMainWindow):
         self.setCentralWidget(self.central_widget)
         self.layout = QVBoxLayout(self.central_widget)
         
-        # ✨ V2.0 REAL Initialization
-        if V2_REAL_AVAILABLE:
-            print("✅ V2.0 REAL modules loaded - Métriques réelles et fondamentaux activés")
-        else:
-            print("⚠️ V2.0 REAL modules not available")
-            print("⚠️ V2.0 modules not available")
-        
         self.setup_ui()
 
         self.current_results = []
@@ -177,14 +155,6 @@ class MainWindow(QMainWindow):
         # title_label = QLabel("Stock Analysis Tool")
         # title_label.setStyleSheet("font-size: 16px; font-weight: bold; margin: 10px;")
         # self.layout.addWidget(title_label)
-
-        # ✨ V2.0 REAL Status Bar
-        if V2_REAL_AVAILABLE:
-            cache_info = "[OK] V2.0 REAL: Metriques reelles et fondamentaux actives"
-            cache_label = QLabel(cache_info)
-            cache_label.setStyleSheet("background-color: #e8f5e9; padding: 8px; border-radius: 4px;")
-            self.layout.addWidget(cache_label)
-            self.cache_status_label = cache_label
 
         # Input de symbole
         self.symbol_input = QLineEdit()
@@ -852,6 +822,13 @@ class MainWindow(QMainWindow):
         # Stocker les résultats
         self.current_results = result.get('signals', [])
         
+        # 🔧 Charger les meilleurs paramètres une seule fois
+        try:
+            from qsi import extract_best_parameters
+            self.best_parameters = extract_best_parameters()
+        except Exception:
+            self.best_parameters = {}
+        
         # Enrichir les résultats (calculer les dérivées si non présentes)
         try:
             # If signals came without derivatives, compute them by downloading data per symbol
@@ -895,6 +872,10 @@ class MainWindow(QMainWindow):
             top_buys = result.get('top_achats_fiables', []) if isinstance(result, dict) else []
             top_sells = result.get('top_ventes_fiables', []) if isinstance(result, dict) else []
 
+            # 🔧 Map des événements issus du backtest (même source que les stats)
+            backtests = result.get('backtest_results', []) if isinstance(result, dict) else []
+            events_map = {bt.get('Symbole'): bt.get('events', []) for bt in backtests}
+
             # Helper to embed a list of symbols as canvases
             def embed_symbol_list(symbol_list, title_prefix=""):
                 if not symbol_list:
@@ -917,24 +898,17 @@ class MainWindow(QMainWindow):
                             ax.plot(prices.index, prices.values)
                             ax.set_title(sym)
 
-                        # Add trade markers based on the lightweight simulator
-                        try:
-                            try:
-                                info = None
-                                import yfinance as yf
-                                info = yf.Ticker(sym).info
-                                domaine = info.get('sector', 'Inconnu') if info else 'Inconnu'
-                            except Exception:
-                                domaine = 'Inconnu'
-
-                            events = generate_trade_events(prices, volumes, domaine)
-                            for ev in events:
-                                if ev.get('type') == 'BUY':
-                                    ax.scatter(ev['date'], ev['price'], marker='^', s=80, color='green', edgecolor='black', zorder=6)
-                                elif ev.get('type') == 'SELL':
-                                    ax.scatter(ev['date'], ev['price'], marker='v', s=80, color='red', edgecolor='black', zorder=6)
-                        except Exception:
-                            pass
+                        # Add trade markers based on events déjà calculés par le backtest
+                        events = events_map.get(sym, [])
+                        if len(events) == 0:
+                            print(f"⚠️ {sym}: Aucun événement généré")
+                        else:
+                            print(f"✅ {sym}: {len(events)} événement(s) trouvé(s)")
+                        for ev in events:
+                            if ev.get('type') == 'BUY':
+                                ax.scatter(ev['date'], ev['price'], marker='^', s=80, color='green', edgecolor='black', zorder=6)
+                            elif ev.get('type') == 'SELL':
+                                ax.scatter(ev['date'], ev['price'], marker='v', s=80, color='red', edgecolor='black', zorder=6)
 
                         canvas = FigureCanvas(fig)
                         canvas.setMinimumHeight(280)

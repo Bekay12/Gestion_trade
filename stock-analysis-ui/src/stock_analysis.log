@@ -3943,3 +3943,7 @@
 2025-11-06 01:56:18,826 - ERROR - Failed to get ticker 'INGM' reason: Failed to perform, curl: (28) Operation timed out after 10001 milliseconds with 0 bytes received. See https://curl.se/libcurl/c/libcurl-errors.html first for more details.
 2025-11-06 01:56:18,853 - ERROR - Failed to get ticker 'SARO' reason: Failed to perform, curl: (28) Operation timed out after 10003 milliseconds with 0 bytes received. See https://curl.se/libcurl/c/libcurl-errors.html first for more details.
 2025-11-06 01:56:18,873 - ERROR - Failed to get ticker 'AS' reason: Failed to perform, curl: (28) Operation timed out after 10003 milliseconds with 0 bytes received. See https://curl.se/libcurl/c/libcurl-errors.html first for more details.
+2025-12-17 22:12:57,193 - ERROR - HTTP Error 404: {"quoteSummary":{"result":null,"error":{"code":"Not Found","description":"Quote not found for symbol: SMGT"}}}
+2025-12-17 22:12:58,331 - ERROR - 
+1 Failed download:
+2025-12-17 22:12:58,332 - ERROR - ['SMGT']: YFPricesMissingError('possibly delisted; no price data found  (period=12mo) (Yahoo error = "No data found, symbol may be delisted")')

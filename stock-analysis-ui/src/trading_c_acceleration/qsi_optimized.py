@@ -347,7 +347,100 @@ def backtest_signals_accelerated(prices: Union[pd.Series, pd.DataFrame], volumes
     # Fallback: version Python originale (votre logique exacte)
     return backtest_signals_original(prices, volumes, domaine, montant, transaction_cost, domain_coeffs, domain_thresholds, seuil_achat, seuil_vente)
 
-def backtest_signals_original(prices, volumes, domaine, montant=50, transaction_cost=0.02, domain_coeffs=None, domain_thresholds=None, seuil_achat=4.2, seuil_vente=-0.5):
+def backtest_signals_with_events(prices, volumes, domaine, montant=50, transaction_cost=0.02, domain_coeffs=None, domain_thresholds=None, seuil_achat=4.2, seuil_vente=-0.5):
+    """Backtest qui retourne BOTH les stats ET les événements de trade pour cohérence parfaite.
+    
+    Retourne: (backtest_result_dict, events_list)
+    """
+    try:
+        from qsi import get_trading_signal as qsi_get_trading_signal
+    except Exception:
+        return {"trades": 0, "gagnants": 0, "taux_reussite": 0, "gain_total": 0.0, "gain_moyen": 0.0, "drawdown_max": 0.0}, []
+
+    if isinstance(prices, pd.DataFrame):
+        prices = prices.squeeze()
+    if isinstance(volumes, pd.DataFrame):
+        volumes = volumes.squeeze()
+
+    n = len(prices)
+    if n < 60:
+        return {"trades": 0, "gagnants": 0, "taux_reussite": 0, "gain_total": 0.0, "gain_moyen": 0.0, "drawdown_max": 0.0}, []
+
+    position = 0
+    entry_price = 0.0
+    trades = 0
+    gagnants = 0
+    gain_total = 0.0
+    peak = -float('inf')
+    drawdown_max = 0.0
+    events = []  # 🔧 Collecter les événements au fur et à mesure
+
+    for i in range(50, n):
+        window_prices = prices.iloc[:i]
+        window_volumes = volumes.iloc[:i]
+        try:
+            sig, last_close, _, _, _, _ = qsi_get_trading_signal(window_prices, window_volumes, domaine, domain_coeffs=domain_coeffs, domain_thresholds=domain_thresholds)
+        except TypeError:
+            # older signature without domain_thresholds
+            try:
+                sig, last_close, _, _, _, _ = qsi_get_trading_signal(window_prices, window_volumes, domaine, domain_coeffs=domain_coeffs)
+            except Exception:
+                continue
+        except Exception:
+            continue
+
+        if sig == 'ACHAT' and position == 0:
+            position = 1
+            entry_price = last_close
+            # 🔧 Enregistrer l'événement BUY
+            events.append({"date": prices.index[i], "type": "BUY", "price": float(prices.iloc[i]), "idx": i})
+        elif sig == 'VENTE' and position == 1:
+            # Close position
+            profit = (last_close - entry_price) / entry_price * montant - transaction_cost
+            gain_total += profit
+            trades += 1
+            if profit > 0:
+                gagnants += 1
+            position = 0
+            # 🔧 Enregistrer l'événement SELL
+            events.append({"date": prices.index[i], "type": "SELL", "price": float(prices.iloc[i]), "idx": i})
+
+        # Track peak for drawdown (simple)
+        if position == 1:
+            current_val = (last_close - entry_price) / entry_price * montant
+            if current_val > peak:
+                peak = current_val
+            dd = peak - current_val
+            if dd > drawdown_max:
+                drawdown_max = dd
+
+    # If still in position, close at last available price
+    if position == 1:
+        last_close = float(prices.iloc[-1])
+        profit = (last_close - entry_price) / entry_price * montant - transaction_cost
+        gain_total += profit
+        trades += 1
+        if profit > 0:
+            gagnants += 1
+        # 🔧 Enregistrer la clôture finale
+        events.append({"date": prices.index[-1], "type": "SELL", "price": last_close, "idx": n-1})
+
+    taux_reussite = (gagnants / trades * 100) if trades > 0 else 0
+    gain_moyen = (gain_total / trades) if trades > 0 else 0.0
+
+    result = {
+        "trades": trades,
+        "gagnants": gagnants,
+        "taux_reussite": taux_reussite,
+        "gain_total": gain_total,
+        "gain_moyen": gain_moyen,
+        "drawdown_max": drawdown_max
+    }
+    
+    return result, events
+
+
+
     """Fallback Python backtest implementation that iterates over history and uses get_trading_signal.
     This is a simplified but compatible backtest used when C acceleration is unavailable.
     """
@@ -382,9 +475,10 @@ def backtest_signals_original(prices, volumes, domaine, montant=50, transaction_
     peak = -float('inf')
     drawdown_max = 0.0
 
-    for i in range(59, n):
-        window_prices = prices.iloc[:i+1]
-        window_volumes = volumes.iloc[:i+1]
+    # 🔧 Harmoniser avec generate_trade_events : démarre à 50, pas 59
+    for i in range(50, n):
+        window_prices = prices.iloc[:i]
+        window_volumes = volumes.iloc[:i]
         try:
             sig, last_close, _, _, _, _ = qsi_get_trading_signal(window_prices, window_volumes, domaine, domain_coeffs=domain_coeffs, domain_thresholds=domain_thresholds)
         except TypeError:
