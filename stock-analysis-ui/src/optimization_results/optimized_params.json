@@ -1,0 +1,83 @@
+{
+  "TestSector": {
+    "params": {
+      "coeffs": [
+        1.0,
+        1.1,
+        1.2,
+        1.3,
+        0.9,
+        0.8,
+        0.7,
+        0.6
+      ],
+      "thresholds": [
+        28.5,
+        -65.5
+      ],
+      "gain_total": 125.75,
+      "success_rate": 58.5,
+      "total_trades": 42
+    },
+    "gain": 125.75,
+    "timestamp": "2025-12-17T16:15:57.617330",
+    "metadata": {
+      "success_rate": 58.5,
+      "trades": 42
+    }
+  },
+  "Energy": {
+    "params": {
+      "coeffs": [
+        0.8,
+        2.9,
+        1.0,
+        0.9,
+        0.8,
+        2.1,
+        1.4,
+        2.7
+      ],
+      "thresholds": [
+        46.4,
+        -0.5
+      ],
+      "gain_total": 17.798059913320383,
+      "success_rate": 0.0,
+      "total_trades": 0
+    },
+    "gain": 17.798059913320383,
+    "timestamp": "2025-12-17T19:53:22.996881",
+    "metadata": {
+      "success_rate": 0.0,
+      "trades": 0
+    }
+  },
+  "ℹ️Inconnu!!": {
+    "params": {
+      "coeffs": [
+        0.7,
+        1.5,
+        2.6,
+        2.6,
+        2.2,
+        0.6,
+        1.8,
+        3.0
+      ],
+      "thresholds": [
+        3.5,
+        -0.3
+      ],
+      "gain_total": 13.304679711504402,
+      "success_rate": 63.63636363636363,
+      "total_trades": 11
+    },
+    "gain": 13.304679711504402,
+    "timestamp": "2025-12-17T17:15:20.007989",
+    "metadata": {
+      "success_rate": 63.63636363636363,
+      "trades": 11
+    }
+  }
+}

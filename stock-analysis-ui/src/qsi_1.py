@@ -144,46 +144,49 @@ def save_to_evolutive_csv(signals, filename="signaux_trading.csv"):
         print(f"🚨 Erreur sauvegarde CSV: {e}")
         
 from typing import Tuple, Dict, Union, List
-def extract_best_parameters(csv_path: str = 'signaux/optimization_hist_4stp.csv') -> Dict[str, Tuple[Tuple[float, ...], Tuple[float, float]]]:
-    """
-    Extrait les meilleurs coefficients et seuils pour chaque secteur à partir du CSV, basés sur le Gain_moy maximal.
-    
-    Args:
-        csv_path (str): Chemin vers le CSV contenant l'historique d'optimisation.
-    
-    Returns:
-        Dict[str, Tuple[Tuple[float, ...], Tuple[float, float]]]: Dictionnaire avec pour chaque secteur
-        un tuple (coefficients, seuils), où coefficients est (a1, a2, ..., a8) et seuils est (Seuil_Achat, Seuil_Vente).
-    """
+def extract_best_parameters(csv_path: str = 'signaux/optimization_hist_4stp.csv') -> Dict[str, Tuple[Tuple[float, ...], Tuple[float, ...]]]:
+    """Extraction tolérante : saute les lignes corrompues et gère 8+2 seuils."""
     try:
-        df = pd.read_csv(csv_path)
+        df = pd.read_csv(csv_path, engine='python', on_bad_lines='skip')
         if df.empty:
             print("🚫 CSV vide, aucun paramètre extrait")
             return {}
-        
-        required_columns = ['Sector', 'Gain_moy', 'Success_Rate', 'Trades', 'Seuil_Achat', 'Seuil_Vente', 'a1', 'a2', 'a3', 'a4', 'a5', 'a6', 'a7', 'a8']
-        if not all(col in df.columns for col in required_columns):
-            missing = [col for col in required_columns if col not in df.columns]
+
+        basic_required = ['Sector', 'Gain_moy', 'Success_Rate', 'Trades', 'a1', 'a2', 'a3', 'a4', 'a5', 'a6', 'a7', 'a8']
+        missing = [col for col in basic_required if col not in df.columns]
+        if missing:
             print(f"🚫 Colonnes manquantes dans le CSV : {missing}")
             return {}
-        
-        # Trier par Gain_moy (descendant), Success_Rate (descendant), Trades (descendant), Timestamp (descendant)
-        df_sorted = df.sort_values(by=['Sector', 'Gain_moy', 'Success_Rate', 'Trades', 'Timestamp'], ascending=[True, False, False, False, False])
-        
-        # Prendre la première entrée par secteur (la meilleure)
+
+        sort_cols = [c for c in ['Sector', 'Gain_moy', 'Success_Rate', 'Trades', 'Timestamp'] if c in df.columns]
+        df_sorted = df.sort_values(by=sort_cols, ascending=[True, False, False, False, False][:len(sort_cols)])
         best_params = df_sorted.groupby('Sector').first().reset_index()
-        
+
         result = {}
         for _, row in best_params.iterrows():
             sector = row['Sector']
             coefficients = tuple(row[f'a{i+1}'] for i in range(8))
-            thresholds = (row['Seuil_Achat'], row['Seuil_Vente'])
+
+            per_keys = [f'th{i+1}' for i in range(8)]
+            if all(k in row.index for k in per_keys):
+                thresholds = tuple(row[k] for k in per_keys)
+                buy = row['th_achat'] if 'th_achat' in row.index else (row['Seuil_Achat'] if 'Seuil_Achat' in row.index else 4.20)
+                sell = row['th_vente'] if 'th_vente' in row.index else (row['Seuil_Vente'] if 'Seuil_Vente' in row.index else -0.5)
+                thresholds = thresholds + (buy, sell)
+            else:
+                if 'Seuil_Achat' in row.index and 'Seuil_Vente' in row.index:
+                    buy = float(row['Seuil_Achat'])
+                    sell = float(row['Seuil_Vente'])
+                else:
+                    buy = 4.20
+                    sell = -0.5
+                thresholds = (50.0, 0.0, 0.0, 1.2, 25.0, 0.0, 0.5, 4.20, buy, sell)
+
             gain_moy = row['Gain_moy']
             result[sector] = (coefficients, thresholds, gain_moy)
-            # print(f"📊 Meilleurs paramètres pour {sector}: Coefficients={coefficients}, Seuils={thresholds}, Gain_moy={row['Gain_moy']:.2f}")
-        
+
         return result
-    
+
     except FileNotFoundError:
         print(f"🚫 Fichier CSV {csv_path} non trouvé")
         return {}

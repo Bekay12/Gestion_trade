@@ -35,7 +35,7 @@ def get_best_gain_csv(domain, csv_path='signaux/optimization_hist_4stp.csv'):
     """Récupère le meilleur gain moyen historique pour le secteur dans le CSV."""
     try:
         if pd.io.common.file_exists(csv_path):
-            df = pd.read_csv(csv_path)
+            df = pd.read_csv(csv_path, engine='python', on_bad_lines='skip')
             sector_data = df[df['Sector'] == domain]
             if not sector_data.empty:
                 return sector_data['Gain_moy'].max()
@@ -55,6 +55,26 @@ class HybridOptimizer:
         self.best_cache = {}
         self.precision = precision  # 🔧 NOUVEAU: Précision des paramètres (nombre de décimales)
         
+        # 🔧 Définir les bounds une seule fois (18 paramètres: 8 coeffs + 8 seuils + 2 seuils globaux)
+        self.bounds = (
+            [(0.5, 3.0)] * 8 +  # coefficients a1-a8 (indices 0-7)
+            [(30.0, 70.0)] +     # threshold 0: RSI_threshold (index 8)
+            [(-1.0, 1.0)] +      # threshold 1: MACD_threshold (index 9)
+            [(-1.0, 1.0)] +      # threshold 2: EMA_threshold (index 10)
+            [(0.5, 2.5)] +       # threshold 3: Volume_threshold (index 11)
+            [(15.0, 35.0)] +     # threshold 4: ADX_threshold (index 12)
+            [(-1.0, 1.0)] +      # threshold 5: Ichimoku_threshold (index 13)
+            [(0.3, 0.7)] +       # threshold 6: Bollinger_threshold (index 14)
+            [(2.0, 6.0)] +       # threshold 7: Score_global_threshold (index 15)
+            [(2.0, 6.0)] +       # seuil_achat global (index 16)
+            [(-6.0, -2.0)]       # seuil_vente global (index 17)
+        )
+        
+        # ✨ V2.0: Charger les paramètres optimisés existants comme point de départ
+        self.optimized_coeffs_loaded = False
+        self.initial_coeffs = None
+        self.initial_thresholds = None
+        
     def round_params(self, params):
         """🔧 NOUVEAU: Arrondir les paramètres à la précision définie"""
         return np.round(params, self.precision)
@@ -65,17 +85,34 @@ class HybridOptimizer:
         params = self.round_params(params)
         
         # Éviter les réévaluations inutiles avec précision réduite
-        param_key = tuple(params)  # Plus besoin de round(params, 4)
+        param_key = tuple(params)
         if param_key in self.best_cache:
             return self.best_cache[param_key]
 
+        # Extraire les paramètres : 8 coeffs + 8 seuils feature + 2 seuils globaux
         coeffs = tuple(params[:8])
-        seuil_achat, seuil_vente = params[8], params[9]
+        feature_thresholds = tuple(params[8:16])  # 8 seuils individuels
+        seuil_achat = float(params[16])  # Seuil global achat
+        seuil_vente = float(params[17])  # Seuil global vente
 
-        # Contraintes avec arrondi
+        # Contraintes avec arrondi sur les coefficients
         coeffs = tuple(np.clip(self.round_params(coeffs), 0.5, 3.0))
+        
+        # Contraintes sur les seuils features
+        feature_thresholds = list(feature_thresholds)
+        feature_thresholds[0] = np.clip(round(feature_thresholds[0], self.precision), 30.0, 70.0)  # RSI_threshold
+        feature_thresholds[1] = np.clip(round(feature_thresholds[1], self.precision), -1.0, 1.0)   # MACD_threshold
+        feature_thresholds[2] = np.clip(round(feature_thresholds[2], self.precision), -1.0, 1.0)   # EMA_threshold
+        feature_thresholds[3] = np.clip(round(feature_thresholds[3], self.precision), 0.5, 2.5)    # Volume_threshold
+        feature_thresholds[4] = np.clip(round(feature_thresholds[4], self.precision), 15.0, 35.0)  # ADX_threshold
+        feature_thresholds[5] = np.clip(round(feature_thresholds[5], self.precision), -1.0, 1.0)   # Ichimoku_threshold
+        feature_thresholds[6] = np.clip(round(feature_thresholds[6], self.precision), 0.3, 0.7)    # Bollinger_threshold
+        feature_thresholds[7] = np.clip(round(feature_thresholds[7], self.precision), 2.0, 6.0)    # Score_global_threshold
+        feature_thresholds = tuple(feature_thresholds)
+        
+        # Contraintes sur les seuils globaux
         seuil_achat = np.clip(round(seuil_achat, self.precision), 2.0, 6.0)
-        seuil_vente = np.clip(round(seuil_vente, self.precision), -3.0, 0.0)
+        seuil_vente = np.clip(round(seuil_vente, self.precision), -6.0, -2.0)
 
         total_gain = 0.0
         total_trades = 0
@@ -84,6 +121,7 @@ class HybridOptimizer:
                 result = backtest_signals(
                     data['Close'], data['Volume'], self.domain,
                     domain_coeffs={self.domain: coeffs},
+                    domain_thresholds={self.domain: feature_thresholds},
                     seuil_achat=seuil_achat, seuil_vente=seuil_vente,
                     montant=self.montant, transaction_cost=self.transaction_cost
                 )
@@ -98,14 +136,15 @@ class HybridOptimizer:
             return avg_gain
 
         except Exception as e:
+            print(f"⚠️ evaluate_config error: {e}")  # Debug: show exceptions
             return -1000.0  # Pénalité pour configurations invalides
 
     def genetic_algorithm(self, population_size=50, generations=30, mutation_rate=0.15):
         """Algorithme génétique pour l'optimisation avec précision limitée"""
         print(f"🧬 Démarrage algorithme génétique (pop={population_size}, gen={generations}, précision={self.precision})")
         
-        # Initialisation de la population avec arrondi
-        bounds = [(0.5, 3.0)] * 8 + [(2.0, 6.0), (-3.0, 0.0)]
+        # Utiliser self.bounds (16 paramètres: 8 coefficients + 8 seuils individuels)
+        bounds = self.bounds
         population = []
         for _ in range(population_size):
             individual = []
@@ -210,7 +249,7 @@ class HybridOptimizer:
         """Optimisation par évolution différentielle avec arrondi"""
         print(f"🔄 Démarrage évolution différentielle (pop={population_size}, iter={max_iterations}, précision={self.precision})")
         
-        bounds = [(0.5, 3.0)] * 8 + [(2.0, 6.0), (-3.0, 0.0)]
+        bounds = self.bounds
 
         def objective_function(params):
             return -self.evaluate_config(self.round_params(params))  # 🔧 MODIFIÉ: Arrondir avant évaluation
@@ -238,11 +277,11 @@ class HybridOptimizer:
         """Échantillonnage Latin Hypercube avec arrondi"""
         print(f"🎯 Latin Hypercube Sampling avec {n_samples} échantillons (précision={self.precision})")
         
-        sampler = qmc.LatinHypercube(d=10)
+        sampler = qmc.LatinHypercube(d=18)
         samples = sampler.random(n=n_samples)
 
         # Mise à l'échelle
-        bounds = [(0.5, 3.0)] * 8 + [(2.0, 6.0), (-3.0, 0.0)]
+        bounds = self.bounds
         l_bounds = [b[0] for b in bounds]
         u_bounds = [b[1] for b in bounds]
         scaled_samples = qmc.scale(samples, l_bounds, u_bounds)
@@ -269,13 +308,13 @@ class HybridOptimizer:
         """Optimisation par essaim particulaire (PSO) avec arrondi"""
         print(f"🐝 Particle Swarm Optimization (particles={n_particles}, iter={max_iterations}, précision={self.precision})")
         
-        bounds = np.array([(0.5, 3.0)] * 8 + [(2.0, 6.0), (-3.0, 0.0)])
+        bounds = np.array(self.bounds)
 
         # Initialisation avec arrondi
-        particles = np.random.uniform(bounds[:, 0], bounds[:, 1], (n_particles, 10))
+        particles = np.random.uniform(bounds[:, 0], bounds[:, 1], (n_particles, 18))
         particles = np.array([self.round_params(p) for p in particles])  # 🔧 MODIFIÉ
         
-        velocities = np.random.uniform(-1, 1, (n_particles, 10))
+        velocities = np.random.uniform(-1, 1, (n_particles, 18))
         personal_best_positions = particles.copy()
         personal_best_scores = np.array([self.evaluate_config(p) for p in particles])
 
@@ -334,7 +373,7 @@ class HybridOptimizer:
         current_params = self.round_params(initial_params)
         current_score = self.evaluate_config(current_params)
 
-        bounds = [(0.5, 3.0)] * 8 + [(2.0, 6.0), (-3.0, 0.0)]
+        bounds = self.bounds
 
         improved = True
         iteration = 0
@@ -456,8 +495,11 @@ def optimize_sector_coefficients_hybrid(
             print(f"✨ Affinement réussi: nouveau score {best_score:.4f}")
 
     # 🔧 MODIFIÉ: Extraction des paramètres finaux avec conversion Python natif
-    best_coeffs = tuple(float(x) for x in best_params[:8])  # Conversion des np.float64 en float
-    best_thresholds = (float(best_params[8]), float(best_params[9]))
+    # V2.0: Extraire 8 coefficients + 8 seuils individuels + 2 seuils globaux
+    best_coeffs = tuple(float(x) for x in best_params[:8])  # 8 coefficients
+    best_feature_thresholds = tuple(float(best_params[i]) for i in range(8, 16))  # 8 seuils features
+    best_seuil_achat = float(best_params[16])  # Seuil global achat
+    best_seuil_vente = float(best_params[17])  # Seuil global vente
 
     # Calcul des statistiques finales
     total_success = 0
@@ -466,7 +508,8 @@ def optimize_sector_coefficients_hybrid(
         result = backtest_signals(
             data['Close'], data['Volume'], domain,
             domain_coeffs={domain: best_coeffs},
-            seuil_achat=best_thresholds[0], seuil_vente=best_thresholds[1],
+            domain_thresholds={domain: best_feature_thresholds},  # V2.0: Passer tous les 8 seuils features
+            seuil_achat=best_seuil_achat, seuil_vente=best_seuil_vente,  # V2.0: Passer les 2 seuils globaux
             montant=montant, transaction_cost=transaction_cost
         )
         total_success += result['gagnants']
@@ -477,18 +520,21 @@ def optimize_sector_coefficients_hybrid(
     print(f"✅ Optimisation terminée:")
     print(f" 📊 Évaluations effectuées: {optimizer.evaluation_count}")
     print(f" 🎯 Meilleurs coefficients: {best_coeffs}")
-    print(f" 🎯 Meilleurs seuils: {best_thresholds}")
+    print(f" 🎯 Meilleurs seuils features: {best_feature_thresholds}")
+    print(f" 🎯 Seuil achat global: {best_seuil_achat:.2f}")
+    print(f" 🎯 Seuil vente global: {best_seuil_vente:.2f}")
     print(f" 💰 Gain moyen: {best_score:.2f}")
     print(f" 📈 Taux de réussite: {success_rate:.2f}%")
     print(f" 🔄 Nombre de trades: {total_trades}")
 
-    # Sauvegarde des résultats
-    save_optimization_results(domain, best_coeffs, best_score, success_rate, total_trades, best_thresholds)
+    # Sauvegarde des résultats - agrégé en un tuple unique
+    all_thresholds = best_feature_thresholds + (best_seuil_achat, best_seuil_vente)
+    save_optimization_results(domain, best_coeffs, best_score, success_rate, total_trades, all_thresholds)
 
-    return best_coeffs, best_score, success_rate, best_thresholds
+    return best_coeffs, best_score, success_rate, all_thresholds
 
 def save_optimization_results(domain, coeffs, gain_total, success_rate, total_trades, thresholds):
-    """Sauvegarde les résultats dans un CSV seulement s'ils sont les meilleurs pour le secteur"""
+    """Sauvegarde les résultats dans un CSV et dans le gestionnaire de paramètres V2.0"""
     from datetime import datetime
     import pandas as pd
 
@@ -498,8 +544,22 @@ def save_optimization_results(domain, coeffs, gain_total, success_rate, total_tr
         'Gain_moy': gain_total,
         'Success_Rate': success_rate,
         'Trades': total_trades,
-        'Seuil_Achat': thresholds[0],
-        'Seuil_Vente': thresholds[1],
+        # V2.0: Sauvegarder les 8 seuils features + 2 seuils globaux
+        'Seuil_Achat': thresholds[8] if len(thresholds) > 8 else 4.20,  # Seuil achat global
+        'Seuil_Vente': thresholds[9] if len(thresholds) > 9 else -0.5,  # Seuil vente global
+        # Les 8 seuils features
+        'th1': thresholds[0] if len(thresholds) > 0 else 50.0,  # RSI_threshold
+        'th2': thresholds[1] if len(thresholds) > 1 else 0.0,   # MACD_threshold
+        'th3': thresholds[2] if len(thresholds) > 2 else 0.0,   # EMA_threshold
+        'th4': thresholds[3] if len(thresholds) > 3 else 1.2,   # Volume_threshold
+        'th5': thresholds[4] if len(thresholds) > 4 else 25.0,  # ADX_threshold
+        'th6': thresholds[5] if len(thresholds) > 5 else 0.0,   # Ichimoku_threshold
+        'th7': thresholds[6] if len(thresholds) > 6 else 0.5,   # Bollinger_threshold
+        'th8': thresholds[7] if len(thresholds) > 7 else 4.20,  # Score_global_threshold
+        # Les 2 seuils globaux
+        'th_achat': thresholds[8] if len(thresholds) > 8 else 4.20,  # Global buy threshold
+        'th_vente': thresholds[9] if len(thresholds) > 9 else -0.5,  # Global sell threshold
+        # Les 8 coefficients
         'a1': coeffs[0], 'a2': coeffs[1], 'a3': coeffs[2], 'a4': coeffs[3],
         'a5': coeffs[4], 'a6': coeffs[5], 'a7': coeffs[6], 'a8': coeffs[7]
     }
@@ -509,7 +569,7 @@ def save_optimization_results(domain, coeffs, gain_total, success_rate, total_tr
     try:
         # Vérifier si le fichier existe et charger les données existantes
         if pd.io.common.file_exists(csv_path):
-            df_existing = pd.read_csv(csv_path)
+            df_existing = pd.read_csv(csv_path, engine='python', on_bad_lines='skip')
 
             # Filtrer les données pour le secteur concerné
             sector_data = df_existing[df_existing['Sector'] == domain]
@@ -537,13 +597,13 @@ def save_optimization_results(domain, coeffs, gain_total, success_rate, total_tr
                 if is_best_success_rate:
                     print(f"🎯 Nouveau meilleur taux de réussite pour {domain}: {success_rate:.4f} (ancien: {best_success_rate:.4f})")
 
-        # Sauvegarder les nouveaux résultats
+        # Sauvegarder les nouveaux résultats dans le CSV
         df_new = pd.DataFrame([results])
         df_new.to_csv(csv_path, mode='a', header=not pd.io.common.file_exists(csv_path), index=False)
-        print(f"📝 Résultats sauvegardés pour {domain}")
+        print(f"📝 Résultats sauvegardés dans CSV pour {domain}")
 
     except Exception as e:
-        print(f"⚠️ Erreur lors de la sauvegarde dans le CSV: {e}")
+        print(f"⚠️ Erreur lors de la sauvegarde: {e}")
 
 # Exemple d'utilisation
 if __name__ == "__main__":

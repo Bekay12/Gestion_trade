@@ -19,6 +19,28 @@ if PROJECT_SRC not in sys.path:
 from qsi import analyse_signaux_populaires, analyse_et_affiche, popular_symbols, mes_symbols, period
 from qsi import download_stock_data, backtest_signals, plot_unified_chart, get_trading_signal, generate_trade_events
 
+# ✨ V2.0 RÉELLE - Metrics réelles et fondamentaux
+try:
+    from v2_signal_bridge import get_v2_signal_generator
+    from v2_real_metrics import RealMetricsV2
+    from v2_integration import (
+        get_v2_trading_signals, 
+        get_feature_analysis,
+        load_optimized_params,
+        DEFAULT_WEIGHTS,
+        DEFAULT_THRESHOLDS
+    )
+    V2_REAL_AVAILABLE = True
+except ImportError as e:
+    V2_REAL_AVAILABLE = False
+    get_v2_signal_generator = None
+    RealMetricsV2 = None
+    get_v2_trading_signals = None
+    get_feature_analysis = None
+    load_optimized_params = None
+    DEFAULT_WEIGHTS = {}
+    DEFAULT_THRESHOLDS = {}
+
 
 class AnalysisThread(QThread):
     finished = pyqtSignal(dict)
@@ -52,10 +74,7 @@ class AnalysisThread(QThread):
 
 
 class DownloadThread(QThread):
-    """Thread to download stock data (and optionally run backtests) without blocking UI.
-
-    Emits finished with a dict: { 'data': {...}, 'backtest_results': [...] }
-    """
+    """Thread to download stock data and run backtests with V2.0 optimized parameters"""
     finished = pyqtSignal(dict)
     error = pyqtSignal(str)
     progress = pyqtSignal(str)
@@ -65,6 +84,12 @@ class DownloadThread(QThread):
         self.symbols = symbols
         self.period = period
         self.do_backtest = do_backtest
+        
+        # ✨ V2.0 REAL: Utiliser les paramètres optimisés
+        self.optimized_coeffs = {}
+        self.optimized_thresholds = {}
+        if V2_REAL_AVAILABLE:
+            self.progress.emit(f"✅ V2.0 REAL: Système de métriques réelles activé")
 
     def run(self):
         try:
@@ -95,9 +120,28 @@ class DownloadThread(QThread):
                             except Exception:
                                 domaine = 'Inconnu'
 
-                            bt = backtest_signals(prices, volumes, domaine, montant=50)
+                            # ✨ V2.0: Utiliser les paramètres optimisés si disponibles
+                            backtest_kwargs = {
+                                'prices': prices,
+                                'volumes': volumes,
+                                'domaine': domaine,
+                                'montant': 50
+                            }
+                            
+                            if V2_REAL_AVAILABLE:
+                                backtest_kwargs['domain_coeffs'] = {domaine: self.optimized_coeffs[domaine]}
+                                if domaine in self.optimized_thresholds:
+                                    seuils = self.optimized_thresholds[domaine]
+                                    backtest_kwargs['seuil_achat'] = seuils[0]
+                                    backtest_kwargs['seuil_vente'] = seuils[1]
+                                self.progress.emit(f"  📊 {symbol}: Backtest avec paramètres V2.0 optimisés ({domaine})")
+                            else:
+                                self.progress.emit(f"  📊 {symbol}: Backtest avec paramètres par défaut ({domaine})")
+                            
+                            bt = backtest_signals(**backtest_kwargs)
                             backtests.append({ 'Symbole': symbol, **bt })
-                        except Exception:
+                        except Exception as e:
+                            self.progress.emit(f"  ⚠️ Erreur backtest {symbol}: {e}")
                             continue
 
                     result['backtest_results'] = backtests
@@ -118,16 +162,29 @@ class MainWindow(QMainWindow):
         self.setCentralWidget(self.central_widget)
         self.layout = QVBoxLayout(self.central_widget)
         
+        # ✨ V2.0 REAL Initialization
+        if V2_REAL_AVAILABLE:
+            print("✅ V2.0 REAL modules loaded - Métriques réelles et fondamentaux activés")
+        else:
+            print("⚠️ V2.0 REAL modules not available")
+            print("⚠️ V2.0 modules not available")
+        
         self.setup_ui()
 
         self.current_results = []
-
-        
     def setup_ui(self):
         # Title
         # title_label = QLabel("Stock Analysis Tool")
         # title_label.setStyleSheet("font-size: 16px; font-weight: bold; margin: 10px;")
         # self.layout.addWidget(title_label)
+
+        # ✨ V2.0 REAL Status Bar
+        if V2_REAL_AVAILABLE:
+            cache_info = "[OK] V2.0 REAL: Metriques reelles et fondamentaux actives"
+            cache_label = QLabel(cache_info)
+            cache_label.setStyleSheet("background-color: #e8f5e9; padding: 8px; border-radius: 4px;")
+            self.layout.addWidget(cache_label)
+            self.cache_status_label = cache_label
 
         # Input de symbole
         self.symbol_input = QLineEdit()
@@ -1360,6 +1417,80 @@ class MainWindow(QMainWindow):
                 w.setParent(None)
         import gc
         gc.collect()
+
+    # ✨ V2.0 REAL Features Analysis - Nouvelles méthodes pour accéder aux features avec paramètres personnalisés
+    def get_v2_features(self, symbol, sector=None, custom_weights=None, custom_thresholds=None):
+        """
+        Analyse complète des 8 features V2.0 avec poids et seuils personnalisés
+        
+        Args:
+            symbol: Symbole à analyser (ex: 'AAPL')
+            sector: Secteur pour paramètres optimisés (ex: 'Technology')
+            custom_weights: dict poids personnalisés
+            custom_thresholds: dict seuils personnalisés
+        
+        Returns:
+            Dict avec analyse détaillée de chaque feature
+        """
+        if not V2_REAL_AVAILABLE or not get_feature_analysis:
+            return {'error': 'V2.0 REAL not available'}
+        
+        try:
+            # Charger paramètres selon source
+            weights = custom_weights
+            thresholds = custom_thresholds
+            
+            if not weights or not thresholds:
+                if sector:
+                    params = load_optimized_params(sector)
+                    weights = weights or params.get('weights', DEFAULT_WEIGHTS)
+                    thresholds = thresholds or params.get('thresholds', DEFAULT_THRESHOLDS)
+                else:
+                    weights = weights or DEFAULT_WEIGHTS
+                    thresholds = thresholds or DEFAULT_THRESHOLDS
+            
+            # Appeler l'analyse avec paramètres
+            analysis = get_feature_analysis(symbol, period='6mo', weights=weights, thresholds=thresholds)
+            return analysis
+        except Exception as e:
+            return {'error': str(e)}
+    
+    def get_v2_signals_batch(self, symbols, sector=None, custom_weights=None, custom_thresholds=None):
+        """
+        Génère des signaux V2.0 REAL pour plusieurs symboles avec paramètres personnalisés
+        
+        Args:
+            symbols: Liste de symboles
+            sector: Secteur pour paramètres optimisés
+            custom_weights: dict poids personnalisés
+            custom_thresholds: dict seuils personnalisés
+        
+        Returns:
+            Dict avec signaux pour chaque symbole
+        """
+        if not V2_REAL_AVAILABLE or not get_v2_trading_signals:
+            return {'error': 'V2.0 REAL not available'}
+        
+        try:
+            # Charger paramètres
+            weights = custom_weights
+            thresholds = custom_thresholds
+            
+            if not weights or not thresholds:
+                if sector:
+                    params = load_optimized_params(sector)
+                    weights = weights or params.get('weights', DEFAULT_WEIGHTS)
+                    thresholds = thresholds or params.get('thresholds', DEFAULT_THRESHOLDS)
+                else:
+                    weights = weights or DEFAULT_WEIGHTS
+                    thresholds = thresholds or DEFAULT_THRESHOLDS
+            
+            # Générer signaux
+            signals = get_v2_trading_signals(symbols, period='6mo', weights=weights, thresholds=thresholds)
+            return signals
+        except Exception as e:
+            return {'error': str(e)}
+
 
 
 

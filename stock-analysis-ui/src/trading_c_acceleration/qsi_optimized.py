@@ -140,28 +140,46 @@ def save_to_evolutive_csv(signals, filename="signaux_trading.csv"):
 
 from typing import Tuple, Dict, Union, List
 
-def extract_best_parameters(csv_path: str = 'signaux/optimization_hist_4stp.csv') -> Dict[str, Tuple[Tuple[float, ...], Tuple[float, float]]]:
-    """Extrait les meilleurs coefficients - INCHANGÉ de votre version"""
+def extract_best_parameters(csv_path: str = 'signaux/optimization_hist_4stp.csv') -> Dict[str, Tuple[Tuple[float, ...], Tuple[float, ...]]]:
+    """Extrait les meilleurs coefficients avec tolérance aux CSV corrompus."""
     try:
-        df = pd.read_csv(csv_path)
+        # Tolère les lignes corrompues et colonnes supplémentaires
+        df = pd.read_csv(csv_path, engine='python', on_bad_lines='skip')
         if df.empty:
             print("🚫 CSV vide, aucun paramètre extrait")
             return {}
 
-        required_columns = ['Sector', 'Gain_moy', 'Success_Rate', 'Trades', 'Seuil_Achat', 'Seuil_Vente', 'a1', 'a2', 'a3', 'a4', 'a5', 'a6', 'a7', 'a8']
-        if not all(col in df.columns for col in required_columns):
-            missing = [col for col in required_columns if col not in df.columns]
+        basic_required = ['Sector', 'Gain_moy', 'Success_Rate', 'Trades', 'a1', 'a2', 'a3', 'a4', 'a5', 'a6', 'a7', 'a8']
+        missing = [col for col in basic_required if col not in df.columns]
+        if missing:
             print(f"🚫 Colonnes manquantes dans le CSV : {missing}")
             return {}
 
-        df_sorted = df.sort_values(by=['Sector', 'Gain_moy', 'Success_Rate', 'Trades', 'Timestamp'], ascending=[True, False, False, False, False])
+        # Trier par secteur puis métriques pour garder le meilleur
+        sort_cols = [c for c in ['Sector', 'Gain_moy', 'Success_Rate', 'Trades', 'Timestamp'] if c in df.columns]
+        df_sorted = df.sort_values(by=sort_cols, ascending=[True, False, False, False, False][:len(sort_cols)])
         best_params = df_sorted.groupby('Sector').first().reset_index()
 
         result = {}
         for _, row in best_params.iterrows():
             sector = row['Sector']
             coefficients = tuple(row[f'a{i+1}'] for i in range(8))
-            thresholds = (row['Seuil_Achat'], row['Seuil_Vente'])
+
+            per_keys = [f'th{i+1}' for i in range(8)]
+            if all(k in row.index for k in per_keys):
+                thresholds = tuple(row[k] for k in per_keys)
+                buy = row['th_achat'] if 'th_achat' in row.index else (row['Seuil_Achat'] if 'Seuil_Achat' in row.index else 4.20)
+                sell = row['th_vente'] if 'th_vente' in row.index else (row['Seuil_Vente'] if 'Seuil_Vente' in row.index else -0.5)
+                thresholds = thresholds + (buy, sell)
+            else:
+                if 'Seuil_Achat' in row.index and 'Seuil_Vente' in row.index:
+                    buy = float(row['Seuil_Achat'])
+                    sell = float(row['Seuil_Vente'])
+                else:
+                    buy = 4.20
+                    sell = -0.5
+                thresholds = (50.0, 0.0, 0.0, 1.2, 25.0, 0.0, 0.5, 4.20, buy, sell)
+
             gain_moy = row['Gain_moy']
             result[sector] = (coefficients, thresholds, gain_moy)
 
@@ -241,12 +259,17 @@ def get_trading_signal(prices, volumes, domaine, domain_coeffs=None, variation_s
 
 def backtest_signals_accelerated(prices: Union[pd.Series, pd.DataFrame], volumes: Union[pd.Series, pd.DataFrame],
                                 domaine: str, montant: float = 50, transaction_cost: float = 0.02, 
-                                domain_coeffs=None, seuil_achat=None, seuil_vente=None) -> Dict:
+                                domain_coeffs=None, domain_thresholds=None, seuil_achat=None, seuil_vente=None) -> Dict:
     """
     🚀 VERSION ACCÉLÉRÉE avec module C - Interface IDENTIQUE à votre fonction
     
     Cette fonction remplace automatiquement votre backtest_signals original.
     Même interface, même résultats, mais 50-200x plus rapide !
+    
+    Args:
+        domain_coeffs: Dict avec {domaine: (a1, a2, ..., a8)}
+        domain_thresholds: Dict avec {domaine: (th0, th1, ..., th7)} - 8 seuils individuels
+        seuil_achat, seuil_vente: Paramètres hérités (pour compatibilité)
     """
     
     # Validation identique à votre version
@@ -263,29 +286,45 @@ def backtest_signals_accelerated(prices: Union[pd.Series, pd.DataFrame], volumes
     
     # Récupération des coefficients (EXACTEMENT votre logique)
     default_coeffs = (1.75, 1.0, 1.5, 1.25, 1.75, 1.25, 1.0, 1.75)
+    default_thresholds = (50.0, 0.0, 0.0, 1.2, 25.0, 0.0, 0.5, 4.20)
     best_params = extract_best_parameters()
     
     if domain_coeffs:
         coeffs = domain_coeffs.get(domaine, default_coeffs)
     else:
         if domaine in best_params:
-            coeffs, thresholds, _ = best_params[domaine]
-            if seuil_achat is None:
-                seuil_achat = thresholds[0]
-            if seuil_vente is None:
-                seuil_vente = thresholds[1]
+            coeffs, legacy_thresholds, _ = best_params[domaine]
+            # Les anciens seuils legacy ne sont pas utilisés si domain_thresholds fourni
         else:
             coeffs = default_coeffs
     
-    # Valeurs par défaut pour les seuils
+    # Récupération des seuils (nouveaux: domain_thresholds)
+    if domain_thresholds:
+        thresholds = domain_thresholds.get(domaine, default_thresholds)
+    else:
+        thresholds = default_thresholds
+    
+    # Valeurs par défaut pour les seuils (compatibilité avec ancien code)
+
     if seuil_achat is None:
         seuil_achat = 4.2
     if seuil_vente is None:
         seuil_vente = -0.5
     
     # ✨ ACCÉLÉRATION C - Si disponible, utilise le module C ultra-rapide
+    # 🔧 OPTIMISATION V2.0: Même avec domain_thresholds, on peut utiliser C
+    # en passant le score_global_threshold comme seuil_achat
     if C_ACCELERATION:
         try:
+            # Extract score_global_threshold from domain_thresholds if provided
+            if domain_thresholds:
+                thresholds_tuple = domain_thresholds.get(domaine, default_thresholds)
+                # thresholds_tuple[7] is the score_global_threshold
+                score_threshold = thresholds_tuple[7] if len(thresholds_tuple) > 7 else 4.20
+                # Use score_threshold as seuil_achat for the C module
+                seuil_achat = score_threshold
+                seuil_vente = -score_threshold
+            
             # Nettoyage des données (éliminer NaN)
             clean_prices = prices.fillna(method='ffill').fillna(method='bfill')
             clean_volumes = volumes.fillna(0)
@@ -306,20 +345,94 @@ def backtest_signals_accelerated(prices: Union[pd.Series, pd.DataFrame], volumes
             # En cas d'erreur, utilise la version Python
     
     # Fallback: version Python originale (votre logique exacte)
-    return backtest_signals_original(prices, volumes, domaine, montant, transaction_cost, domain_coeffs, seuil_achat, seuil_vente)
+    return backtest_signals_original(prices, volumes, domaine, montant, transaction_cost, domain_coeffs, domain_thresholds, seuil_achat, seuil_vente)
 
-def backtest_signals_original(prices, volumes, domaine, montant=50, transaction_cost=0.02, domain_coeffs=None, seuil_achat=4.2, seuil_vente=-0.5):
-    """Version Python originale - exactement votre implémentation pour fallback"""
-    # [Copiez ici EXACTEMENT votre fonction backtest_signals originale]
-    
-    # Simulation simplifiée pour compatibilité
+def backtest_signals_original(prices, volumes, domaine, montant=50, transaction_cost=0.02, domain_coeffs=None, domain_thresholds=None, seuil_achat=4.2, seuil_vente=-0.5):
+    """Fallback Python backtest implementation that iterates over history and uses get_trading_signal.
+    This is a simplified but compatible backtest used when C acceleration is unavailable.
+    """
+    try:
+        # Local import to avoid circular imports at module import time
+        from qsi import get_trading_signal as qsi_get_trading_signal
+    except Exception:
+        # As a last resort, no backtest possible
+        return {
+            "trades": 0,
+            "gagnants": 0,
+            "taux_reussite": 0,
+            "gain_total": 0.0,
+            "gain_moyen": 0.0,
+            "drawdown_max": 0.0
+        }
+
+    if isinstance(prices, pd.DataFrame):
+        prices = prices.squeeze()
+    if isinstance(volumes, pd.DataFrame):
+        volumes = volumes.squeeze()
+
+    n = len(prices)
+    if n < 60:
+        return {"trades": 0, "gagnants": 0, "taux_reussite": 0, "gain_total": 0.0, "gain_moyen": 0.0, "drawdown_max": 0.0}
+
+    position = 0
+    entry_price = 0.0
+    trades = 0
+    gagnants = 0
+    gain_total = 0.0
+    peak = -float('inf')
+    drawdown_max = 0.0
+
+    for i in range(59, n):
+        window_prices = prices.iloc[:i+1]
+        window_volumes = volumes.iloc[:i+1]
+        try:
+            sig, last_close, _, _, _, _ = qsi_get_trading_signal(window_prices, window_volumes, domaine, domain_coeffs=domain_coeffs, domain_thresholds=domain_thresholds)
+        except TypeError:
+            # older signature without domain_thresholds
+            sig, last_close, _, _, _, _ = qsi_get_trading_signal(window_prices, window_volumes, domaine, domain_coeffs=domain_coeffs)
+        except Exception:
+            continue
+
+        if sig == 'ACHAT' and position == 0:
+            position = 1
+            entry_price = last_close
+        elif sig == 'VENTE' and position == 1:
+            # Close position
+            profit = (last_close - entry_price) / entry_price * montant - transaction_cost
+            gain_total += profit
+            trades += 1
+            if profit > 0:
+                gagnants += 1
+            position = 0
+
+        # Track peak for drawdown (simple)
+        if position == 1:
+            current_val = (last_close - entry_price) / entry_price * montant
+            if current_val > peak:
+                peak = current_val
+            dd = peak - current_val
+            if dd > drawdown_max:
+                drawdown_max = dd
+
+    # If still in position, close at last available price
+    if position == 1:
+        last_close = float(prices.iloc[-1])
+        profit = (last_close - entry_price) / entry_price * montant - transaction_cost
+        gain_total += profit
+        trades += 1
+        if profit > 0:
+            gagnants += 1
+
+    gain_moyen = gain_total / trades if trades > 0 else 0.0
+    taux_reussite = int((gagnants / trades) * 100) if trades > 0 else 0
+
     return {
-        "trades": 0,
-        "gagnants": 0,
-        "taux_reussite": 0,
-        "gain_total": 0.0,
-        "gain_moyen": 0.0,
-        "drawdown_max": 0.0
+        "trades": trades,
+        "gagnants": gagnants,
+        "taux_reussite": taux_reussite,
+        "gain_total": gain_total,
+        "gain_moyen": gain_moyen,
+        "drawdown_max": drawdown_max
     }
 
 # Alias pour remplacement automatique - Votre code utilise maintenant la version accélérée !

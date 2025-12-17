@@ -22,6 +22,21 @@ from pathlib import Path
 sys.path.append("C:\\Users\\berti\\Desktop\\Mes documents\\Gestion_trade\\stock-analysis-ui\\src\\trading_c_acceleration")
 from qsi_optimized import backtest_signals, extract_best_parameters
 
+# ✨ V2.0 Imports - REAL METRICS
+try:
+    from v2_real_metrics import RealMetricsV2, analyze_symbol
+    from v2_real_optimizer import V2RealOptimizer
+    V2_REAL_AVAILABLE = True
+except ImportError:
+    V2_REAL_AVAILABLE = False
+
+try:
+    from cache_manager import get_cache
+    from feature_config import get_param, apply_sector_override
+    CACHE_AVAILABLE = True
+except ImportError:
+    CACHE_AVAILABLE = False
+
 # Supprimer les avertissements FutureWarning de yfinance
 warnings.filterwarnings("ignore", category=FutureWarning)
 
@@ -130,7 +145,7 @@ def save_to_evolutive_csv(signals, filename="signaux_trading.csv"):
 
 from typing import Tuple, Dict, Union, List
 
-def extract_best_parameters(csv_path: str = 'signaux/optimization_hist_4stp.csv') -> Dict[str, Tuple[Tuple[float, ...], Tuple[float, float]]]:
+def extract_best_parameters(csv_path: str = 'signaux/optimization_hist_4stp.csv') -> Dict[str, Tuple[Tuple[float, ...], Tuple[float, ...]]]:
     """
     Extrait les meilleurs coefficients et seuils pour chaque secteur à partir du CSV, basés sur le Gain_moy maximal.
 
@@ -142,31 +157,52 @@ def extract_best_parameters(csv_path: str = 'signaux/optimization_hist_4stp.csv'
         un tuple (coefficients, seuils), où coefficients est (a1, a2, ..., a8) et seuils est (Seuil_Achat, Seuil_Vente).
     """
     try:
-        df = pd.read_csv(csv_path)
+        # Utiliser engine='python' pour tolérer des lignes avec un nombre de champs variable
+        # et on_bad_lines='skip' pour ignorer les lignes corrompues
+        df = pd.read_csv(csv_path, engine='python', on_bad_lines='skip')
         if df.empty:
             print("🚫 CSV vide, aucun paramètre extrait")
             return {}
 
-        required_columns = ['Sector', 'Gain_moy', 'Success_Rate', 'Trades', 'Seuil_Achat', 'Seuil_Vente', 'a1', 'a2', 'a3', 'a4', 'a5', 'a6', 'a7', 'a8']
-        if not all(col in df.columns for col in required_columns):
-            missing = [col for col in required_columns if col not in df.columns]
+        # Colonnes minimales attendues (legacy)
+        basic_required = ['Sector', 'Gain_moy', 'Success_Rate', 'Trades', 'a1', 'a2', 'a3', 'a4', 'a5', 'a6', 'a7', 'a8']
+        missing = [col for col in basic_required if col not in df.columns]
+        if missing:
             print(f"🚫 Colonnes manquantes dans le CSV : {missing}")
             return {}
 
-        # Trier par Gain_moy (descendant), Success_Rate (descendant), Trades (descendant), Timestamp (descendant)
-        df_sorted = df.sort_values(by=['Sector', 'Gain_moy', 'Success_Rate', 'Trades', 'Timestamp'], ascending=[True, False, False, False, False])
-
-        # Prendre la première entrée par secteur (la meilleure)
+        # Sort and pick best row per sector
+        sort_cols = [c for c in ['Sector', 'Gain_moy', 'Success_Rate', 'Trades', 'Timestamp'] if c in df.columns]
+        df_sorted = df.sort_values(by=sort_cols, ascending=[True] + [False] * (len(sort_cols) - 1))
         best_params = df_sorted.groupby('Sector').first().reset_index()
 
         result = {}
         for _, row in best_params.iterrows():
             sector = row['Sector']
             coefficients = tuple(row[f'a{i+1}'] for i in range(8))
-            thresholds = (row['Seuil_Achat'], row['Seuil_Vente'])
-            gain_moy = row['Gain_moy']
+
+            # Détection des seuils
+            per_keys = [f'th{i+1}' for i in range(8)]
+            # Nouveau format 10 seuils (8 features + 2 globaux)
+            if all(k in row.index for k in per_keys):
+                thresholds = tuple(row[k] for k in per_keys)
+                # Ajouter les 2 seuils globaux si présents
+                buy = row['th_achat'] if 'th_achat' in row.index else (row['Seuil_Achat'] if 'Seuil_Achat' in row.index else 4.20)
+                sell = row['th_vente'] if 'th_vente' in row.index else (row['Seuil_Vente'] if 'Seuil_Vente' in row.index else -0.5)
+                thresholds = thresholds + (buy, sell)
+            else:
+                # Legacy: 2 seuils seulement
+                if 'Seuil_Achat' in row.index and 'Seuil_Vente' in row.index:
+                    buy = float(row['Seuil_Achat'])
+                    sell = float(row['Seuil_Vente'])
+                else:
+                    buy = 4.20
+                    sell = -0.5
+                # Reconstituer 8 seuils features par défaut + 2 globaux
+                thresholds = (50.0, 0.0, 0.0, 1.2, 25.0, 0.0, 0.5, 4.20, buy, sell)
+
+            gain_moy = row['Gain_moy'] if 'Gain_moy' in row.index else 0.0
             result[sector] = (coefficients, thresholds, gain_moy)
-            # print(f"📊 Meilleurs paramètres pour {sector}: Coefficients={coefficients}, Seuils={thresholds}, Gain_moy={row['Gain_moy']:.2f}")
 
         return result
 
@@ -177,9 +213,37 @@ def extract_best_parameters(csv_path: str = 'signaux/optimization_hist_4stp.csv'
         print(f"⚠️ Erreur lors de l'extraction des paramètres: {e}")
         return {}
 
-def get_trading_signal(prices, volumes, domaine, domain_coeffs=None,
+def get_trading_signal(prices, volumes, domaine, domain_coeffs=None, domain_thresholds=None,
                       variation_seuil=-20, volume_seuil=100000, return_derivatives: bool = False, symbol: str = None):
-    """Détermine les signaux de trading avec validation des données"""
+    """Détermine les signaux de trading avec validation des données
+    
+    Args:
+        prices: Série des prix de clôture
+        volumes: Série des volumes
+        domaine: Secteur/domaine de l'action
+        domain_coeffs: Dict avec {domaine: (a1, a2, ..., a8)} - coefficients pour 8 features
+        domain_thresholds: Dict avec {domaine: (th1, th2, ..., th8)} - seuils individuels pour 8 features
+                          Indices: 0=RSI, 1=MACD, 2=EMA, 3=Volume, 4=ADX, 5=Ichimoku, 6=Bollinger, 7=Global
+        variation_seuil: Seuil de variation (défaut: -20%)
+        volume_seuil: Seuil de volume minimum (défaut: 100000)
+        return_derivatives: Retourner les dérivées des indicateurs
+        symbol: Symbole de l'action
+    
+    Returns:
+        Tuple avec (signal, score, rsi, volume_mean, tendance)
+    """
+    
+    # ✨ V2.0: Charger les paramètres optimisés si non fournis
+    if domain_coeffs is None and CACHE_AVAILABLE:
+        try:
+            optimized_coeffs = get_optimized_domain_coeffs()
+            if domaine in optimized_coeffs:
+                domain_coeffs = {domaine: optimized_coeffs[domaine]}
+                # print(f"✅ V2.0: Utilisation des paramètres optimisés pour {domaine}")
+        except Exception as e:
+            # Silencieusement ignorer les erreurs de chargement V2.0
+            pass
+    
     # Conversion explicite en Series scalaires
     if isinstance(prices, pd.DataFrame):
         prices = prices.squeeze()
@@ -289,28 +353,45 @@ def get_trading_signal(prices, volumes, domaine, domain_coeffs=None,
 
     score = 0
     default_coeffs = (1.75, 1.0, 1.5, 1.25, 1.75, 1.25, 1.0, 1.75)
-    thresholds = (4.20, -0.5)
-
+    # Seuils individuels pour les 8 features:
+    # 0=RSI_threshold, 1=MACD_threshold, 2=EMA_threshold, 3=Volume_threshold,
+    # 4=ADX_threshold, 5=Ichimoku_threshold, 6=Bollinger_threshold, 7=Score_threshold_global
+    default_thresholds = (50.0, 0.0, 0.0, 1.2, 25.0, 0.0, 0.5, 4.20)
+    
     best_params = extract_best_parameters()
     if domain_coeffs:
         coeffs = domain_coeffs.get(domaine, default_coeffs)
     else:
         if domaine in best_params:
-            coeffs, thresholds, gain_moyen = best_params[domaine]
+            coeffs, legacy_thresholds, gain_moyen = best_params[domaine]
         else:
             coeffs = default_coeffs
+    
+    # Charger les seuils personnalisés ou utiliser les défauts
+    if domain_thresholds:
+        thresholds = domain_thresholds.get(domaine, default_thresholds)
+    else:
+        thresholds = default_thresholds
 
     a1, a2, a3, a4, a5, a6, a7, a8 = coeffs
+    
+    # Décompacter les 8 seuils individuels
+    # 0=RSI_threshold, 1=MACD_threshold, 2=EMA_threshold, 3=Volume_threshold,
+    # 4=ADX_threshold, 5=Ichimoku_threshold, 6=Bollinger_threshold, 7=Score_global_threshold
+    (rsi_threshold, macd_threshold, ema_threshold, volume_threshold,
+     adx_threshold, ichimoku_threshold, bollinger_threshold, score_threshold) = thresholds
+    
     m1, m2, m3, m4 = 1.0, 1.0, 1.0, 1.0
 
-    if adx_strong_trend:
+    # Utiliser le seuil ADX personnalisé si fourni
+    if adx_strong_trend or (last_adx > adx_threshold):
         m1 = 1.5
 
-    # Vérification du volume
+    # Vérification du volume avec seuil personnalisé
     z = (current_volume - volume_mean) / volume_std if volume_std > 0 else 0
-    if z > 1.75:
+    if z > volume_threshold:
         m2 = 1.5
-    elif z < -1.75:
+    elif z < -volume_threshold:
         m2 = 0.7
 
     volume_ratio = current_volume / volume_mean if volume_mean > 0 else 0
@@ -319,7 +400,7 @@ def get_trading_signal(prices, volumes, domaine, domain_coeffs=None,
     elif volume_ratio < 0.5:
         m3 = 0.7
 
-    # RSI : Signaux haussiers
+    # RSI : Signaux haussiers (utiliser le seuil personnalisé)
     if rsi_cross_up:
         score += a1
     if delta_rsi > 3:
@@ -333,25 +414,26 @@ def get_trading_signal(prices, volumes, domaine, domain_coeffs=None,
     if delta_rsi < -3:
         score -= m3 * a2
 
-    if rsi_ok:
+    # Appliquer le seuil RSI personnalisé
+    if last_rsi > rsi_threshold:
         score += a4
     else:
         score -= a4
 
-    # EMA : Structure de tendance
+    # EMA : Structure de tendance avec seuil personnalisé
     if ema_structure_up:
         score += m1 * a5
     if ema_structure_down:
         score -= m1 * a5
 
-    # MACD : Croisements
+    # MACD : Croisements avec seuil personnalisé
     if is_macd_cross_up:
         score += a6
     if is_macd_cross_down:
         score -= a6
 
-    # Volume
-    if is_volume_ok:
+    # Volume avec seuil personnalisé
+    if is_volume_ok and volume_mean > volume_threshold * 100000:
         score += m2 * a6
     else:
         score -= m2 * a6
@@ -366,8 +448,8 @@ def get_trading_signal(prices, volumes, domaine, domain_coeffs=None,
     buy_conditions = (
         (is_macd_cross_up or ema_structure_up) and
         (rsi_cross_up or rsi_cross_mid) and
-        (last_rsi < 65) and
-        (last_bb_percent < 0.7) and
+        (last_rsi < (100 - rsi_threshold)) and
+        (last_bb_percent < bollinger_threshold + 0.2) and
         (strong_uptrend or adx_strong_trend) and
         (volume_mean > volume_seuil) and
         (is_variation_ok if not np.isnan(variation_30j) else True)
@@ -376,23 +458,23 @@ def get_trading_signal(prices, volumes, domaine, domain_coeffs=None,
     # Conditions de vente renforcées
     sell_conditions = (
         (is_macd_cross_down or ema_structure_down) and
-        (rsi_cross_down or last_rsi > 70) and
-        (last_rsi > 35) and
-        (last_bb_percent > 0.3) and
+        (rsi_cross_down or last_rsi > (100 - rsi_threshold + 20)) and
+        (last_rsi > rsi_threshold - 20) and
+        (last_bb_percent > bollinger_threshold - 0.2) and
         (strong_downtrend or adx_strong_trend) and
         (volume_mean > volume_seuil)
     )
 
     if strong_uptrend:
         score += m2 * a5
-    if last_bb_percent < 0.4:
+    if last_bb_percent < bollinger_threshold:
         score += m3 * a4
     if buy_conditions:
         score += a8
 
     if strong_downtrend:
         score -= m2 * a5
-    if last_bb_percent > 0.6:
+    if last_bb_percent > (1.0 - bollinger_threshold):
         score -= m3 * a4
     if sell_conditions:
         score -= a8
@@ -401,10 +483,14 @@ def get_trading_signal(prices, volumes, domaine, domain_coeffs=None,
         m4 = 0.75
     score *= m4
 
-    # Interprétation du score
-    if score >= thresholds[0]:
+    # Interprétation du score avec le seuil global (index 7)
+    # Utiliser le seuil global (thresholds[7]) pour les décisions ACHAT/VENTE
+    buy_threshold = score_threshold if len(thresholds) > 7 else 4.20
+    sell_threshold = -score_threshold if len(thresholds) > 7 else -0.5
+    
+    if score >= buy_threshold:
         signal = "ACHAT"
-    elif score <= thresholds[1]:
+    elif score <= sell_threshold:
         signal = "VENTE"
     else:
         signal = "NEUTRE"
@@ -1095,6 +1181,16 @@ def download_stock_data(symbols: List[str], period: str) -> Dict[str, Dict[str, 
         if successful_new and len(successful_new) <= 3:
             # print(f"💡 Suggestion: Ajouter {list(successful_new)} à vos listes pour optimiser futures sessions")
             pass
+    
+    # ✨ V2.0: Sauvegarder dans le cache
+    if CACHE_AVAILABLE and valid_data:
+        try:
+            cache = get_cache()
+            for symbol, data in valid_data.items():
+                cache.set_price_history(symbol, pd.DataFrame(data))
+            # print(f"✅ {len(valid_data)} symboles sauvegardés en cache V2.0")
+        except Exception as e:
+            pass  # Cache optionnel, ne pas bloquer
     
     return valid_data
 
