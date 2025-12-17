@@ -21,6 +21,11 @@ import sys
 import os
 import traceback
 
+# ✅ Ajouter le dossier trading_c_acceleration au sys.path pour trouver trading_c
+_module_dir = os.path.dirname(os.path.abspath(__file__))
+if _module_dir not in sys.path:
+    sys.path.insert(0, _module_dir)
+
 def _diagnose_import(module_name: str):
     """Tentative d'import et diagnostic si échec."""
     try:

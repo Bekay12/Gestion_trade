@@ -564,87 +564,33 @@ class MainWindow(QMainWindow):
                 prices = stock_data['Close']
                 volumes = stock_data['Volume']
 
-                # domain best-effort
-                try:
-                    import yfinance as yf
-                    ticker_obj = yf.Ticker(symbol)
-                    info = ticker_obj.info
-                    domaine = info.get('sector', 'Inconnu')
-
-                    # Try to extract financial metrics (robust fallbacks)
-                    market_cap_val = 0.0
-                    debt_to_equity_val = 0.0
-                    gross_margin_val = 0.0
-                    fcf_val = 0.0
-                    rev_growth_val = 0.0
-
-                    try:
-                        mc = info.get('marketCap') or info.get('market_cap') or 0
-                        if mc:
-                            market_cap_val = float(mc) / 1e9
-                    except Exception:
-                        market_cap_val = 0.0
-
-                    try:
-                        debt_to_equity_val = float(info.get('debtToEquity') or info.get('debtToEquityRatio') or 0.0)
-                    except Exception:
-                        debt_to_equity_val = 0.0
-
-                    try:
-                        gm = info.get('grossMargins')
-                        if gm is None:
-                            gm = info.get('grossMargin')
-                        if gm is not None:
-                            gross_margin_val = float(gm) * 100.0 if abs(gm) <= 1 else float(gm)
-                    except Exception:
-                        gross_margin_val = 0.0
-
-                    try:
-                        # free cash flow naming varies
-                        fcf_val = float(info.get('freeCashflow') or info.get('freeCashFlow') or 0.0)
-                        # try cashflow statement if missing
-                        if not fcf_val:
-                            try:
-                                cf = ticker_obj.cashflow
-                                # common index names: 'Free Cash Flow' or 'freeCashFlow'
-                                for candidate in ['Free Cash Flow', 'freeCashFlow', 'FreeCashFlow']:
-                                    if candidate in cf.index:
-                                        fcf_val = float(cf.loc[candidate].iloc[0])
-                                        break
-                            except Exception:
-                                pass
-                        # convert to billions for display
-                        if fcf_val:
-                            fcf_val = fcf_val / 1e9
-                    except Exception:
-                        fcf_val = 0.0
-
-                    try:
-                        # revenue growth via financials: compare most recent two periods
-                        try:
-                            fin = ticker_obj.financials
-                            # common labels for revenue
-                            rev_candidates = ['Total Revenue', 'Revenue', 'totalRevenue', 'TotalRevenue']
-                            rev_vals = None
-                            for cand in rev_candidates:
-                                if cand in fin.index:
-                                    rev_vals = fin.loc[cand].dropna()
-                                    break
-                            if rev_vals is not None and len(rev_vals) >= 2:
-                                rev_growth_val = ((float(rev_vals.iloc[0]) - float(rev_vals.iloc[1])) / float(rev_vals.iloc[1])) * 100.0
-                        except Exception:
-                            rev_growth_val = 0.0
-                    except Exception:
-                        rev_growth_val = 0.0
-                except Exception:
-                    domaine = 'Inconnu'
-
+                # ✅ OPTIMISATION MAJEURE: get_trading_signal retourne déjà domaine et métriques financières
+                # Plus besoin d'appeler yf.Ticker().info qui est TRÈS LENT (3-5 sec par symbole)
+                domaine = 'Inconnu'
+                sig = "NEUTRE"
+                last_price = float(prices.iloc[-1]) if len(prices) > 0 else 0.0
+                trend = False
+                last_rsi = 0.0
+                volume_mean = float(volumes.mean()) if len(volumes) > 0 else 0.0
+                score = 0.0
+                derivatives = {}
+                
                 try:
                     sig, last_price, trend, last_rsi, volume_mean, score, derivatives = get_trading_signal(
-                        prices, volumes, domaine=domaine, return_derivatives=True, symbol=symbol  # Ajouter symbol
+                        prices, volumes, domaine='Inconnu', return_derivatives=True, symbol=symbol
                     )
-                except Exception:
-                    sig, last_price, trend, last_rsi, volume_mean, score = ("NEUTRE", 0.0, False, 0.0, 0.0, 0.0)
+                    # Récupérer le domaine depuis derivatives si disponible
+                    domaine = derivatives.get('sector', 'Inconnu') if derivatives else 'Inconnu'
+                    
+                    # 🔍 Debug: vérifier si les métriques financières sont présentes
+                    if not derivatives.get('rev_growth_val') and not derivatives.get('market_cap_val'):
+                        print(f"⚠️ {symbol}: Métriques financières manquantes dans derivatives")
+                        print(f"   Clés disponibles: {list(derivatives.keys())}")
+                except Exception as e:
+                    # Log l'erreur mais continue avec les valeurs par défaut
+                    print(f"⚠️ Erreur get_trading_signal pour {symbol}: {e}")
+                    import traceback
+                    traceback.print_exc()
                     derivatives = {}
 
                 row_info = {
@@ -660,17 +606,41 @@ class MainWindow(QMainWindow):
                     'dMACD': round(derivatives.get('macd_slope', 0.0), 6),
                     'dRSI': round(derivatives.get('rsi_slope', 0.0), 6),
                     'dVolRel': round(derivatives.get('volume_slope_rel', 0.0), 6),
-                    # NOUVELLES COLONNES FINANCIÈRES
-                    'Rev. Growth (%)': round(float(derivatives.get('rev_growth_val')) if derivatives.get('rev_growth_val') else float(rev_growth_val or 0.0), 2),
-                    'Gross Margin (%)': round(float(derivatives.get('gross_margin_val')) if derivatives.get('gross_margin_val') else float(gross_margin_val or 0.0), 2),
-                    'FCF (B$)': round(float(derivatives.get('fcf_val')) if derivatives.get('fcf_val') else float(fcf_val or 0.0), 2),
-                    'D/E Ratio': round(float(derivatives.get('debt_to_equity_val')) if derivatives.get('debt_to_equity_val') else float(debt_to_equity_val or 0.0), 2),
-                    'Market Cap (B$)': round(float(derivatives.get('market_cap_val')) if derivatives.get('market_cap_val') else float(market_cap_val or 0.0), 2)
+                    # ✅ Métriques financières déjà calculées dans get_trading_signal
+                    'Rev. Growth (%)': round(float(derivatives.get('rev_growth_val', 0.0) or 0.0), 2),
+                    'Gross Margin (%)': round(float(derivatives.get('gross_margin_val', 0.0) or 0.0), 2),
+                    'FCF (B$)': round(float(derivatives.get('fcf_val', 0.0) or 0.0), 2),
+                    'D/E Ratio': round(float(derivatives.get('debt_to_equity_val', 0.0) or 0.0), 2),
+                    'Market Cap (B$)': round(float(derivatives.get('market_cap_val', 0.0) or 0.0), 2)
                 }
 
                 self.current_results.append(row_info)
-            except Exception:
-                continue
+            except Exception as e:
+                # ✅ Ne jamais ignorer silencieusement - ajouter au moins les données de base
+                print(f"❌ Erreur critique pour {symbol}: {e}")
+                try:
+                    row_info = {
+                        'Symbole': symbol,
+                        'Signal': 'ERREUR',
+                        'Score': 0.0,
+                        'Prix': float(stock_data['Close'].iloc[-1]) if 'Close' in stock_data else 0.0,
+                        'Tendance': 'N/A',
+                        'RSI': 0.0,
+                        'Domaine': 'Inconnu',
+                        'Volume moyen': 0.0,
+                        'dPrice': 0.0,
+                        'dMACD': 0.0,
+                        'dRSI': 0.0,
+                        'dVolRel': 0.0,
+                        'Rev. Growth (%)': 0.0,
+                        'Gross Margin (%)': 0.0,
+                        'FCF (B$)': 0.0,
+                        'D/E Ratio': 0.0,
+                        'Market Cap (B$)': 0.0
+                    }
+                    self.current_results.append(row_info)
+                except Exception:
+                    pass
 
         # Attach fiabilite AND nb_trades from backtests if present
         if backtests:
@@ -829,36 +799,58 @@ class MainWindow(QMainWindow):
         except Exception:
             self.best_parameters = {}
         
-        # Enrichir les résultats (calculer les dérivées si non présentes)
+        # ✅ OPTIMISATION: Réutiliser les données déjà téléchargées depuis result
         try:
-            # If signals came without derivatives, compute them by downloading data per symbol
+            # Récupérer les données déjà disponibles
+            existing_data = result.get('data', {}) if isinstance(result, dict) else {}
+            
             for r in self.current_results:
-                # Only compute if dPrice not present or zero
-                if not r.get('dPrice') or float(r.get('dPrice', 0)) == 0.0:
-                    sym = r.get('Symbole')
-                    if not sym:
-                        continue
+                sym = r.get('Symbole')
+                if not sym:
+                    continue
+                    
+                # Calculer les dérivées techniques et métriques financières si manquantes
+                need_derivatives = not r.get('dPrice') or float(r.get('dPrice', 0)) == 0.0
+                need_financials = not r.get('Market Cap (B$)') or float(r.get('Market Cap (B$)', 0)) == 0.0
+                
+                if need_derivatives or need_financials:
                     try:
-                        data = download_stock_data([sym], self.period_input.text().strip() or '12mo').get(sym)
-                        if data is None:
+                        # Réutiliser les données en mémoire au lieu de re-télécharger
+                        stock_data = existing_data.get(sym)
+                        if stock_data is None:
+                            # Seulement télécharger si vraiment absent
+                            stock_data = download_stock_data([sym], self.period_input.text().strip() or '12mo').get(sym)
+                        
+                        if stock_data is None:
                             continue
-                        prices = data['Close']
-                        volumes = data['Volume']
+                            
+                        prices = stock_data['Close']
+                        volumes = stock_data['Volume']
                         try:
-                            _sig, _last_price, _trend, _last_rsi, _vol_mean, _score, derivatives = get_trading_signal(prices, volumes, domaine=r.get('Domaine', 'Inconnu'), return_derivatives=True,symbol=sym)
+                            _sig, _last_price, _trend, _last_rsi, _vol_mean, _score, derivatives = get_trading_signal(prices, volumes, domaine=r.get('Domaine', 'Inconnu'), return_derivatives=True, symbol=sym)
                         except Exception:
                             derivatives = {}
 
-                        r['dPrice'] = round(derivatives.get('price_slope', 0.0), 6)
-                        r['dMACD'] = round(derivatives.get('macd_slope', 0.0), 6)
-                        r['dRSI'] = round(derivatives.get('rsi_slope', 0.0), 6)
-                        r['dVolRel'] = round(derivatives.get('volume_slope_rel', 0.0), 6)
+                        # Dérivées techniques
+                        if need_derivatives:
+                            r['dPrice'] = round(derivatives.get('price_slope', 0.0), 6)
+                            r['dMACD'] = round(derivatives.get('macd_slope', 0.0), 6)
+                            r['dRSI'] = round(derivatives.get('rsi_slope', 0.0), 6)
+                            r['dVolRel'] = round(derivatives.get('volume_slope_rel', 0.0), 6)
+                        
+                        # ✅ Métriques financières depuis derivatives (TOUJOURS extraire)
+                        r['Rev. Growth (%)'] = round(derivatives.get('rev_growth_val', 0.0), 2)
+                        r['Gross Margin (%)'] = round(derivatives.get('gross_margin_val', 0.0), 2)
+                        r['FCF (B$)'] = round(derivatives.get('fcf_val', 0.0), 2)
+                        r['D/E Ratio'] = round(derivatives.get('debt_to_equity', 0.0), 2)
+                        r['Market Cap (B$)'] = round(derivatives.get('market_cap_val', 0.0) / 1e9, 2)
                     except Exception:
                         # leave defaults
-                        r.setdefault('dPrice', 0.0)
-                        r.setdefault('dMACD', 0.0)
-                        r.setdefault('dRSI', 0.0)
-                        r.setdefault('dVolRel', 0.0)
+                        if need_derivatives:
+                            r.setdefault('dPrice', 0.0)
+                            r.setdefault('dMACD', 0.0)
+                            r.setdefault('dRSI', 0.0)
+                            r.setdefault('dVolRel', 0.0)
         except Exception:
             pass
 
@@ -876,6 +868,9 @@ class MainWindow(QMainWindow):
             backtests = result.get('backtest_results', []) if isinstance(result, dict) else []
             events_map = {bt.get('Symbole'): bt.get('events', []) for bt in backtests}
 
+            # ✅ OPTIMISATION: Récupérer les données existantes
+            existing_data = result.get('data', {}) if isinstance(result, dict) else {}
+            
             # Helper to embed a list of symbols as canvases
             def embed_symbol_list(symbol_list, title_prefix=""):
                 if not symbol_list:
@@ -883,7 +878,11 @@ class MainWindow(QMainWindow):
                 for i, s in enumerate(symbol_list):
                     sym = s['Symbole'] if isinstance(s, dict) and 'Symbole' in s else s
                     try:
-                        stock_data = download_stock_data([sym], period=self.period_input.text().strip() or '12mo').get(sym)
+                        # Réutiliser les données en mémoire
+                        stock_data = existing_data.get(sym)
+                        if stock_data is None:
+                            # Seulement télécharger si vraiment absent
+                            stock_data = download_stock_data([sym], period=self.period_input.text().strip() or '12mo').get(sym)
                         if not stock_data:
                             continue
                         prices = stock_data['Close']

@@ -660,6 +660,10 @@ def compute_financial_derivatives(symbol: str, lookback_quarters: int = 4) -> di
     'fcf_slope': 0.0,
     'debt_to_equity_val': 0.0,
     'market_cap_val': 0.0,
+    # ✅ Valeurs brutes pour l'affichage
+    'rev_growth_val': 0.0,
+    'gross_margin_val': 0.0,
+    'fcf_val': 0.0,
     }
 
     try:
@@ -668,10 +672,29 @@ def compute_financial_derivatives(symbol: str, lookback_quarters: int = 4) -> di
         cashflow = ticker.quarterly_cashflow
         info = ticker.info
         
+        # 🔍 Debug: afficher la disponibilité des données
+        has_financials = not financials.empty
+        has_cashflow = not cashflow.empty
+        has_revenue = has_financials and 'Total Revenue' in financials.index
+        has_gross_profit = has_financials and 'Gross Profit' in financials.index
+        has_fcf = has_cashflow and 'Free Cash Flow' in cashflow.index
+        
+        if not (has_revenue or has_gross_profit or has_fcf):
+            print(f"⚠️ {symbol}: Aucune donnée financière disponible (financials={has_financials}, cashflow={has_cashflow})")
+            if has_financials:
+                print(f"   Indices financials: {list(financials.index[:5])}")
+            if has_cashflow:
+                print(f"   Indices cashflow: {list(cashflow.index[:5])}")
+        
         # Croissance du chiffre d'affaires - pente sur derniers trimestres
         if not financials.empty and 'Total Revenue' in financials.index:
             revenues = financials.loc['Total Revenue'].head(lookback_quarters)
             if len(revenues) >= 2:
+                # ✅ Valeur brute: croissance sur 1 an (avec protection division par zéro)
+                if revenues.iloc[-1] != 0 and not np.isnan(revenues.iloc[-1]):
+                    derivatives['rev_growth_val'] = float(((revenues.iloc[0] - revenues.iloc[-1]) / revenues.iloc[-1]) * 100)
+                
+                # Pente
                 growth_rates = revenues.pct_change() * 100
                 growth_rates = growth_rates.dropna()
                 if len(growth_rates) >= 2:
@@ -679,7 +702,7 @@ def compute_financial_derivatives(symbol: str, lookback_quarters: int = 4) -> di
                     y = growth_rates.values.astype(float)
                     try:
                         p = np.polyfit(x, y, 1)
-                        derivatives['rev_growth_slope'] = float(p)
+                        derivatives['rev_growth_slope'] = float(p[0])
                     except Exception:
                         pass
         
@@ -691,10 +714,14 @@ def compute_financial_derivatives(symbol: str, lookback_quarters: int = 4) -> di
                 if len(gp) >= 2 and len(rev) >= 2:
                     margins = (gp / rev * 100).dropna()
                     if len(margins) >= 2:
+                        # ✅ Valeur brute: marge la plus récente
+                        derivatives['gross_margin_val'] = float(margins.iloc[0])
+                        
+                        # Pente
                         x = np.arange(len(margins), dtype=float)
                         y = margins.values.astype(float)
                         p = np.polyfit(x, y, 1)
-                        derivatives['gross_margin_slope'] = float(p)
+                        derivatives['gross_margin_slope'] = float(p[0])
             except Exception:
                 pass
         
@@ -702,11 +729,15 @@ def compute_financial_derivatives(symbol: str, lookback_quarters: int = 4) -> di
         if not cashflow.empty and 'Free Cash Flow' in cashflow.index:
             fcf_data = (cashflow.loc['Free Cash Flow'].head(lookback_quarters) / 1e9).dropna()
             if len(fcf_data) >= 2:
+                # ✅ Valeur brute: FCF le plus récent
+                derivatives['fcf_val'] = float(fcf_data.iloc[0])
+                
+                # Pente
                 x = np.arange(len(fcf_data), dtype=float)
                 y = fcf_data.values.astype(float)
                 try:
                     p = np.polyfit(x, y, 1)
-                    derivatives['fcf_slope'] = float(p)
+                    derivatives['fcf_slope'] = float(p[0])
                 except Exception:
                     pass
         
@@ -718,6 +749,10 @@ def compute_financial_derivatives(symbol: str, lookback_quarters: int = 4) -> di
         market_cap = info.get('marketCap')
         if market_cap:
             derivatives['market_cap_val'] = float(market_cap) / 1e9
+        
+        # ✅ OPTIMISATION: Ajouter le secteur pour éviter un appel supplémentaire
+        sector = info.get('sector', 'Inconnu')
+        derivatives['sector'] = sector
 
     except Exception:
         pass
