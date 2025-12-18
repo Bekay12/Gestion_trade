@@ -3959,3 +3959,11 @@
 2025-12-17 23:39:13,923 - ERROR - 
 1 Failed download:
 2025-12-17 23:39:13,923 - ERROR - ['SMY']: YFPricesMissingError('possibly delisted; no price data found  (period=12mo)')
+2025-12-18 01:23:55,191 - ERROR - HTTP Error 404: {"quoteSummary":{"result":null,"error":{"code":"Not Found","description":"Quote not found for symbol: SPTF"}}}
+2025-12-18 01:23:55,811 - ERROR - 
+1 Failed download:
+2025-12-18 01:23:55,811 - ERROR - ['SPTF']: YFPricesMissingError('possibly delisted; no price data found  (period=12mo) (Yahoo error = "No data found, symbol may be delisted")')
+2025-12-18 01:23:56,639 - ERROR - HTTP Error 404: {"quoteSummary":{"result":null,"error":{"code":"Not Found","description":"Quote not found for symbol: SPTF"}}}
+2025-12-18 01:23:57,158 - ERROR - 
+1 Failed download:
+2025-12-18 01:23:57,158 - ERROR - ['SPTF']: YFPricesMissingError('possibly delisted; no price data found  (period=12mo) (Yahoo error = "No data found, symbol may be delisted")')

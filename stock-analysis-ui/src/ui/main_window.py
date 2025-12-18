@@ -113,16 +113,6 @@ class DownloadThread(QThread):
                                 'montant': 50
                             }
                             
-                            if V2_REAL_AVAILABLE:
-                                backtest_kwargs['domain_coeffs'] = {domaine: self.optimized_coeffs[domaine]}
-                                if domaine in self.optimized_thresholds:
-                                    seuils = self.optimized_thresholds[domaine]
-                                    backtest_kwargs['seuil_achat'] = seuils[0]
-                                    backtest_kwargs['seuil_vente'] = seuils[1]
-                                self.progress.emit(f"  📊 {symbol}: Backtest avec paramètres V2.0 optimisés ({domaine})")
-                            else:
-                                self.progress.emit(f"  📊 {symbol}: Backtest avec paramètres par défaut ({domaine})")
-                            
                             bt = backtest_signals(**backtest_kwargs)
                             backtests.append({ 'Symbole': symbol, **bt })
                         except Exception as e:
@@ -1402,81 +1392,6 @@ class MainWindow(QMainWindow):
                 w.setParent(None)
         import gc
         gc.collect()
-
-    # ✨ V2.0 REAL Features Analysis - Nouvelles méthodes pour accéder aux features avec paramètres personnalisés
-    def get_v2_features(self, symbol, sector=None, custom_weights=None, custom_thresholds=None):
-        """
-        Analyse complète des 8 features V2.0 avec poids et seuils personnalisés
-        
-        Args:
-            symbol: Symbole à analyser (ex: 'AAPL')
-            sector: Secteur pour paramètres optimisés (ex: 'Technology')
-            custom_weights: dict poids personnalisés
-            custom_thresholds: dict seuils personnalisés
-        
-        Returns:
-            Dict avec analyse détaillée de chaque feature
-        """
-        if not V2_REAL_AVAILABLE or not get_feature_analysis:
-            return {'error': 'V2.0 REAL not available'}
-        
-        try:
-            # Charger paramètres selon source
-            weights = custom_weights
-            thresholds = custom_thresholds
-            
-            if not weights or not thresholds:
-                if sector:
-                    params = load_optimized_params(sector)
-                    weights = weights or params.get('weights', DEFAULT_WEIGHTS)
-                    thresholds = thresholds or params.get('thresholds', DEFAULT_THRESHOLDS)
-                else:
-                    weights = weights or DEFAULT_WEIGHTS
-                    thresholds = thresholds or DEFAULT_THRESHOLDS
-            
-            # Appeler l'analyse avec paramètres
-            analysis = get_feature_analysis(symbol, period='6mo', weights=weights, thresholds=thresholds)
-            return analysis
-        except Exception as e:
-            return {'error': str(e)}
-    
-    def get_v2_signals_batch(self, symbols, sector=None, custom_weights=None, custom_thresholds=None):
-        """
-        Génère des signaux V2.0 REAL pour plusieurs symboles avec paramètres personnalisés
-        
-        Args:
-            symbols: Liste de symboles
-            sector: Secteur pour paramètres optimisés
-            custom_weights: dict poids personnalisés
-            custom_thresholds: dict seuils personnalisés
-        
-        Returns:
-            Dict avec signaux pour chaque symbole
-        """
-        if not V2_REAL_AVAILABLE or not get_v2_trading_signals:
-            return {'error': 'V2.0 REAL not available'}
-        
-        try:
-            # Charger paramètres
-            weights = custom_weights
-            thresholds = custom_thresholds
-            
-            if not weights or not thresholds:
-                if sector:
-                    params = load_optimized_params(sector)
-                    weights = weights or params.get('weights', DEFAULT_WEIGHTS)
-                    thresholds = thresholds or params.get('thresholds', DEFAULT_THRESHOLDS)
-                else:
-                    weights = weights or DEFAULT_WEIGHTS
-                    thresholds = thresholds or DEFAULT_THRESHOLDS
-            
-            # Générer signaux
-            signals = get_v2_trading_signals(symbols, period='6mo', weights=weights, thresholds=thresholds)
-            return signals
-        except Exception as e:
-            return {'error': str(e)}
-
-
 
 
 

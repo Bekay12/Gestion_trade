@@ -22,21 +22,6 @@ from pathlib import Path
 sys.path.append("C:\\Users\\berti\\Desktop\\Mes documents\\Gestion_trade\\stock-analysis-ui\\src\\trading_c_acceleration")
 from qsi_optimized import backtest_signals, extract_best_parameters, backtest_signals_with_events
 
-# ✨ V2.0 Imports - REAL METRICS
-try:
-    from v2_real_metrics import RealMetricsV2, analyze_symbol
-    from v2_real_optimizer import V2RealOptimizer
-    V2_REAL_AVAILABLE = True
-except ImportError:
-    V2_REAL_AVAILABLE = False
-
-try:
-    from cache_manager import get_cache
-    from feature_config import get_param, apply_sector_override
-    CACHE_AVAILABLE = True
-except ImportError:
-    CACHE_AVAILABLE = False
-
 # Supprimer les avertissements FutureWarning de yfinance
 warnings.filterwarnings("ignore", category=FutureWarning)
 
@@ -232,17 +217,6 @@ def get_trading_signal(prices, volumes, domaine, domain_coeffs=None, domain_thre
     Returns:
         Tuple avec (signal, score, rsi, volume_mean, tendance)
     """
-    
-    # ✨ V2.0: Charger les paramètres optimisés si non fournis
-    if domain_coeffs is None and CACHE_AVAILABLE:
-        try:
-            optimized_coeffs = get_optimized_domain_coeffs()
-            if domaine in optimized_coeffs:
-                domain_coeffs = {domaine: optimized_coeffs[domaine]}
-                # print(f"✅ V2.0: Utilisation des paramètres optimisés pour {domaine}")
-        except Exception as e:
-            # Silencieusement ignorer les erreurs de chargement V2.0
-            pass
     
     # Conversion explicite en Series scalaires
     if isinstance(prices, pd.DataFrame):
@@ -1167,16 +1141,6 @@ def download_stock_data(symbols: List[str], period: str) -> Dict[str, Dict[str, 
         if successful_new and len(successful_new) <= 3:
             # print(f"💡 Suggestion: Ajouter {list(successful_new)} à vos listes pour optimiser futures sessions")
             pass
-    
-    # ✨ V2.0: Sauvegarder dans le cache
-    if CACHE_AVAILABLE and valid_data:
-        try:
-            cache = get_cache()
-            for symbol, data in valid_data.items():
-                cache.set_price_history(symbol, pd.DataFrame(data))
-            # print(f"✅ {len(valid_data)} symboles sauvegardés en cache V2.0")
-        except Exception as e:
-            pass  # Cache optionnel, ne pas bloquer
     
     return valid_data
 
