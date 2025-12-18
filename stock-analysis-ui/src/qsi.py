@@ -651,106 +651,51 @@ def get_financial_metrics(symbol: str) -> dict:
 
 def compute_financial_derivatives(symbol: str, lookback_quarters: int = 4) -> dict:
     """
-    Calcule les dérivées (pentes) des métriques financières sur les derniers trimestres.
-    Idéal pour intégrer dans les calculs de score.
+    Calcule les métriques financières de manière RAPIDE et SIMPLE.
+    Utilise UNIQUEMENT les données de .info (très rapide).
     """
     derivatives = {
-    'rev_growth_slope': 0.0,
-    'gross_margin_slope': 0.0,
-    'fcf_slope': 0.0,
-    'debt_to_equity_val': 0.0,
-    'market_cap_val': 0.0,
-    # ✅ Valeurs brutes pour l'affichage
-    'rev_growth_val': 0.0,
-    'gross_margin_val': 0.0,
-    'fcf_val': 0.0,
+        'debt_to_equity': 0.0,
+        'market_cap_val': 0.0,
+        # ✅ Valeurs simples depuis .info
+        'rev_growth_val': 0.0,
+        'ebitda_val': 0.0,
+        'fcf_val': 0.0,
+        'sector': 'Inconnu'
     }
 
     try:
         ticker = yf.Ticker(symbol)
-        financials = ticker.quarterly_financials
-        cashflow = ticker.quarterly_cashflow
         info = ticker.info
         
-        # 🔍 Debug: afficher la disponibilité des données
-        has_financials = not financials.empty
-        has_cashflow = not cashflow.empty
-        has_revenue = has_financials and 'Total Revenue' in financials.index
-        has_gross_profit = has_financials and 'Gross Profit' in financials.index
-        has_fcf = has_cashflow and 'Free Cash Flow' in cashflow.index
+        # ⚡ Récupérer DIRECTEMENT de .info (1 seul appel API, très rapide)
         
-        if not (has_revenue or has_gross_profit or has_fcf):
-            print(f"⚠️ {symbol}: Aucune donnée financière disponible (financials={has_financials}, cashflow={has_cashflow})")
-            if has_financials:
-                print(f"   Indices financials: {list(financials.index[:5])}")
-            if has_cashflow:
-                print(f"   Indices cashflow: {list(cashflow.index[:5])}")
+        # Revenue Growth - croissance annuelle
+        revenue_growth = info.get('revenueGrowth')
+        if revenue_growth:
+            derivatives['rev_growth_val'] = float(revenue_growth) * 100
         
-        # Croissance du chiffre d'affaires - pente sur derniers trimestres
-        if not financials.empty and 'Total Revenue' in financials.index:
-            revenues = financials.loc['Total Revenue'].head(lookback_quarters)
-            if len(revenues) >= 2:
-                # ✅ Valeur brute: croissance sur 1 an (avec protection division par zéro)
-                if revenues.iloc[-1] != 0 and not np.isnan(revenues.iloc[-1]):
-                    derivatives['rev_growth_val'] = float(((revenues.iloc[0] - revenues.iloc[-1]) / revenues.iloc[-1]) * 100)
-                
-                # Pente
-                growth_rates = revenues.pct_change() * 100
-                growth_rates = growth_rates.dropna()
-                if len(growth_rates) >= 2:
-                    x = np.arange(len(growth_rates), dtype=float)
-                    y = growth_rates.values.astype(float)
-                    try:
-                        p = np.polyfit(x, y, 1)
-                        derivatives['rev_growth_slope'] = float(p[0])
-                    except Exception:
-                        pass
+        # EBITDA
+        ebitda = info.get('ebitda')
+        if ebitda:
+            derivatives['ebitda_val'] = float(ebitda) / 1e9
         
-        # Marge brute - pente sur derniers trimestres
-        if not financials.empty:
-            try:
-                gp = financials.loc['Gross Profit'].head(lookback_quarters)
-                rev = financials.loc['Total Revenue'].head(lookback_quarters)
-                if len(gp) >= 2 and len(rev) >= 2:
-                    margins = (gp / rev * 100).dropna()
-                    if len(margins) >= 2:
-                        # ✅ Valeur brute: marge la plus récente
-                        derivatives['gross_margin_val'] = float(margins.iloc[0])
-                        
-                        # Pente
-                        x = np.arange(len(margins), dtype=float)
-                        y = margins.values.astype(float)
-                        p = np.polyfit(x, y, 1)
-                        derivatives['gross_margin_slope'] = float(p[0])
-            except Exception:
-                pass
+        # Free Cash Flow
+        fcf = info.get('freeCashflow')
+        if fcf:
+            derivatives['fcf_val'] = float(fcf) / 1e9
         
-        # Free Cash Flow - pente sur derniers trimestres
-        if not cashflow.empty and 'Free Cash Flow' in cashflow.index:
-            fcf_data = (cashflow.loc['Free Cash Flow'].head(lookback_quarters) / 1e9).dropna()
-            if len(fcf_data) >= 2:
-                # ✅ Valeur brute: FCF le plus récent
-                derivatives['fcf_val'] = float(fcf_data.iloc[0])
-                
-                # Pente
-                x = np.arange(len(fcf_data), dtype=float)
-                y = fcf_data.values.astype(float)
-                try:
-                    p = np.polyfit(x, y, 1)
-                    derivatives['fcf_slope'] = float(p[0])
-                except Exception:
-                    pass
-        
-        # Ratio Dette/Équité et Market Cap (valeurs actuelles)
+        # Debt to Equity
         debt_to_equity = info.get('debtToEquity')
         if debt_to_equity:
-            derivatives['debt_to_equity_val'] = float(debt_to_equity)
+            derivatives['debt_to_equity'] = float(debt_to_equity)
         
+        # Market Cap
         market_cap = info.get('marketCap')
         if market_cap:
             derivatives['market_cap_val'] = float(market_cap) / 1e9
         
-        # ✅ OPTIMISATION: Ajouter le secteur pour éviter un appel supplémentaire
+        # Sector
         sector = info.get('sector', 'Inconnu')
         derivatives['sector'] = sector
 
@@ -1417,10 +1362,10 @@ def plot_unified_chart(symbol, prices, volumes, ax, show_xaxis=False):
     # Ajout des signaux trading (ne pas demander les dérivées ici — elles seront consommées par l'UI)
     signal, last_price, trend, last_rsi, volume_moyen, score = get_trading_signal(prices, volumes, domaine=domaine)
 
-    # Calcul de la progression en pourcentage, en évitant la division par zéro ou NaN
-    if len(prices) > 1 and not pd.isna(prices.iloc[0]) and prices.iloc[0] != 0:
-        progression = ((prices.iloc[-1] - prices.iloc[0]) / prices.iloc[0]) * 100
-        # Éventuellement arrondir ou limiter
+    # Calcul robuste de la progression (%): ignorer NaN/0 au début de série
+    valid = prices.replace(0, np.nan).dropna()
+    if len(valid) > 1:
+        progression = float((valid.iloc[-1] - valid.iloc[0]) / valid.iloc[0] * 100)
         progression = round(progression, 2)
     else:
         progression = 0.0
@@ -1865,7 +1810,10 @@ def analyse_signaux_populaires(
                 except Exception:
                     domaine = "ℹ️Inconnu!!"
 
-                signal, last_price, trend, last_rsi, volume_mean, score = get_trading_signal(prices, volumes, domaine)
+                # ✅ Récupérer le signal ET les dérivés (métriques financières)
+                signal, last_price, trend, last_rsi, volume_mean, score, derivatives = get_trading_signal(
+                    prices, volumes, domaine, return_derivatives=True, symbol=symbol
+                )
 
                 if signal != "NEUTRE":
                     signals.append({
@@ -1876,7 +1824,17 @@ def analyse_signaux_populaires(
                         'Tendance': "Hausse" if trend else "Baisse",
                         'RSI': last_rsi,
                         'Domaine': domaine,
-                        'Volume moyen': volume_mean
+                        'Volume moyen': volume_mean,
+                        # ✅ Ajouter les dérivés (métriques financières)
+                        'dPrice': round(derivatives.get('price_slope', 0.0), 3),
+                        'dMACD': round(derivatives.get('macd_slope', 0.0), 3),
+                        'dRSI': round(derivatives.get('rsi_slope', 0.0), 3),
+                        'dVolRel': round(derivatives.get('volume_slope_rel', 0.0), 3),
+                        'Rev. Growth (%)': round(derivatives.get('rev_growth_val', 0.0), 2),
+                        'EBITDA (B$)': round(derivatives.get('ebitda_val', 0.0), 2),
+                        'FCF (B$)': round(derivatives.get('fcf_val', 0.0), 2),
+                        'D/E Ratio': round(derivatives.get('debt_to_equity', 0.0), 2),
+                        'Market Cap (B$)': round(derivatives.get('market_cap_val', 0.0), 2)
                     })
 
         except Exception as e:
@@ -2238,10 +2196,9 @@ def analyse_signaux_populaires(
             except Exception:
                 pass
 
-            if len(prices) > 1:
-                progression = ((prices.iloc[-1] - prices.iloc[0]) / prices.iloc[0]) * 100
-                if isinstance(progression, pd.Series):
-                    progression = float(progression.iloc[0])
+            valid = prices.replace(0, np.nan).dropna()
+            if len(valid) > 1:
+                progression = float((valid.iloc[-1] - valid.iloc[0]) / valid.iloc[0] * 100)
             else:
                 progression = 0.0
 
@@ -2308,10 +2265,9 @@ def analyse_signaux_populaires(
             except Exception:
                 pass
 
-            if len(prices) > 1:
-                progression = ((prices.iloc[-1] - prices.iloc[0]) / prices.iloc[0]) * 100
-                if isinstance(progression, pd.Series):
-                    progression = float(progression.iloc[0])
+            valid = prices.replace(0, np.nan).dropna()
+            if len(valid) > 1:
+                progression = float((valid.iloc[-1] - valid.iloc[0]) / valid.iloc[0] * 100)
             else:
                 progression = 0.0
 
