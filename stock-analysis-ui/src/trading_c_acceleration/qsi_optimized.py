@@ -318,6 +318,10 @@ def backtest_signals_accelerated(prices: Union[pd.Series, pd.DataFrame], volumes
     default_thresholds = (50.0, 0.0, 0.0, 1.2, 25.0, 0.0, 0.5, 4.20)
     best_params = extract_best_parameters()
     
+    # Debug: vérifier si les paramètres sont chargés
+    if not best_params:
+        print(f"⚠️ backtest_signals: Aucun paramètre optimisé trouvé")
+    
     if domain_coeffs:
         coeffs = domain_coeffs.get(domaine, default_coeffs)
     else:
@@ -326,6 +330,7 @@ def backtest_signals_accelerated(prices: Union[pd.Series, pd.DataFrame], volumes
             # Les anciens seuils legacy ne sont pas utilisés si domain_thresholds fourni
         else:
             coeffs = default_coeffs
+            print(f"⚠️ backtest_signals: Domaine '{domaine}' non trouvé dans best_params, utilise default")
     
     # Récupération des seuils (nouveaux: domain_thresholds)
     if domain_thresholds:
@@ -347,18 +352,10 @@ def backtest_signals_accelerated(prices: Union[pd.Series, pd.DataFrame], volumes
         seuil_vente = -0.5
     
     # ✨ ACCÉLÉRATION C - Si disponible, utilise le module C ultra-rapide
-    # 🔧 OPTIMISATION V2.0: Même avec domain_thresholds, on peut utiliser C
-    # en passant le score_global_threshold comme seuil_achat
     if C_ACCELERATION:
         try:
-            # Extract score_global_threshold from domain_thresholds if provided
-            if domain_thresholds:
-                thresholds_tuple = domain_thresholds.get(domaine, default_thresholds)
-                # thresholds_tuple[7] is the score_global_threshold
-                score_threshold = thresholds_tuple[7] if len(thresholds_tuple) > 7 else 4.20
-                # Use score_threshold as seuil_achat for the C module
-                seuil_achat = score_threshold
-                seuil_vente = -score_threshold
+            # NOTE: Ne PAS écraser seuil_achat/seuil_vente ici - ils sont déjà correctement définis
+            # depuis globals_thresholds (lignes 343-345) ou les valeurs par défaut
             
             # Nettoyage des données (éliminer NaN)
             clean_prices = prices.fillna(method='ffill').fillna(method='bfill')
@@ -377,10 +374,14 @@ def backtest_signals_accelerated(prices: Union[pd.Series, pd.DataFrame], volumes
             
         except Exception as e:
             print(f"⚠️ Erreur module C, fallback Python: {e}")
-            # En cas d'erreur, utilise la version Python
+            # En cas d'erreur, utilise la version Python avec events
+            result_dict, _ = backtest_signals_with_events(prices, volumes, domaine, montant, transaction_cost, domain_coeffs, domain_thresholds, seuil_achat, seuil_vente)
+            return result_dict
     
-    # Fallback: version Python originale (votre logique exacte)
-    return backtest_signals_original(prices, volumes, domaine, montant, transaction_cost, domain_coeffs, domain_thresholds, seuil_achat, seuil_vente)
+    # Fallback: Si C n'est pas disponible, utiliser la version Python
+    print(f"⚠️ Fallback à Python: C_ACCELERATION={C_ACCELERATION}")
+    result_dict, _ = backtest_signals_with_events(prices, volumes, domaine, montant, transaction_cost, domain_coeffs, domain_thresholds, seuil_achat, seuil_vente)
+    return result_dict
 
 def backtest_signals_with_events(prices, volumes, domaine, montant=50, transaction_cost=0.02, domain_coeffs=None, domain_thresholds=None, seuil_achat=4.2, seuil_vente=-0.5):
     """Backtest qui retourne BOTH les stats ET les événements de trade pour cohérence parfaite.
@@ -389,7 +390,7 @@ def backtest_signals_with_events(prices, volumes, domaine, montant=50, transacti
     """
     try:
         from qsi import get_trading_signal as qsi_get_trading_signal
-    except Exception:
+    except Exception as e:
         return {"trades": 0, "gagnants": 0, "taux_reussite": 0, "gain_total": 0.0, "gain_moyen": 0.0, "drawdown_max": 0.0}, []
 
     if isinstance(prices, pd.DataFrame):
@@ -414,14 +415,14 @@ def backtest_signals_with_events(prices, volumes, domaine, montant=50, transacti
         window_prices = prices.iloc[:i]
         window_volumes = volumes.iloc[:i]
         try:
-            sig, last_close, _, _, _, _ = qsi_get_trading_signal(window_prices, window_volumes, domaine, domain_coeffs=domain_coeffs, domain_thresholds=domain_thresholds)
+            sig, last_close, _, _, _, _, _ = qsi_get_trading_signal(window_prices, window_volumes, domaine, domain_coeffs=domain_coeffs, domain_thresholds=domain_thresholds)
         except TypeError:
             # older signature without domain_thresholds
             try:
-                sig, last_close, _, _, _, _ = qsi_get_trading_signal(window_prices, window_volumes, domaine, domain_coeffs=domain_coeffs)
-            except Exception:
+                sig, last_close, _, _, _, _, _ = qsi_get_trading_signal(window_prices, window_volumes, domaine, domain_coeffs=domain_coeffs)
+            except Exception as e2:
                 continue
-        except Exception:
+        except Exception as e:
             continue
 
         if sig == 'ACHAT' and position == 0:
@@ -474,29 +475,6 @@ def backtest_signals_with_events(prices, volumes, domaine, montant=50, transacti
     
     return result, events
 
-
-
-    """Fallback Python backtest implementation that iterates over history and uses get_trading_signal.
-    This is a simplified but compatible backtest used when C acceleration is unavailable.
-    """
-    try:
-        # Local import to avoid circular imports at module import time
-        from qsi import get_trading_signal as qsi_get_trading_signal
-    except Exception:
-        # As a last resort, no backtest possible
-        return {
-            "trades": 0,
-            "gagnants": 0,
-            "taux_reussite": 0,
-            "gain_total": 0.0,
-            "gain_moyen": 0.0,
-            "drawdown_max": 0.0
-        }
-
-    if isinstance(prices, pd.DataFrame):
-        prices = prices.squeeze()
-    if isinstance(volumes, pd.DataFrame):
-        volumes = volumes.squeeze()
 
     n = len(prices)
     if n < 60:

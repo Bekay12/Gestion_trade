@@ -189,10 +189,10 @@ def extract_best_parameters(db_path: str = 'signaux/optimization_hist.db') -> Di
         
         conn.close()
         
-        if result:
-            print(f"✅ {len(result)} secteurs chargés depuis SQLite")
-        else:
-            print(f"🚫 Aucune donnée trouvée dans {db_path}")
+        # if result:
+        #     print(f"✅ {len(result)} secteurs chargés depuis SQLite")
+        # else:
+        #     print(f"🚫 Aucune donnée trouvée dans {db_path}")
         
         return result
 
@@ -232,8 +232,11 @@ def get_trading_signal(prices, volumes, domaine, domain_coeffs=None, domain_thre
     if isinstance(volumes, pd.DataFrame):
         volumes = volumes.squeeze()
 
+    # Initialiser derivatives pour éviter les erreurs
+    derivatives = {}
+
     if len(prices) < 50:
-        return "Données insuffisantes", None, None, None, None, None
+        return "Données insuffisantes", None, None, None, None, None, derivatives
 
     # Calcul des indicateurs
     macd, signal_line = calculate_macd(prices)
@@ -244,7 +247,7 @@ def get_trading_signal(prices, volumes, domaine, domain_coeffs=None, domain_thre
 
     # Validation des derniers points
     if len(macd) < 2 or len(rsi) < 1:
-        return "Données récentes manquantes", None, None, None, None, None
+        return "Données récentes manquantes", None, None, None, None, None, derivatives
 
     # CORRECTION 1: Conversion explicite en valeurs scalaires
     last_close = float(prices.iloc[-1])
@@ -512,9 +515,29 @@ def get_trading_signal(prices, volumes, domaine, domain_coeffs=None, domain_thre
             deriv[f"{name}_slope_rel"] = rel
         return deriv
 
+    # Calculer les dérivées des indicateurs techniques si demandées
+    if return_derivatives:
+        try:
+            technical_derivatives = compute_derivatives({
+                'price': prices,
+                'macd': macd,
+                'rsi': rsi,
+                'volume': volumes
+            }, window=8)
+            derivatives.update(technical_derivatives)
+        except Exception as e:
+            print(f"⚠️ Erreur calcul dérivées techniques: {e}")
+            derivatives['price_slope'] = 0.0
+            derivatives['price_slope_rel'] = 0.0
+            derivatives['macd_slope'] = 0.0
+            derivatives['macd_slope_rel'] = 0.0
+            derivatives['rsi_slope'] = 0.0
+            derivatives['rsi_slope_rel'] = 0.0
+            derivatives['volume_slope'] = 0.0
+            derivatives['volume_slope_rel'] = 0.0
+
     # Ajouter les dérivées financières si symbol fourni
-    # todo : a adapter pour eviter les try/except inutiles
-    if symbol:
+    if symbol and return_derivatives:
         try:
             fin_deriv = compute_financial_derivatives(symbol, lookback_quarters=4)
             derivatives.update(fin_deriv)
@@ -1206,7 +1229,19 @@ def plot_unified_chart(symbol, prices, volumes, ax, show_xaxis=False):
     domaine = info.get("sector", "Inconnu")
 
     # Ajout des signaux trading (ne pas demander les dérivées ici — elles seront consommées par l'UI)
-    signal, last_price, trend, last_rsi, volume_moyen, score = get_trading_signal(prices, volumes, domaine=domaine)
+    try:
+        signal, last_price, trend, last_rsi, volume_moyen, score, _ = get_trading_signal(prices, volumes, domaine=domaine)
+    except Exception as e:
+        print(f"⚠️ plot_unified_chart: Erreur get_trading_signal pour {symbol}: {e}")
+        # Fallback: calculer manuellement les valeurs minimales
+        last_price = float(prices.iloc[-1]) if len(prices) > 0 else None
+        if last_price is None:
+            return  # Impossible de tracer sans prix
+        trend = prices.iloc[-1] > prices.iloc[-2] if len(prices) >= 2 else False
+        last_rsi = 50.0  # Valeur neutre
+        volume_moyen = float(volumes.mean()) if len(volumes) > 0 else 0.0
+        score = 0.0
+        signal = "NEUTRE"  # Signal neutre par défaut
 
     # Calcul robuste de la progression (%): ignorer NaN/0 au début de série
     valid = prices.replace(0, np.nan).dropna()
@@ -1555,13 +1590,20 @@ def analyse_signaux_populaires(
     """
     import matplotlib.pyplot as plt
 
-    print("\nExtraction des meilleurs paramètres depuis le CSV:")
+    print("\n✅ Extraction des meilleurs paramètres depuis SQLite...")
     best_parameters = extract_best_parameters()
-    print("\nDictionnaire des meilleurs paramètres:")
-    print("{")
-    for sector, (coeffs, thresholds, globals_thresholds, gain_moy) in best_parameters.items():
-        print(f" '{sector}': (coefficients={coeffs}, thresholds={thresholds}, globaux={globals_thresholds}), 'Gain moy={gain_moy}/50),")
-    print("}")
+    
+    if not best_parameters:
+        print("⚠️ Aucun paramètre optimisé trouvé dans la base SQLite")
+    else:
+        print(f"\n✅ {len(best_parameters)} secteurs chargés depuis SQLite")
+    
+    if verbose and best_parameters:
+        print("\nDictionnaire des meilleurs paramètres:")
+        print("{")
+        for sector, (coeffs, thresholds, globals_thresholds, gain_moy) in best_parameters.items():
+            print(f" '{sector}': (coefficients={coeffs}, thresholds={thresholds}, globaux={globals_thresholds}), 'Gain moy={gain_moy}/50),")
+        print("}")
 
     if verbose:
         print("\n🔍 Analyse des signaux pour actions populaires...")

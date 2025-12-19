@@ -17,7 +17,8 @@ PROJECT_SRC = os.path.abspath(os.path.join(os.path.dirname(__file__), '..'))
 if PROJECT_SRC not in sys.path:
     sys.path.insert(0, PROJECT_SRC)
 from qsi import analyse_signaux_populaires, analyse_et_affiche, popular_symbols, mes_symbols, period
-from qsi import download_stock_data, backtest_signals, plot_unified_chart, get_trading_signal, generate_trade_events
+from qsi import download_stock_data, backtest_signals, plot_unified_chart, get_trading_signal
+from qsi_optimized import extract_best_parameters
 
 
 class AnalysisThread(QThread):
@@ -105,15 +106,31 @@ class DownloadThread(QThread):
                             except Exception:
                                 domaine = 'Inconnu'
 
+                            # ✨ Extraire les paramètres optimisés depuis la SQLite
+                            try:
+                                best_params = extract_best_parameters()
+                            except Exception:
+                                best_params = {}
+
+                            coeffs, feature_thresholds, globals_thresholds, _ = best_params.get(domaine, (None, None, (4.2, -0.5), None))
+                            domain_coeffs = {domaine: coeffs} if coeffs else None
+                            
                             # ✨ V2.0: Utiliser les paramètres optimisés si disponibles
                             backtest_kwargs = {
                                 'prices': prices,
                                 'volumes': volumes,
                                 'domaine': domaine,
-                                'montant': 50
+                                'montant': 50,
+                                'domain_coeffs': domain_coeffs,
+                                'domain_thresholds': {domaine: feature_thresholds} if feature_thresholds else None
                             }
                             
                             bt = backtest_signals(**backtest_kwargs)
+                            
+                            # Debug: vérifier si le backtest retourne des trades
+                            if bt.get('trades', 0) == 0:
+                                self.progress.emit(f"  ⚠️ {symbol}: Aucun trade détecté (domaine={domaine})")
+                            
                             backtests.append({ 'Symbole': symbol, **bt })
                         except Exception as e:
                             self.progress.emit(f"  ⚠️ Erreur backtest {symbol}: {e}")
@@ -573,11 +590,12 @@ class MainWindow(QMainWindow):
                     domaine = derivatives.get('sector', 'Inconnu') if derivatives else 'Inconnu'
                     if domaine and domaine != 'Inconnu':
                         try:
-                            sig2, last_price2, trend2, last_rsi2, volume_mean2, score2 = get_trading_signal(
-                                prices, volumes, domaine=domaine
+                            sig2, last_price2, trend2, last_rsi2, volume_mean2, score2, derivatives2 = get_trading_signal(
+                                prices, volumes, domaine=domaine, return_derivatives=True, symbol=symbol
                             )
                             # Remplacer par la version cohérente avec le secteur
                             sig, trend, last_rsi, volume_mean, score = sig2, trend2, last_rsi2, volume_mean2, score2
+                            derivatives = derivatives2  # Utiliser les dérivées du deuxième appel aussi
                         except Exception:
                             pass
                     
