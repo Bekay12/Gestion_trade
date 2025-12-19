@@ -145,53 +145,76 @@ def save_to_evolutive_csv(signals, filename="signaux_trading.csv"):
 
 from typing import Tuple, Dict, Union, List
 
-def extract_best_parameters(csv_path: str = 'signaux/optimization_hist_4stp.csv') -> Dict[str, Tuple[Tuple[float, ...], Tuple[float, ...]]]:
-    """Extrait les meilleurs coefficients avec tolérance aux CSV corrompus."""
+def extract_best_parameters(db_path: str = 'signaux/optimization_hist.db') -> Dict[str, Tuple[Tuple[float, ...], Tuple[float, ...], Tuple[float, float]]]:
+    """
+    Extrait les meilleurs coefficients et seuils pour chaque secteur à partir de la base SQLite.
+    Format attendu: Timestamp, Sector, Gain_moy, Success_Rate, Trades, Seuil_Achat, Seuil_Vente, a1-a8, th1-th8
+
+    Args:
+        db_path (str): Chemin vers la base SQLite contenant l'historique d'optimisation.
+
+    Returns:
+        Dict[str, Tuple[Tuple[float, ...], Tuple[float, ...], Tuple[float, float]]]: 
+        Dictionnaire avec pour chaque secteur: (coefficients_8, thresholds_8, globals_2, gain)
+    """
+    import sqlite3
+    
     try:
-        # Tolère les lignes corrompues et colonnes supplémentaires
-        df = pd.read_csv(csv_path, engine='python', on_bad_lines='skip')
-        if df.empty:
-            print("🚫 CSV vide, aucun paramètre extrait")
+        conn = sqlite3.connect(db_path)
+        cursor = conn.cursor()
+        
+        # Vérifier que la table existe
+        cursor.execute('''
+            SELECT name FROM sqlite_master 
+            WHERE type='table' AND name='optimization_runs'
+        ''')
+        if not cursor.fetchone():
+            print(f"🚫 Table 'optimization_runs' non trouvée dans {db_path}")
+            print("   Veuillez exécuter migration_csv_to_sqlite.py pour migrer vos données")
+            conn.close()
             return {}
-
-        basic_required = ['Sector', 'Gain_moy', 'Success_Rate', 'Trades', 'a1', 'a2', 'a3', 'a4', 'a5', 'a6', 'a7', 'a8']
-        missing = [col for col in basic_required if col not in df.columns]
-        if missing:
-            print(f"🚫 Colonnes manquantes dans le CSV : {missing}")
+        
+        # Extraire la dernière ligne (par timestamp) pour chaque secteur
+        cursor.execute('''
+            SELECT sector, gain_moy, a1, a2, a3, a4, a5, a6, a7, a8,
+                   th1, th2, th3, th4, th5, th6, th7, th8, seuil_achat, seuil_vente
+            FROM optimization_runs
+            WHERE (sector, timestamp) IN (
+                SELECT sector, MAX(timestamp) 
+                FROM optimization_runs 
+                GROUP BY sector
+            )
+            ORDER BY sector
+        ''')
+        
+        rows = cursor.fetchall()
+        conn.close()
+        
+        if not rows:
+            print("🚫 Aucune donnée trouvée dans la base SQLite")
             return {}
-
-        # Trier par secteur puis métriques pour garder le meilleur
-        sort_cols = [c for c in ['Sector', 'Gain_moy', 'Success_Rate', 'Trades', 'Timestamp'] if c in df.columns]
-        df_sorted = df.sort_values(by=sort_cols, ascending=[True, False, False, False, False][:len(sort_cols)])
-        best_params = df_sorted.groupby('Sector').first().reset_index()
-
+        
         result = {}
-        for _, row in best_params.iterrows():
-            sector = row['Sector']
-            coefficients = tuple(row[f'a{i+1}'] for i in range(8))
-
-            per_keys = [f'th{i+1}' for i in range(8)]
-            if all(k in row.index for k in per_keys):
-                thresholds = tuple(row[k] for k in per_keys)
-                buy = row['th_achat'] if 'th_achat' in row.index else (row['Seuil_Achat'] if 'Seuil_Achat' in row.index else 4.20)
-                sell = row['th_vente'] if 'th_vente' in row.index else (row['Seuil_Vente'] if 'Seuil_Vente' in row.index else -0.5)
-                thresholds = thresholds + (buy, sell)
-            else:
-                if 'Seuil_Achat' in row.index and 'Seuil_Vente' in row.index:
-                    buy = float(row['Seuil_Achat'])
-                    sell = float(row['Seuil_Vente'])
-                else:
-                    buy = 4.20
-                    sell = -0.5
-                thresholds = (50.0, 0.0, 0.0, 1.2, 25.0, 0.0, 0.5, 4.20, buy, sell)
-
-            gain_moy = row['Gain_moy']
-            result[sector] = (coefficients, thresholds, gain_moy)
-
+        for row in rows:
+            sector = row[0]
+            gain_moy = float(row[1])
+            
+            # Extraire les 8 coefficients (a1-a8)
+            coefficients = tuple(float(row[i]) for i in range(2, 10))
+            
+            # Extraire les 8 seuils features (th1-th8)
+            thresholds = tuple(float(row[i]) for i in range(10, 18))
+            
+            # Extraire les 2 seuils globaux (Seuil_Achat, Seuil_Vente)
+            globals_thresholds = (float(row[18]), float(row[19]))
+            
+            result[sector] = (coefficients, thresholds, globals_thresholds, gain_moy)
+        
         return result
 
     except FileNotFoundError:
-        print(f"🚫 Fichier CSV {csv_path} non trouvé")
+        print(f"🚫 Base de données {db_path} non trouvée")
+        print("   Veuillez exécuter migration_csv_to_sqlite.py pour migrer vos données")
         return {}
     except Exception as e:
         print(f"⚠️ Erreur lors de l'extraction des paramètres: {e}")
@@ -242,7 +265,8 @@ def get_trading_signal(prices, volumes, domaine, domain_coeffs=None, variation_s
         coeffs = domain_coeffs.get(domaine, default_coeffs)
     else:
         if domaine in best_params:
-            coeffs, thresholds, gain_moyen = best_params[domaine]
+            coeffs, feature_thresholds, globals_thresholds, gain_moyen = best_params[domaine]
+            thresholds = globals_thresholds  # pour compatibilité plus bas
         else:
             coeffs = default_coeffs
 
@@ -298,7 +322,7 @@ def backtest_signals_accelerated(prices: Union[pd.Series, pd.DataFrame], volumes
         coeffs = domain_coeffs.get(domaine, default_coeffs)
     else:
         if domaine in best_params:
-            coeffs, legacy_thresholds, _ = best_params[domaine]
+            coeffs, legacy_thresholds, globals_thresholds, _ = best_params[domaine]
             # Les anciens seuils legacy ne sont pas utilisés si domain_thresholds fourni
         else:
             coeffs = default_coeffs
@@ -308,6 +332,12 @@ def backtest_signals_accelerated(prices: Union[pd.Series, pd.DataFrame], volumes
         thresholds = domain_thresholds.get(domaine, default_thresholds)
     else:
         thresholds = default_thresholds
+
+    # Seuils globaux (legacy): utiliser Seuil_Achat/Seuil_Vente s'ils sont extraits
+    if domaine in best_params:
+        _, _, globals_thresholds, _ = best_params[domaine]
+        seuil_achat = globals_thresholds[0]
+        seuil_vente = globals_thresholds[1]
     
     # Valeurs par défaut pour les seuils (compatibilité avec ancien code)
 

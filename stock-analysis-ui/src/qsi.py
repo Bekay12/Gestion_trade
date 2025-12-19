@@ -130,72 +130,80 @@ def save_to_evolutive_csv(signals, filename="signaux_trading.csv"):
 
 from typing import Tuple, Dict, Union, List
 
-def extract_best_parameters(csv_path: str = 'signaux/optimization_hist_4stp.csv') -> Dict[str, Tuple[Tuple[float, ...], Tuple[float, ...]]]:
+def extract_best_parameters(db_path: str = 'signaux/optimization_hist.db') -> Dict[str, Tuple[Tuple[float, ...], Tuple[float, ...], Tuple[float, float]]]:
     """
-    Extrait les meilleurs coefficients et seuils pour chaque secteur à partir du CSV, basés sur le Gain_moy maximal.
+    Extrait les meilleurs coefficients et seuils pour chaque secteur à partir de SQLite.
+    Sélectionne la ligne la plus récente (par Timestamp) pour chaque secteur.
 
     Args:
-        csv_path (str): Chemin vers le CSV contenant l'historique d'optimisation.
+        db_path (str): Chemin vers la base SQLite contenant l'historique d'optimisation.
 
     Returns:
-        Dict[str, Tuple[Tuple[float, ...], Tuple[float, float]]]: Dictionnaire avec pour chaque secteur
-        un tuple (coefficients, seuils), où coefficients est (a1, a2, ..., a8) et seuils est (Seuil_Achat, Seuil_Vente).
+        Dict[str, Tuple[Tuple[float, ...], Tuple[float, ...], Tuple[float, float]]]: 
+        Dictionnaire avec pour chaque secteur: (coefficients_8, thresholds_8, globals_2, gain)
     """
     try:
-        # Utiliser engine='python' pour tolérer des lignes avec un nombre de champs variable
-        # et on_bad_lines='skip' pour ignorer les lignes corrompues
-        df = pd.read_csv(csv_path, engine='python', on_bad_lines='skip')
-        if df.empty:
-            print("🚫 CSV vide, aucun paramètre extrait")
+        import sqlite3
+        
+        conn = sqlite3.connect(db_path)
+        conn.row_factory = sqlite3.Row  # Accès par colonne
+        cursor = conn.cursor()
+        
+        # Vérifier que la table existe
+        cursor.execute("SELECT name FROM sqlite_master WHERE type='table' AND name='optimization_runs'")
+        if not cursor.fetchone():
+            print(f"🚫 Table 'optimization_runs' non trouvée dans {db_path}")
             return {}
-
-        # Colonnes minimales attendues (legacy)
-        basic_required = ['Sector', 'Gain_moy', 'Success_Rate', 'Trades', 'a1', 'a2', 'a3', 'a4', 'a5', 'a6', 'a7', 'a8']
-        missing = [col for col in basic_required if col not in df.columns]
-        if missing:
-            print(f"🚫 Colonnes manquantes dans le CSV : {missing}")
-            return {}
-
-        # Sort and pick best row per sector
-        sort_cols = [c for c in ['Sector', 'Gain_moy', 'Success_Rate', 'Trades', 'Timestamp'] if c in df.columns]
-        df_sorted = df.sort_values(by=sort_cols, ascending=[True] + [False] * (len(sort_cols) - 1))
-        best_params = df_sorted.groupby('Sector').first().reset_index()
-
+        
+        # Récupérer la dernière ligne (plus récente) pour chaque secteur
+        cursor.execute('''
+            SELECT 
+                sector, gain_moy,
+                a1, a2, a3, a4, a5, a6, a7, a8,
+                th1, th2, th3, th4, th5, th6, th7, th8,
+                seuil_achat, seuil_vente
+            FROM optimization_runs
+            WHERE (sector, timestamp) IN (
+                SELECT sector, MAX(timestamp) 
+                FROM optimization_runs 
+                GROUP BY sector
+            )
+            ORDER BY sector
+        ''')
+        
         result = {}
-        for _, row in best_params.iterrows():
-            sector = row['Sector']
-            coefficients = tuple(row[f'a{i+1}'] for i in range(8))
-
-            # Détection des seuils
-            per_keys = [f'th{i+1}' for i in range(8)]
-            # Nouveau format 10 seuils (8 features + 2 globaux)
-            if all(k in row.index for k in per_keys):
-                thresholds = tuple(row[k] for k in per_keys)
-                # Ajouter les 2 seuils globaux si présents
-                buy = row['th_achat'] if 'th_achat' in row.index else (row['Seuil_Achat'] if 'Seuil_Achat' in row.index else 4.20)
-                sell = row['th_vente'] if 'th_vente' in row.index else (row['Seuil_Vente'] if 'Seuil_Vente' in row.index else -0.5)
-                thresholds = thresholds + (buy, sell)
-            else:
-                # Legacy: 2 seuils seulement
-                if 'Seuil_Achat' in row.index and 'Seuil_Vente' in row.index:
-                    buy = float(row['Seuil_Achat'])
-                    sell = float(row['Seuil_Vente'])
-                else:
-                    buy = 4.20
-                    sell = -0.5
-                # Reconstituer 8 seuils features par défaut + 2 globaux
-                thresholds = (50.0, 0.0, 0.0, 1.2, 25.0, 0.0, 0.5, 4.20, buy, sell)
-
-            gain_moy = row['Gain_moy'] if 'Gain_moy' in row.index else 0.0
-            result[sector] = (coefficients, thresholds, gain_moy)
-
+        for row in cursor.fetchall():
+            sector = row['sector'].strip()
+            
+            # Extraire les 8 coefficients (a1-a8)
+            coefficients = tuple(float(row[f'a{i+1}']) for i in range(8))
+            
+            # Extraire les 8 seuils features (th1-th8)
+            thresholds = tuple(float(row[f'th{i+1}']) for i in range(8))
+            
+            # Extraire les 2 seuils globaux
+            globals_thresholds = (float(row['seuil_achat']), float(row['seuil_vente']))
+            
+            gain_moy = float(row['gain_moy'])
+            result[sector] = (coefficients, thresholds, globals_thresholds, gain_moy)
+        
+        conn.close()
+        
+        if result:
+            print(f"✅ {len(result)} secteurs chargés depuis SQLite")
+        else:
+            print(f"🚫 Aucune donnée trouvée dans {db_path}")
+        
         return result
 
     except FileNotFoundError:
-        print(f"🚫 Fichier CSV {csv_path} non trouvé")
+        print(f"🚫 Base de données {db_path} non trouvée")
+        print(f"   💡 Exécute: python migration_csv_to_sqlite.py")
         return {}
     except Exception as e:
-        print(f"⚠️ Erreur lors de l'extraction des paramètres: {e}")
+        print(f"⚠️ Erreur lors de l'extraction depuis SQLite: {e}")
+        import traceback
+        traceback.print_exc()
         return {}
 
 def get_trading_signal(prices, volumes, domaine, domain_coeffs=None, domain_thresholds=None,
@@ -337,7 +345,7 @@ def get_trading_signal(prices, volumes, domaine, domain_coeffs=None, domain_thre
         coeffs = domain_coeffs.get(domaine, default_coeffs)
     else:
         if domaine in best_params:
-            coeffs, legacy_thresholds, gain_moyen = best_params[domaine]
+            coeffs, legacy_thresholds, globals_thresholds, gain_moyen = best_params[domaine]
         else:
             coeffs = default_coeffs
     
@@ -481,66 +489,44 @@ def get_trading_signal(prices, volumes, domaine, domain_coeffs=None, domain_thre
         deriv = {}
         for name, ser in series_dict.items():
             try:
-                if not isinstance(ser, (pd.Series, pd.DataFrame)):
-                    arr = np.asarray(ser)
-                else:
-                    arr = ser.dropna().values.astype(float)
-
+                arr = np.asarray(ser.dropna().values.astype(float)) if isinstance(ser, (pd.Series, pd.DataFrame)) else np.asarray(ser)
                 n = len(arr)
                 if n >= 2:
                     k = min(window, n)
                     y = arr[-k:]
                     x = np.arange(k, dtype=float)
-                    # linear fit: slope is coefficient
                     try:
                         p = np.polyfit(x, y, 1)
                         slope = float(p[0])
                     except Exception:
-                        # fallback to simple diff
                         slope = float(y[-1] - y[-2]) if k >= 2 else 0.0
-
                     last = float(arr[-1]) if n > 0 else 0.0
                     rel = float(slope / last) if last != 0 else 0.0
                 else:
                     slope = 0.0
                     rel = 0.0
-
-                deriv[f"{name}_slope"] = slope
-                deriv[f"{name}_slope_rel"] = rel
             except Exception:
-                deriv[f"{name}_slope"] = 0.0
-                deriv[f"{name}_slope_rel"] = 0.0
+                slope = 0.0
+                rel = 0.0
+            deriv[f"{name}_slope"] = slope
+            deriv[f"{name}_slope_rel"] = rel
         return deriv
 
-    if return_derivatives:
-        series_dict = {
-            'price': prices,
-            'ema20': ema20,
-            'ema50': ema50,
-            'macd': macd,
-            'signal_line': signal_line,
-            'rsi': rsi,
-            'volume': volumes
-        }
-        derivatives = compute_derivatives(series_dict, window=8)
+    # Ajouter les dérivées financières si symbol fourni
+    # todo : a adapter pour eviter les try/except inutiles
+    if symbol:
+        try:
+            fin_deriv = compute_financial_derivatives(symbol, lookback_quarters=4)
+            derivatives.update(fin_deriv)
+        except Exception:
+            # Ajouter des valeurs par défaut si erreur
+            derivatives['rev_growth_val'] = None
+            derivatives['gross_margin_val'] = None
+            derivatives['fcf_val'] = None
+            derivatives['debt_to_equity_val'] = None
+            derivatives['market_cap_val'] = None
     
-        # Ajouter les dérivées financières si symbol fourni
-        # todo : a adapter pour eviter les try/except inutiles
-        if symbol:
-            try:
-                fin_deriv = compute_financial_derivatives(symbol, lookback_quarters=4)
-                derivatives.update(fin_deriv)
-            except Exception:
-                # Ajouter des valeurs par défaut si erreur
-                derivatives['rev_growth_val'] = None
-                derivatives['gross_margin_val'] = None
-                derivatives['fcf_val'] = None
-                derivatives['debt_to_equity_val'] = None
-                derivatives['market_cap_val'] = None
-        
-        return signal, last_close, last_close > last_ema20, round(last_rsi, 2), round(volume_mean, 2), round(score, 3), derivatives
-
-    return signal, last_close, last_close > last_ema20, round(last_rsi, 2), round(volume_mean, 2), round(score, 3)
+    return signal, last_close, last_close > last_ema20, round(last_rsi, 2), round(volume_mean, 2), round(score, 3), derivatives
 
 # ====================================================================
 # MÉTRIQUES FINANCIÈRES CLÉS ET LEURS DÉRIVÉES
@@ -1144,110 +1130,6 @@ def download_stock_data(symbols: List[str], period: str) -> Dict[str, Dict[str, 
     
     return valid_data
 
-# def backtest_signals(prices: Union[pd.Series, pd.DataFrame], volumes: Union[pd.Series, pd.DataFrame],
-#                      domaine: str, montant: float = 50, transaction_cost: float = 0.00, domain_coeffs=None, seuil_achat=None, seuil_vente=None) -> Dict:
-#     """
-#     Effectue un backtest sur la série de prix.
-#     Un 'trade' correspond à un cycle complet ACHAT puis VENTE (entrée puis sortie).
-#     Le gain est calculé pour chaque cycle, avec prise en compte des frais de transaction.
-
-#     Args:
-#         prices: Série ou DataFrame des prix de clôture.
-#         volumes: Série ou DataFrame des volumes.
-#         domaine: Secteur de l'actif (ex: 'Technology').
-#         montant: Montant investi par trade (défaut: 50).
-#         transaction_cost: Frais de transaction par trade (défaut: 0.1%).
-
-#     Returns:
-#         Dict avec les métriques: trades, gagnants, taux_reussite, gain_total, gain_moyen, drawdown_max.
-#     """
-#     # Validation des entrées
-#     if not isinstance(prices, (pd.Series, pd.DataFrame)) or not isinstance(volumes, (pd.Series, pd.DataFrame)):
-#         return {
-#             "trades": 0,
-#             "gagnants": 0,
-#             "taux_reussite": 0,
-#             "gain_total": 0.0,
-#             "gain_moyen": 0.0,
-#             "drawdown_max": 0.0
-#         }
-
-#     if isinstance(prices, pd.DataFrame):
-#         prices = prices.squeeze()
-#     if isinstance(volumes, pd.DataFrame):
-#         volumes = volumes.squeeze()
-
-#     if len(prices) < 50 or len(volumes) < 50 or prices.isna().any() or volumes.isna().any():
-#         return {
-#             "trades": 0,
-#             "gagnants": 0,
-#             "taux_reussite": 0,
-#             "gain_total": 0.0,
-#             "gain_moyen": 0.0,
-#             "drawdown_max": 0.0
-#         }
-
-#     # Pré-calculer les signaux pour toute la série
-#     signals = []
-#     for i in range(50, len(prices)):
-#         signal, *_ = get_trading_signal(prices[:i], volumes[:i], domaine, domain_coeffs=domain_coeffs,)
-#         signals.append(signal)
-
-#     signals = pd.Series(signals, index=prices.index[50:])
-
-#     # Simuler les trades
-#     positions = []
-#     for i in range(len(signals)):
-#         if signals.iloc[i] == "ACHAT":
-#             positions.append({"entry": prices.iloc[i + 50], "entry_idx": i + 50, "type": "buy"})
-#         elif signals.iloc[i] == "VENTE" and positions and "exit" not in positions[-1]:
-#             positions[-1]["exit"] = prices.iloc[i + 50]
-#             positions[-1]["exit_idx"] = i + 50
-
-#     # Fermer les positions ouvertes avec le dernier prix
-#     # if positions and "exit" not in positions[-1]:
-#     #     positions[-1]["exit"] = prices.iloc[-1]
-#     #     positions[-1]["exit_idx"] = len(prices) - 1
-
-#     # Calculer les métriques
-#     nb_trades = 0
-#     nb_gagnants = 0
-#     gain_total = 0.0
-#     gains = []
-#     portfolio_values = [montant]  # Suivi de la valeur du portefeuille
-
-#     for pos in positions:
-#         if "exit" in pos:
-#             nb_trades += 1
-#             entry = pos["entry"]
-#             exit = pos["exit"]
-#             rendement = (exit - entry) / entry
-
-#             # Ajuster pour les frais de transaction (entrée + sortie)
-#             gain = montant * rendement * (1 - 2 * transaction_cost)
-#             gain_total += gain
-#             gains.append(gain)
-
-#             if gain > 0:
-#                 nb_gagnants += 1
-
-#             portfolio_values.append(portfolio_values[-1] + gain)
-
-#     # Calculer le drawdown maximum
-#     portfolio_series = pd.Series(portfolio_values)
-#     rolling_max = portfolio_series.cummax()
-#     drawdowns = (portfolio_series - rolling_max) / rolling_max
-#     drawdown_max = drawdowns.min() * 100 if len(drawdowns) > 0 else 0.0
-
-#     return {
-#         "trades": nb_trades,
-#         "gagnants": nb_gagnants,
-#         "taux_reussite": (nb_gagnants / nb_trades * 100) if nb_trades else 0,
-#         "gain_total": round(gain_total, 2),
-#         "gain_moyen": round(np.mean(gains), 2) if gains else 0.0,
-#         "drawdown_max": round(drawdown_max, 2)
-#     }
-
 def plot_unified_chart(symbol, prices, volumes, ax, show_xaxis=False):
     """Trace un graphique unifié avec prix, MACD et RSI intégré"""
     # Vérification du format des prix
@@ -1359,75 +1241,6 @@ def plot_unified_chart(symbol, prices, volumes, ax, show_xaxis=False):
         ax2.tick_params(axis='x', which='both', labelbottom=True)
 
     return ax2
-
-
-def generate_trade_events(prices: pd.Series, volumes: pd.Series, domaine: str, domain_coeffs=None, domain_thresholds=None) -> List[Dict]:
-    """
-    Simule rapidement les signaux sur la série pour produire une liste d'événements de trade.
-    SYNCHRONISÉ avec backtest_signals_original pour afficher EXACTEMENT les mêmes trades.
-
-    Retourne une liste d'événements de la forme:
-      [{ 'date': Timestamp, 'type': 'BUY'|'SELL', 'price': float, 'idx': int }, ...]
-    """
-    events = []
-    try:
-        if isinstance(prices, pd.DataFrame):
-            prices = prices.squeeze()
-        if isinstance(volumes, pd.DataFrame):
-            volumes = volumes.squeeze()
-
-        n = len(prices)
-        if n < 60:
-            return events
-
-        position = 0
-        entry_idx = None
-        debug_mode = False  # Set to True to debug
-
-        # 🔧 Synchronisé avec backtest_signals_original : boucle 50 à n
-        for i in range(50, n):
-            window_prices = prices.iloc[:i]
-            window_vols = volumes.iloc[:i]
-            try:
-                sig, last_close, *_ = get_trading_signal(window_prices, window_vols, domaine, domain_coeffs=domain_coeffs, domain_thresholds=domain_thresholds)
-                if debug_mode and i == 50:
-                    print(f"  🔧 {domaine}: i={i}, sig={sig}, last_close={last_close}")
-            except TypeError:
-                # fallback older signature
-                try:
-                    sig, last_close, *_ = get_trading_signal(window_prices, window_vols, domaine, domain_coeffs=domain_coeffs)
-                except Exception as e:
-                    if debug_mode and i == 50:
-                        print(f"  ⚠️ TypeError/Exception: {e}")
-                    sig = "NEUTRE"
-                    last_close = float(prices.iloc[i])
-            except Exception as e:
-                if debug_mode and i == 50:
-                    print(f"  ⚠️ Exception: {e}")
-                sig = "NEUTRE"
-                last_close = float(prices.iloc[i])
-
-            exec_price = float(prices.iloc[i])
-            exec_date = prices.index[i]
-
-            # Logique IDENTIQUE au backtest
-            if sig == 'ACHAT' and position == 0:
-                position = 1
-                entry_idx = i
-                events.append({"date": exec_date, "type": "BUY", "price": exec_price, "idx": i})
-            elif sig == 'VENTE' and position == 1:
-                position = 0
-                events.append({"date": exec_date, "type": "SELL", "price": exec_price, "idx": i})
-
-        # Fermer la position si ouverte à la fin (comme le backtest)
-        if position == 1 and entry_idx is not None:
-            last_idx = n - 1
-            events.append({"date": prices.index[last_idx], "type": "SELL", "price": float(prices.iloc[-1]), "idx": last_idx})
-
-    except Exception:
-        return events
-
-    return events
 
 def analyse_et_affiche(symbols, period="12mo"):
     """
@@ -1746,8 +1559,8 @@ def analyse_signaux_populaires(
     best_parameters = extract_best_parameters()
     print("\nDictionnaire des meilleurs paramètres:")
     print("{")
-    for sector, (coeffs, thresholds, gain_moy) in best_parameters.items():
-        print(f" '{sector}': (coefficients={coeffs}, thresholds={thresholds}), 'Gain moy={gain_moy}/50),")
+    for sector, (coeffs, thresholds, globals_thresholds, gain_moy) in best_parameters.items():
+        print(f" '{sector}': (coefficients={coeffs}, thresholds={thresholds}, globaux={globals_thresholds}), 'Gain moy={gain_moy}/50),")
     print("}")
 
     if verbose:
@@ -1880,7 +1693,7 @@ def analyse_signaux_populaires(
             except Exception:
                 best_params = {}
 
-            coeffs, thresholds, _ = best_params.get(domaine, (None, None, None))
+            coeffs, thresholds, globals_thresholds, _ = best_params.get(domaine, (None, None, (4.2, -0.5), None))
             domain_coeffs = {domaine: coeffs} if coeffs else None
             feature_thresholds = thresholds[:8] if thresholds and len(thresholds) >= 8 else None
             domain_thresholds = {domaine: feature_thresholds} if feature_thresholds else None
@@ -2031,9 +1844,9 @@ def analyse_signaux_populaires(
         
         if signal_info:
             # Récupérer le seuil d'achat pour le domaine
-            _, seuils, _ = best_parameters.get(signal_info['Domaine'], (None, (4.2, -0.5), None))
-            seuil_achat = seuils[0]
-            seuil_vente = seuils[1]
+            _, _, globals_thresholds, _ = best_parameters.get(signal_info['Domaine'], (None, None, (4.2, -0.5), None))
+            seuil_achat = globals_thresholds[0]
+            seuil_vente = globals_thresholds[1]
             
             if res['taux_reussite'] >= taux_reussite_min or (res['trades'] == 0 and (signal_info['Score'] > 2 * seuil_achat or signal_info['Score'] < 2 * seuil_vente)):
                 fiables_ou_non_eval.add(res['Symbole'])

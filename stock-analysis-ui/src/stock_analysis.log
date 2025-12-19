@@ -3967,3 +3967,9 @@
 2025-12-18 01:23:57,158 - ERROR - 
 1 Failed download:
 2025-12-18 01:23:57,158 - ERROR - ['SPTF']: YFPricesMissingError('possibly delisted; no price data found  (period=12mo) (Yahoo error = "No data found, symbol may be delisted")')
+2025-12-18 21:34:05,776 - ERROR - 
+1 Failed download:
+2025-12-18 21:34:05,781 - ERROR - ['AGS']: YFPricesMissingError('possibly delisted; no price data found  (period=12mo) (Yahoo error = "No data found, symbol may be delisted")')
+2025-12-18 21:34:15,609 - ERROR - 
+1 Failed download:
+2025-12-18 21:34:15,609 - ERROR - ['AGS']: YFPricesMissingError('possibly delisted; no price data found  (period=12mo) (Yahoo error = "No data found, symbol may be delisted")')

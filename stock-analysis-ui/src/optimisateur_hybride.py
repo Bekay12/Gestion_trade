@@ -3,6 +3,7 @@
 
 import pandas as pd
 import numpy as np
+import json
 from datetime import datetime, timedelta
 import random
 import sys
@@ -19,13 +20,55 @@ from scipy.stats import qmc
 import warnings
 warnings.filterwarnings("ignore")
 
-def get_sector(symbol):
-    """Récupère le secteur d'une action avec logs pour diagnostic"""
+# 🔧 OPTIMISATION: Caching des secteurs (mémoire + disque)
+SECTOR_CACHE_FILE = Path("cache_data/sector_cache.json")
+SECTOR_CACHE_FILE.parent.mkdir(exist_ok=True)
+SECTOR_TTL_DAYS = 30
+SECTOR_TTL_UNKNOWN_DAYS = 7
+
+def _load_sector_cache():
+    try:
+        if SECTOR_CACHE_FILE.exists():
+            with open(SECTOR_CACHE_FILE, "r", encoding="utf-8") as f:
+                return json.load(f)
+    except Exception as e:
+        print(f"⚠️ Impossible de charger le cache secteurs: {e}")
+    return {}
+
+def _save_sector_cache(cache):
+    try:
+        with open(SECTOR_CACHE_FILE, "w", encoding="utf-8") as f:
+            json.dump(cache, f)
+    except Exception as e:
+        print(f"⚠️ Impossible d'écrire le cache secteurs: {e}")
+
+def _is_sector_expired(entry):
+    try:
+        ts = entry.get("ts")
+        if not ts:
+            return True
+        dt = datetime.fromisoformat(ts)
+        ttl_days = SECTOR_TTL_UNKNOWN_DAYS if entry.get("sector") == "ℹ️Inconnu!!" else SECTOR_TTL_DAYS
+        return (datetime.utcnow() - dt).days >= ttl_days
+    except Exception:
+        return True
+
+_sector_cache = _load_sector_cache()
+
+def get_sector(symbol, use_cache=True):
+    """Récupère le secteur d'une action avec cache mémoire + disque."""
+    if use_cache:
+        entry = _sector_cache.get(symbol)
+        if entry and not _is_sector_expired(entry):
+            return entry.get("sector", "ℹ️Inconnu!!")
+
     try:
         ticker = yf.Ticker(symbol)
         info = ticker.info
         sector = info.get('sector', 'ℹ️Inconnu!!')
         print(f"📋 {symbol}: Secteur = {sector}")
+        _sector_cache[symbol] = {"sector": sector, "ts": datetime.utcnow().isoformat()}
+        _save_sector_cache(_sector_cache)
         return sector
     except Exception as e:
         print(f"⚠️ Erreur pour {symbol}: {e}")
@@ -74,6 +117,7 @@ class HybridOptimizer:
         self.optimized_coeffs_loaded = False
         self.initial_coeffs = None
         self.initial_thresholds = None
+        self.meilleur_trades = 0  # 🔧 Stocker le nombre de trades de la meilleure config
         
     def round_params(self, params):
         """🔧 NOUVEAU: Arrondir les paramètres à la précision définie"""
@@ -130,6 +174,10 @@ class HybridOptimizer:
 
             avg_gain = total_gain / len(self.stock_data) if self.stock_data else 0.0
             self.evaluation_count += 1
+            
+            # 🔧 Tracker le nombre de trades de la meilleure config
+            if param_key not in self.best_cache or avg_gain > self.best_cache[param_key]:
+                self.meilleur_trades = total_trades
 
             # Cache le résultat
             self.best_cache[param_key] = avg_gain
@@ -203,7 +251,7 @@ class HybridOptimizer:
 
                 population = new_population[:population_size]
 
-                pbar.set_postfix({'Meilleur': f"{best_fitness:.3f}", 'Eval': self.evaluation_count})
+                pbar.set_postfix({'Meilleur': f"{best_fitness:.3f}", 'Trades': self.meilleur_trades})
                 pbar.update(1)
 
         return self.round_params(best_individual), best_fitness
@@ -256,7 +304,7 @@ class HybridOptimizer:
 
         with tqdm(total=max_iterations, desc="🔄 Évolution différentielle", unit="iter") as pbar:
             def callback(xk, convergence):
-                pbar.set_postfix({'Convergence': f"{convergence:.6f}", 'Eval': self.evaluation_count})
+                pbar.set_postfix({'Convergence': f"{convergence:.6f}", 'Trades': self.meilleur_trades})
                 pbar.update(1)
 
             result = differential_evolution(
@@ -299,7 +347,7 @@ class HybridOptimizer:
                     best_score = score
                     best_params = sample.copy()
 
-                pbar.set_postfix({'Meilleur': f"{best_score:.3f}", 'Eval': self.evaluation_count})
+                pbar.set_postfix({'Meilleur': f"{best_score:.3f}", 'Trades': self.meilleur_trades})
                 pbar.update(1)
 
         return best_params, best_score
@@ -353,7 +401,7 @@ class HybridOptimizer:
                         global_best_score = score
                         global_best_position = particles[i].copy()
 
-                pbar.set_postfix({'Meilleur': f"{global_best_score:.3f}", 'Eval': self.evaluation_count})
+                pbar.set_postfix({'Meilleur': f"{global_best_score:.3f}", 'Trades': self.meilleur_trades})
                 pbar.update(1)
 
         return global_best_position, global_best_score
@@ -425,65 +473,133 @@ def optimize_sector_coefficients_hybrid(
     """
     if not sector_symbols:
         print(f"🚫 Secteur {domain} vide, ignoré")
-        return None, 0.0, 0.0, initial_thresholds
+        return None, 0.0, 0.0, initial_thresholds, None
 
     # Téléchargement des données
     stock_data = download_stock_data(sector_symbols, period=period)
     if not stock_data:
         print(f"🚨 Aucune donnée téléchargée pour le secteur {domain}")
-        return None, 0.0, 0.0, initial_thresholds
+        return None, 0.0, 0.0, initial_thresholds, None
 
     for symbol, data in stock_data.items():
         print(f"📊 {symbol}: {len(data['Close'])} points de données")
 
     # Récupération des meilleurs paramètres historiques
-    csv_path = 'signaux/optimization_hist_4stp.csv'
-    best_params_per_sector = extract_best_parameters(csv_path)
+    db_path = 'signaux/optimization_hist.db'
+    best_params_per_sector = extract_best_parameters(db_path)
 
     if domain in best_params_per_sector:
-        csv_coeffs, csv_thresholds, csv_gain = best_params_per_sector[domain]
-        print(f"📋 Paramètres historiques trouvés: coeffs={csv_coeffs}, seuils={csv_thresholds}, gain={csv_gain:.2f}")
+        csv_coeffs, csv_thresholds, csv_globals, csv_gain = best_params_per_sector[domain]
+        # 🔧 Sécuriser en float (déjà des floats depuis SQLite, mais par sécurité)
+        csv_coeffs = tuple(float(x) for x in csv_coeffs)
+        csv_thresholds = tuple(float(x) for x in csv_thresholds)
+        csv_globals = tuple(float(x) for x in csv_globals)
+        print(f"📋 Paramètres historiques trouvés: coeffs={csv_coeffs}, seuils={csv_thresholds}, globaux={csv_globals}, gain={csv_gain:.2f}")
     else:
-        csv_coeffs, csv_thresholds, csv_gain = None, initial_thresholds, -float('inf')
+        csv_coeffs, csv_thresholds, csv_globals, csv_gain = None, initial_thresholds, (4.2, -0.5), -float('inf')
+
+    hist_avg_gain = None  # 🔧 Pour mesurer l'amélioration vs l'historique
+    hist_total_trades = None
+    hist_success_rate = None
+
+    # ♻️ Réévaluer les paramètres historiques sur les données ACTUELLES
+    historical_candidate = None
+    if csv_coeffs is not None and len(csv_coeffs) >= 8 and len(csv_thresholds) >= 8 and len(csv_globals) == 2:
+        try:
+            hist_coeffs = tuple(csv_coeffs[:8])
+            hist_feature_thresholds = tuple(csv_thresholds[:8])
+            hist_seuil_achat = float(csv_globals[0])
+            hist_seuil_vente = float(csv_globals[1])
+
+            total_gain = 0.0
+            total_trades = 0
+            total_success = 0
+            for data in stock_data.values():
+                result = backtest_signals(
+                    data['Close'], data['Volume'], domain,
+                    domain_coeffs={domain: hist_coeffs},
+                    domain_thresholds={domain: hist_feature_thresholds},
+                    seuil_achat=hist_seuil_achat, seuil_vente=hist_seuil_vente,
+                    montant=montant, transaction_cost=transaction_cost
+                )
+                total_gain += result['gain_total']
+                total_trades += result['trades']
+                total_success += result['gagnants']
+
+            hist_avg_gain = total_gain / len(stock_data) if stock_data else 0.0
+            hist_success_rate = (total_success / total_trades * 100) if total_trades > 0 else 0.0
+            hist_total_trades = total_trades
+
+            # Préparer un candidat pour la comparaison finale
+            hist_params = hist_coeffs + hist_feature_thresholds + (hist_seuil_achat, hist_seuil_vente)
+            historical_candidate = ('Historical (re-eval)', hist_params, hist_avg_gain)
+
+            print(f"♻️ Paramètres historiques réévalués sur données actuelles: gain_moy={hist_avg_gain:.2f}, trades={total_trades}, success={hist_success_rate:.2f}%")
+        except Exception as e:
+            print(f"⚠️ Réévaluation des paramètres historiques impossible: {e}")
 
     # 🔧 MODIFIÉ: Initialisation de l'optimiseur avec précision
     optimizer = HybridOptimizer(stock_data, domain, montant, transaction_cost, precision)
 
+    # 🔧 NOUVEAU: Ajuster le budget en fonction de la précision
+    # Avec une plus grande précision, l'espace de recherche AUGMENTE
+    # Plus de décimales = plus de points possibles à explorer
+    # Donc on doit AUGMENTER le budget proportionnellement
+    # Facteur: 1.0 pour précision=1, 1.5 pour précision=2, 2.0 pour précision=3
+    precision_factor = 1.0 + (precision - 1) * 1.5
+    adjusted_budget = int(budget_evaluations * precision_factor)
+    
     # Stratégies d'optimisation
     results = []
+    # Ajouter le candidat "historical" réévalué si disponible
+    if historical_candidate:
+        results.append(historical_candidate)
     print(f"🚀 Optimisation hybride pour {domain} avec stratégie '{strategy}' (précision: {precision} décimales)")
-    print(f"📈 Budget d'évaluations: {budget_evaluations}")
+    print(f"📈 Budget d'évaluations initial: {budget_evaluations}")
+    print(f"🔧 Budget ajusté selon la précision: {adjusted_budget} (facteur: {precision_factor:.2f}x)")
 
     if strategy == 'hybrid' or strategy == 'genetic':
-        # Algorithmes génétiques
-        pop_size = min(50, budget_evaluations // 20)
-        generations = min(30, budget_evaluations // pop_size)
+        # Algorithmes génétiques - 🔧 Augmenter max pop_size selon budget
+        pop_size = min(100, adjusted_budget // 20)  # Max 100 au lieu de 50
+        generations = min(50, adjusted_budget // pop_size)  # Generations aussi augmentées
         params_ga, score_ga = optimizer.genetic_algorithm(pop_size, generations)
         results.append(('Genetic Algorithm', params_ga, score_ga))
 
     if strategy == 'hybrid' or strategy == 'differential':
-        # Évolution différentielle
-        pop_size = min(45, budget_evaluations // 25)
-        max_iter = min(100, budget_evaluations // pop_size)
+        # Évolution différentielle - 🔧 Augmenter max pop_size selon budget
+        pop_size = min(90, adjusted_budget // 25)  # Max 90 au lieu de 45
+        max_iter = min(100, adjusted_budget // pop_size)
         params_de, score_de = optimizer.differential_evolution_opt(pop_size, max_iter)
         results.append(('Differential Evolution', params_de, score_de))
 
     if strategy == 'hybrid' or strategy == 'pso':
-        # PSO
-        n_particles = min(30, budget_evaluations // 30)
-        max_iter = min(50, budget_evaluations // n_particles)
+        # PSO - 🔧 Augmenter max particules selon budget
+        n_particles = min(50, adjusted_budget // 30)  # Max 50 au lieu de 30
+        max_iter = min(100, adjusted_budget // n_particles)
         params_pso, score_pso = optimizer.particle_swarm_optimization(n_particles, max_iter)
         results.append(('PSO', params_pso, score_pso))
 
     if strategy == 'hybrid' or strategy == 'lhs':
-        # Latin Hypercube Sampling
-        n_samples = min(200, budget_evaluations // 5)
+        # Latin Hypercube Sampling - 🔧 Utiliser pleinement le budget
+        n_samples = min(500, adjusted_budget // 2)  # Max 500 au lieu de 200
         params_lhs, score_lhs = optimizer.latin_hypercube_sampling(n_samples)
         results.append(('Latin Hypercube', params_lhs, score_lhs))
 
     # Sélection du meilleur résultat
     best_method, best_params, best_score = max(results, key=lambda x: x[2])
     print(f"🏆 Meilleure méthode: {best_method} avec score {best_score:.4f}")
+
+    # Afficher aussi le meilleur candidat non-historique pour transparence
+    non_hist_candidates = [r for r in results if r[0] != 'Historical (re-eval)']
+    if non_hist_candidates:
+        nh_method, nh_params, nh_score = max(non_hist_candidates, key=lambda x: x[2])
+        nh_coeffs = tuple(float(x) for x in nh_params[:8])
+        nh_th = tuple(float(nh_params[i]) for i in range(8, 16))
+        nh_buy = float(nh_params[16])
+        nh_sell = float(nh_params[17])
+        print(f"🔎 Meilleur candidat Optimiseur: {nh_method} score={nh_score:.4f}")
+        print(f"   coeffs={nh_coeffs}")
+        print(f"   seuils: features={nh_th}, achat={nh_buy:.2f}, vente={nh_sell:.2f}")
 
     # Affinement local du meilleur résultat
     if strategy == 'hybrid':
@@ -517,90 +633,104 @@ def optimize_sector_coefficients_hybrid(
 
     success_rate = (total_success / total_trades * 100) if total_trades > 0 else 0.0
 
-    print(f"✅ Optimisation terminée:")
-    print(f" 📊 Évaluations effectuées: {optimizer.evaluation_count}")
-    print(f" 🎯 Meilleurs coefficients: {best_coeffs}")
-    print(f" 🎯 Meilleurs seuils features: {best_feature_thresholds}")
-    print(f" 🎯 Seuil achat global: {best_seuil_achat:.2f}")
-    print(f" 🎯 Seuil vente global: {best_seuil_vente:.2f}")
-    print(f" 💰 Gain moyen: {best_score:.2f}")
-    print(f" 📈 Taux de réussite: {success_rate:.2f}%")
-    print(f" 🔄 Nombre de trades: {total_trades}")
+    # 📊 Rapport synthétique secteur
+    if hist_avg_gain is not None:
+        delta = best_score - hist_avg_gain
+        delta_pct = (delta / abs(hist_avg_gain) * 100) if hist_avg_gain != 0 else None
+        success_old_str = f"{hist_success_rate:.1f}%" if hist_success_rate is not None else "-"
+        trades_old_str = hist_total_trades if hist_total_trades is not None else "-"
+        delta_pct_str = f", {delta_pct:+.1f}%" if delta_pct is not None else ""
+        print(f"✅ {domain}: gain {best_score:.2f} vs {hist_avg_gain:.2f} ({delta:+.2f}{delta_pct_str}); trades {total_trades} vs {trades_old_str}; success {success_rate:.1f}% vs {success_old_str} ; méthode {best_method}")
+    else:
+        print(f"✅ {domain}: gain {best_score:.2f}; trades {total_trades}; success {success_rate:.1f}% ; méthode {best_method}")
+
+    print(f"   coeffs: {best_coeffs}")
+    print(f"   seuils: features={best_feature_thresholds}, achat={best_seuil_achat:.2f}, vente={best_seuil_vente:.2f}")
 
     # Sauvegarde des résultats - agrégé en un tuple unique
     all_thresholds = best_feature_thresholds + (best_seuil_achat, best_seuil_vente)
-    save_optimization_results(domain, best_coeffs, best_score, success_rate, total_trades, all_thresholds)
+    
+    # 🔧 Sauvegarder si le nouveau score surpasse le score historique RÉÉVALUÉ sur données actuelles
+    # Comparaison avec hist_avg_gain (réévalué), pas avec le gain de la base de données
+    save_epsilon = 0.01
+    should_save = (hist_avg_gain is None) or (best_score > hist_avg_gain + save_epsilon)
+    
+    if should_save:
+        save_optimization_results(domain, best_coeffs, best_score, success_rate, total_trades, all_thresholds)
+        hist_str = f"{hist_avg_gain:.2f}" if hist_avg_gain is not None else "N/A"
+        print(f"💾 Sauvegarde: nouveau score {best_score:.2f} > historique réévalué {hist_str}")
+    else:
+        print(f"ℹ️ Pas de sauvegarde: nouveau {best_score:.2f} ≤ historique réévalué {hist_avg_gain:.2f} (epsilon={save_epsilon})")
 
-    return best_coeffs, best_score, success_rate, all_thresholds
-
-def save_optimization_results(domain, coeffs, gain_total, success_rate, total_trades, thresholds):
-    """Sauvegarde les résultats dans un CSV et dans le gestionnaire de paramètres V2.0"""
-    from datetime import datetime
-    import pandas as pd
-
-    results = {
-        'Timestamp': datetime.now().strftime('%Y-%m-%d %H:%M:%S'),
-        'Sector': domain,
-        'Gain_moy': gain_total,
-        'Success_Rate': success_rate,
-        'Trades': total_trades,
-        # V2.0: Sauvegarder les 8 seuils features + 2 seuils globaux
-        'Seuil_Achat': thresholds[8] if len(thresholds) > 8 else 4.20,  # Seuil achat global
-        'Seuil_Vente': thresholds[9] if len(thresholds) > 9 else -0.5,  # Seuil vente global
-        # Les 8 seuils features
-        'th1': thresholds[0] if len(thresholds) > 0 else 50.0,  # RSI_threshold
-        'th2': thresholds[1] if len(thresholds) > 1 else 0.0,   # MACD_threshold
-        'th3': thresholds[2] if len(thresholds) > 2 else 0.0,   # EMA_threshold
-        'th4': thresholds[3] if len(thresholds) > 3 else 1.2,   # Volume_threshold
-        'th5': thresholds[4] if len(thresholds) > 4 else 25.0,  # ADX_threshold
-        'th6': thresholds[5] if len(thresholds) > 5 else 0.0,   # Ichimoku_threshold
-        'th7': thresholds[6] if len(thresholds) > 6 else 0.5,   # Bollinger_threshold
-        'th8': thresholds[7] if len(thresholds) > 7 else 4.20,  # Score_global_threshold
-        # Les 2 seuils globaux
-        'th_achat': thresholds[8] if len(thresholds) > 8 else 4.20,  # Global buy threshold
-        'th_vente': thresholds[9] if len(thresholds) > 9 else -0.5,  # Global sell threshold
-        # Les 8 coefficients
-        'a1': coeffs[0], 'a2': coeffs[1], 'a3': coeffs[2], 'a4': coeffs[3],
-        'a5': coeffs[4], 'a6': coeffs[5], 'a7': coeffs[6], 'a8': coeffs[7]
+    summary = {
+        'sector': domain,
+        'gain_new': best_score,
+        'gain_old': hist_avg_gain,
+        'trades_new': total_trades,
+        'trades_old': hist_total_trades,
+        'success_new': success_rate,
+        'success_old': hist_success_rate
     }
 
-    csv_path = 'signaux/optimization_hist_4stp.csv'
+    return best_coeffs, best_score, success_rate, all_thresholds, summary
 
+def save_optimization_results(domain, coeffs, gain_total, success_rate, total_trades, thresholds):
+    """
+    Sauvegarde les résultats d'optimisation dans la base de données SQLite avec le format attendu:
+    Timestamp, Sector, Gain_moy, Success_Rate, Trades, Seuil_Achat, Seuil_Vente, a1-a8, th1-th8
+    
+    Args:
+        domain: Secteur
+        coeffs: 8 coefficients (a1-a8)
+        gain_total: Gain moyen
+        success_rate: Taux de réussite
+        total_trades: Nombre total de trades
+        thresholds: 8 feature thresholds + 2 global thresholds (buy, sell)
+    """
+    from datetime import datetime
+    import sqlite3
+
+    db_path = 'signaux/optimization_hist.db'
+    
     try:
-        # Vérifier si le fichier existe et charger les données existantes
-        if pd.io.common.file_exists(csv_path):
-            df_existing = pd.read_csv(csv_path, engine='python', on_bad_lines='skip')
-
-            # Filtrer les données pour le secteur concerné
-            sector_data = df_existing[df_existing['Sector'] == domain]
-
-            if not sector_data.empty:
-                # Trouver les meilleurs résultats existants pour ce secteur
-                best_gain = sector_data['Gain_moy'].max()
-                best_success_rate = sector_data['Success_Rate'].max()
-
-                # Vérifier si les nouveaux résultats sont meilleurs
-                is_best_gain = gain_total > best_gain
-                is_best_success_rate = success_rate > best_success_rate
-
-                # Ne sauvegarder que si au moins un des critères est meilleur
-                if not (is_best_gain or is_best_success_rate):
-                    print(f"⚠️ Résultats pour {domain} non sauvegardés:")
-                    print(f"   Gain moyen actuel: {gain_total:.4f} (meilleur existant: {best_gain:.4f})")
-                    print(f"   Taux de réussite actuel: {success_rate:.4f} (meilleur existant: {best_success_rate:.4f})")
-                    print(f"   Les nouveaux paramètres ne sont pas meilleurs que ceux existants.")
-                    return
-
-                # Afficher quel critère s'est amélioré
-                if is_best_gain:
-                    print(f"🎯 Nouveau meilleur gain moyen pour {domain}: {gain_total:.4f} (ancien: {best_gain:.4f})")
-                if is_best_success_rate:
-                    print(f"🎯 Nouveau meilleur taux de réussite pour {domain}: {success_rate:.4f} (ancien: {best_success_rate:.4f})")
-
-        # Sauvegarder les nouveaux résultats dans le CSV
-        df_new = pd.DataFrame([results])
-        df_new.to_csv(csv_path, mode='a', header=not pd.io.common.file_exists(csv_path), index=False)
-        print(f"📝 Résultats sauvegardés dans CSV pour {domain}")
+        # La décision de sauvegarder est déjà prise par l'appelant
+        # Pas de double vérification ici
+        
+        # Préparer le timestamp
+        timestamp = datetime.now().strftime('%Y-%m-%d %H:%M:%S')
+        
+        # Connexion à SQLite et insertion
+        conn = sqlite3.connect(db_path)
+        cursor = conn.cursor()
+        
+        # Construire l'INSERT OR REPLACE avec tous les paramètres
+        cursor.execute('''
+            INSERT OR REPLACE INTO optimization_runs
+            (timestamp, sector, gain_moy, success_rate, trades,
+             a1, a2, a3, a4, a5, a6, a7, a8,
+             th1, th2, th3, th4, th5, th6, th7, th8,
+             seuil_achat, seuil_vente)
+            VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
+        ''', (
+            timestamp, domain, gain_total, success_rate, total_trades,
+            coeffs[0], coeffs[1], coeffs[2], coeffs[3],
+            coeffs[4], coeffs[5], coeffs[6], coeffs[7],
+            thresholds[0] if len(thresholds) > 0 else 50.0,
+            thresholds[1] if len(thresholds) > 1 else 0.0,
+            thresholds[2] if len(thresholds) > 2 else 0.0,
+            thresholds[3] if len(thresholds) > 3 else 1.2,
+            thresholds[4] if len(thresholds) > 4 else 25.0,
+            thresholds[5] if len(thresholds) > 5 else 0.0,
+            thresholds[6] if len(thresholds) > 6 else 0.5,
+            thresholds[7] if len(thresholds) > 7 else 4.20,
+            thresholds[8] if len(thresholds) > 8 else 4.20,
+            thresholds[9] if len(thresholds) > 9 else -0.5
+        ))
+        
+        conn.commit()
+        conn.close()
+        
+        print(f"📝 Résultats sauvegardés dans SQLite pour {domain}")
 
     except Exception as e:
         print(f"⚠️ Erreur lors de la sauvegarde: {e}")
@@ -610,7 +740,8 @@ if __name__ == "__main__":
     # Chargement des symboles
     symbols = list(dict.fromkeys(load_symbols_from_txt("optimisation_symbols.txt")))
 
-    # Créer le dictionnaire des secteurs dynamiquement
+    # 🔧 OPTIMISATION: Utiliser le cache de secteurs (évite 100s d'appels yf.Ticker)
+    # Créer le dictionnaire des secteurs avec données cachées
     sectors = {
         "Technology": [],
         "Healthcare": [],
@@ -626,9 +757,10 @@ if __name__ == "__main__":
         "ℹ️Inconnu!!": []
     }
 
-    # Assigner les symboles aux secteurs
+    # Assigner les symboles aux secteurs (cache activé)
+    print(f"📋 Assignation des secteurs (cache yfinance utilisé)...")
     for symbol in symbols:
-        sector = get_sector(symbol)
+        sector = get_sector(symbol, use_cache=True)  # Cache activé
         if sector in sectors:
             sectors[sector].append(symbol)
         else:
@@ -660,9 +792,20 @@ if __name__ == "__main__":
 
     print(f"🔧 Paramètres choisis: stratégie={strategy}, précision={precision} décimales")
 
-    budget_evaluations = 1500  # Budget total d'évaluations par secteur
+    # 🔧 OPTIMISATION: Adapter le budget selon la précision
+    # Plus fine = espace plus petit = moins d'évaluations nécessaires
+    budget_base = 300
+    if precision == 1:
+        budget_evaluations = int(budget_base * 0.5)  # Espace 10x plus petit → -50% éval
+    elif precision == 2:
+        budget_evaluations = budget_base  # Référence
+    else:  # precision == 3
+        budget_evaluations = int(budget_base * 2)  # Espace 100x plus grand → +100% éval
+    
+    print(f"\n💡 Budget d'évaluations adapté à la précision {precision}: {budget_evaluations} éval/secteur")
 
     optimized_coeffs = {}
+    sector_summaries = []
 
     for sector, sector_symbols in sectors.items():
         if not sector_symbols:
@@ -673,7 +816,7 @@ if __name__ == "__main__":
         print(f"🎯 OPTIMISATION {strategy.upper()} - {sector}")
         print(f"="*160)
 
-        coeffs, gain_total, success_rate, thresholds = optimize_sector_coefficients_hybrid(
+        coeffs, gain_total, success_rate, thresholds, summary = optimize_sector_coefficients_hybrid(
             sector_symbols, sector,
             period='1y',
             strategy=strategy,
@@ -685,13 +828,8 @@ if __name__ == "__main__":
 
         if coeffs:
             optimized_coeffs[sector] = coeffs
-
-            print(f"\n✅ RÉSULTATS FINAUX - {sector}")
-            print(f"   🔬 Méthode: Optimisation hybride (précision: {precision} décimales)")
-            print(f"   🧬 Meilleurs coefficients: {coeffs}")
-            print(f"   ⚖️ Meilleurs seuils (achat, vente): {thresholds}")
-            print(f"   💰 Gain total moyen: {gain_total:.2f}")
-            print(f"   📊 Taux de réussite: {success_rate:.2f}%")
+        if summary:
+            sector_summaries.append(summary)
 
     print("\n" + "="*80)
     print("🏆 DICTIONNAIRE FINAL OPTIMISÉ")
@@ -701,3 +839,30 @@ if __name__ == "__main__":
         print(f"    '{sector}': {coeffs},")
     print("}")
     print("="*80)
+
+    # 📊 Comparaison globale (sectors avec historique disponible)
+    comparables = [s for s in sector_summaries if s.get('gain_old') is not None]
+    if comparables:
+        print("\n📊 Bilan global vs historique (réévalué aujourd'hui):")
+        total_old_gain = 0.0
+        total_new_gain = 0.0
+        total_old_trades = 0
+        total_new_trades = 0
+        for s in comparables:
+            delta = s['gain_new'] - s['gain_old']
+            delta_pct = (delta / abs(s['gain_old']) * 100) if s['gain_old'] != 0 else None
+            delta_pct_str = f", {delta_pct:+.1f}%" if delta_pct is not None else ""
+            trades_old_str = s['trades_old'] if s['trades_old'] is not None else "-"
+            success_old_str = f"{s['success_old']:.1f}%" if s['success_old'] is not None else "-"
+            print(f" - {s['sector']}: gain {s['gain_new']:.2f} vs {s['gain_old']:.2f} ({delta:+.2f}{delta_pct_str}); trades {s['trades_new']} vs {trades_old_str}; success {s['success_new']:.1f}% vs {success_old_str}")
+            total_old_gain += s['gain_old']
+            total_new_gain += s['gain_new']
+            total_old_trades += s['trades_old'] or 0
+            total_new_trades += s['trades_new']
+
+        n = len(comparables)
+        avg_old = total_old_gain / n if n else 0
+        avg_new = total_new_gain / n if n else 0
+        delta_tot = avg_new - avg_old
+        delta_tot_pct = (delta_tot / abs(avg_old) * 100) if avg_old != 0 else None
+        print(f"\nRésumé moyen (sur {n} secteurs): gain {avg_new:.2f} vs {avg_old:.2f} ({delta_tot:+.2f}{'' if delta_tot_pct is None else f', {delta_tot_pct:+.1f}%'}); trades totaux {total_new_trades} vs {total_old_trades}")
