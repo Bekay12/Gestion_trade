@@ -18,6 +18,7 @@ if PROJECT_SRC not in sys.path:
     sys.path.insert(0, PROJECT_SRC)
 from qsi import analyse_signaux_populaires, analyse_et_affiche, popular_symbols, mes_symbols, period
 from qsi import download_stock_data, backtest_signals, plot_unified_chart, get_trading_signal
+import qsi
 from qsi_optimized import extract_best_parameters
 
 
@@ -256,18 +257,14 @@ class MainWindow(QMainWindow):
         self.toggle_bottom_btn.setCheckable(True)
         self.toggle_bottom_btn.clicked.connect(self.toggle_bottom)
         top_controls.addWidget(self.toggle_bottom_btn)
-
-        top_controls = QHBoxLayout()
-        top_controls.addWidget(QLabel("Période d'analyse:"))
-        self.period_input = QLineEdit(period)
-        self.period_input.setMaximumWidth(80)
-        top_controls.addWidget(self.period_input)
-
-        top_controls.addSpacing(24)
-
-        for btn in [self.analyze_button, self.backtest_button, self.popular_signals_button, self.toggle_bottom_btn]:
-            btn.setSizePolicy(QSizePolicy.Expanding, QSizePolicy.Preferred)
-            top_controls.addWidget(btn)
+        
+        # Bouton pour basculer entre mode online/offline
+        self.offline_mode_btn = QPushButton("🌐 Mode: ONLINE")
+        self.offline_mode_btn.setCheckable(True)
+        self.offline_mode_btn.setChecked(False)
+        self.offline_mode_btn.clicked.connect(self.toggle_offline_mode)
+        self.offline_mode_btn.setStyleSheet("QPushButton { background-color: #4CAF50; color: white; font-weight: bold; }")
+        top_controls.addWidget(self.offline_mode_btn)
 
         self.layout.addLayout(top_controls)
 
@@ -809,6 +806,29 @@ class MainWindow(QMainWindow):
         # Stocker les résultats
         self.current_results = result.get('signals', [])
         
+        # 🔧 Stocker les résultats du backtest dans une map pour accès rapide
+        backtest_results = result.get('backtest_results', [])
+        self.backtest_map = {b['Symbole']: b for b in backtest_results} if backtest_results else {}
+        
+        # 🔧 Ajouter les données de backtest aux signaux
+        for signal in self.current_results:
+            sym = signal.get('Symbole')
+            if sym in self.backtest_map:
+                bt = self.backtest_map[sym]
+                signal['Fiabilite'] = bt.get('taux_reussite', 'N/A')
+                signal['NbTrades'] = bt.get('trades', 0)
+                signal['Gagnants'] = bt.get('gagnants', 0)
+                signal['Gain_total'] = bt.get('gain_total', 0.0)
+                signal['Gain_moyen'] = bt.get('gain_moyen', 0.0)
+                signal['Drawdown_max'] = bt.get('drawdown_max', 0.0)
+            else:
+                signal.setdefault('Fiabilite', 'N/A')
+                signal.setdefault('NbTrades', 0)
+                signal.setdefault('Gagnants', 0)
+                signal.setdefault('Gain_total', 0.0)
+                signal.setdefault('Gain_moyen', 0.0)
+                signal.setdefault('Drawdown_max', 0.0)
+        
         # 🔧 Initialiser les colonnes par défaut pour tous les signaux
         for r in self.current_results:
             r.setdefault('dPrice', 0.0)
@@ -1267,29 +1287,40 @@ class MainWindow(QMainWindow):
 
     def toggle_bottom(self, checked: bool):
         """Hide/show the bottom summary/backtest/results panel."""
-        try:
-            if checked:
-                # hide bottom container and expand plots
-                if hasattr(self, 'bottom_container'):
-                    self.bottom_container.setVisible(False)
-                self.toggle_bottom_btn.setText("Afficher détails")
-                try:
-                    self.splitter.setSizes([self.height(), 0])
-                except Exception:
-                    pass
-            else:
-                if hasattr(self, 'bottom_container'):
-                    self.bottom_container.setVisible(True)
-                self.toggle_bottom_btn.setText("Masquer détails")
-                try:
-                    total_h = max(600, self.height())
-                    top_h = int(total_h * 0.72)
-                    bottom_h = total_h - top_h
-                    self.splitter.setSizes([top_h, bottom_h])
-                except Exception:
-                    pass
-        except Exception:
-            pass
+        if checked:
+            # hide bottom container and expand plots
+            if hasattr(self, 'bottom_container'):
+                self.bottom_container.setVisible(False)
+            self.toggle_bottom_btn.setText("Afficher détails")
+            try:
+                self.splitter.setSizes([self.height(), 0])
+            except Exception:
+                pass
+        else:
+            if hasattr(self, 'bottom_container'):
+                self.bottom_container.setVisible(True)
+            self.toggle_bottom_btn.setText("Masquer détails")
+            try:
+                total_h = max(600, self.height())
+                top_h = int(total_h * 0.72)
+                bottom_h = total_h - top_h
+                self.splitter.setSizes([top_h, bottom_h])
+            except Exception:
+                pass
+    
+    def toggle_offline_mode(self):
+        """Bascule entre le mode online et offline"""
+        is_offline = self.offline_mode_btn.isChecked()
+        qsi.OFFLINE_MODE = is_offline
+        
+        if is_offline:
+            self.offline_mode_btn.setText("📴 Mode: OFFLINE")
+            self.offline_mode_btn.setStyleSheet("QPushButton { background-color: #FF9800; color: white; font-weight: bold; }")
+            self.summary_text.append("\n⚠️ Mode OFFLINE activé - Utilisation du cache uniquement")
+        else:
+            self.offline_mode_btn.setText("🌐 Mode: ONLINE")
+            self.offline_mode_btn.setStyleSheet("QPushButton { background-color: #4CAF50; color: white; font-weight: bold; }")
+            self.summary_text.append("\n✅ Mode ONLINE activé - Téléchargement si cache obsolète")
 
     def render_backtest_summary_and_table(self, backtest_results: list, signals: list):
         """Build the summary text and populate an internal backtest map used by the merged table.

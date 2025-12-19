@@ -636,6 +636,7 @@ def compute_financial_derivatives(symbol: str, lookback_quarters: int = 4) -> di
     """
     Calcule les métriques financières de manière RAPIDE et SIMPLE.
     Utilise UNIQUEMENT les données de .info (très rapide).
+    Avec cache pour mode offline.
     """
     derivatives = {
         'debt_to_equity': 0.0,
@@ -646,6 +647,28 @@ def compute_financial_derivatives(symbol: str, lookback_quarters: int = 4) -> di
         'fcf_val': 0.0,
         'sector': 'Inconnu'
     }
+    
+    # Cache des métriques financières (7 jours)
+    cache_file = CACHE_DIR / f"{symbol}_financial.pkl"
+    
+    # En mode offline, utiliser uniquement le cache
+    if OFFLINE_MODE:
+        if cache_file.exists():
+            try:
+                return pd.read_pickle(cache_file)
+            except Exception:
+                pass
+        return derivatives  # Retourner valeurs par défaut si pas de cache
+    
+    # Vérifier le cache (7 jours de validité)
+    if cache_file.exists():
+        try:
+            age_hours = (datetime.now() - datetime.fromtimestamp(
+                cache_file.stat().st_mtime)).total_seconds() / 3600
+            if age_hours <= 168:  # 7 jours
+                return pd.read_pickle(cache_file)
+        except Exception:
+            pass
 
     try:
         ticker = yf.Ticker(symbol)
@@ -681,9 +704,20 @@ def compute_financial_derivatives(symbol: str, lookback_quarters: int = 4) -> di
         # Sector
         sector = info.get('sector', 'Inconnu')
         derivatives['sector'] = sector
+        
+        # Sauvegarder dans le cache
+        try:
+            pd.to_pickle(derivatives, cache_file)
+        except Exception:
+            pass
 
     except Exception:
-        pass
+        # En cas d'erreur, essayer de récupérer depuis le cache obsolète
+        if cache_file.exists():
+            try:
+                return pd.read_pickle(cache_file)
+            except Exception:
+                pass
 
     return derivatives
 
@@ -1225,8 +1259,20 @@ def plot_unified_chart(symbol, prices, volumes, ax, show_xaxis=False):
     lines2, labels2 = ax2.get_legend_handles_labels()
     ax.legend(lines1 + lines2, labels1 + labels2, loc='best', fontsize=9)
 
-    info = yf.Ticker(symbol).info
-    domaine = info.get("sector", "Inconnu")
+    # Récupérer le domaine (secteur) - utiliser cache en mode offline
+    try:
+        if OFFLINE_MODE:
+            cache_file = CACHE_DIR / f"{symbol}_financial.pkl"
+            if cache_file.exists():
+                fin_cache = pd.read_pickle(cache_file)
+                domaine = fin_cache.get('sector', 'Inconnu')
+            else:
+                domaine = "Inconnu"
+        else:
+            info = yf.Ticker(symbol).info
+            domaine = info.get("sector", "Inconnu")
+    except Exception:
+        domaine = "Inconnu"
 
     # Ajout des signaux trading (ne pas demander les dérivées ici — elles seront consommées par l'UI)
     try:
@@ -1307,9 +1353,18 @@ def analyse_et_affiche(symbols, period="12mo"):
 
         # Dessiner les marqueurs d'achat/vente générés par la simulation rapide
         try:
+            # Récupérer le domaine - utiliser cache en mode offline
             try:
-                info = yf.Ticker(symbol).info
-                domaine = info.get("sector", "Inconnu")
+                if OFFLINE_MODE:
+                    cache_file = CACHE_DIR / f"{symbol}_financial.pkl"
+                    if cache_file.exists():
+                        fin_cache = pd.read_pickle(cache_file)
+                        domaine = fin_cache.get('sector', 'Inconnu')
+                    else:
+                        domaine = "Inconnu"
+                else:
+                    info = yf.Ticker(symbol).info
+                    domaine = info.get("sector", "Inconnu")
             except Exception:
                 domaine = "Inconnu"
 
@@ -1616,6 +1671,7 @@ def analyse_signaux_populaires(
 
         try:
             chunk_data = download_stock_data(chunk, period)
+            added_in_chunk = 0
             for symbol, stock_data in chunk_data.items():
                 prices = stock_data['Close']
                 volumes = stock_data['Volume']
@@ -1624,8 +1680,21 @@ def analyse_signaux_populaires(
                     continue
 
                 try:
-                    info = yf.Ticker(symbol).info
-                    domaine = info.get("sector", "ℹ️Inconnu!!")
+                    # ✅ En mode offline, utiliser le cache des métriques financières pour le secteur
+                    if OFFLINE_MODE:
+                        # Essayer de récupérer le secteur depuis le cache des métriques
+                        cache_file = CACHE_DIR / f"{symbol}_financial.pkl"
+                        if cache_file.exists():
+                            try:
+                                fin_cache = pd.read_pickle(cache_file)
+                                domaine = fin_cache.get('sector', 'ℹ️Inconnu!!')
+                            except Exception:
+                                domaine = "ℹ️Inconnu!!"
+                        else:
+                            domaine = "ℹ️Inconnu!!"
+                    else:
+                        info = yf.Ticker(symbol).info
+                        domaine = info.get("sector", "ℹ️Inconnu!!")
                 except Exception:
                     domaine = "ℹ️Inconnu!!"
 
@@ -1634,7 +1703,7 @@ def analyse_signaux_populaires(
                     prices, volumes, domaine, return_derivatives=True, symbol=symbol
                 )
 
-                if signal != "NEUTRE":
+                if signal != "NEUTRE" and last_price is not None and score is not None:
                     signals.append({
                         'Symbole': symbol,
                         'Signal': signal,
@@ -1655,6 +1724,7 @@ def analyse_signaux_populaires(
                         'D/E Ratio': round(derivatives.get('debt_to_equity', 0.0), 2),
                         'Market Cap (B$)': round(derivatives.get('market_cap_val', 0.0), 2)
                     })
+                    added_in_chunk += 1
 
         except Exception as e:
             if verbose:
@@ -1719,10 +1789,20 @@ def analyse_signaux_populaires(
 
             # Ajout : récupération du domaine pour le backtest
             try:
-                info = yf.Ticker(s['Symbole']).info
-                domaine = info.get("sector", "Inconnu")
+                if OFFLINE_MODE:
+                    cache_file = CACHE_DIR / f"{s['Symbole']}_financial.pkl"
+                    if cache_file.exists():
+                        fin_cache = pd.read_pickle(cache_file)
+                        domaine = fin_cache.get('sector', 'Inconnu')
+                    else:
+                        # Utiliser le domaine déjà dans le signal s'il existe
+                        domaine = s.get('Domaine', 'Inconnu')
+                else:
+                    info = yf.Ticker(s['Symbole']).info
+                    domaine = info.get("sector", "Inconnu")
             except Exception:
-                domaine = "Inconnu"
+                # Fallback: utiliser le domaine du signal
+                domaine = s.get('Domaine', 'Inconnu')
 
             if not isinstance(prices, (pd.Series, pd.DataFrame)) or len(prices) < 2:
                 if verbose:
