@@ -297,15 +297,15 @@ class MainWindow(QMainWindow):
         self.merged_table.setSizePolicy(QSizePolicy.Expanding, QSizePolicy.Minimum)
         merged_columns = [
         'Symbole','Signal','Score','Prix','Tendance','RSI','Volume moyen','Domaine',
-        'Fiabilite','Nb Trades','Gagnants',
+        'Fiabilite (%)','Nb Trades','Gagnants',
         # COLONNES FINANCIÈRES
-        'Rev. Growth (%)','EBITDA (B$)','FCF (B$)','D/E Ratio','Market Cap (B$)',
+        'Rev. Growth (%)','EBITDA Yield (%)','FCF Yield (%)','D/E Ratio','Market Cap (B$)',
         # COLONNES DERIVÉES
         'dPrice','dMACD','dRSI','dVolRel',
         # COLONNES BACKTEST
         'Gain total ($)','Gain moyen ($)',
-        # NOUVELLES COLONNES INFO
-        'Consensus','Actu'
+        # INFO
+        'Consensus'
         ]
 
         self.merged_table.setColumnCount(len(merged_columns))
@@ -618,18 +618,17 @@ class MainWindow(QMainWindow):
                     'RSI': last_rsi,
                     'Domaine': domaine,
                     'Volume moyen': volume_mean,
-                    # Consensus & Actu (stable via cache/offline fallback)
+                    # Consensus (stable via cache/offline fallback)
                     'Consensus': qsi.get_consensus(symbol).get('label', 'Neutre'),
                     'ConsensusMean': qsi.get_consensus(symbol).get('mean', None),
-                    'Actu': qsi.compute_news_sentiment(symbol, prices),
                     'dPrice': round(derivatives.get('price_slope', 0.0), 3),
                     'dMACD': round(derivatives.get('macd_slope', 0.0), 3),
                     'dRSI': round(derivatives.get('rsi_slope', 0.0), 3),
                     'dVolRel': round(derivatives.get('volume_slope_rel', 0.0), 3),
                     # ✅ Métriques financières simples
                     'Rev. Growth (%)': round(float(derivatives.get('rev_growth_val', 0.0) or 0.0), 2),
-                    'EBITDA (B$)': round(float(derivatives.get('ebitda_val', 0.0) or 0.0), 2),
-                    'FCF (B$)': round(float(derivatives.get('fcf_val', 0.0) or 0.0), 2),
+                    'EBITDA Yield (%)': round(float(derivatives.get('ebitda_yield_pct', 0.0) or 0.0), 2),
+                    'FCF Yield (%)': round(float(derivatives.get('fcf_yield_pct', 0.0) or 0.0), 2),
                     'D/E Ratio': round(float(derivatives.get('debt_to_equity', 0.0) or 0.0), 2),
                     'Market Cap (B$)': round(float(derivatives.get('market_cap_val', 0.0) or 0.0), 2)
                 }
@@ -653,8 +652,8 @@ class MainWindow(QMainWindow):
                         'dRSI': 0.0,
                         'dVolRel': 0.0,
                         'Rev. Growth (%)': 0.0,
-                        'Gross Margin (%)': 0.0,
-                        'FCF (B$)': 0.0,
+                        'EBITDA Yield (%)': 0.0,
+                        'FCF Yield (%)': 0.0,
                         'D/E Ratio': 0.0,
                         'Market Cap (B$)': 0.0
                     }
@@ -842,8 +841,8 @@ class MainWindow(QMainWindow):
             r.setdefault('dRSI', 0.0)
             r.setdefault('dVolRel', 0.0)
             r.setdefault('Rev. Growth (%)', 0.0)
-            r.setdefault('EBITDA (B$)', 0.0)
-            r.setdefault('FCF (B$)', 0.0)
+            r.setdefault('EBITDA Yield (%)', 0.0)
+            r.setdefault('FCF Yield (%)', 0.0)
             r.setdefault('D/E Ratio', 0.0)
             r.setdefault('Market Cap (B$)', 0.0)
         
@@ -895,8 +894,8 @@ class MainWindow(QMainWindow):
                         
                         # ✅ Métriques financières simples
                         r['Rev. Growth (%)'] = round(derivatives.get('rev_growth_val', 0.0), 2)
-                        r['EBITDA (B$)'] = round(derivatives.get('ebitda_val', 0.0), 2)
-                        r['FCF (B$)'] = round(derivatives.get('fcf_val', 0.0), 2)
+                        r['EBITDA Yield (%)'] = round(derivatives.get('ebitda_yield_pct', 0.0), 2)
+                        r['FCF Yield (%)'] = round(derivatives.get('fcf_yield_pct', 0.0), 2)
                         r['D/E Ratio'] = round(derivatives.get('debt_to_equity', 0.0), 2)
                         r['Market Cap (B$)'] = round(derivatives.get('market_cap_val', 0.0), 2)
                     except Exception:
@@ -1171,14 +1170,14 @@ class MainWindow(QMainWindow):
                 item.setData(Qt.EditRole, rev_growth)
                 self.merged_table.setItem(row, 11, item)
 
-                # Colonne 12: EBITDA (B$)
-                ebitda = float(signal.get('EBITDA (B$)', 0.0) or 0.0)
+                # Colonne 12: EBITDA Yield (%)
+                ebitda = float(signal.get('EBITDA Yield (%)', 0.0) or 0.0)
                 item = QTableWidgetItem(f"{ebitda:.2f}")
                 item.setData(Qt.EditRole, ebitda)
                 self.merged_table.setItem(row, 12, item)
 
-                # Colonne 13: FCF (B$)
-                fcf = float(signal.get('FCF (B$)', 0.0) or 0.0)
+                # Colonne 13: FCF Yield (%)
+                fcf = float(signal.get('FCF Yield (%)', 0.0) or 0.0)
                 item = QTableWidgetItem(f"{fcf:.2f}")
                 item.setData(Qt.EditRole, fcf)
                 self.merged_table.setItem(row, 13, item)
@@ -1231,11 +1230,9 @@ class MainWindow(QMainWindow):
                 item.setData(Qt.EditRole, gain_moy)
                 self.merged_table.setItem(row, 21, item)
 
-                # Consensus & Actu (text columns)
+                # Consensus (text column)
                 consensus = signal.get('Consensus', 'N/A')
-                actu = signal.get('Actu', 'N/A')
                 self.merged_table.setItem(row, 22, QTableWidgetItem(str(consensus)))
-                self.merged_table.setItem(row, 23, QTableWidgetItem(str(actu)))
 
                 # item = QTableWidgetItem(f"{drawdown:.2f}")
                 # item.setData(Qt.EditRole, drawdown)

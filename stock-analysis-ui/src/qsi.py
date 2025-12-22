@@ -645,17 +645,45 @@ def compute_financial_derivatives(symbol: str, lookback_quarters: int = 4) -> di
         'rev_growth_val': 0.0,
         'ebitda_val': 0.0,
         'fcf_val': 0.0,
+        # Données relatives (pour éviter biais grandes capitalisations)
+        'ebitda_yield_pct': 0.0,   # EBITDA / EV (ou MC) * 100
+        'fcf_yield_pct': 0.0,      # FCF / MarketCap * 100
         'sector': 'Inconnu'
     }
     
     # Cache des métriques financières (7 jours)
     cache_file = CACHE_DIR / f"{symbol}_financial.pkl"
     
+    def _ensure_relative_metrics(d: dict) -> dict:
+        """Complète les métriques relatives (yield %) si manquantes depuis un cache ancien."""
+        try:
+            mc_b = float(d.get('market_cap_val') or 0.0)
+            ebitda_b = float(d.get('ebitda_val') or 0.0)
+            fcf_b = float(d.get('fcf_val') or 0.0)
+            ev_b = float(d.get('enterprise_value_b') or 0.0)
+            # EBITDA Yield
+            denom_b = ev_b if ev_b > 0 else mc_b
+            if ('ebitda_yield_pct' not in d) or (d.get('ebitda_yield_pct') is None):
+                d['ebitda_yield_pct'] = (ebitda_b / denom_b * 100.0) if (denom_b > 0 and ebitda_b > 0) else 0.0
+            # FCF Yield
+            if ('fcf_yield_pct' not in d) or (d.get('fcf_yield_pct') is None):
+                d['fcf_yield_pct'] = (fcf_b / mc_b * 100.0) if (mc_b > 0 and fcf_b > 0) else 0.0
+        except Exception:
+            d.setdefault('ebitda_yield_pct', 0.0)
+            d.setdefault('fcf_yield_pct', 0.0)
+        return d
+    
     # En mode offline, utiliser uniquement le cache
     if OFFLINE_MODE:
         if cache_file.exists():
             try:
-                return pd.read_pickle(cache_file)
+                d = pd.read_pickle(cache_file)
+                d = _ensure_relative_metrics(d)
+                try:
+                    pd.to_pickle(d, cache_file)
+                except Exception:
+                    pass
+                return d
             except Exception:
                 pass
         return derivatives  # Retourner valeurs par défaut si pas de cache
@@ -666,7 +694,13 @@ def compute_financial_derivatives(symbol: str, lookback_quarters: int = 4) -> di
             age_hours = (datetime.now() - datetime.fromtimestamp(
                 cache_file.stat().st_mtime)).total_seconds() / 3600
             if age_hours <= 168:  # 7 jours
-                return pd.read_pickle(cache_file)
+                d = pd.read_pickle(cache_file)
+                d = _ensure_relative_metrics(d)
+                try:
+                    pd.to_pickle(d, cache_file)
+                except Exception:
+                    pass
+                return d
         except Exception:
             pass
 
@@ -683,13 +717,15 @@ def compute_financial_derivatives(symbol: str, lookback_quarters: int = 4) -> di
         
         # EBITDA
         ebitda = info.get('ebitda')
-        if ebitda:
-            derivatives['ebitda_val'] = float(ebitda) / 1e9
+        ebitda_num = float(ebitda) if ebitda else 0.0
+        if ebitda_num:
+            derivatives['ebitda_val'] = ebitda_num / 1e9
         
         # Free Cash Flow
         fcf = info.get('freeCashflow')
-        if fcf:
-            derivatives['fcf_val'] = float(fcf) / 1e9
+        fcf_num = float(fcf) if fcf else 0.0
+        if fcf_num:
+            derivatives['fcf_val'] = fcf_num / 1e9
         
         # Debt to Equity
         debt_to_equity = info.get('debtToEquity')
@@ -698,8 +734,28 @@ def compute_financial_derivatives(symbol: str, lookback_quarters: int = 4) -> di
         
         # Market Cap
         market_cap = info.get('marketCap')
-        if market_cap:
-            derivatives['market_cap_val'] = float(market_cap) / 1e9
+        market_cap_num = float(market_cap) if market_cap else 0.0
+        if market_cap_num:
+            derivatives['market_cap_val'] = market_cap_num / 1e9
+
+        # Enterprise Value (pour EBITDA relatif)
+        ev = info.get('enterpriseValue')
+        ev_num = float(ev) if ev else 0.0
+        derivatives['enterprise_value_b'] = ev_num / 1e9 if ev_num else 0.0
+
+        # Calculs relatifs (pour éviter biais de taille)
+        # EBITDA Yield: EBITDA / EV (fallback: MarketCap)
+        denom = ev_num if ev_num > 0 else market_cap_num
+        if denom > 0 and ebitda_num > 0:
+            derivatives['ebitda_yield_pct'] = (ebitda_num / denom) * 100.0
+        else:
+            derivatives['ebitda_yield_pct'] = 0.0
+        
+        # FCF Yield: FCF / MarketCap
+        if market_cap_num > 0 and fcf_num:
+            derivatives['fcf_yield_pct'] = (fcf_num / market_cap_num) * 100.0
+        else:
+            derivatives['fcf_yield_pct'] = 0.0
         
         # Sector
         sector = info.get('sector', 'Inconnu')
@@ -715,7 +771,9 @@ def compute_financial_derivatives(symbol: str, lookback_quarters: int = 4) -> di
         # En cas d'erreur, essayer de récupérer depuis le cache obsolète
         if cache_file.exists():
             try:
-                return pd.read_pickle(cache_file)
+                d = pd.read_pickle(cache_file)
+                d = _ensure_relative_metrics(d)
+                return d
             except Exception:
                 pass
 
@@ -793,64 +851,6 @@ def compute_simple_sentiment(prices: pd.Series) -> str:
         return 'Neutre'
     except Exception:
         return 'Neutre'
-
-def compute_news_sentiment(symbol: str, prices: pd.Series = None) -> str:
-    """
-    Analyse très simple de l'actualité: en ligne utilise Ticker.news si dispo,
-    sinon fallback technique avec compute_simple_sentiment.
-    Cache 24h.
-    """
-    cache_file = CACHE_DIR / f"{symbol}_news_sent.pkl"
-    if OFFLINE_MODE:
-        if cache_file.exists():
-            try:
-                return str(pd.read_pickle(cache_file) or 'Neutre')
-            except Exception:
-                pass
-        return compute_simple_sentiment(prices) if prices is not None else 'Neutre'
-
-    if cache_file.exists():
-        try:
-            age_hours = (datetime.now() - datetime.fromtimestamp(cache_file.stat().st_mtime)).total_seconds() / 3600
-            if age_hours <= 24:
-                return str(pd.read_pickle(cache_file) or 'Neutre')
-        except Exception:
-            pass
-
-    sentiment = 'Neutre'
-    try:
-        t = yf.Ticker(symbol)
-        news = getattr(t, 'news', [])
-        if isinstance(news, list) and news:
-            pos_kw = ('beats', 'upgrade', 'strong', 'record', 'surge', 'win')
-            neg_kw = ('miss', 'downgrade', 'weak', 'drop', 'loss', 'probe')
-            score = 0
-            take = 0
-            for item in news[:10]:
-                title = str(item.get('title', '')).lower()
-                take += 1
-                if any(k in title for k in pos_kw):
-                    score += 1
-                if any(k in title for k in neg_kw):
-                    score -= 1
-            if take > 0:
-                if score >= 2:
-                    sentiment = 'Bon'
-                elif score <= -2:
-                    sentiment = 'Mauvais'
-                else:
-                    sentiment = 'Neutre'
-        else:
-            sentiment = compute_simple_sentiment(prices) if prices is not None else 'Neutre'
-    except Exception:
-        sentiment = compute_simple_sentiment(prices) if prices is not None else 'Neutre'
-
-    try:
-        pd.to_pickle(sentiment, cache_file)
-    except Exception:
-        pass
-    return sentiment
-
 # ===================================================================
 # SYSTÈME DE CACHE INTELLIGENT INTÉGRÉ
 # ===================================================================
@@ -1766,14 +1766,20 @@ def analyse_signaux_populaires(
     popular_symbols, mes_symbols,
     period="12mo", afficher_graphiques=True,
     chunk_size=20, verbose=True,
-    save_csv=True, plot_all=False
+    save_csv=True, plot_all=False,
+    max_workers=4
 ):
     """
     Analyse les signaux pour les actions populaires, affiche les résultats, effectue le backtest,
     et affiche les graphiques pour les signaux fiables si demandé.
     Retourne un dictionnaire contenant les résultats principaux.
+    
+    Args:
+        max_workers: Nombre de threads pour analyse parallèle (défaut: 4)
     """
     import matplotlib.pyplot as plt
+    from concurrent.futures import ThreadPoolExecutor, as_completed
+    from threading import Lock
 
     print("\n✅ Extraction des meilleurs paramètres depuis SQLite...")
     best_parameters = extract_best_parameters()
@@ -1791,9 +1797,71 @@ def analyse_signaux_populaires(
         print("}")
 
     if verbose:
-        print("\n🔍 Analyse des signaux pour actions populaires...")
+        print(f"\n🔍 Analyse des signaux pour actions populaires (parallèle: {max_workers} workers)...")
 
     signals = []
+    signals_lock = Lock()
+
+    def process_symbol(symbol, stock_data):
+        """Traite un symbole individuellement - exécuté en parallèle."""
+        try:
+            prices = stock_data['Close']
+            volumes = stock_data['Volume']
+
+            if len(prices) < 50:
+                return None
+
+            # Récupération du secteur
+            try:
+                if OFFLINE_MODE:
+                    cache_file = CACHE_DIR / f"{symbol}_financial.pkl"
+                    if cache_file.exists():
+                        try:
+                            fin_cache = pd.read_pickle(cache_file)
+                            domaine = fin_cache.get('sector', 'ℹ️Inconnu!!')
+                        except Exception:
+                            domaine = "ℹ️Inconnu!!"
+                    else:
+                        domaine = "ℹ️Inconnu!!"
+                else:
+                    info = yf.Ticker(symbol).info
+                    domaine = info.get("sector", "ℹ️Inconnu!!")
+            except Exception:
+                domaine = "ℹ️Inconnu!!"
+
+            # Récupération du signal et des dérivés
+            signal, last_price, trend, last_rsi, volume_mean, score, derivatives = get_trading_signal(
+                prices, volumes, domaine, return_derivatives=True, symbol=symbol
+            )
+
+            if signal != "NEUTRE" and last_price is not None and score is not None:
+                consensus = get_consensus(symbol)
+                return {
+                    'Symbole': symbol,
+                    'Signal': signal,
+                    'Score': score,
+                    'Prix': last_price,
+                    'Tendance': "Hausse" if trend else "Baisse",
+                    'RSI': last_rsi,
+                    'Domaine': domaine,
+                    'Volume moyen': volume_mean,
+                    'Consensus': consensus.get('label', 'Neutre'),
+                    'ConsensusMean': consensus.get('mean', None),
+                    'dPrice': round(derivatives.get('price_slope', 0.0), 3),
+                    'dMACD': round(derivatives.get('macd_slope', 0.0), 3),
+                    'dRSI': round(derivatives.get('rsi_slope', 0.0), 3),
+                    'dVolRel': round(derivatives.get('volume_slope_rel', 0.0), 3),
+                    'Rev. Growth (%)': round(derivatives.get('rev_growth_val', 0.0), 2),
+                    'EBITDA Yield (%)': round(derivatives.get('ebitda_yield_pct', 0.0), 2),
+                    'FCF Yield (%)': round(derivatives.get('fcf_yield_pct', 0.0), 2),
+                    'D/E Ratio': round(derivatives.get('debt_to_equity', 0.0), 2),
+                    'Market Cap (B$)': round(derivatives.get('market_cap_val', 0.0), 2)
+                }
+        except Exception as e:
+            if verbose:
+                print(f"⚠️ Erreur {symbol}: {e}")
+        return None
+
     for i in range(0, len(popular_symbols), chunk_size):
         chunk = popular_symbols[i:i+chunk_size]
         if verbose:
@@ -1801,72 +1869,25 @@ def analyse_signaux_populaires(
 
         try:
             chunk_data = download_stock_data(chunk, period)
-            added_in_chunk = 0
-            for symbol, stock_data in chunk_data.items():
-                prices = stock_data['Close']
-                volumes = stock_data['Volume']
-
-                if len(prices) < 50:
-                    continue
-
-                try:
-                    # ✅ En mode offline, utiliser le cache des métriques financières pour le secteur
-                    if OFFLINE_MODE:
-                        # Essayer de récupérer le secteur depuis le cache des métriques
-                        cache_file = CACHE_DIR / f"{symbol}_financial.pkl"
-                        if cache_file.exists():
-                            try:
-                                fin_cache = pd.read_pickle(cache_file)
-                                domaine = fin_cache.get('sector', 'ℹ️Inconnu!!')
-                            except Exception:
-                                domaine = "ℹ️Inconnu!!"
-                        else:
-                            domaine = "ℹ️Inconnu!!"
-                    else:
-                        info = yf.Ticker(symbol).info
-                        domaine = info.get("sector", "ℹ️Inconnu!!")
-                except Exception:
-                    domaine = "ℹ️Inconnu!!"
-
-                # ✅ Récupérer le signal ET les dérivés (métriques financières)
-                signal, last_price, trend, last_rsi, volume_mean, score, derivatives = get_trading_signal(
-                    prices, volumes, domaine, return_derivatives=True, symbol=symbol
-                )
-
-                if signal != "NEUTRE" and last_price is not None and score is not None:
-                    # Consensus + Sentiment actuels (stables avec cache)
-                    consensus = get_consensus(symbol)
-                    actu = compute_news_sentiment(symbol, prices)
-                    signals.append({
-                        'Symbole': symbol,
-                        'Signal': signal,
-                        'Score': score,
-                        'Prix': last_price,
-                        'Tendance': "Hausse" if trend else "Baisse",
-                        'RSI': last_rsi,
-                        'Domaine': domaine,
-                        'Volume moyen': volume_mean,
-                        'Consensus': consensus.get('label', 'Neutre'),
-                        'ConsensusMean': consensus.get('mean', None),
-                        'Actu': actu,
-                        # ✅ Ajouter les dérivés (métriques financières)
-                        'dPrice': round(derivatives.get('price_slope', 0.0), 3),
-                        'dMACD': round(derivatives.get('macd_slope', 0.0), 3),
-                        'dRSI': round(derivatives.get('rsi_slope', 0.0), 3),
-                        'dVolRel': round(derivatives.get('volume_slope_rel', 0.0), 3),
-                        'Rev. Growth (%)': round(derivatives.get('rev_growth_val', 0.0), 2),
-                        'EBITDA (B$)': round(derivatives.get('ebitda_val', 0.0), 2),
-                        'FCF (B$)': round(derivatives.get('fcf_val', 0.0), 2),
-                        'D/E Ratio': round(derivatives.get('debt_to_equity', 0.0), 2),
-                        'Market Cap (B$)': round(derivatives.get('market_cap_val', 0.0), 2)
-                    })
-                    added_in_chunk += 1
+            
+            # Traitement parallèle des symboles du chunk
+            with ThreadPoolExecutor(max_workers=max_workers) as executor:
+                futures = {
+                    executor.submit(process_symbol, symbol, stock_data): symbol
+                    for symbol, stock_data in chunk_data.items()
+                }
+                
+                for future in as_completed(futures):
+                    result = future.result()
+                    if result:
+                        with signals_lock:
+                            signals.append(result)
 
         except Exception as e:
             if verbose:
                 print(f"⚠️ Erreur: {str(e)}")
 
-        time.sleep(1)
+        time.sleep(0.5)  # Réduit à 0.5s car parallèle est plus rapide
 
     # Affichage des résultats
     signaux_tries = {"ACHAT": {"Hausse": [], "Baisse": []}, "VENTE": {"Hausse": [], "Baisse": []}}
