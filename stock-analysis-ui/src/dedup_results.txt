@@ -1,0 +1,142 @@
+Ô£à Module trading_c charg├® - Acc├®l├®ration C activ├®e !
+Testing with 506 symbols...
+
+
+Ô£à Extraction des meilleurs param├¿tres depuis SQLite...
+ AGL     ACHAT    3.58    0.74       Hausse     52.7   9,433,450       Healthcare                + Tendance haussi├¿re
+ TRX     ACHAT    4.69    0.91       Hausse     70.8   1,012,263       Basic Materials           + Tendance haussi├¿re
+ CGC     ACHAT    2.96    1.48       Hausse     54.4   42,511,113      Healthcare                + Tendance haussi├¿re
+ CRON    ACHAT    4.54    2.96       Hausse     60.4   2,950,170       Healthcare                + Tendance haussi├¿re
+ BFLY    ACHAT    4.18    3.56       Hausse     64.7   5,979,710       Healthcare                + Tendance haussi├¿re
+ PGEN    ACHAT    5.14    4.32       Hausse     60.8   4,790,790       Healthcare                + Tendance haussi├¿re
+ JBLU    ACHAT    2.49    4.80       Hausse     55.2   15,638,507      Industrials               + Tendance haussi├¿re
+ UDMY    ACHAT    5.70    5.97       Hausse     63.0   2,600,800       Consumer Defensive        + Tendance haussi├¿re
+ NOK     ACHAT    6.53    6.50       Hausse     57.8   27,851,693      Technology                + Tendance haussi├¿re
+ KPTI    ACHAT    4.54    6.94       Hausse     60.2   162,273         Healthcare                + Tendance haussi├¿re
+ 2386.HK ACHAT    8.30    7.50       Hausse     52.4   4,086,063       Industrials               + Tendance haussi├¿re
+ VMEO    ACHAT    6.70    7.85       Hausse     76.9   883,064         Technology                + Tendance haussi├¿re
+ 0038.HK ACHAT    6.18    8.89       Hausse     67.5   4,127,682       Industrials               + Tendance haussi├¿re
+ EXK     ACHAT    7.17    9.52       Hausse     61.5   10,314,790      Basic Materials           + Tendance haussi├¿re
+ TLRY    ACHAT    2.96    11.16      Hausse     53.2   12,642,969      Healthcare                + Tendance haussi├¿re
+ BOE     ACHAT    3.95    11.73      Hausse     58.8   167,333         Financial Services        + Tendance haussi├¿re
+ SEMR    ACHAT    5.20    11.87      Hausse     79.5   3,267,343       Technology                + Tendance haussi├¿re
+ F       ACHAT    6.60    13.47      Hausse     55.7   33,017,790      Consumer Cyclical         + Tendance haussi├¿re
+ AAL     ACHAT    5.40    15.78      Hausse     67.5   51,275,663      Industrials               + Tendance haussi├¿re
+ AG      ACHAT    8.32    16.69      Hausse     64.5   17,238,337      Basic Materials           + Tendance haussi├¿re
+ PL      ACHAT    3.33    19.18      Hausse     73.4   10,924,830      Industrials               + Tendance haussi├¿re
+ ZIM     ACHAT    4.44    19.24      Hausse     57.0   5,417,380       Industrials               + Tendance haussi├¿re
+ RIVN    ACHAT    6.05    22.45      Hausse     73.4   49,359,907      Consumer Cyclical         + Tendance haussi├¿re
+ GME     ACHAT    6.60    22.51      Hausse     51.6   6,234,190       Consumer Cyclical         + Tendance haussi├¿re
+ WDO.TO  ACHAT    7.17    23.59      Hausse     61.5   661,907         Basic Materials           + Tendance haussi├¿re
+ INGA.AS ACHAT    8.84    23.89      Hausse     67.9   6,314,075       Financial Services        + Tendance haussi├¿re
+ DTE.DE  ACHAT    2.52    27.39      Hausse     53.6   3,573,533       Communication Services    + Tendance haussi├¿re
+ AEO     ACHAT    3.15    27.84      Hausse     78.8   8,754,363       Consumer Cyclical         + Tendance haussi├¿re
+ MRNA    ACHAT    4.95    33.80      Hausse     74.9   9,852,097       Healthcare                + Tendance haussi├¿re
+ BAYN.DE ACHAT    5.43    35.60      Hausse     66.9   3,402,956       Healthcare                + Tendance haussi├¿re
+ CSX     ACHAT    3.40    36.50      Hausse     57.2   13,358,677      Industrials               + Tendance haussi├¿re
+ UBSG.SW ACHAT    6.90    36.75      Hausse     84.4   4,697,227       Financial Services        + Tendance haussi├¿re
+ GLNG    ACHAT    8.80    38.09      Hausse     52.4   1,309,627       Energy                    + Tendance haussi├¿re
+ 2388.HK ACHAT    4.20    38.98      Hausse     62.1   10,014,635      Financial Services        + Tendance haussi├¿re
+ LUV     ACHAT    4.78    41.26      Hausse     74.1   7,332,620       Industrials               + Tendance haussi├¿re
+ FAST    ACHAT    4.08    42.35      Hausse     59.1   4,949,483       Industrials               + Tendance haussi├¿re
+ HUT     ACHAT    4.85    44.12      Hausse     53.2   6,966,397       Financial Services        + Tendance haussi├¿re
+ EXEL    ACHAT    5.55    44.30      Hausse     63.0   1,758,070       Healthcare                + Tendance haussi├¿re
+ XLB     ACHAT    5.79    45.37      Hausse     60.9   12,255,597      Ôä╣´©ÅInconnu!!               + Tendance haussi├¿re
+ FRE.DE  ACHAT    5.55    48.05      Hausse     52.7   603,901         Healthcare                + Tendance haussi├¿re
+ COLL    ACHAT    4.48    48.88      Hausse     67.8   556,817         Healthcare                + Tendance haussi├¿re
+ ALK     ACHAT    2.49    52.00      Hausse     65.2   3,274,730       Industrials               + Tendance haussi├¿re
+ ATRO    ACHAT    3.79    54.79      Hausse     59.0   616,280         Industrials               + Tendance haussi├¿re
+ BMRN    ACHAT    5.37    61.15      Hausse     70.7   3,095,330       Healthcare                + Tendance haussi├¿re
+ XMTR    ACHAT    3.79    61.51      Hausse     56.4   695,020         Industrials               + Tendance haussi├¿re
+ 2318.HK ACHAT    6.30    65.25      Hausse     68.7   40,215,521      Financial Services        + Tendance haussi├¿re
+ AOS     ACHAT    2.49    68.01      Hausse     54.2   1,292,017       Industrials               + Tendance haussi├¿re
+ DOCU    ACHAT    5.33    69.98      Hausse     53.9   2,284,740       Technology                + Tendance haussi├¿re
+ RKLB    ACHAT    4.05    70.52      Hausse     68.4   21,018,297      Industrials               + Tendance haussi├¿re
+ DAL     ACHAT    6.18    71.06      Hausse     70.3   5,490,003       Industrials               + Tendance haussi├¿re
+ SWK     ACHAT    4.92    72.75      Hausse     54.6   1,091,773       Industrials               + Tendance haussi├¿re
+ SEZL    ACHAT    2.77    73.50      Hausse     58.7   918,273         Financial Services        + Tendance haussi├¿re
+ KTOS    ACHAT    4.08    75.39      Hausse     49.8   1,311,120       Industrials               + Tendance haussi├¿re
+ RBRK    ACHAT    3.30    78.18      Hausse     51.6   3,730,967       Technology                + Tendance haussi├¿re
+ TCEHY   ACHAT    2.52    78.81      Hausse     50.9   1,257,507       Communication Services    + Tendance haussi├¿re
+ BNP.PA  ACHAT    7.85    80.27      Hausse     70.0   2,882,543       Financial Services        + Tendance haussi├¿re
+ TRMB    ACHAT    6.80    80.88      Hausse     51.4   853,783         Technology                + Tendance haussi├¿re
+ GM      ACHAT    10.55   82.35      Hausse     76.2   9,929,393       Consumer Cyclical         + Tendance haussi├¿re
+ CRWV    ACHAT    8.47    83.00      Hausse     47.8   35,153,200      Technology                + Tendance haussi├¿re
+ CTSH    ACHAT    11.40   85.41      Hausse     79.7   5,052,447       Technology                + Tendance haussi├¿re
+ GLW     ACHAT    8.25    87.86      Hausse     53.3   7,053,440       Technology                + Tendance haussi├¿re
+ TXT     ACHAT    6.18    89.46      Hausse     72.7   964,073         Industrials               + Tendance haussi├¿re
+ ZM      ACHAT    6.53    89.82      Hausse     60.4   3,035,707       Technology                + Tendance haussi├¿re
+ OKTA    ACHAT    5.33    90.21      Hausse     59.0   2,860,340       Technology                + Tendance haussi├¿re
+ WFC     ACHAT    5.79    93.01      Hausse     66.3   13,896,260      Financial Services        + Tendance haussi├¿re
+ BMW.DE  ACHAT    7.70    93.28      Hausse     58.4   779,790         Consumer Cyclical         + Tendance haussi├¿re
+ VOD.L   ACHAT    3.36    96.30      Hausse     61.3   84,619,937      Communication Services    + Tendance haussi├¿re
+ MRK     ACHAT    4.27    101.09     Hausse     61.4   15,701,570      Healthcare                + Tendance haussi├¿re
+ EXAS    ACHAT    5.85    101.82     Hausse     87.2   4,163,470       Healthcare                + Tendance haussi├¿re
+ INCY    ACHAT    8.15    102.69     Hausse     57.4   2,081,737       Healthcare                + Tendance haussi├¿re
+ VOW3.DE ACHAT    7.70    104.25     Hausse     58.8   721,385         Consumer Cyclical         + Tendance haussi├¿re
+ VOW.DE  ACHAT    4.10    105.50     Hausse     58.5   55,147          Consumer Cyclical         + Tendance haussi├¿re
+ NOVN.SW ACHAT    3.22    108.20     Hausse     60.9   3,079,817       Healthcare                + Tendance haussi├¿re
+ ROKU    ACHAT    4.41    108.82     Hausse     60.0   2,774,617       Communication Services    + Tendance haussi├¿re
+ DIS     ACHAT    5.32    111.24     Hausse     61.1   7,723,560       Communication Services    + Tendance haussi├¿re
+ UAL     ACHAT    6.18    113.99     Hausse     69.1   3,687,823       Industrials               + Tendance haussi├¿re
+ WMT     ACHAT    7.44    114.36     Hausse     60.7   21,692,377      Consumer Defensive        + Tendance haussi├¿re
+ GDXJ    ACHAT    8.05    117.63     Hausse     68.3   5,205,757       Ôä╣´©ÅInconnu!!               + Tendance haussi├¿re
+ JCI     ACHAT    4.70    119.53     Hausse     58.8   5,148,530       Industrials               + Tendance haussi├¿re
+ 0005.HK ACHAT    6.30    121.30     Hausse     73.4   13,356,325      Financial Services        + Tendance haussi├¿re
+ ZTS     ACHAT    8.73    122.24     Hausse     45.6   5,628,843       Healthcare                + Tendance haussi├¿re
+ BIDU    ACHAT    4.76    123.82     Hausse     52.6   2,965,813       Communication Services    + Tendance haussi├¿re
+ GILD    ACHAT    7.90    124.29     Hausse     55.9   7,721,343       Healthcare                + Tendance haussi├¿re
+ ILMN    ACHAT    5.85    134.78     Hausse     63.6   1,661,147       Healthcare                + Tendance haussi├¿re
+ TOL     ACHAT    8.80    139.79     Hausse     55.5   945,373         Consumer Cyclical         + Tendance haussi├¿re
+ CAP.PA  ACHAT    6.53    144.60     Hausse     58.9   452,047         Technology                + Tendance haussi├¿re
+ 0011.HK ACHAT    6.30    153.90     Hausse     80.7   1,534,174       Financial Services        + Tendance haussi├¿re
+ TJX     ACHAT    6.65    154.60     Hausse     60.2   3,501,343       Consumer Cyclical         + Tendance haussi├¿re
+ ALAB    ACHAT    4.00    164.40     Hausse     52.5   5,952,430       Technology                + Tendance haussi├¿re
+ BIIB    ACHAT    9.33    174.80     Hausse     55.6   2,358,997       Healthcare                + Tendance haussi├¿re
+ NVDA    ACHAT    4.49    180.99     Hausse     49.3   190,496,060     Technology                + Tendance haussi├¿re
+ ROST    ACHAT    6.53    182.41     Hausse     71.1   2,985,447       Consumer Cyclical         + Tendance haussi├¿re
+ CRL     ACHAT    6.00    197.06     Hausse     64.9   870,713         Healthcare                + Tendance haussi├¿re
+ EA      ACHAT    9.81    203.92     Hausse     65.8   1,399,633       Communication Services    + Tendance haussi├¿re
+ CDTX    ACHAT    6.87    220.80     Hausse     84.2   1,822,060       Healthcare                + Tendance haussi├¿re
+ NXPI    ACHAT    5.93    226.27     Hausse     59.1   2,995,403       Technology                + Tendance haussi├¿re
+ ABBV    ACHAT    3.78    226.82     Hausse     51.2   5,827,147       Healthcare                + Tendance haussi├¿re
+ NTRA    ACHAT    9.63    231.96     Hausse     59.4   1,436,430       Healthcare                + Tendance haussi├¿re
+ RDDT    ACHAT    3.36    233.19     Hausse     58.4   4,078,977       Communication Services    + Tendance haussi├¿re
+ TTWO    ACHAT    4.76    247.40     Hausse     54.9   953,027         Communication Services    + Tendance haussi├¿re
+ FSLR    ACHAT    8.20    266.98     Hausse     55.9   1,777,277       Technology                + Tendance haussi├¿re
+ BURL    ACHAT    5.97    278.76     Hausse     55.5   1,157,040       Consumer Cyclical         + Tendance haussi├¿re
+ LHX     ACHAT    5.48    287.45     Hausse     54.8   733,093         Industrials               + Tendance haussi├¿re
+ ADSK    ACHAT    6.80    300.08     Hausse     49.8   1,580,440       Technology                + Tendance haussi├¿re
+ GOOGL   ACHAT    4.90    307.16     Hausse     55.2   42,637,437      Communication Services    + Tendance haussi├¿re
+ GE      ACHAT    7.45    307.21     Hausse     57.9   4,776,237       Industrials               + Tendance haussi├¿re
+ HII     ACHAT    4.70    336.64     Hausse     65.3   406,777         Industrials               + Tendance haussi├¿re
+ GD      ACHAT    4.70    339.36     Hausse     50.3   1,096,530       Industrials               + Tendance haussi├¿re
+ ALV.DE  ACHAT    6.90    388.90     Hausse     68.5   417,134         Financial Services        + Tendance haussi├¿re
+ HUBS    ACHAT    4.10    389.46     Hausse     48.9   769,857         Technology                + Tendance haussi├¿re
+ GLD     ACHAT    9.60    399.02     Hausse     68.7   10,722,627      Ôä╣´©ÅInconnu!!               + Tendance haussi├¿re
+ CVNA    ACHAT    5.65    450.22     Hausse     63.5   4,762,143       Consumer Cyclical         + Tendance haussi├¿re
+ BARC.L  ACHAT    8.84    466.85     Hausse     71.9   38,999,449      Financial Services        + Tendance haussi├¿re
+ NOC     ACHAT    3.30    568.46     Hausse     51.8   697,513         Industrials               + Tendance haussi├¿re
+ 0700.HK ACHAT    2.40    614.50     Hausse     48.9   15,248,886      Communication Services    + Tendance haussi├¿re
+ QQQ     ACHAT    9.31    617.05     Hausse     52.0   56,529,787      Ôä╣´©ÅInconnu!!               + Tendance haussi├¿re
+ META    ACHAT    3.50    658.77     Hausse     54.6   11,590,227      Communication Services    + Tendance haussi├¿re
+ SPY     ACHAT    10.60   680.59     Hausse     54.0   51,312,710      Ôä╣´©ÅInconnu!!               + Tendance haussi├¿re
+ REGN    ACHAT    5.85    767.96     Hausse     63.6   1,068,543       Healthcare                + Tendance haussi├¿re
+ GS      ACHAT    7.05    893.48     Hausse     65.6   2,227,590       Financial Services        + Tendance haussi├¿re
+ LLY     ACHAT    4.20    1071.44    Hausse     63.4   2,338,397       Healthcare                + Tendance haussi├¿re
+ RR.L    ACHAT    3.73    1148.00    Hausse     58.4   25,022,538      Industrials               + Tendance haussi├¿re
+ HSBA.L  ACHAT    6.90    1169.20    Hausse     71.6   22,572,731      Financial Services        + Tendance haussi├¿re
+ STAN.L  ACHAT    8.15    1788.50    Hausse     76.2   4,186,900       Financial Services        + Tendance haussi├¿re
+ GSK.L   ACHAT    5.13    1817.50    Hausse     56.1   8,997,982       Healthcare                + Tendance haussi├¿re
+ PA=F    ACHAT    6.13    1847.50    Hausse     78.9   426             Ôä╣´©ÅInconnu!!               + Tendance haussi├¿re
+ PL=F    ACHAT    6.13    2113.10    Hausse     82.3   907             Ôä╣´©ÅInconnu!!               + Tendance haussi├¿re
+ ETH-USD ACHAT    6.50    3056.29    Hausse     48.5   22,532,897,222  Ôä╣´©ÅInconnu!!               + Tendance haussi├¿re
+ GC=F    ACHAT    6.13    4458.10    Hausse     74.2   9,419           Ôä╣´©ÅInconnu!!               + Tendance haussi├¿re
+ SAND    ACHAT    2.70    12.12      Baisse     51.5   0               Basic Materials          
+ GBDC    ACHAT    2.43    13.46      Baisse     43.2   1,512,220       Financial Services       
+ RIOT    ACHAT    5.82    14.50      Baisse     45.5   17,859,550      Financial Services       
+ CMRE    ACHAT    2.49    15.23      Baisse     55.9   523,193         Industrials              
+ GRPN    ACHAT    2.80    16.62      Baisse     43.9   1,176,823       Communication Services   
+ FLNC    ACHAT    4.27    19.96      Baisse     50.2   6,365,943       Utilities                
+ PHIA.AS ACHAT    2.49    22.61      Baisse     40.0   1,471,055       Healthcare               RSI bas
+ PFE     ACHAT    3.64    25.19      Baisse     48.9   59,288,837      Healthcare               

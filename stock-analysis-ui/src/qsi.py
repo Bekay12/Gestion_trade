@@ -22,6 +22,15 @@ from pathlib import Path
 sys.path.append("C:\\Users\\berti\\Desktop\\Mes documents\\Gestion_trade\\stock-analysis-ui\\src\\trading_c_acceleration")
 from qsi_optimized import backtest_signals, extract_best_parameters, backtest_signals_with_events
 
+# Import du gestionnaire de symboles
+try:
+    from symbol_manager import (
+        init_symbols_table, sync_txt_to_sqlite, 
+        get_symbols_by_list_type, get_symbols_by_sector_and_cap
+    )
+except ImportError:
+    print("⚠️ symbol_manager non disponible, utilisation de la méthode txt")
+
 # Supprimer les avertissements FutureWarning de yfinance
 warnings.filterwarnings("ignore", category=FutureWarning)
 
@@ -713,10 +722,10 @@ def compute_financial_derivatives(symbol: str, lookback_quarters: int = 4) -> di
             # EBITDA Yield
             denom_b = ev_b if ev_b > 0 else mc_b
             if ('ebitda_yield_pct' not in d) or (d.get('ebitda_yield_pct') is None):
-                d['ebitda_yield_pct'] = (ebitda_b / denom_b * 100.0) if (denom_b > 0 and ebitda_b > 0) else 0.0
+                d['ebitda_yield_pct'] = (ebitda_b / denom_b * 100.0) if denom_b > 0 else 0.0
             # FCF Yield
             if ('fcf_yield_pct' not in d) or (d.get('fcf_yield_pct') is None):
-                d['fcf_yield_pct'] = (fcf_b / mc_b * 100.0) if (mc_b > 0 and fcf_b > 0) else 0.0
+                d['fcf_yield_pct'] = (fcf_b / mc_b * 100.0) if mc_b > 0 else 0.0
         except Exception:
             d.setdefault('ebitda_yield_pct', 0.0)
             d.setdefault('fcf_yield_pct', 0.0)
@@ -795,13 +804,13 @@ def compute_financial_derivatives(symbol: str, lookback_quarters: int = 4) -> di
         # Calculs relatifs (pour éviter biais de taille)
         # EBITDA Yield: EBITDA / EV (fallback: MarketCap)
         denom = ev_num if ev_num > 0 else market_cap_num
-        if denom > 0 and ebitda_num > 0:
+        if denom > 0:
             derivatives['ebitda_yield_pct'] = (ebitda_num / denom) * 100.0
         else:
             derivatives['ebitda_yield_pct'] = 0.0
         
         # FCF Yield: FCF / MarketCap
-        if market_cap_num > 0 and fcf_num:
+        if market_cap_num > 0:
             derivatives['fcf_yield_pct'] = (fcf_num / market_cap_num) * 100.0
         else:
             derivatives['fcf_yield_pct'] = 0.0
@@ -942,7 +951,7 @@ CACHE_DIR = Path("data_cache")
 CACHE_DIR.mkdir(exist_ok=True)
 
 # Âge maximum d'un cache avant re-téléchargement (heures)
-CACHE_MAX_AGE_HOURS = 5
+CACHE_MAX_AGE_HOURS = 2 #5
 
 # Configuration globale pour le mode offline
 OFFLINE_MODE = False  # Mettre à True pour forcer le mode hors-ligne
@@ -1603,8 +1612,35 @@ def save_symbols_to_txt(symbols: List[str], filename: str):
         for symbol in symbols:
             f.write(symbol + '\n')
 
-def load_symbols_from_txt(filename: str) -> List[str]:
-    """Charge la liste de symboles depuis un fichier texte"""
+def load_symbols_from_txt(filename: str, use_sqlite: bool = True) -> List[str]:
+    """
+    Charge la liste de symboles depuis SQLite (préféré) ou fichier texte (fallback).
+    
+    Args:
+        filename: Nom du fichier txt (utilisé pour déterminer le type de liste)
+        use_sqlite: Si True, essayer de charger depuis SQLite d'abord
+    
+    Returns:
+        Liste des symboles
+    """
+    # Déterminer le type de liste basé sur le nom du fichier
+    list_type = 'popular'
+    if 'mes_symbol' in filename.lower() or 'personal' in filename.lower():
+        list_type = 'personal'
+    elif 'watchlist' in filename.lower():
+        list_type = 'watchlist'
+    
+    # Essayer de charger depuis SQLite
+    if use_sqlite:
+        try:
+            symbols = get_symbols_by_list_type(list_type, active_only=True)
+            if symbols:
+                print(f"✅ {len(symbols)} symboles chargés depuis SQLite ({list_type})")
+                return symbols
+        except Exception as e:
+            print(f"⚠️ Impossible de charger depuis SQLite: {e}, basculement sur fichier txt")
+    
+    # Fallback: charger depuis le fichier txt
     try:
         # Prefer files located next to this module (package root)
         script_dir = Path(__file__).parent
@@ -1627,8 +1663,16 @@ def load_symbols_from_txt(filename: str) -> List[str]:
                 print(f"Erreur de lecture/creation du fichier {filename} : {e}")
                 return []
 
-        with open(file_path, 'r', encoding='utf-8') as f:
-            return [line.strip() for line in f if line.strip()]
+        symbols = [line.strip() for line in file_path.read_text(encoding='utf-8').splitlines() if line.strip()]
+        
+        # Synchroniser vers SQLite pour la prochaine fois
+        try:
+            sync_txt_to_sqlite(str(file_path), list_type)
+        except Exception as e:
+            print(f"⚠️ Synchronisation SQLite échouée: {e}")
+        
+        return symbols
+        
     except Exception as e:
         print(f"Erreur de lecture du fichier {filename} : {e}")
         return []
@@ -1841,9 +1885,13 @@ def analyze_new_symbols_usage():
 # Variable globale pour la période d'analyse
 period = "12mo"  # Variable globale pour la période d'analyse ne pas commenter
 
-# Chargement des listes de symboles
-popular_symbols = load_symbols_from_txt("popular_symbols.txt")
-mes_symbols = load_symbols_from_txt("mes_symbols.txt")
+# Chargement des listes de symboles (uniquement en exécution directe, pas à l'import)
+if __name__ == "__main__":
+    popular_symbols = load_symbols_from_txt("popular_symbols.txt")
+    mes_symbols = load_symbols_from_txt("mes_symbols.txt")
+else:
+    popular_symbols = []
+    mes_symbols = []
 
 #todo: ajouter le parametre taux de reussite minimum pour le backtest
 def analyse_signaux_populaires(
@@ -2022,7 +2070,14 @@ def analyse_signaux_populaires(
     cout_par_trade = 1.0
     backtest_results = []
 
-    for s in signals:
+    # 🔧 Utiliser signaux_tries (filtré) au lieu de signals (brut) pour éviter les doublons
+    # et ne traiter que les signaux ACHAT/VENTE classifiés
+    signals_to_backtest = []
+    for signal_type in ["ACHAT", "VENTE"]:
+        for tendance in ["Hausse", "Baisse"]:
+            signals_to_backtest.extend(signaux_tries[signal_type][tendance])
+
+    for s in signals_to_backtest:
         try:
             stock_data = download_stock_data([s['Symbole']], period)[s['Symbole']]
             prices = stock_data['Close']
@@ -2090,6 +2145,15 @@ def analyse_signaux_populaires(
             if verbose:
                 print(f"{s['Symbole']:<8} : Erreur backtest ({e})")
 
+    # 🔧 Dédupliquer par symbole (garder le premier = celui avec le meilleur taux)
+    seen_symbols = set()
+    backtest_results_dedupe = []
+    for res in backtest_results:
+        if res['Symbole'] not in seen_symbols:
+            seen_symbols.add(res['Symbole'])
+            backtest_results_dedupe.append(res)
+    backtest_results = backtest_results_dedupe
+
     backtest_results.sort(key=lambda x: x['taux_reussite'], reverse=True)
 
     if verbose:
@@ -2125,8 +2189,22 @@ def analyse_signaux_populaires(
     domaine_stats = {}
     for res in backtest_results:
         symbole = res['Symbole']
-        # Retrouver le domaine associé à ce symbole
-        domaine = next((s['Domaine'] for s in signals if s['Symbole'] == symbole), "Inconnu")
+        # 🔧 Retrouver le domaine depuis signaux_tries (filtré) plutôt que signals (brut)
+        domaine = None
+        for signal_type in ["ACHAT", "VENTE"]:
+            for tendance in ["Hausse", "Baisse"]:
+                sig = next(
+                    (s for s in signaux_tries[signal_type][tendance] if s['Symbole'] == symbole),
+                    None
+                )
+                if sig:
+                    domaine = sig['Domaine']
+                    break
+            if domaine:
+                break
+        
+        if not domaine:
+            domaine = "Inconnu"
 
         if domaine not in domaine_stats:
             domaine_stats[domaine] = {"trades": 0, "gagnants": 0, "gain_total": 0.0}
@@ -2206,8 +2284,18 @@ def analyse_signaux_populaires(
     for res in backtest_results:
         symbole = res['Symbole']
         
-        # Récupérer le signal correspondant à ce symbole
-        signal_info = next((s for s in signals if s['Symbole'] == symbole), None)
+        # 🔧 Chercher dans signaux_tries (filtré) plutôt que signals (brut)
+        signal_info = None
+        for signal_type in ["ACHAT", "VENTE"]:
+            for tendance in ["Hausse", "Baisse"]:
+                signal_info = next(
+                    (s for s in signaux_tries[signal_type][tendance] if s['Symbole'] == symbole),
+                    None
+                )
+                if signal_info:
+                    break
+            if signal_info:
+                break
         
         if signal_info:
             # Récupérer le seuil d'achat pour le domaine (cap_range prioritaire)
@@ -2263,19 +2351,22 @@ def analyse_signaux_populaires(
             print("=" * 115)
 
     signaux_valides = []
-    for s in signals:
-        # Vérifier si le symbole est dans la liste des fiables ou non évalués
-        if s['Symbole'] in fiables_ou_non_eval:
-            # Ajouter le taux de fiabilité si disponible
-            taux_fiabilite = next(
-                (res['taux_reussite'] for res in backtest_results if res['Symbole'] == s['Symbole']),
-                "N/A"
-            )
+    # 🔧 Utiliser signaux_tries (filtré) au lieu de signals (brut) pour cohérence avec l'affichage
+    for signal_type in ["ACHAT", "VENTE"]:
+        for tendance in ["Hausse", "Baisse"]:
+            for s in signaux_tries[signal_type][tendance]:
+                # Vérifier si le symbole est dans la liste des fiables ou non évalués
+                if s['Symbole'] in fiables_ou_non_eval:
+                    # Ajouter le taux de fiabilité si disponible
+                    taux_fiabilite = next(
+                        (res['taux_reussite'] for res in backtest_results if res['Symbole'] == s['Symbole']),
+                        "N/A"
+                    )
 
-            # Créer une copie enrichie du signal
-            signal_valide = s.copy()
-            signal_valide['Fiabilite'] = taux_fiabilite
-            signaux_valides.append(signal_valide)
+                    # Créer une copie enrichie du signal
+                    signal_valide = s.copy()
+                    signal_valide['Fiabilite'] = taux_fiabilite
+                    signaux_valides.append(signal_valide)
 
     # =================================================================
     # SAUVEGARDE DES SIGNAUX VALIDÉS
@@ -2295,7 +2386,7 @@ def analyse_signaux_populaires(
                 print(f"💠 Sauvegarde de {len(mes_signaux_valides)} signaux personnels fiables dans {special_filename}")
             save_to_evolutive_csv(mes_signaux_valides, special_filename)
 
-    # Affichage des graphiques pour les 5 premiers signaux d'achat et de vente FIABLES
+    # Affichage des graphiques pour les signaux d'achat et de vente FIABLES
     top_achats_fiables = []
     top_ventes_fiables = []
 
@@ -2311,13 +2402,14 @@ def analyse_signaux_populaires(
             else:
                 top_ventes_fiables.extend(filtered)
 
-    top_achats_fiables = top_achats_fiables[:15]
-    top_ventes_fiables = top_ventes_fiables[:15]
+    # 🔧 SUPPRESSION de la limite arbitraire [:15] pour afficher TOUS les signaux validés
+    # top_achats_fiables = top_achats_fiables[:15]
+    # top_ventes_fiables = top_ventes_fiables[:15]
 
     fiabilite_dict = {res['Symbole']: res['taux_reussite'] for res in backtest_results}
 
     if afficher_graphiques and top_achats_fiables:
-        print("\nAffichage des graphiques pour les 5 premiers signaux d'ACHAT FIABLES détectés (sur une même figure)...")
+        print(f"\nAffichage des graphiques pour les {len(top_achats_fiables)} signaux d'ACHAT FIABLES détectés (sur une même figure)...")
 
         fig, axes = plt.subplots(len(top_achats_fiables), 1, figsize=(14, 5 * len(top_achats_fiables)), sharex=False)
         if len(top_achats_fiables) == 1:
@@ -2362,7 +2454,8 @@ def analyse_signaux_populaires(
             except Exception:
                 domaine = "Inconnu"
 
-            signal, last_price, trend, last_rsi, volume_mean, score = get_trading_signal(prices, volumes, domaine=domaine)
+            cap_range = get_cap_range_for_symbol(s['Symbole'])
+            signal, last_price, trend, last_rsi, volume_mean, score, _ = get_trading_signal(prices, volumes, domaine=domaine, cap_range=cap_range)
 
             taux_fiabilite = fiabilite_dict.get(s['Symbole'], None)
             fiabilite_str = f" | Fiabilité: {taux_fiabilite:.0f}%" if taux_fiabilite is not None else ""
@@ -2386,7 +2479,7 @@ def analyse_signaux_populaires(
         plt.show()
 
     if afficher_graphiques and top_ventes_fiables:
-        print("\nAffichage des graphiques pour les 5 premiers signaux de VENTE FIABLES détectés (sur une même figure)...")
+        print(f"\nAffichage des graphiques pour les {len(top_ventes_fiables)} signaux de VENTE FIABLES détectés (sur une même figure)...")
 
         fig, axes = plt.subplots(len(top_ventes_fiables), 1, figsize=(14, 5 * len(top_ventes_fiables)), sharex=False)
         if len(top_ventes_fiables) == 1:
@@ -2431,7 +2524,8 @@ def analyse_signaux_populaires(
             except Exception:
                 domaine = "Inconnu"
 
-            signal, last_price, trend, last_rsi, volume_mean, score = get_trading_signal(prices, volumes, domaine=domaine)
+            cap_range = get_cap_range_for_symbol(s['Symbole'])
+            signal, last_price, trend, last_rsi, volume_mean, score, _ = get_trading_signal(prices, volumes, domaine=domaine, cap_range=cap_range)
 
             taux_fiabilite = fiabilite_dict.get(s['Symbole'], None)
             fiabilite_str = f" | Fiabilité: {taux_fiabilite:.0f}%" if taux_fiabilite is not None else ""
@@ -2455,6 +2549,18 @@ def analyse_signaux_populaires(
         plt.show()
 
     # Retourne les résultats pour usage ultérieur
+    # 🔧 S'assurer que tous les signaux ont les champs financiers complétés
+    for sig in signals:
+        sig.setdefault('dPrice', 0.0)
+        sig.setdefault('dMACD', 0.0)
+        sig.setdefault('dRSI', 0.0)
+        sig.setdefault('dVolRel', 0.0)
+        sig.setdefault('Rev. Growth (%)', 0.0)
+        sig.setdefault('EBITDA Yield (%)', 0.0)
+        sig.setdefault('FCF Yield (%)', 0.0)
+        sig.setdefault('D/E Ratio', 0.0)
+        sig.setdefault('Market Cap (B$)', 0.0)
+    
     return {
         "signals": signals,
         "signaux_valides": signaux_valides,

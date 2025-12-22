@@ -20,6 +20,17 @@ from scipy.stats import qmc
 import warnings
 warnings.filterwarnings("ignore")
 
+# Import du gestionnaire de symboles SQLite
+try:
+    from symbol_manager import (
+        init_symbols_table, sync_txt_to_sqlite, get_symbols_by_list_type, get_all_sectors,
+        get_all_cap_ranges, get_symbols_by_sector_and_cap, get_symbol_count
+    )
+    SYMBOL_MANAGER_AVAILABLE = True
+except ImportError:
+    print("⚠️ symbol_manager non disponible, utilisation de la méthode classique")
+    SYMBOL_MANAGER_AVAILABLE = False
+
 # 🔧 OPTIMISATION: Caching des secteurs (mémoire + disque)
 SECTOR_CACHE_FILE = Path("cache_data/sector_cache.json")
 SECTOR_CACHE_FILE.parent.mkdir(exist_ok=True)
@@ -773,80 +784,129 @@ def save_optimization_results(domain, coeffs, gain_total, success_rate, total_tr
 
 # Exemple d'utilisation
 if __name__ == "__main__":
-    # Chargement des symboles
-    symbols = list(dict.fromkeys(load_symbols_from_txt("optimisation_symbols.txt")))
+    print("\n" + "="*80)
+    print("🚀 OPTIMISATEUR HYBRIDE - Génération de coefficients par secteur × cap_range")
+    print("="*80)
+    
+    # Chargement des symboles - priorité à SQLite
+    list_type = "optimization"
+    if SYMBOL_MANAGER_AVAILABLE:
+        print("\n1️⃣  Chargement des symboles depuis SQLite...")
+        init_symbols_table()
+        try:
+            added = sync_txt_to_sqlite("optimisation_symbols.txt", list_type)
+            if added:
+                print(f"   ✅ {added} symboles synchronisés depuis optimisation_symbols.txt ({list_type})")
+        except Exception as e:
+            print(f"   ⚠️ Impossible de synchroniser optimisation_symbols.txt: {e}")
 
-    # 🔧 OPTIMISATION: Utiliser le cache de secteurs (évite 100s d'appels yf.Ticker)
-    # Créer le dictionnaire des secteurs avec données cachées
-    sectors = {
-        "Technology": [],
-        "Healthcare": [],
-        "Financial Services": [],
-        "Consumer Cyclical": [],
-        "Industrials": [],
-        "Energy": [],
-        "Basic Materials": [],
-        "Communication Services": [],
-        "Consumer Defensive": [],
-        "Utilities": [],
-        "Real Estate": [],
-        "ℹ️Inconnu!!": []
-    }
-
-    cap_buckets = ["Small", "Mid", "Large", "Mega", "Unknown"]
-    sector_cap_ranges = {sec: {cap: [] for cap in cap_buckets} for sec in sectors.keys()}
-
-    # Assigner les symboles aux secteurs + tranches de capitalisation (cache activé)
-    print(f"📋 Assignation des secteurs (cache yfinance utilisé)...")
-    for symbol in symbols:
-        sector = get_sector(symbol, use_cache=True)  # Cache activé
-        if sector not in sectors:
-            sector = "ℹ️Inconnu!!"
-        cap_range = classify_cap_range(symbol)
-
-        sectors[sector].append(symbol)
-        sector_cap_ranges.setdefault(sector, {cap: [] for cap in cap_buckets})
-        sector_cap_ranges[sector].setdefault(cap_range, []).append(symbol)
-
-    print("\n📋 Assignation secteur × cap range:")
-    for sector, buckets in sector_cap_ranges.items():
-        for cap_range, syms in buckets.items():
-            if syms:
-                print(f"{sector} [{cap_range}]: {syms}")
+        symbols = get_symbols_by_list_type(list_type, active_only=True)
+        print(f"   ✅ {len(symbols)} symboles actifs chargés ({list_type})")
+        
+        # Obtenir tous les secteurs et cap_ranges disponibles
+        sectors_available = get_all_sectors(list_type=list_type)
+        cap_ranges_available = get_all_cap_ranges(list_type=list_type)
+        
+        print(f"\n2️⃣  Organisation des symboles:")
+        print(f"   - Secteurs: {len(sectors_available)}")
+        print(f"   - Gammes de cap: {len(cap_ranges_available)}")
+        
+        # Construction de sector_cap_ranges depuis SQLite
+        sector_cap_ranges = {}
+        total_combos = 0
+        for sector in sectors_available:
+            sector_cap_ranges[sector] = {}
+            for cap_range in cap_ranges_available:
+                syms = get_symbols_by_sector_and_cap(sector, cap_range, list_type, active_only=True)
+                if syms:
+                    sector_cap_ranges[sector][cap_range] = syms
+                    total_combos += 1
+                    print(f"   ✅ {sector} × {cap_range}: {len(syms)} symboles")
+        
+        print(f"\n   📊 Total: {total_combos} combinaisons secteur×cap_range avec symboles")
+    
+    else:
+        print("\n⚠️ SQLite non disponible, utilisation de la méthode classique...")
+        # Fallback: méthode originale
+        symbols = list(dict.fromkeys(load_symbols_from_txt("optimisation_symbols.txt")))
+        
+        sectors = {
+            "Technology": [],
+            "Healthcare": [],
+            "Financial Services": [],
+            "Consumer Cyclical": [],
+            "Industrials": [],
+            "Energy": [],
+            "Basic Materials": [],
+            "Communication Services": [],
+            "Consumer Defensive": [],
+            "Utilities": [],
+            "Real Estate": [],
+            "ℹ️Inconnu!!": []
+        }
+        
+        cap_buckets = ["Small", "Mid", "Large", "Mega", "Unknown"]
+        sector_cap_ranges = {sec: {cap: [] for cap in cap_buckets} for sec in sectors.keys()}
+        
+        print(f"📋 Assignation des secteurs (cache yfinance utilisé)...")
+        for symbol in symbols:
+            sector = get_sector(symbol, use_cache=True)
+            if sector not in sectors:
+                sector = "ℹ️Inconnu!!"
+            cap_range = classify_cap_range(symbol)
+            
+            sectors[sector].append(symbol)
+            sector_cap_ranges.setdefault(sector, {cap: [] for cap in cap_buckets})
+            sector_cap_ranges[sector].setdefault(cap_range, []).append(symbol)
+        
+        print("\n📋 Assignation secteur × cap range:")
+        for sector, buckets in sector_cap_ranges.items():
+            for cap_range, syms in buckets.items():
+                if syms:
+                    print(f"{sector} [{cap_range}]: {len(syms)} symboles")
 
     # Paramètres d'optimisation
+    print("\n3️⃣  Configuration de l'optimisation:")
     search_strategies = ['hybrid', 'differential', 'genetic', 'pso', 'lhs']
     
-    strategy = input("Choisissez la stratégie d'optimisation ('hybrid', 'differential', 'genetic', 'pso', 'lhs') : ").strip().lower()
+    strategy = input("   Stratégie ('hybrid', 'differential', 'genetic', 'pso', 'lhs') : ").strip().lower()
     i=0
     while (strategy not in search_strategies) and i<3:
-        strategy = input("Stratégie invalide. Veuillez choisir parmi ('hybrid', 'differential', 'genetic', 'pso', 'lhs') : ").strip().lower()
+        strategy = input("   Stratégie invalide. Choisir parmi ('hybrid', 'differential', 'genetic', 'pso', 'lhs') : ").strip().lower()
         i+=1
     if strategy not in search_strategies:
         strategy = random.choice(search_strategies)
-        print("Stratégie inconnue, utilisation de la stratégie aléatoire:", strategy)
+        print(f"   Stratégie inconnue, utilisation aléatoire: {strategy}")
 
-    # 🔧 NOUVEAU: Choix de la précision
+    # Choix de la précision
     try:
-        precision = int(input("Choisissez la précision (nombre de décimales: 1, 2, ou 3) [défaut: 2] : ").strip() or "2")
+        precision = int(input("   Précision (décimales: 1, 2, ou 3) [défaut: 2] : ").strip() or "2")
         if precision not in [1, 2, 3]:
             precision = 2
     except ValueError:
         precision = 2
 
-    print(f"🔧 Paramètres choisis: stratégie={strategy}, précision={precision} décimales")
+    print(f"\n   🔧 Paramètres: stratégie={strategy}, précision={precision} décimales")
 
-    # 🔧 OPTIMISATION: Adapter le budget selon la précision
-    # Plus fine = espace plus petit = moins d'évaluations nécessaires
+    # Adapter le budget selon la précision
     budget_base = 1000
     if precision == 1:
-        budget_evaluations = int(budget_base * 0.5)  # Espace 10x plus petit → -50% éval
+        budget_evaluations = int(budget_base * 0.5)
     elif precision == 2:
-        budget_evaluations = budget_base  # Référence
-    else:  # precision == 3
-        budget_evaluations = int(budget_base * 2)  # Espace 100x plus grand → +100% éval
+        budget_evaluations = budget_base
+    else:
+        budget_evaluations = int(budget_base * 2)
     
-    print(f"\n💡 Budget d'évaluations adapté à la précision {precision}: {budget_evaluations} éval/segment secteur×cap")
+    print(f"   💡 Budget d'évaluations: {budget_evaluations} éval/segment secteur×cap")
+    
+    # Confirmation avant lancement
+    total_to_optimize = sum(1 for s in sector_cap_ranges.values() for cap, syms in s.items() if syms)
+    print(f"\n4️⃣  Prêt à optimiser {total_to_optimize} combinaisons secteur×cap_range")
+    confirm = input("   Lancer l'optimisation complète ? (o/N) : ").strip().lower()
+    
+    if confirm != 'o':
+        print("\n❌ Optimisation annulée")
+        sys.exit(0)
 
     optimized_coeffs = {}
     sector_summaries = []

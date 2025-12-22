@@ -20,8 +20,17 @@ from concurrent.futures import ThreadPoolExecutor
 import sys
 import os
 import traceback
+import io
 
-# ✅ Ajouter le dossier trading_c_acceleration au sys.path pour trouver trading_c
+# Fix encoding on Windows
+if sys.platform == 'win32' and hasattr(sys.stdout, 'buffer'):
+    try:
+        sys.stdout = io.TextIOWrapper(sys.stdout.buffer, encoding='utf-8', errors='replace')
+        sys.stderr = io.TextIOWrapper(sys.stderr.buffer, encoding='utf-8', errors='replace')
+    except Exception:
+        pass  # Fallback silencieux
+
+# Ajouter le dossier trading_c_acceleration au sys.path pour trouver trading_c
 _module_dir = os.path.dirname(os.path.abspath(__file__))
 if _module_dir not in sys.path:
     sys.path.insert(0, _module_dir)
@@ -30,10 +39,10 @@ def _diagnose_import(module_name: str):
     """Tentative d'import et diagnostic si échec."""
     try:
         mod = __import__(module_name)
-        print(f"✅ Module {module_name} chargé - Accélération C activée !")
+        print(f"OK Module {module_name} charge - Acceleration C activee !")
         return mod, True
     except Exception as e:
-        print(f"⚠️ Échec import {module_name}: {e!s}")
+        print(f"ATTENTION Echec import {module_name}: {e!s}")
         print("--- Environment diagnostic ---")
         try:
             print(f"Python executable: {sys.executable}")

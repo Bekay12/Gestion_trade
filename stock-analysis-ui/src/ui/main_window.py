@@ -16,10 +16,16 @@ import math
 PROJECT_SRC = os.path.abspath(os.path.join(os.path.dirname(__file__), '..'))
 if PROJECT_SRC not in sys.path:
     sys.path.insert(0, PROJECT_SRC)
-from qsi import analyse_signaux_populaires, analyse_et_affiche, popular_symbols, mes_symbols, period
+from qsi import analyse_signaux_populaires, analyse_et_affiche, load_symbols_from_txt, period
 from qsi import download_stock_data, backtest_signals, plot_unified_chart, get_trading_signal
 import qsi
 from qsi_optimized import extract_best_parameters
+
+try:
+    from symbol_manager import get_symbols_by_list_type
+    SYMBOL_MANAGER_AVAILABLE = True
+except ImportError:
+    SYMBOL_MANAGER_AVAILABLE = False
 
 
 class AnalysisThread(QThread):
@@ -150,6 +156,10 @@ class MainWindow(QMainWindow):
         super().__init__()
         self.setWindowTitle("Stock Analysis Tool")
         self.setGeometry(100, 100, 1200, 800)
+
+        # Charger les listes au démarrage (SQLite si dispo, sinon txt)
+        self.popular_symbols_data = self._load_symbols_preferred("popular_symbols.txt", "popular")
+        self.mes_symbols_data = self._load_symbols_preferred("mes_symbols.txt", "personal")
         
         self.central_widget = QWidget()
         self.setCentralWidget(self.central_widget)
@@ -158,6 +168,22 @@ class MainWindow(QMainWindow):
         self.setup_ui()
 
         self.current_results = []
+
+    def _load_symbols_preferred(self, filename: str, list_type: str):
+        """Charge depuis SQLite si possible, sinon depuis le fichier txt."""
+        symbols = []
+        if SYMBOL_MANAGER_AVAILABLE:
+            try:
+                symbols = get_symbols_by_list_type(list_type, active_only=True)
+            except Exception:
+                symbols = []
+        if not symbols:
+            try:
+                symbols = load_symbols_from_txt(filename, use_sqlite=False)
+            except Exception:
+                symbols = []
+        # Dédupe en conservant l'ordre
+        return list(dict.fromkeys([s for s in symbols if s]))
     def setup_ui(self):
         # Title
         # title_label = QLabel("Stock Analysis Tool")
@@ -174,12 +200,13 @@ class MainWindow(QMainWindow):
         lists_container.setSpacing(24)  # Ajuste ce chiffre, ex: 24px entre les trois zones
 
         # Liste populaire
+        popular_sorted = sorted(self.popular_symbols_data)
         popular_layout = QHBoxLayout()
         popular_listcol = QVBoxLayout()
         popular_layout.addWidget(QLabel("Symboles populaires:"))
         self.popular_list = QListWidget()
         self.popular_list.setMaximumHeight(70)
-        for s in popular_symbols:
+        for s in popular_sorted:
             if s:
                 item = QListWidgetItem(s)
                 item.setData(Qt.UserRole, s)
@@ -203,12 +230,13 @@ class MainWindow(QMainWindow):
         lists_container.addItem(QSpacerItem(48, 20, QSizePolicy.MinimumExpanding, QSizePolicy.Minimum))  # espace “élastique” mais raisonnable
 
         # Liste personnelle
+        mes_sorted = sorted(self.mes_symbols_data)
         mes_layout = QHBoxLayout()
         mes_listcol = QVBoxLayout()
         mes_layout.addWidget(QLabel("Mes symboles:"))
         self.mes_list = QListWidget()
         self.mes_list.setMaximumHeight(70)
-        for s in mes_symbols:
+        for s in mes_sorted:
             if s:
                 item = QListWidgetItem(s)
                 item.setData(Qt.UserRole, s)
