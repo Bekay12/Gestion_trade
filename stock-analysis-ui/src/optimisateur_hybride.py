@@ -86,6 +86,26 @@ def get_best_gain_csv(domain, csv_path='signaux/optimization_hist_4stp.csv'):
         print(f"⚠️ Erreur chargement CSV pour {domain}: {e}")
     return -float('inf')
 
+
+def classify_cap_range(symbol: str) -> str:
+    """Classe la capitalisation en 4 catégories (Small, Mid, Large, Mega) ou Unknown."""
+    try:
+        ticker = yf.Ticker(symbol)
+        market_cap = ticker.info.get('marketCap')
+        if market_cap is None:
+            return 'Unknown'
+
+        market_cap_b = market_cap / 1e9
+        if market_cap_b < 2:
+            return 'Small'
+        if market_cap_b < 10:
+            return 'Mid'
+        if market_cap_b < 200:
+            return 'Large'
+        return 'Mega'
+    except Exception:
+        return 'Unknown'
+
 class HybridOptimizer:
     """Optimiseur hybride utilisant plusieurs stratégies d'optimisation avec limitation des décimales"""
     
@@ -457,7 +477,8 @@ def optimize_sector_coefficients_hybrid(
     montant=50, transaction_cost=1.0,
     initial_thresholds=(4.20, -0.5),
     budget_evaluations=1000,
-    precision=2  # 🔧 NOUVEAU: Paramètre de précision
+    precision=2,  # 🔧 NOUVEAU: Paramètre de précision
+    cap_range='Unknown'
 ):
     """
     Optimisation hybride des coefficients sectoriels avec limitation des décimales
@@ -470,6 +491,7 @@ def optimize_sector_coefficients_hybrid(
     - 'hybrid': Combine plusieurs méthodes
     
     precision: Nombre de décimales pour les paramètres (1, 2, ou 3)
+    cap_range: Segment de capitalisation associé au secteur
     """
     if not sector_symbols:
         print(f"🚫 Secteur {domain} vide, ignoré")
@@ -656,7 +678,7 @@ def optimize_sector_coefficients_hybrid(
     should_save = (hist_avg_gain is None) or (best_score > hist_avg_gain + save_epsilon)
     
     if should_save:
-        save_optimization_results(domain, best_coeffs, best_score, success_rate, total_trades, all_thresholds)
+        save_optimization_results(domain, best_coeffs, best_score, success_rate, total_trades, all_thresholds, cap_range)
         hist_str = f"{hist_avg_gain:.2f}" if hist_avg_gain is not None else "N/A"
         print(f"💾 Sauvegarde: nouveau score {best_score:.2f} > historique réévalué {hist_str}")
     else:
@@ -664,6 +686,7 @@ def optimize_sector_coefficients_hybrid(
 
     summary = {
         'sector': domain,
+        'cap_range': cap_range,
         'gain_new': best_score,
         'gain_old': hist_avg_gain,
         'trades_new': total_trades,
@@ -674,18 +697,19 @@ def optimize_sector_coefficients_hybrid(
 
     return best_coeffs, best_score, success_rate, all_thresholds, summary
 
-def save_optimization_results(domain, coeffs, gain_total, success_rate, total_trades, thresholds):
+def save_optimization_results(domain, coeffs, gain_total, success_rate, total_trades, thresholds, cap_range=None):
     """
     Sauvegarde les résultats d'optimisation dans la base de données SQLite avec le format attendu:
     Timestamp, Sector, Gain_moy, Success_Rate, Trades, Seuil_Achat, Seuil_Vente, a1-a8, th1-th8
     
     Args:
-        domain: Secteur
+        domain: Secteur ou clé composite secteur_capRange
         coeffs: 8 coefficients (a1-a8)
         gain_total: Gain moyen
         success_rate: Taux de réussite
         total_trades: Nombre total de trades
         thresholds: 8 feature thresholds + 2 global thresholds (buy, sell)
+        cap_range: Segment de capitalisation (Small, Mid, Large, Mega, Unknown)
     """
     from datetime import datetime
     import sqlite3
@@ -699,6 +723,18 @@ def save_optimization_results(domain, coeffs, gain_total, success_rate, total_tr
         # Préparer le timestamp
         timestamp = datetime.now().strftime('%Y-%m-%d %H:%M:%S')
         
+        # Inférer secteur / cap_range si non fourni
+        normalized_cap = cap_range or 'Unknown'
+        normalized_sector = domain
+
+        allowed_caps = {'Small', 'Mid', 'Large', 'Mega', 'Unknown'}
+        if '_' in domain:
+            maybe_sector, maybe_cap = domain.rsplit('_', 1)
+            if maybe_cap in allowed_caps:
+                normalized_sector = maybe_sector
+                if normalized_cap == 'Unknown':
+                    normalized_cap = maybe_cap
+
         # Connexion à SQLite et insertion
         conn = sqlite3.connect(db_path)
         cursor = conn.cursor()
@@ -706,13 +742,13 @@ def save_optimization_results(domain, coeffs, gain_total, success_rate, total_tr
         # Construire l'INSERT OR REPLACE avec tous les paramètres
         cursor.execute('''
             INSERT OR REPLACE INTO optimization_runs
-            (timestamp, sector, gain_moy, success_rate, trades,
+            (timestamp, sector, market_cap_range, gain_moy, success_rate, trades,
              a1, a2, a3, a4, a5, a6, a7, a8,
              th1, th2, th3, th4, th5, th6, th7, th8,
              seuil_achat, seuil_vente)
-            VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
+            VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
         ''', (
-            timestamp, domain, gain_total, success_rate, total_trades,
+            timestamp, normalized_sector, normalized_cap, gain_total, success_rate, total_trades,
             coeffs[0], coeffs[1], coeffs[2], coeffs[3],
             coeffs[4], coeffs[5], coeffs[6], coeffs[7],
             thresholds[0] if len(thresholds) > 0 else 50.0,
@@ -730,7 +766,7 @@ def save_optimization_results(domain, coeffs, gain_total, success_rate, total_tr
         conn.commit()
         conn.close()
         
-        print(f"📝 Résultats sauvegardés dans SQLite pour {domain}")
+        print(f"📝 Résultats sauvegardés dans SQLite pour {normalized_sector} ({normalized_cap})")
 
     except Exception as e:
         print(f"⚠️ Erreur lors de la sauvegarde: {e}")
@@ -757,18 +793,26 @@ if __name__ == "__main__":
         "ℹ️Inconnu!!": []
     }
 
-    # Assigner les symboles aux secteurs (cache activé)
+    cap_buckets = ["Small", "Mid", "Large", "Mega", "Unknown"]
+    sector_cap_ranges = {sec: {cap: [] for cap in cap_buckets} for sec in sectors.keys()}
+
+    # Assigner les symboles aux secteurs + tranches de capitalisation (cache activé)
     print(f"📋 Assignation des secteurs (cache yfinance utilisé)...")
     for symbol in symbols:
         sector = get_sector(symbol, use_cache=True)  # Cache activé
-        if sector in sectors:
-            sectors[sector].append(symbol)
-        else:
-            sectors["ℹ️Inconnu!!"].append(symbol)
+        if sector not in sectors:
+            sector = "ℹ️Inconnu!!"
+        cap_range = classify_cap_range(symbol)
 
-    print("\n📋 Assignation des secteurs:")
-    for sector, syms in sectors.items():
-        print(f"{sector}: {syms}")
+        sectors[sector].append(symbol)
+        sector_cap_ranges.setdefault(sector, {cap: [] for cap in cap_buckets})
+        sector_cap_ranges[sector].setdefault(cap_range, []).append(symbol)
+
+    print("\n📋 Assignation secteur × cap range:")
+    for sector, buckets in sector_cap_ranges.items():
+        for cap_range, syms in buckets.items():
+            if syms:
+                print(f"{sector} [{cap_range}]: {syms}")
 
     # Paramètres d'optimisation
     search_strategies = ['hybrid', 'differential', 'genetic', 'pso', 'lhs']
@@ -802,34 +846,36 @@ if __name__ == "__main__":
     else:  # precision == 3
         budget_evaluations = int(budget_base * 2)  # Espace 100x plus grand → +100% éval
     
-    print(f"\n💡 Budget d'évaluations adapté à la précision {precision}: {budget_evaluations} éval/secteur")
+    print(f"\n💡 Budget d'évaluations adapté à la précision {precision}: {budget_evaluations} éval/segment secteur×cap")
 
     optimized_coeffs = {}
     sector_summaries = []
 
-    for sector, sector_symbols in sectors.items():
-        if not sector_symbols:
-            print(f"🚫 Secteur {sector} vide, ignoré")
-            continue
+    for sector, buckets in sector_cap_ranges.items():
+        for cap_range, sector_symbols in buckets.items():
+            if not sector_symbols:
+                continue
 
-        print(f"\n" + "="*160)
-        print(f"🎯 OPTIMISATION {strategy.upper()} - {sector}")
-        print(f"="*160)
+            combo_key = f"{sector}_{cap_range}"
+            print(f"\n" + "="*160)
+            print(f"🎯 OPTIMISATION {strategy.upper()} - {sector} / {cap_range}")
+            print(f"="*160)
 
-        coeffs, gain_total, success_rate, thresholds, summary = optimize_sector_coefficients_hybrid(
-            sector_symbols, sector,
-            period='1y',
-            strategy=strategy,
-            montant=50,
-            transaction_cost=0.02,
-            budget_evaluations=budget_evaluations,
-            precision=precision  # 🔧 NOUVEAU: Paramètre de précision
-        )
+            coeffs, gain_total, success_rate, thresholds, summary = optimize_sector_coefficients_hybrid(
+                sector_symbols, combo_key,
+                period='1y',
+                strategy=strategy,
+                montant=50,
+                transaction_cost=0.02,
+                budget_evaluations=budget_evaluations,
+                precision=precision,  # 🔧 NOUVEAU: Paramètre de précision
+                cap_range=cap_range
+            )
 
-        if coeffs:
-            optimized_coeffs[sector] = coeffs
-        if summary:
-            sector_summaries.append(summary)
+            if coeffs:
+                optimized_coeffs[combo_key] = coeffs
+            if summary:
+                sector_summaries.append(summary)
 
     print("\n" + "="*80)
     print("🏆 DICTIONNAIRE FINAL OPTIMISÉ")
@@ -854,7 +900,8 @@ if __name__ == "__main__":
             delta_pct_str = f", {delta_pct:+.1f}%" if delta_pct is not None else ""
             trades_old_str = s['trades_old'] if s['trades_old'] is not None else "-"
             success_old_str = f"{s['success_old']:.1f}%" if s['success_old'] is not None else "-"
-            print(f" - {s['sector']}: gain {s['gain_new']:.2f} vs {s['gain_old']:.2f} ({delta:+.2f}{delta_pct_str}); trades {s['trades_new']} vs {trades_old_str}; success {s['success_new']:.1f}% vs {success_old_str}")
+            label = f"{s['sector']} ({s.get('cap_range', 'Unknown')})"
+            print(f" - {label}: gain {s['gain_new']:.2f} vs {s['gain_old']:.2f} ({delta:+.2f}{delta_pct_str}); trades {s['trades_new']} vs {trades_old_str}; success {s['success_new']:.1f}% vs {success_old_str}")
             total_old_gain += s['gain_old']
             total_new_gain += s['gain_new']
             total_old_trades += s['trades_old'] or 0

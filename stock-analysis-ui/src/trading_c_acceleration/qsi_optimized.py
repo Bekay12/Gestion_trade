@@ -146,24 +146,17 @@ def save_to_evolutive_csv(signals, filename="signaux_trading.csv"):
 from typing import Tuple, Dict, Union, List
 
 def extract_best_parameters(db_path: str = 'signaux/optimization_hist.db') -> Dict[str, Tuple[Tuple[float, ...], Tuple[float, ...], Tuple[float, float]]]:
-    """
-    Extrait les meilleurs coefficients et seuils pour chaque secteur à partir de la base SQLite.
-    Format attendu: Timestamp, Sector, Gain_moy, Success_Rate, Trades, Seuil_Achat, Seuil_Vente, a1-a8, th1-th8
+    """Extrait les meilleurs coefficients/seuils par secteur ET tranche de capitalisation.
 
-    Args:
-        db_path (str): Chemin vers la base SQLite contenant l'historique d'optimisation.
-
-    Returns:
-        Dict[str, Tuple[Tuple[float, ...], Tuple[float, ...], Tuple[float, float]]]: 
-        Dictionnaire avec pour chaque secteur: (coefficients_8, thresholds_8, globals_2, gain)
+    Retourne aussi les clés composites "{sector}_{cap_range}" pour faciliter l'accès.
     """
     import sqlite3
-    
+
     try:
         conn = sqlite3.connect(db_path)
+        conn.row_factory = sqlite3.Row
         cursor = conn.cursor()
-        
-        # Vérifier que la table existe
+
         cursor.execute('''
             SELECT name FROM sqlite_master 
             WHERE type='table' AND name='optimization_runs'
@@ -173,43 +166,50 @@ def extract_best_parameters(db_path: str = 'signaux/optimization_hist.db') -> Di
             print("   Veuillez exécuter migration_csv_to_sqlite.py pour migrer vos données")
             conn.close()
             return {}
-        
-        # Extraire la dernière ligne (par timestamp) pour chaque secteur
+
         cursor.execute('''
-            SELECT sector, gain_moy, a1, a2, a3, a4, a5, a6, a7, a8,
-                   th1, th2, th3, th4, th5, th6, th7, th8, seuil_achat, seuil_vente
+            SELECT 
+                sector,
+                COALESCE(market_cap_range, 'Unknown') AS market_cap_range,
+                gain_moy,
+                a1, a2, a3, a4, a5, a6, a7, a8,
+                th1, th2, th3, th4, th5, th6, th7, th8,
+                seuil_achat, seuil_vente,
+                timestamp
             FROM optimization_runs
-            WHERE (sector, timestamp) IN (
-                SELECT sector, MAX(timestamp) 
+            WHERE (sector, COALESCE(market_cap_range, 'Unknown'), timestamp) IN (
+                SELECT sector, COALESCE(market_cap_range, 'Unknown'), MAX(timestamp)
                 FROM optimization_runs 
-                GROUP BY sector
+                GROUP BY sector, COALESCE(market_cap_range, 'Unknown')
             )
-            ORDER BY sector
+            ORDER BY sector, market_cap_range
         ''')
-        
+
         rows = cursor.fetchall()
         conn.close()
-        
+
         if not rows:
             print("🚫 Aucune donnée trouvée dans la base SQLite")
             return {}
-        
+
         result = {}
         for row in rows:
-            sector = row[0]
-            gain_moy = float(row[1])
-            
-            # Extraire les 8 coefficients (a1-a8)
-            coefficients = tuple(float(row[i]) for i in range(2, 10))
-            
-            # Extraire les 8 seuils features (th1-th8)
-            thresholds = tuple(float(row[i]) for i in range(10, 18))
-            
-            # Extraire les 2 seuils globaux (Seuil_Achat, Seuil_Vente)
-            globals_thresholds = (float(row[18]), float(row[19]))
-            
+            sector = str(row['sector']).strip()
+            cap_range = str(row['market_cap_range'] or 'Unknown').strip()
+            gain_moy = float(row['gain_moy'])
+
+            coefficients = tuple(float(row[f'a{i+1}']) for i in range(8))
+            thresholds = tuple(float(row[f'th{i+1}']) for i in range(8))
+            globals_thresholds = (float(row['seuil_achat']), float(row['seuil_vente']))
+
+            # Clé secteur seule (fallback)
             result[sector] = (coefficients, thresholds, globals_thresholds, gain_moy)
-        
+
+            # Clé composite secteur + cap_range
+            if cap_range and cap_range.lower() != 'unknown':
+                composite_key = f"{sector}_{cap_range}"
+                result[composite_key] = (coefficients, thresholds, globals_thresholds, gain_moy)
+
         return result
 
     except FileNotFoundError:
@@ -222,7 +222,8 @@ def extract_best_parameters(db_path: str = 'signaux/optimization_hist.db') -> Di
 
 def backtest_signals_accelerated(prices: Union[pd.Series, pd.DataFrame], volumes: Union[pd.Series, pd.DataFrame],
                                 domaine: str, montant: float = 50, transaction_cost: float = 0.02, 
-                                domain_coeffs=None, domain_thresholds=None, seuil_achat=None, seuil_vente=None) -> Dict:
+                                domain_coeffs=None, domain_thresholds=None, seuil_achat=None, seuil_vente=None,
+                                cap_range: str = None) -> Dict:
     """
     🚀 VERSION ACCÉLÉRÉE avec module C - Interface IDENTIQUE à votre fonction
     
@@ -256,25 +257,39 @@ def backtest_signals_accelerated(prices: Union[pd.Series, pd.DataFrame], volumes
     if not best_params:
         print(f"⚠️ backtest_signals: Aucun paramètre optimisé trouvé")
     
+    selected_key = domaine
+    if cap_range:
+        comp_key = f"{domaine}_{cap_range}" if '_' not in domaine else domaine
+        if comp_key in best_params:
+            selected_key = comp_key
+    if selected_key not in best_params and '_' in domaine:
+        # Si domaine est déjà composite mais absent, fallback sur la partie secteur
+        base_sector = domaine.rsplit('_', 1)[0]
+        if base_sector in best_params:
+            selected_key = base_sector
+
     if domain_coeffs:
-        coeffs = domain_coeffs.get(domaine, default_coeffs)
+        coeffs = domain_coeffs.get(selected_key, default_coeffs)
     else:
-        if domaine in best_params:
-            coeffs, legacy_thresholds, globals_thresholds, _ = best_params[domaine]
+        if selected_key in best_params:
+            coeffs, legacy_thresholds, globals_thresholds, _ = best_params[selected_key]
             # Les anciens seuils legacy ne sont pas utilisés si domain_thresholds fourni
         else:
             coeffs = default_coeffs
-            print(f"⚠️ backtest_signals: Domaine '{domaine}' non trouvé dans best_params, utilise default")
+            print(f"⚠️ backtest_signals: Domaine '{selected_key}' non trouvé dans best_params, utilise default")
     
     # Récupération des seuils (nouveaux: domain_thresholds)
     if domain_thresholds:
-        thresholds = domain_thresholds.get(domaine, default_thresholds)
+        thresholds = domain_thresholds.get(selected_key, default_thresholds)
     else:
-        thresholds = default_thresholds
+        if selected_key in best_params:
+            _, thresholds, _, _ = best_params[selected_key]
+        else:
+            thresholds = default_thresholds
 
     # Seuils globaux (legacy): utiliser Seuil_Achat/Seuil_Vente s'ils sont extraits
-    if domaine in best_params:
-        _, _, globals_thresholds, _ = best_params[domaine]
+    if selected_key in best_params:
+        _, _, globals_thresholds, _ = best_params[selected_key]
         seuil_achat = globals_thresholds[0]
         seuil_vente = globals_thresholds[1]
     
@@ -408,73 +423,6 @@ def backtest_signals_with_events(prices, volumes, domaine, montant=50, transacti
     }
     
     return result, events
-
-
-    n = len(prices)
-    if n < 60:
-        return {"trades": 0, "gagnants": 0, "taux_reussite": 0, "gain_total": 0.0, "gain_moyen": 0.0, "drawdown_max": 0.0}
-
-    position = 0
-    entry_price = 0.0
-    trades = 0
-    gagnants = 0
-    gain_total = 0.0
-    peak = -float('inf')
-    drawdown_max = 0.0
-
-    # 🔧 Harmoniser avec generate_trade_events : démarre à 50, pas 59
-    for i in range(50, n):
-        window_prices = prices.iloc[:i]
-        window_volumes = volumes.iloc[:i]
-        try:
-            sig, last_close, _, _, _, _ = qsi_get_trading_signal(window_prices, window_volumes, domaine, domain_coeffs=domain_coeffs, domain_thresholds=domain_thresholds)
-        except TypeError:
-            # older signature without domain_thresholds
-            sig, last_close, _, _, _, _ = qsi_get_trading_signal(window_prices, window_volumes, domaine, domain_coeffs=domain_coeffs)
-        except Exception:
-            continue
-
-        if sig == 'ACHAT' and position == 0:
-            position = 1
-            entry_price = last_close
-        elif sig == 'VENTE' and position == 1:
-            # Close position
-            profit = (last_close - entry_price) / entry_price * montant - transaction_cost
-            gain_total += profit
-            trades += 1
-            if profit > 0:
-                gagnants += 1
-            position = 0
-
-        # Track peak for drawdown (simple)
-        if position == 1:
-            current_val = (last_close - entry_price) / entry_price * montant
-            if current_val > peak:
-                peak = current_val
-            dd = peak - current_val
-            if dd > drawdown_max:
-                drawdown_max = dd
-
-    # If still in position, close at last available price
-    if position == 1:
-        last_close = float(prices.iloc[-1])
-        profit = (last_close - entry_price) / entry_price * montant - transaction_cost
-        gain_total += profit
-        trades += 1
-        if profit > 0:
-            gagnants += 1
-
-    gain_moyen = gain_total / trades if trades > 0 else 0.0
-    taux_reussite = int((gagnants / trades) * 100) if trades > 0 else 0
-
-    return {
-        "trades": trades,
-        "gagnants": gagnants,
-        "taux_reussite": taux_reussite,
-        "gain_total": gain_total,
-        "gain_moyen": gain_moyen,
-        "drawdown_max": drawdown_max
-    }
 
 # Alias pour remplacement automatique - Votre code utilise maintenant la version accélérée !
 backtest_signals = backtest_signals_accelerated

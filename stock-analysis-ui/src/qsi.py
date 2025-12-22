@@ -158,22 +158,26 @@ def extract_best_parameters(db_path: str = 'signaux/optimization_hist.db') -> Di
         # Récupérer la dernière ligne (plus récente) pour chaque secteur
         cursor.execute('''
             SELECT 
-                sector, gain_moy,
+                sector,
+                COALESCE(market_cap_range, 'Unknown') AS market_cap_range,
+                gain_moy,
                 a1, a2, a3, a4, a5, a6, a7, a8,
                 th1, th2, th3, th4, th5, th6, th7, th8,
-                seuil_achat, seuil_vente
+                seuil_achat, seuil_vente,
+                timestamp
             FROM optimization_runs
-            WHERE (sector, timestamp) IN (
-                SELECT sector, MAX(timestamp) 
+            WHERE (sector, COALESCE(market_cap_range, 'Unknown'), timestamp) IN (
+                SELECT sector, COALESCE(market_cap_range, 'Unknown'), MAX(timestamp)
                 FROM optimization_runs 
-                GROUP BY sector
+                GROUP BY sector, COALESCE(market_cap_range, 'Unknown')
             )
-            ORDER BY sector
+            ORDER BY sector, market_cap_range
         ''')
         
         result = {}
         for row in cursor.fetchall():
             sector = row['sector'].strip()
+            cap_range = str(row['market_cap_range'] or 'Unknown').strip()
             
             # Extraire les 8 coefficients (a1-a8)
             coefficients = tuple(float(row[f'a{i+1}']) for i in range(8))
@@ -185,7 +189,12 @@ def extract_best_parameters(db_path: str = 'signaux/optimization_hist.db') -> Di
             globals_thresholds = (float(row['seuil_achat']), float(row['seuil_vente']))
             
             gain_moy = float(row['gain_moy'])
+            # Clé sector (fallback)
             result[sector] = (coefficients, thresholds, globals_thresholds, gain_moy)
+            # Clé secteur + range si disponible
+            if cap_range and cap_range.lower() != 'unknown':
+                key_comp = f"{sector}_{cap_range}"
+                result[key_comp] = (coefficients, thresholds, globals_thresholds, gain_moy)
         
         conn.close()
         
@@ -207,7 +216,8 @@ def extract_best_parameters(db_path: str = 'signaux/optimization_hist.db') -> Di
         return {}
 
 def get_trading_signal(prices, volumes, domaine, domain_coeffs=None, domain_thresholds=None,
-                      variation_seuil=-20, volume_seuil=100000, return_derivatives: bool = False, symbol: str = None):
+                      variation_seuil=-20, volume_seuil=100000, return_derivatives: bool = False, symbol: str = None,
+                      cap_range: str = None):
     """Détermine les signaux de trading avec validation des données
     
     Args:
@@ -344,19 +354,36 @@ def get_trading_signal(prices, volumes, domaine, domain_coeffs=None, domain_thre
     default_thresholds = (50.0, 0.0, 0.0, 1.2, 25.0, 0.0, 0.5, 4.20)
     
     best_params = extract_best_parameters()
+
+    # Priorité aux paramètres secteur+cap_range si disponibles
+    selected_key = None
+    if cap_range:
+        comp_key = f"{domaine}_{cap_range}"
+        if comp_key in best_params:
+            selected_key = comp_key
+    if not selected_key and domaine in best_params:
+        selected_key = domaine
+
     if domain_coeffs:
-        coeffs = domain_coeffs.get(domaine, default_coeffs)
+        coeffs = domain_coeffs.get(selected_key or domaine, default_coeffs)
     else:
-        if domaine in best_params:
+        if selected_key:
+            coeffs, legacy_thresholds, globals_thresholds, gain_moyen = best_params[selected_key]
+        elif domaine in best_params:
             coeffs, legacy_thresholds, globals_thresholds, gain_moyen = best_params[domaine]
         else:
             coeffs = default_coeffs
     
     # Charger les seuils personnalisés ou utiliser les défauts
     if domain_thresholds:
-        thresholds = domain_thresholds.get(domaine, default_thresholds)
+        thresholds = domain_thresholds.get(selected_key or domaine, default_thresholds)
     else:
-        thresholds = default_thresholds
+        if selected_key:
+            _, thresholds, _, _ = best_params[selected_key]
+        elif domaine in best_params:
+            _, thresholds, _, _ = best_params[domaine]
+        else:
+            thresholds = default_thresholds
 
     a1, a2, a3, a4, a5, a6, a7, a8 = coeffs
     
@@ -653,6 +680,28 @@ def compute_financial_derivatives(symbol: str, lookback_quarters: int = 4) -> di
     
     # Cache des métriques financières (7 jours)
     cache_file = CACHE_DIR / f"{symbol}_financial.pkl"
+
+    def classify_cap_range(market_cap_b: float) -> str:
+        try:
+            if market_cap_b <= 0:
+                return 'Unknown'
+            if market_cap_b < 2.0:
+                return 'Small'
+            if market_cap_b < 10.0:
+                return 'Mid'
+            return 'Large'
+        except Exception:
+            return 'Unknown'
+
+    def _get_cap_range_from_cache() -> str:
+        if cache_file.exists():
+            try:
+                d = pd.read_pickle(cache_file)
+                mc_b = float(d.get('market_cap_val', 0.0) or 0.0)
+                return classify_cap_range(mc_b)
+            except Exception:
+                return 'Unknown'
+        return 'Unknown'
     
     def _ensure_relative_metrics(d: dict) -> dict:
         """Complète les métriques relatives (yield %) si manquantes depuis un cache ancien."""
@@ -778,6 +827,39 @@ def compute_financial_derivatives(symbol: str, lookback_quarters: int = 4) -> di
                 pass
 
     return derivatives
+
+# ===================================================================
+# SEGMENTATION PAR CAPITALISATION
+# ===================================================================
+
+def classify_cap_range_from_market_cap(market_cap_b: float) -> str:
+    """Retourne Small/Mid/Large/Unknown selon la market cap en milliards $."""
+    try:
+        if market_cap_b is None or market_cap_b <= 0:
+            return 'Unknown'
+        if market_cap_b < 2.0:
+            return 'Small'
+        if market_cap_b < 10.0:
+            return 'Mid'
+        if market_cap_b < 100.0:
+            return 'Large'
+        return 'Mega'
+    except Exception:
+        return 'Unknown'
+
+def get_cap_range_for_symbol(symbol: str) -> str:
+    """Tente de récupérer le range de market cap via le cache financier.
+    Ne déclenche pas de téléchargement lourd; se contente du cache, sinon Unknown.
+    """
+    try:
+        cache_file = CACHE_DIR / f"{symbol}_financial.pkl"
+        if cache_file.exists():
+            d = pd.read_pickle(cache_file)
+            mc_b = float(d.get('market_cap_val', 0.0) or 0.0)
+            return classify_cap_range_from_market_cap(mc_b)
+    except Exception:
+        pass
+    return 'Unknown'
 
 # ===================================================================
 # CONSENSUS ANALYSTES ET SENTIMENT ACTUALITÉ
@@ -1404,9 +1486,11 @@ def plot_unified_chart(symbol, prices, volumes, ax, show_xaxis=False):
     except Exception:
         domaine = "Inconnu"
 
+    cap_range = get_cap_range_for_symbol(symbol)
+
     # Ajout des signaux trading (ne pas demander les dérivées ici — elles seront consommées par l'UI)
     try:
-        signal, last_price, trend, last_rsi, volume_moyen, score, _ = get_trading_signal(prices, volumes, domaine=domaine)
+        signal, last_price, trend, last_rsi, volume_moyen, score, _ = get_trading_signal(prices, volumes, domaine=domaine, cap_range=cap_range)
     except Exception as e:
         print(f"⚠️ plot_unified_chart: Erreur get_trading_signal pour {symbol}: {e}")
         # Fallback: calculer manuellement les valeurs minimales
@@ -1767,7 +1851,7 @@ def analyse_signaux_populaires(
     period="12mo", afficher_graphiques=True,
     chunk_size=20, verbose=True,
     save_csv=True, plot_all=False,
-    max_workers=4
+    max_workers=5
 ):
     """
     Analyse les signaux pour les actions populaires, affiche les résultats, effectue le backtest,
@@ -1782,21 +1866,10 @@ def analyse_signaux_populaires(
     from threading import Lock
 
     print("\n✅ Extraction des meilleurs paramètres depuis SQLite...")
-    best_parameters = extract_best_parameters()
-    
-    if not best_parameters:
-        print("⚠️ Aucun paramètre optimisé trouvé dans la base SQLite")
-    else:
-        print(f"\n✅ {len(best_parameters)} secteurs chargés depuis SQLite")
-    
-    if verbose and best_parameters:
-        print("\nDictionnaire des meilleurs paramètres:")
-        print("{")
-        for sector, (coeffs, thresholds, globals_thresholds, gain_moy) in best_parameters.items():
-            print(f" '{sector}': (coefficients={coeffs}, thresholds={thresholds}, globaux={globals_thresholds}), 'Gain moy={gain_moy}/50),")
-        print("}")
+    best_params = extract_best_parameters()
 
     if verbose:
+        print(f"   Paramètres chargés: {len(best_params)} ensembles")
         print(f"\n🔍 Analyse des signaux pour actions populaires (parallèle: {max_workers} workers)...")
 
     signals = []
@@ -1829,9 +1902,18 @@ def analyse_signaux_populaires(
             except Exception:
                 domaine = "ℹ️Inconnu!!"
 
+            cap_range = get_cap_range_for_symbol(symbol)
+            selected_key = None
+            if cap_range:
+                comp_key = f"{domaine}_{cap_range}"
+                if comp_key in best_params:
+                    selected_key = comp_key
+            if not selected_key and domaine in best_params:
+                selected_key = domaine
+
             # Récupération du signal et des dérivés
             signal, last_price, trend, last_rsi, volume_mean, score, derivatives = get_trading_signal(
-                prices, volumes, domaine, return_derivatives=True, symbol=symbol
+                prices, volumes, domaine, return_derivatives=True, symbol=symbol, cap_range=cap_range
             )
 
             if signal != "NEUTRE" and last_price is not None and score is not None:
@@ -1844,13 +1926,15 @@ def analyse_signaux_populaires(
                     'Tendance': "Hausse" if trend else "Baisse",
                     'RSI': last_rsi,
                     'Domaine': domaine,
+                    'CapRange': cap_range,
+                    'ParamKey': selected_key,
                     'Volume moyen': volume_mean,
                     'Consensus': consensus.get('label', 'Neutre'),
                     'ConsensusMean': consensus.get('mean', None),
-                    'dPrice': round(derivatives.get('price_slope', 0.0), 3),
-                    'dMACD': round(derivatives.get('macd_slope', 0.0), 3),
-                    'dRSI': round(derivatives.get('rsi_slope', 0.0), 3),
-                    'dVolRel': round(derivatives.get('volume_slope_rel', 0.0), 3),
+                    'dPrice': round(derivatives.get('price_slope_rel', 0.0) * 100, 2),
+                    'dMACD': round(derivatives.get('macd_slope_rel', 0.0) * 100, 2),
+                    'dRSI': round(derivatives.get('rsi_slope_rel', 0.0) * 100, 2),
+                    'dVolRel': round(derivatives.get('volume_slope_rel', 0.0) * 100, 2),
                     'Rev. Growth (%)': round(derivatives.get('rev_growth_val', 0.0), 2),
                     'EBITDA Yield (%)': round(derivatives.get('ebitda_yield_pct', 0.0), 2),
                     'FCF Yield (%)': round(derivatives.get('fcf_yield_pct', 0.0), 2),
@@ -1966,13 +2050,17 @@ def analyse_signaux_populaires(
                     print(f"{s['Symbole']:<8} : Données insuffisantes pour le backtest")
                 continue
 
-            # Paramètres optimisés (8 seuils features uniquement)
-            try:
-                best_params = extract_best_parameters()
-            except Exception:
-                best_params = {}
+            # Paramètres optimisés (8 seuils features uniquement) avec cap_range
+            cap_range = s.get('CapRange') or get_cap_range_for_symbol(s['Symbole'])
+            selected_key = s.get('ParamKey')
+            if not selected_key and cap_range:
+                composite = f"{domaine}_{cap_range}"
+                if composite in best_params:
+                    selected_key = composite
+            if not selected_key and domaine in best_params:
+                selected_key = domaine
 
-            coeffs, thresholds, globals_thresholds, _ = best_params.get(domaine, (None, None, (4.2, -0.5), None))
+            coeffs, thresholds, globals_thresholds, _ = best_params.get(selected_key or domaine, (None, None, (4.2, -0.5), None))
             domain_coeffs = {domaine: coeffs} if coeffs else None
             feature_thresholds = thresholds[:8] if thresholds and len(thresholds) >= 8 else None
             domain_thresholds = {domaine: feature_thresholds} if feature_thresholds else None
@@ -2122,8 +2210,18 @@ def analyse_signaux_populaires(
         signal_info = next((s for s in signals if s['Symbole'] == symbole), None)
         
         if signal_info:
-            # Récupérer le seuil d'achat pour le domaine
-            _, _, globals_thresholds, _ = best_parameters.get(signal_info['Domaine'], (None, None, (4.2, -0.5), None))
+            # Récupérer le seuil d'achat pour le domaine (cap_range prioritaire)
+            cap_range = signal_info.get('CapRange')
+            param_key = signal_info.get('ParamKey')
+            selected_key = param_key
+            if not selected_key and cap_range:
+                comp = f"{signal_info['Domaine']}_{cap_range}"
+                if comp in best_params:
+                    selected_key = comp
+            if not selected_key:
+                selected_key = signal_info['Domaine']
+
+            _, _, globals_thresholds, _ = best_params.get(selected_key, (None, None, (4.2, -0.5), None))
             seuil_achat = globals_thresholds[0]
             seuil_vente = globals_thresholds[1]
             

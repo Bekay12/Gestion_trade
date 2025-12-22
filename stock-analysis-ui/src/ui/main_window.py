@@ -296,7 +296,7 @@ class MainWindow(QMainWindow):
         self.merged_table.setMinimumHeight(280)
         self.merged_table.setSizePolicy(QSizePolicy.Expanding, QSizePolicy.Minimum)
         merged_columns = [
-        'Symbole','Signal','Score','Prix','Tendance','RSI','Volume moyen','Domaine',
+        'Symbole','Signal','Score','Prix','Tendance','RSI','Volume moyen','Domaine','Cap Range',
         'Fiabilite (%)','Nb Trades','Gagnants',
         # COLONNES FINANCIÈRES
         'Rev. Growth (%)','EBITDA Yield (%)','FCF Yield (%)','D/E Ratio','Market Cap (B$)',
@@ -579,18 +579,19 @@ class MainWindow(QMainWindow):
                 volume_mean = float(volumes.mean()) if len(volumes) > 0 else 0.0
                 score = 0.0
                 derivatives = {}
+                cap_range = qsi.get_cap_range_for_symbol(symbol)
                 
                 try:
                     # Première passe: obtenir dérivées et secteur sans coût supplémentaire
                     sig, last_price, trend, last_rsi, volume_mean, score, derivatives = get_trading_signal(
-                        prices, volumes, domaine='Inconnu', return_derivatives=True, symbol=symbol
+                        prices, volumes, domaine='Inconnu', return_derivatives=True, symbol=symbol, cap_range=cap_range
                     )
                     # Utiliser le secteur détecté pour recalculer le score avec paramètres optimisés
                     domaine = derivatives.get('sector', 'Inconnu') if derivatives else 'Inconnu'
                     if domaine and domaine != 'Inconnu':
                         try:
                             sig2, last_price2, trend2, last_rsi2, volume_mean2, score2, derivatives2 = get_trading_signal(
-                                prices, volumes, domaine=domaine, return_derivatives=True, symbol=symbol
+                                prices, volumes, domaine=domaine, return_derivatives=True, symbol=symbol, cap_range=cap_range
                             )
                             # Remplacer par la version cohérente avec le secteur
                             sig, trend, last_rsi, volume_mean, score = sig2, trend2, last_rsi2, volume_mean2, score2
@@ -617,14 +618,15 @@ class MainWindow(QMainWindow):
                     'Tendance': 'Hausse' if trend else 'Baisse',
                     'RSI': last_rsi,
                     'Domaine': domaine,
+                    'CapRange': cap_range,
                     'Volume moyen': volume_mean,
                     # Consensus (stable via cache/offline fallback)
                     'Consensus': qsi.get_consensus(symbol).get('label', 'Neutre'),
                     'ConsensusMean': qsi.get_consensus(symbol).get('mean', None),
-                    'dPrice': round(derivatives.get('price_slope', 0.0), 3),
-                    'dMACD': round(derivatives.get('macd_slope', 0.0), 3),
-                    'dRSI': round(derivatives.get('rsi_slope', 0.0), 3),
-                    'dVolRel': round(derivatives.get('volume_slope_rel', 0.0), 3),
+                    'dPrice': round(derivatives.get('price_slope_rel', 0.0) * 100, 2),
+                    'dMACD': round(derivatives.get('macd_slope_rel', 0.0) * 100, 2),
+                    'dRSI': round(derivatives.get('rsi_slope_rel', 0.0) * 100, 2),
+                    'dVolRel': round(derivatives.get('volume_slope_rel', 0.0) * 100, 2),
                     # ✅ Métriques financières simples
                     'Rev. Growth (%)': round(float(derivatives.get('rev_growth_val', 0.0) or 0.0), 2),
                     'EBITDA Yield (%)': round(float(derivatives.get('ebitda_yield_pct', 0.0) or 0.0), 2),
@@ -646,6 +648,7 @@ class MainWindow(QMainWindow):
                         'Tendance': 'N/A',
                         'RSI': 0.0,
                         'Domaine': 'Inconnu',
+                        'CapRange': qsi.get_cap_range_for_symbol(symbol),
                         'Volume moyen': 0.0,
                         'dPrice': 0.0,
                         'dMACD': 0.0,
@@ -836,6 +839,7 @@ class MainWindow(QMainWindow):
         
         # 🔧 Initialiser les colonnes par défaut pour tous les signaux
         for r in self.current_results:
+            r.setdefault('CapRange', qsi.get_cap_range_for_symbol(r.get('Symbole', '')))
             r.setdefault('dPrice', 0.0)
             r.setdefault('dMACD', 0.0)
             r.setdefault('dRSI', 0.0)
@@ -881,16 +885,22 @@ class MainWindow(QMainWindow):
                         prices = stock_data['Close']
                         volumes = stock_data['Volume']
                         try:
-                            _sig, _last_price, _trend, _last_rsi, _vol_mean, _score, derivatives = get_trading_signal(prices, volumes, domaine=r.get('Domaine', 'Inconnu'), return_derivatives=True, symbol=sym)
+                            _sig, _last_price, _trend, _last_rsi, _vol_mean, _score, derivatives = get_trading_signal(
+                                prices, volumes,
+                                domaine=r.get('Domaine', 'Inconnu'),
+                                return_derivatives=True,
+                                symbol=sym,
+                                cap_range=r.get('CapRange')
+                            )
                         except Exception:
                             derivatives = {}
 
-                        # Dérivées techniques
+                        # Dérivées techniques (relatives en %)
                         if need_derivatives:
-                            r['dPrice'] = round(derivatives.get('price_slope', 0.0), 3)
-                            r['dMACD'] = round(derivatives.get('macd_slope', 0.0), 3)
-                            r['dRSI'] = round(derivatives.get('rsi_slope', 0.0), 3)
-                            r['dVolRel'] = round(derivatives.get('volume_slope_rel', 0.0), 3)
+                            r['dPrice'] = round(derivatives.get('price_slope_rel', 0.0) * 100, 2)
+                            r['dMACD'] = round(derivatives.get('macd_slope_rel', 0.0) * 100, 2)
+                            r['dRSI'] = round(derivatives.get('rsi_slope_rel', 0.0) * 100, 2)
+                            r['dVolRel'] = round(derivatives.get('volume_slope_rel', 0.0) * 100, 2)
                         
                         # ✅ Métriques financières simples
                         r['Rev. Growth (%)'] = round(derivatives.get('rev_growth_val', 0.0), 2)
@@ -1084,8 +1094,39 @@ class MainWindow(QMainWindow):
             return
 
         self.merged_table.setRowCount(0)
-        results_to_display = getattr(self, 'filtered_results', self.current_results)
+        raw_results = getattr(self, 'filtered_results', self.current_results)
+        # 🚫 Éviter les lignes vides: ne garder que les entrées avec un symbole non vide
+        results_to_display = [r for r in raw_results if str(r.get('Symbole', '')).strip()]
+        # 🔧 Garantir les champs backtest pour éviter des cellules vides si la map manque
+        for r in results_to_display:
+            r.setdefault('Fiabilite', 'N/A')
+            r.setdefault('NbTrades', 0)
+            r.setdefault('Gagnants', 0)
+            r.setdefault('Gain_total', 0.0)
+            r.setdefault('Gain_moyen', 0.0)
+            r.setdefault('Drawdown_max', 0.0)
         bt_map = getattr(self, 'backtest_map', {})
+
+        # Helper de conversion robuste pour éviter qu'une valeur vide casse la ligne
+        def safe_float(val, default=0.0):
+            try:
+                if val is None:
+                    return default
+                if isinstance(val, str) and val.strip() == '':
+                    return default
+                return float(val)
+            except Exception:
+                return default
+
+        def safe_int(val, default=0):
+            try:
+                if val is None:
+                    return default
+                if isinstance(val, str) and val.strip() == '':
+                    return default
+                return int(val)
+            except Exception:
+                return default
 
         for signal in results_to_display:
             try:
@@ -1097,29 +1138,30 @@ class MainWindow(QMainWindow):
                 self.merged_table.setItem(row, 0, QTableWidgetItem(str(sym)))
                 self.merged_table.setItem(row, 1, QTableWidgetItem(str(signal.get('Signal', ''))))
 
-                score = float(signal.get('Score', 0.0) or 0.0)
+                score = safe_float(signal.get('Score', 0.0))
                 item = QTableWidgetItem(f"{score:.2f}")
                 item.setData(Qt.EditRole, score)
                 self.merged_table.setItem(row, 2, item)
 
-                prix = float(signal.get('Prix', 0.0) or 0.0)
+                prix = safe_float(signal.get('Prix', 0.0))
                 item = QTableWidgetItem(f"{prix:.2f}")
                 item.setData(Qt.EditRole, prix)
                 self.merged_table.setItem(row, 3, item)
 
                 self.merged_table.setItem(row, 4, QTableWidgetItem(str(signal.get('Tendance', ''))))
 
-                rsi = float(signal.get('RSI', 0.0) or 0.0)
+                rsi = safe_float(signal.get('RSI', 0.0))
                 item = QTableWidgetItem(f"{rsi:.2f}")
                 item.setData(Qt.EditRole, rsi)
                 self.merged_table.setItem(row, 5, item)
 
-                vol = signal.get('Volume moyen', 0.0) or 0.0
+                vol = safe_float(signal.get('Volume moyen', 0.0))
                 item = QTableWidgetItem(f"{vol:,.0f}")
                 item.setData(Qt.EditRole, float(vol))
                 self.merged_table.setItem(row, 6, item)
 
                 self.merged_table.setItem(row, 7, QTableWidgetItem(str(signal.get('Domaine', ''))))
+                self.merged_table.setItem(row, 8, QTableWidgetItem(str(signal.get('CapRange', ''))))
 
                 # Fiabilite and NbTrades (from signal or backtest)
                 fiab = signal.get('Fiabilite')
@@ -1146,77 +1188,74 @@ class MainWindow(QMainWindow):
                 item = QTableWidgetItem(fiab_text)
                 if fiab_val is not None:
                     item.setData(Qt.EditRole, fiab_val)
-                self.merged_table.setItem(row, 8, item)
+                self.merged_table.setItem(row, 9, item)
 
                 # NbTrades
-                try:
-                    nb_int = int(nb_trades or 0)
-                except Exception:
-                    nb_int = 0
+                nb_int = safe_int(nb_trades, 0)
                 item = QTableWidgetItem(str(nb_int))
                 item.setData(Qt.EditRole, nb_int)
-                self.merged_table.setItem(row, 9, item)
+                self.merged_table.setItem(row, 10, item)
 
                 # Gagnants
                 gagnants = int(bt.get('gagnants', 0)) if bt else 0
                 item = QTableWidgetItem(str(gagnants))
                 item.setData(Qt.EditRole, gagnants)
-                self.merged_table.setItem(row, 10, item)
+                self.merged_table.setItem(row, 11, item)
                 
                 # Colonnes Financières simples
-                # Colonne 11: Rev. Growth (%)
-                rev_growth = float(signal.get('Rev. Growth (%)', 0.0) or 0.0)
+                # Colonne 12: Rev. Growth (%)
+                rev_growth = safe_float(signal.get('Rev. Growth (%)', 0.0))
                 item = QTableWidgetItem(f"{rev_growth:.2f}")
                 item.setData(Qt.EditRole, rev_growth)
-                self.merged_table.setItem(row, 11, item)
-
-                # Colonne 12: EBITDA Yield (%)
-                ebitda = float(signal.get('EBITDA Yield (%)', 0.0) or 0.0)
-                item = QTableWidgetItem(f"{ebitda:.2f}")
-                item.setData(Qt.EditRole, ebitda)
                 self.merged_table.setItem(row, 12, item)
 
-                # Colonne 13: FCF Yield (%)
-                fcf = float(signal.get('FCF Yield (%)', 0.0) or 0.0)
-                item = QTableWidgetItem(f"{fcf:.2f}")
-                item.setData(Qt.EditRole, fcf)
+                # Colonne 12: EBITDA Yield (%)
+                ebitda = safe_float(signal.get('EBITDA Yield (%)', 0.0))
+                item = QTableWidgetItem(f"{ebitda:.2f}")
+                item.setData(Qt.EditRole, ebitda)
                 self.merged_table.setItem(row, 13, item)
 
-                # Colonne 14: D/E Ratio
-                de_ratio = float(signal.get('D/E Ratio', 0.0) or 0.0)
-                item = QTableWidgetItem(f"{de_ratio:.2f}")
-                item.setData(Qt.EditRole, de_ratio)
+                # Colonne 14: FCF Yield (%)
+                fcf = safe_float(signal.get('FCF Yield (%)', 0.0))
+                item = QTableWidgetItem(f"{fcf:.2f}")
+                item.setData(Qt.EditRole, fcf)
                 self.merged_table.setItem(row, 14, item)
 
-                # Colonne 15: Market Cap (B$)
-                market_cap = float(signal.get('Market Cap (B$)', 0.0) or 0.0)
-                item = QTableWidgetItem(f"{market_cap:.2f}")
-                item.setData(Qt.EditRole, market_cap)
+                # Colonne 15: D/E Ratio
+                de_ratio = safe_float(signal.get('D/E Ratio', 0.0))
+                item = QTableWidgetItem(f"{de_ratio:.2f}")
+                item.setData(Qt.EditRole, de_ratio)
                 self.merged_table.setItem(row, 15, item)
 
-                # Derivatives (colonnes 16-19)
-                dprice = float(signal.get('dPrice', 0.0) or 0.0)
-                item = QTableWidgetItem(f"{dprice:.3f}")
-                item.setData(Qt.EditRole, dprice)
+                # Colonne 16: Market Cap (B$)
+                market_cap = safe_float(signal.get('Market Cap (B$)', 0.0))
+                item = QTableWidgetItem(f"{market_cap:.2f}")
+                item.setData(Qt.EditRole, market_cap)
                 self.merged_table.setItem(row, 16, item)
 
-                dmacd = float(signal.get('dMACD', 0.0) or 0.0)
-                item = QTableWidgetItem(f"{dmacd:.3f}")
-                item.setData(Qt.EditRole, dmacd)
+                # Derivatives (colonnes 17-20)
+                dprice = safe_float(signal.get('dPrice', 0.0))
+                item = QTableWidgetItem(f"{dprice:.3f}")
+                item.setData(Qt.EditRole, dprice)
                 self.merged_table.setItem(row, 17, item)
 
-                drsi = float(signal.get('dRSI', 0.0) or 0.0)
-                item = QTableWidgetItem(f"{drsi:.3f}")
-                item.setData(Qt.EditRole, drsi)
+                dmacd = safe_float(signal.get('dMACD', 0.0))
+                item = QTableWidgetItem(f"{dmacd:.3f}")
+                item.setData(Qt.EditRole, dmacd)
                 self.merged_table.setItem(row, 18, item)
 
-                dvol = float(signal.get('dVolRel', 0.0) or 0.0)
-                item = QTableWidgetItem(f"{dvol:.3f}")
-                item.setData(Qt.EditRole, dvol)
+                drsi = safe_float(signal.get('dRSI', 0.0))
+                item = QTableWidgetItem(f"{drsi:.3f}")
+                item.setData(Qt.EditRole, drsi)
                 self.merged_table.setItem(row, 19, item)
 
+                dvol = safe_float(signal.get('dVolRel', 0.0))
+                item = QTableWidgetItem(f"{dvol:.3f}")
+                item.setData(Qt.EditRole, dvol)
+                self.merged_table.setItem(row, 20, item)
+
                 # Backtest metrics (if available)
-                # Colonnes 20-21 pour Gain total et Gain moyen
+                # Colonnes 21-22 pour Gain total et Gain moyen
                 trades = int(bt.get('trades', 0)) if bt else 0
                 taux = float(bt.get('taux_reussite', 0.0)) if bt else 0.0
                 gain_total = float(bt.get('gain_total', 0.0)) if bt else 0.0
@@ -1224,15 +1263,15 @@ class MainWindow(QMainWindow):
 
                 item = QTableWidgetItem(f"{gain_total:.2f}")
                 item.setData(Qt.EditRole, gain_total)
-                self.merged_table.setItem(row, 20, item)
+                self.merged_table.setItem(row, 21, item)
 
                 item = QTableWidgetItem(f"{gain_moy:.2f}")
                 item.setData(Qt.EditRole, gain_moy)
-                self.merged_table.setItem(row, 21, item)
+                self.merged_table.setItem(row, 22, item)
 
                 # Consensus (text column)
                 consensus = signal.get('Consensus', 'N/A')
-                self.merged_table.setItem(row, 22, QTableWidgetItem(str(consensus)))
+                self.merged_table.setItem(row, 23, QTableWidgetItem(str(consensus)))
 
                 # item = QTableWidgetItem(f"{drawdown:.2f}")
                 # item.setData(Qt.EditRole, drawdown)
@@ -1466,7 +1505,6 @@ if __name__ == "__main__":
     # - Ajouter dates d'annonces / résultats dans les signaux (ex: earnings date)
     # - harmoniser l'affichage des plots (embedded + external)
     # - améliorer le threading / gestion des erreurs
-    # - Reparer l'affichage des resultats (Margin, FCF, D/E, Market Cap) dans le tableau
     # - Ajouter le earning dates et tous les autres nouveaux criteres a l'analyse et au backtest
     # - Ajouter un bouton pour exporter les resultats (CSV/Excel)
     # - Ajouter un bouton pour choisir si backup des resultats avant analyse ou pas
