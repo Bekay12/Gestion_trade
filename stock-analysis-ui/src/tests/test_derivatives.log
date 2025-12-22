@@ -1,5 +1,0 @@
-Module trading_c loaded - C acceleration available
-Result keys: 7
-Signal: NEUTRE
-Last price: 109.72126855692069
-Derivatives: {'price_slope': 0.23593835390595166, 'price_slope_rel': 0.0021503429281220228, 'ema20_slope': 0.1745481630714377, 'ema20_slope_rel': 0.0016095889047866147, 'ema50_slope': 0.1532145050134957, 'ema50_slope_rel': 0.0014419724809744594, 'macd_slope': 0.010605691854628984, 'macd_slope_rel': 0.008773772487300723, 'signal_line_slope': 0.0033148377867510776, 'signal_line_slope_rel': 0.0028645420441723024, 'rsi_slope': 0.13075934538978118, 'rsi_slope_rel': 0.0020678510710486595, 'volume_slope': 214.55952380951783, 'volume_slope_rel': 0.001124207634157617}
