@@ -794,7 +794,7 @@ if __name__ == "__main__":
 
     # 🔧 OPTIMISATION: Adapter le budget selon la précision
     # Plus fine = espace plus petit = moins d'évaluations nécessaires
-    budget_base = 300
+    budget_base = 1000
     if precision == 1:
         budget_evaluations = int(budget_base * 0.5)  # Espace 10x plus petit → -50% éval
     elif precision == 2:

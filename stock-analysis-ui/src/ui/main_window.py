@@ -303,7 +303,9 @@ class MainWindow(QMainWindow):
         # COLONNES DERIVÉES
         'dPrice','dMACD','dRSI','dVolRel',
         # COLONNES BACKTEST
-        'Gain total ($)','Gain moyen ($)'
+        'Gain total ($)','Gain moyen ($)',
+        # NOUVELLES COLONNES INFO
+        'Consensus','Actu'
         ]
 
         self.merged_table.setColumnCount(len(merged_columns))
@@ -616,6 +618,10 @@ class MainWindow(QMainWindow):
                     'RSI': last_rsi,
                     'Domaine': domaine,
                     'Volume moyen': volume_mean,
+                    # Consensus & Actu (stable via cache/offline fallback)
+                    'Consensus': qsi.get_consensus(symbol).get('label', 'Neutre'),
+                    'ConsensusMean': qsi.get_consensus(symbol).get('mean', None),
+                    'Actu': qsi.compute_news_sentiment(symbol, prices),
                     'dPrice': round(derivatives.get('price_slope', 0.0), 3),
                     'dMACD': round(derivatives.get('macd_slope', 0.0), 3),
                     'dRSI': round(derivatives.get('rsi_slope', 0.0), 3),
@@ -1224,6 +1230,12 @@ class MainWindow(QMainWindow):
                 item = QTableWidgetItem(f"{gain_moy:.2f}")
                 item.setData(Qt.EditRole, gain_moy)
                 self.merged_table.setItem(row, 21, item)
+
+                # Consensus & Actu (text columns)
+                consensus = signal.get('Consensus', 'N/A')
+                actu = signal.get('Actu', 'N/A')
+                self.merged_table.setItem(row, 22, QTableWidgetItem(str(consensus)))
+                self.merged_table.setItem(row, 23, QTableWidgetItem(str(actu)))
 
                 # item = QTableWidgetItem(f"{drawdown:.2f}")
                 # item.setData(Qt.EditRole, drawdown)

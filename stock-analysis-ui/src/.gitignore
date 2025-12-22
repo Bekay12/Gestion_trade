@@ -18,7 +18,6 @@ env/
 cache_data/
 cache_logs/
 data_cache/
-optimization_results/
 
 # Cache files
 *.pkl

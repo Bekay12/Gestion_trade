@@ -722,6 +722,136 @@ def compute_financial_derivatives(symbol: str, lookback_quarters: int = 4) -> di
     return derivatives
 
 # ===================================================================
+# CONSENSUS ANALYSTES ET SENTIMENT ACTUALITÉ
+# ===================================================================
+
+def get_consensus(symbol: str) -> dict:
+    """
+    Récupère un consensus analystes simple via yfinance.info si en ligne,
+    avec cache (7 jours). Retourne un dict:
+      { 'label': 'Achat/Neutre/Vente', 'mean': float|None }
+    """
+    cache_file = CACHE_DIR / f"{symbol}_consensus.pkl"
+    # OFFLINE -> cache uniquement
+    if OFFLINE_MODE:
+        if cache_file.exists():
+            try:
+                return pd.read_pickle(cache_file)
+            except Exception:
+                pass
+        return { 'label': 'Neutre', 'mean': None }
+
+    # Cache frais 7 jours
+    if cache_file.exists():
+        try:
+            age_hours = (datetime.now() - datetime.fromtimestamp(cache_file.stat().st_mtime)).total_seconds() / 3600
+            if age_hours <= 168:
+                return pd.read_pickle(cache_file)
+        except Exception:
+            pass
+
+    label = 'Neutre'
+    mean = None
+    try:
+        info = yf.Ticker(symbol).info
+        key = str(info.get('recommendationKey', '')).lower()
+        mean = info.get('recommendationMean')
+        # Mapping simple
+        if key in ('strong_buy', 'buy', 'overweight'):
+            label = 'Achat'
+        elif key in ('hold', 'neutral'):
+            label = 'Neutre'
+        elif key in ('sell', 'underperform', 'strong_sell'):
+            label = 'Vente'
+    except Exception:
+        pass
+
+    result = { 'label': label, 'mean': float(mean) if mean is not None else None }
+    try:
+        pd.to_pickle(result, cache_file)
+    except Exception:
+        pass
+    return result
+
+def compute_simple_sentiment(prices: pd.Series) -> str:
+    """Sentiment très simple basé sur variation récente et RSI."""
+    try:
+        if isinstance(prices, pd.DataFrame):
+            prices = prices.squeeze()
+        valid = prices.replace(0, np.nan).dropna()
+        if len(valid) < 10:
+            return 'Neutre'
+        pct = float((valid.iloc[-1] - valid.iloc[-10]) / valid.iloc[-10] * 100)
+        try:
+            rsi = ta.momentum.RSIIndicator(close=valid, window=14).rsi().iloc[-1]
+        except Exception:
+            rsi = 50.0
+        if pct > 2 and rsi >= 50:
+            return 'Bon'
+        if pct < -2 and rsi < 50:
+            return 'Mauvais'
+        return 'Neutre'
+    except Exception:
+        return 'Neutre'
+
+def compute_news_sentiment(symbol: str, prices: pd.Series = None) -> str:
+    """
+    Analyse très simple de l'actualité: en ligne utilise Ticker.news si dispo,
+    sinon fallback technique avec compute_simple_sentiment.
+    Cache 24h.
+    """
+    cache_file = CACHE_DIR / f"{symbol}_news_sent.pkl"
+    if OFFLINE_MODE:
+        if cache_file.exists():
+            try:
+                return str(pd.read_pickle(cache_file) or 'Neutre')
+            except Exception:
+                pass
+        return compute_simple_sentiment(prices) if prices is not None else 'Neutre'
+
+    if cache_file.exists():
+        try:
+            age_hours = (datetime.now() - datetime.fromtimestamp(cache_file.stat().st_mtime)).total_seconds() / 3600
+            if age_hours <= 24:
+                return str(pd.read_pickle(cache_file) or 'Neutre')
+        except Exception:
+            pass
+
+    sentiment = 'Neutre'
+    try:
+        t = yf.Ticker(symbol)
+        news = getattr(t, 'news', [])
+        if isinstance(news, list) and news:
+            pos_kw = ('beats', 'upgrade', 'strong', 'record', 'surge', 'win')
+            neg_kw = ('miss', 'downgrade', 'weak', 'drop', 'loss', 'probe')
+            score = 0
+            take = 0
+            for item in news[:10]:
+                title = str(item.get('title', '')).lower()
+                take += 1
+                if any(k in title for k in pos_kw):
+                    score += 1
+                if any(k in title for k in neg_kw):
+                    score -= 1
+            if take > 0:
+                if score >= 2:
+                    sentiment = 'Bon'
+                elif score <= -2:
+                    sentiment = 'Mauvais'
+                else:
+                    sentiment = 'Neutre'
+        else:
+            sentiment = compute_simple_sentiment(prices) if prices is not None else 'Neutre'
+    except Exception:
+        sentiment = compute_simple_sentiment(prices) if prices is not None else 'Neutre'
+
+    try:
+        pd.to_pickle(sentiment, cache_file)
+    except Exception:
+        pass
+    return sentiment
+
+# ===================================================================
 # SYSTÈME DE CACHE INTELLIGENT INTÉGRÉ
 # ===================================================================
 
@@ -730,10 +860,10 @@ CACHE_DIR = Path("data_cache")
 CACHE_DIR.mkdir(exist_ok=True)
 
 # Âge maximum d'un cache avant re-téléchargement (heures)
-CACHE_MAX_AGE_HOURS = 4
+CACHE_MAX_AGE_HOURS = 5
 
 # Configuration globale pour le mode offline
-OFFLINE_MODE = False
+OFFLINE_MODE = False  # Mettre à True pour forcer le mode hors-ligne
 
 def load_symbol_lists():
     """Charge toutes les listes de symboles avec gestion d'erreurs robuste"""
@@ -1704,6 +1834,9 @@ def analyse_signaux_populaires(
                 )
 
                 if signal != "NEUTRE" and last_price is not None and score is not None:
+                    # Consensus + Sentiment actuels (stables avec cache)
+                    consensus = get_consensus(symbol)
+                    actu = compute_news_sentiment(symbol, prices)
                     signals.append({
                         'Symbole': symbol,
                         'Signal': signal,
@@ -1713,6 +1846,9 @@ def analyse_signaux_populaires(
                         'RSI': last_rsi,
                         'Domaine': domaine,
                         'Volume moyen': volume_mean,
+                        'Consensus': consensus.get('label', 'Neutre'),
+                        'ConsensusMean': consensus.get('mean', None),
+                        'Actu': actu,
                         # ✅ Ajouter les dérivés (métriques financières)
                         'dPrice': round(derivatives.get('price_slope', 0.0), 3),
                         'dMACD': round(derivatives.get('macd_slope', 0.0), 3),
