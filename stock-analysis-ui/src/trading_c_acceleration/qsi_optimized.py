@@ -39,7 +39,7 @@ def _diagnose_import(module_name: str):
     """Tentative d'import et diagnostic si échec."""
     try:
         mod = __import__(module_name)
-        print(f"OK Module {module_name} charge - Acceleration C activee !")
+        # print(f"OK Module {module_name} charge - Acceleration C activee !")
         return mod, True
     except Exception as e:
         print(f"ATTENTION Echec import {module_name}: {e!s}")
@@ -154,6 +154,8 @@ def save_to_evolutive_csv(signals, filename="signaux_trading.csv"):
 
 from typing import Tuple, Dict, Union, List
 
+BEST_PARAM_EXTRAS: Dict[str, Dict[str, Union[int, float]]] = {}
+
 def extract_best_parameters(db_path: str = 'signaux/optimization_hist.db') -> Dict[str, Tuple[Tuple[float, ...], Tuple[float, ...], Tuple[float, float]]]:
     """Extrait les meilleurs coefficients/seuils par secteur ET tranche de capitalisation.
 
@@ -175,6 +177,10 @@ def extract_best_parameters(db_path: str = 'signaux/optimization_hist.db') -> Di
             print("   Veuillez exécuter migration_csv_to_sqlite.py pour migrer vos données")
             conn.close()
             return {}
+
+        # Discover columns for optional fields
+        cursor.execute("PRAGMA table_info(optimization_runs)")
+        colnames = {row[1] for row in cursor.fetchall()}
 
         cursor.execute('''
             SELECT 
@@ -201,6 +207,8 @@ def extract_best_parameters(db_path: str = 'signaux/optimization_hist.db') -> Di
             print("🚫 Aucune donnée trouvée dans la base SQLite")
             return {}
 
+        global BEST_PARAM_EXTRAS
+        BEST_PARAM_EXTRAS = {}
         result = {}
         for row in rows:
             sector = str(row['sector']).strip()
@@ -218,6 +226,49 @@ def extract_best_parameters(db_path: str = 'signaux/optimization_hist.db') -> Di
             if cap_range and cap_range.lower() != 'unknown':
                 composite_key = f"{sector}_{cap_range}"
                 result[composite_key] = (coefficients, thresholds, globals_thresholds, gain_moy)
+
+            # Always extract price-related extras; default to zeros if missing
+            def _read_num(col, default):
+                try:
+                    return float(row[col]) if (col in colnames and row[col] is not None) else default
+                except Exception:
+                    return default
+            def _read_int(col, default):
+                try:
+                    return int(row[col]) if (col in colnames and row[col] is not None) else default
+                except Exception:
+                    return default
+
+            price_extras = {
+                'use_price_slope': _read_int('use_price_slope', 0),
+                'use_price_acc': _read_int('use_price_acc', 0),
+                'a_price_slope': _read_num('a9', 0.0),
+                'a_price_acc': _read_num('a10', 0.0),
+                'th_price_slope': _read_num('th9', 0.0),
+                'th_price_acc': _read_num('th10', 0.0),
+            }
+            
+            # Extract fundamentals extras (optional, defaults to 0 if not present)
+            fundamentals_extras = {
+                'use_fundamentals': _read_int('use_fundamentals', 0),
+                'a_rev_growth': _read_num('a11', 0.0),
+                'a_eps_growth': _read_num('a12', 0.0),
+                'a_roe': _read_num('a13', 0.0),
+                'a_fcf_yield': _read_num('a14', 0.0),
+                'a_de_ratio': _read_num('a15', 0.0),
+                'th_rev_growth': _read_num('th11', 0.0),
+                'th_eps_growth': _read_num('th12', 0.0),
+                'th_roe': _read_num('th13', 0.0),
+                'th_fcf_yield': _read_num('th14', 0.0),
+                'th_de_ratio': _read_num('th15', 0.0),
+            }
+            
+            # Combine extras
+            all_extras = {**price_extras, **fundamentals_extras}
+            
+            BEST_PARAM_EXTRAS[sector] = all_extras
+            if cap_range and cap_range.lower() != 'unknown':
+                BEST_PARAM_EXTRAS[composite_key] = all_extras
 
         return result
 
@@ -260,10 +311,10 @@ def backtest_signals_accelerated(prices: Union[pd.Series, pd.DataFrame], volumes
     # Récupération des coefficients (EXACTEMENT votre logique)
     default_coeffs = (1.75, 1.0, 1.5, 1.25, 1.75, 1.25, 1.0, 1.75)
     default_thresholds = (50.0, 0.0, 0.0, 1.2, 25.0, 0.0, 0.5, 4.20)
-    best_params = extract_best_parameters()
-    
+    best_params = extract_best_parameters() if domain_coeffs is None else {}
+
     # Debug: vérifier si les paramètres sont chargés
-    if not best_params:
+    if domain_coeffs is None and not best_params:
         print(f"⚠️ backtest_signals: Aucun paramètre optimisé trouvé")
     
     selected_key = domaine
@@ -341,7 +392,7 @@ def backtest_signals_accelerated(prices: Union[pd.Series, pd.DataFrame], volumes
     result_dict, _ = backtest_signals_with_events(prices, volumes, domaine, montant, transaction_cost, domain_coeffs, domain_thresholds, seuil_achat, seuil_vente)
     return result_dict
 
-def backtest_signals_with_events(prices, volumes, domaine, montant=50, transaction_cost=0.02, domain_coeffs=None, domain_thresholds=None, seuil_achat=4.2, seuil_vente=-0.5):
+def backtest_signals_with_events(prices, volumes, domaine, montant=50, transaction_cost=0.02, domain_coeffs=None, domain_thresholds=None, seuil_achat=4.2, seuil_vente=-0.5, extra_params=None, cap_range: str = None, fundamentals_extras: dict = None, symbol_name: str = None):
     """Backtest qui retourne BOTH les stats ET les événements de trade pour cohérence parfaite.
     
     Retourne: (backtest_result_dict, events_list)
@@ -369,11 +420,26 @@ def backtest_signals_with_events(prices, volumes, domaine, montant=50, transacti
     drawdown_max = 0.0
     events = []  # 🔧 Collecter les événements au fur et à mesure
 
+    # Précharger les fondamentaux pour éviter des requêtes répétées
+    fund_metrics = None
+    try:
+        use_fund = int(fundamentals_extras.get('use_fundamentals', 0)) if fundamentals_extras else 0
+        if use_fund and symbol_name:
+            from fundamentals_cache import get_fundamental_metrics
+            fund_metrics = get_fundamental_metrics(symbol_name, use_cache=True)
+    except Exception:
+        fund_metrics = None
+
     for i in range(50, n):
         window_prices = prices.iloc[:i]
         window_volumes = volumes.iloc[:i]
         try:
-            sig, last_close, _, _, _, _, _ = qsi_get_trading_signal(window_prices, window_volumes, domaine, domain_coeffs=domain_coeffs, domain_thresholds=domain_thresholds)
+            sig, last_close, _, _, _, _, _ = qsi_get_trading_signal(
+                window_prices, window_volumes, domaine,
+                domain_coeffs=domain_coeffs, domain_thresholds=domain_thresholds,
+                cap_range=cap_range, price_extras=extra_params, fundamentals_extras=fundamentals_extras,
+                symbol=symbol_name, fundamentals_metrics=fund_metrics
+            )
         except TypeError:
             # older signature without domain_thresholds
             try:

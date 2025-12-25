@@ -10,10 +10,10 @@ import sys
 from pathlib import Path
 sys.path.append("C:\\Users\\berti\\Desktop\\Mes documents\\Gestion_trade\\stock-analysis-ui\\src\\trading_c_acceleration")
 from qsi import download_stock_data, load_symbols_from_txt, extract_best_parameters
-from qsi_optimized import backtest_signals, extract_best_parameters
+from qsi_optimized import backtest_signals, backtest_signals_with_events
 from pathlib import Path
 from tqdm import tqdm
-import yfinance as yf
+# import yfinance as yf  # Import paresseux - chargé seulement si nécessaire
 from collections import deque
 from scipy.optimize import differential_evolution
 from scipy.stats import qmc
@@ -74,6 +74,7 @@ def get_sector(symbol, use_cache=True):
             return entry.get("sector", "ℹ️Inconnu!!")
 
     try:
+        import yfinance as yf  # Import paresseux - chargé seulement si nécessaire
         ticker = yf.Ticker(symbol)
         info = ticker.info
         sector = info.get('sector', 'ℹ️Inconnu!!')
@@ -101,6 +102,7 @@ def get_best_gain_csv(domain, csv_path='signaux/optimization_hist_4stp.csv'):
 def classify_cap_range(symbol: str) -> str:
     """Classe la capitalisation en 4 catégories (Small, Mid, Large, Mega) ou Unknown."""
     try:
+        import yfinance as yf  # Import paresseux
         ticker = yf.Ticker(symbol)
         market_cap = ticker.info.get('marketCap')
         if market_cap is None:
@@ -117,20 +119,35 @@ def classify_cap_range(symbol: str) -> str:
     except Exception:
         return 'Unknown'
 
+# ----
+# Top-level objective for SciPy DE (picklable on Windows)
+def _de_objective(params, optimizer):
+    """Objective wrapper for differential_evolution.
+    Uses a top-level function so it can be pickled when workers are used.
+    """
+    try:
+        rounded = optimizer.round_params(params)
+        return -optimizer.evaluate_config(rounded)
+    except Exception:
+        # Penalize any evaluation failure to keep DE robust
+        return 1000.0
+
 class HybridOptimizer:
     """Optimiseur hybride utilisant plusieurs stratégies d'optimisation avec limitation des décimales"""
     
-    def __init__(self, stock_data, domain, montant=50, transaction_cost=1.0, precision=2):
+    def __init__(self, stock_data, domain, montant=50, transaction_cost=1.0, precision=2, use_price_features: bool = False, use_fundamentals_features: bool = False):
         self.stock_data = stock_data
         self.domain = domain
         self.montant = montant
         self.transaction_cost = transaction_cost
         self.evaluation_count = 0
         self.best_cache = {}
-        self.precision = precision  # 🔧 NOUVEAU: Précision des paramètres (nombre de décimales)
+        self.precision = precision  # 🔧 NUOVO: Précision des paramètres (nombre de décimales)
+        self.use_price_features = use_price_features
+        self.use_fundamentals_features = use_fundamentals_features
         
-        # 🔧 Définir les bounds une seule fois (18 paramètres: 8 coeffs + 8 seuils + 2 seuils globaux)
-        self.bounds = (
+        # 🔧 Définir les bounds (18 de base: 8 coeffs + 8 seuils + 2 globaux)
+        base_bounds = (
             [(0.5, 3.0)] * 8 +  # coefficients a1-a8 (indices 0-7)
             [(30.0, 70.0)] +     # threshold 0: RSI_threshold (index 8)
             [(-1.0, 1.0)] +      # threshold 1: MACD_threshold (index 9)
@@ -143,6 +160,36 @@ class HybridOptimizer:
             [(2.0, 6.0)] +       # seuil_achat global (index 16)
             [(-6.0, -2.0)]       # seuil_vente global (index 17)
         )
+        self.bounds = base_bounds
+        
+        if self.use_price_features:
+            # Extra 6 params: flags (rounded to 0/1), weights a9/a10, thresholds th9/th10 on relative values
+            price_bounds = [
+                (0.0, 1.0),  # use_price_slope (index 18)
+                (0.0, 1.0),  # use_price_acc   (index 19)
+                (0.0, 3.0),  # a9 weight       (index 20)
+                (0.0, 3.0),  # a10 weight      (index 21)
+                (-0.05, 0.05),  # th9 on price_slope_rel (index 22)
+                (-0.05, 0.05),  # th10 on price_acc_rel  (index 23)
+            ]
+            self.bounds += price_bounds
+        
+        if self.use_fundamentals_features:
+            # Extra 10 params for fundamentals: 1 flag, 5 weights, 4 thresholds
+            # Indices: 24+ (or 18+ if price_features disabled)
+            fundamentals_bounds = [
+                (0.0, 1.0),    # use_fundamentals flag (index 24 or 18)
+                (0.0, 3.0),    # a_rev_growth weight
+                (0.0, 3.0),    # a_eps_growth weight
+                (0.0, 3.0),    # a_roe weight
+                (0.0, 3.0),    # a_fcf_yield weight
+                (0.0, 3.0),    # a_de_ratio weight
+                (-30.0, 30.0),  # th_rev_growth
+                (-30.0, 30.0),  # th_eps_growth
+                (-30.0, 30.0),  # th_roe
+                (-10.0, 10.0),  # th_fcf_yield
+            ]
+            self.bounds += fundamentals_bounds
         
         # ✨ V2.0: Charger les paramètres optimisés existants comme point de départ
         self.optimized_coeffs_loaded = False
@@ -189,17 +236,77 @@ class HybridOptimizer:
         seuil_achat = np.clip(round(seuil_achat, self.precision), 2.0, 6.0)
         seuil_vente = np.clip(round(seuil_vente, self.precision), -6.0, -2.0)
 
+        # Extract optional price extras
+        price_extras = None
+        if self.use_price_features and len(params) >= 24:
+            # Round flags to 0/1
+            use_ps = int(round(np.clip(params[18], 0.0, 1.0)))
+            use_pa = int(round(np.clip(params[19], 0.0, 1.0)))
+            a_ps = float(np.clip(round(params[20], self.precision), 0.0, 3.0))
+            a_pa = float(np.clip(round(params[21], self.precision), 0.0, 3.0))
+            th_ps = float(np.clip(round(params[22], self.precision), -0.05, 0.05))
+            th_pa = float(np.clip(round(params[23], self.precision), -0.05, 0.05))
+            price_extras = {
+                'use_price_slope': use_ps,
+                'use_price_acc': use_pa,
+                'a_price_slope': a_ps,
+                'a_price_acc': a_pa,
+                'th_price_slope': th_ps,
+                'th_price_acc': th_pa,
+            }
+        
+        # Extract optional fundamentals extras
+        fundamentals_extras = None
+        fundamentals_index_offset = 24 if self.use_price_features else 18
+        if self.use_fundamentals_features and len(params) >= (fundamentals_index_offset + 10):
+            use_fund = int(round(np.clip(params[fundamentals_index_offset], 0.0, 1.0)))
+            a_rev = float(np.clip(round(params[fundamentals_index_offset + 1], self.precision), 0.0, 3.0))
+            a_eps = float(np.clip(round(params[fundamentals_index_offset + 2], self.precision), 0.0, 3.0))
+            a_roe = float(np.clip(round(params[fundamentals_index_offset + 3], self.precision), 0.0, 3.0))
+            a_fcf = float(np.clip(round(params[fundamentals_index_offset + 4], self.precision), 0.0, 3.0))
+            a_de = float(np.clip(round(params[fundamentals_index_offset + 5], self.precision), 0.0, 3.0))
+            th_rev = float(np.clip(round(params[fundamentals_index_offset + 6], self.precision), -30.0, 30.0))
+            th_eps = float(np.clip(round(params[fundamentals_index_offset + 7], self.precision), -30.0, 30.0))
+            th_roe = float(np.clip(round(params[fundamentals_index_offset + 8], self.precision), -30.0, 30.0))
+            th_fcf = float(np.clip(round(params[fundamentals_index_offset + 9], self.precision), -10.0, 10.0))
+            fundamentals_extras = {
+                'use_fundamentals': use_fund,
+                'a_rev_growth': a_rev,
+                'a_eps_growth': a_eps,
+                'a_roe': a_roe,
+                'a_fcf_yield': a_fcf,
+                'a_de_ratio': a_de,
+                'th_rev_growth': th_rev,
+                'th_eps_growth': th_eps,
+                'th_roe': th_roe,
+                'th_fcf_yield': th_fcf,
+                'th_de_ratio': 0.0,  # Placeholder for 5th threshold (reserved)
+            }
+
         total_gain = 0.0
         total_trades = 0
         try:
-            for data in self.stock_data.values():
-                result = backtest_signals(
-                    data['Close'], data['Volume'], self.domain,
-                    domain_coeffs={self.domain: coeffs},
-                    domain_thresholds={self.domain: feature_thresholds},
-                    seuil_achat=seuil_achat, seuil_vente=seuil_vente,
-                    montant=self.montant, transaction_cost=self.transaction_cost
-                )
+            for symbol, data in self.stock_data.items():
+                if (self.use_price_features and price_extras is not None) or (self.use_fundamentals_features and fundamentals_extras is not None):
+                    # Use Python backtest with events to pass extras into qsi.get_trading_signal
+                    result, _ = backtest_signals_with_events(
+                        data['Close'], data['Volume'], self.domain,
+                        montant=self.montant, transaction_cost=self.transaction_cost,
+                        domain_coeffs={self.domain: coeffs},
+                        domain_thresholds={self.domain: feature_thresholds},
+                        seuil_achat=seuil_achat, seuil_vente=seuil_vente,
+                        extra_params=price_extras,
+                        fundamentals_extras=fundamentals_extras,
+                        symbol_name=symbol
+                    )
+                else:
+                    result = backtest_signals(
+                        data['Close'], data['Volume'], self.domain,
+                        domain_coeffs={self.domain: coeffs},
+                        domain_thresholds={self.domain: feature_thresholds},
+                        seuil_achat=seuil_achat, seuil_vente=seuil_vente,
+                        montant=self.montant, transaction_cost=self.transaction_cost
+                    )
                 total_gain += result['gain_total']
                 total_trades += result['trades']
 
@@ -329,9 +436,15 @@ class HybridOptimizer:
         print(f"🔄 Démarrage évolution différentielle (pop={population_size}, iter={max_iterations}, précision={self.precision})")
         
         bounds = self.bounds
+        dim = len(bounds)
 
-        def objective_function(params):
-            return -self.evaluate_config(self.round_params(params))  # 🔧 MODIFIÉ: Arrondir avant évaluation
+        # Cap initial population size to avoid huge first generation (popsize * dim)
+        # Target around ~600 evaluations per generation
+        target_evals_per_gen = 600
+        max_popsize = max(8, target_evals_per_gen // max(1, dim))
+        if population_size > max_popsize:
+            print(f"   ⚠️ Pop trop grande pour {dim} dimensions → réduit {population_size} → {max_popsize}")
+            population_size = max_popsize
 
         with tqdm(total=max_iterations, desc="🔄 Évolution différentielle", unit="iter") as pbar:
             def callback(xk, convergence):
@@ -339,15 +452,17 @@ class HybridOptimizer:
                 pbar.update(1)
 
             result = differential_evolution(
-                objective_function,
+                _de_objective,
                 bounds,
+                args=(self,),
                 maxiter=max_iterations,
                 popsize=population_size,
                 mutation=(0.5, 1.5),
                 recombination=0.7,
                 callback=callback,
                 polish=False,
-                seed=np.random.randint(0, 10000)
+                seed=np.random.randint(0, 10000),
+                workers=-1,  # Use all cores; safe thanks to top-level objective
             )
 
         return self.round_params(result.x), -result.fun
@@ -356,7 +471,9 @@ class HybridOptimizer:
         """Échantillonnage Latin Hypercube avec arrondi"""
         print(f"🎯 Latin Hypercube Sampling avec {n_samples} échantillons (précision={self.precision})")
         
-        sampler = qmc.LatinHypercube(d=18)
+        # 🔧 CORRIGÉ: Utiliser la dimension réelle des bounds au lieu de 18 hardcodé
+        n_dimensions = len(self.bounds)
+        sampler = qmc.LatinHypercube(d=n_dimensions)
         samples = sampler.random(n=n_samples)
 
         # Mise à l'échelle
@@ -489,7 +606,9 @@ def optimize_sector_coefficients_hybrid(
     initial_thresholds=(4.20, -0.5),
     budget_evaluations=1000,
     precision=2,  # 🔧 NOUVEAU: Paramètre de précision
-    cap_range='Unknown'
+    cap_range='Unknown',
+    use_price_features=False,
+    use_fundamentals_features=False
 ):
     """
     Optimisation hybride des coefficients sectoriels avec limitation des décimales
@@ -543,36 +662,100 @@ def optimize_sector_coefficients_hybrid(
             hist_feature_thresholds = tuple(csv_thresholds[:8])
             hist_seuil_achat = float(csv_globals[0])
             hist_seuil_vente = float(csv_globals[1])
+            
+            # 🔧 CORRIGÉ: Récupérer les extras depuis BEST_PARAM_EXTRAS (global)
+            hist_extra_params = None
+            hist_fundamentals_extras = None
+            
+            from qsi import BEST_PARAM_EXTRAS
+
+            # print(f"   🔍 DEBUG: Toutes les clés dans BEST_PARAM_EXTRAS: {list(BEST_PARAM_EXTRAS.keys())}")
+            # print(f"   🔍 DEBUG: Je cherche domain='{domain}'")
+            # print(f"   🔍 DEBUG: domain in dict? {domain in BEST_PARAM_EXTRAS}")
+            if domain in BEST_PARAM_EXTRAS:
+                print(f"      Clés disponibles: {list(BEST_PARAM_EXTRAS[domain].keys())}")
+                extras_dict = BEST_PARAM_EXTRAS[domain]
+                # Vérifier si des extras de price existent dans le dictionnaire
+                if 'use_price_slope' in extras_dict:
+                    hist_extra_params = {
+                        'use_price_slope': int(extras_dict.get('use_price_slope', 0)),
+                        'use_price_acc': int(extras_dict.get('use_price_acc', 0)),
+                        'a_price_slope': float(extras_dict.get('a_price_slope', 0.0)),
+                        'a_price_acc': float(extras_dict.get('a_price_acc', 0.0)),
+                        'th_price_slope': float(extras_dict.get('th_price_slope', 0.0)),
+                        'th_price_acc': float(extras_dict.get('th_price_acc', 0.0)),
+                    }
+                
+                # Vérifier si des extras de fundamentals existent dans le dictionnaire
+                if 'use_fundamentals' in extras_dict:
+                    hist_fundamentals_extras = {
+                        'use_fundamentals': int(extras_dict.get('use_fundamentals', 0)),
+                        'a_rev_growth': float(extras_dict.get('a_rev_growth', 0.0)),
+                        'a_eps_growth': float(extras_dict.get('a_eps_growth', 0.0)),
+                        'a_roe': float(extras_dict.get('a_roe', 0.0)),
+                        'a_fcf_yield': float(extras_dict.get('a_fcf_yield', 0.0)),
+                        'a_de_ratio': float(extras_dict.get('a_de_ratio', 0.0)),
+                        'th_rev_growth': float(extras_dict.get('th_rev_growth', 0.0)),
+                        'th_eps_growth': float(extras_dict.get('th_eps_growth', 0.0)),
+                        'th_roe': float(extras_dict.get('th_roe', 0.0)),
+                        'th_fcf_yield': float(extras_dict.get('th_fcf_yield', 0.0)),
+                        'th_de_ratio': float(extras_dict.get('th_de_ratio', 0.0)),
+                    }
 
             total_gain = 0.0
             total_trades = 0
             total_success = 0
-            for data in stock_data.values():
-                result = backtest_signals(
-                    data['Close'], data['Volume'], domain,
-                    domain_coeffs={domain: hist_coeffs},
-                    domain_thresholds={domain: hist_feature_thresholds},
-                    seuil_achat=hist_seuil_achat, seuil_vente=hist_seuil_vente,
-                    montant=montant, transaction_cost=transaction_cost
-                )
-                total_gain += result['gain_total']
-                total_trades += result['trades']
-                total_success += result['gagnants']
+            for symbol, data in stock_data.items():
+                # 🔧 Utiliser backtest_with_events si des extras historiques existent
+                if hist_extra_params is not None or hist_fundamentals_extras is not None:
+                    result, _ = backtest_signals_with_events(
+                        data['Close'], data['Volume'], domain,
+                        domain_coeffs={domain: hist_coeffs},
+                        domain_thresholds={domain: hist_feature_thresholds},
+                        seuil_achat=hist_seuil_achat, seuil_vente=hist_seuil_vente,
+                        montant=montant, transaction_cost=transaction_cost,
+                        extra_params=hist_extra_params,
+                        fundamentals_extras=hist_fundamentals_extras,
+                        symbol_name=symbol
+                    )
+                else:
+                    result = backtest_signals(
+                        data['Close'], data['Volume'], domain,
+                        domain_coeffs={domain: hist_coeffs},
+                        domain_thresholds={domain: hist_feature_thresholds},
+                        seuil_achat=hist_seuil_achat, seuil_vente=hist_seuil_vente,
+                        montant=montant, transaction_cost=transaction_cost
+                    )
+                total_gain += result.get('gain_total', 0)
+                total_trades += result.get('trades', 0)
+                total_success += result.get('gagnants', 0)
 
             hist_avg_gain = total_gain / len(stock_data) if stock_data else 0.0
             hist_success_rate = (total_success / total_trades * 100) if total_trades > 0 else 0.0
             hist_total_trades = total_trades
 
-            # Préparer un candidat pour la comparaison finale
-            hist_params = hist_coeffs + hist_feature_thresholds + (hist_seuil_achat, hist_seuil_vente)
-            historical_candidate = ('Historical (re-eval)', hist_params, hist_avg_gain)
+            # Préparer un candidat pour la comparaison finale (18 paramètres de base)
+            hist_params = list(hist_coeffs + hist_feature_thresholds + (hist_seuil_achat, hist_seuil_vente))
+            
+            # 🔧 Étendre les paramètres historiques si des features sont activées
+            if use_price_features:
+                # Ajouter 6 paramètres par défaut pour price features (désactivés par défaut)
+                hist_params += [0.0, 0.0, 0.5, 0.5, 0.0, 0.0]  # use_slope=0, use_acc=0, weights=0.5, thresholds=0
+            
+            if use_fundamentals_features:
+                # Ajouter 10 paramètres par défaut pour fundamentals (désactivés par défaut)
+                hist_params += [0.0, 0.5, 0.5, 0.5, 0.5, 0.5, 0.0, 0.0, 0.0, 0.0]
+            
+            historical_candidate = ('Historical (re-eval)', tuple(hist_params), hist_avg_gain)
 
             print(f"♻️ Paramètres historiques réévalués sur données actuelles: gain_moy={hist_avg_gain:.2f}, trades={total_trades}, success={hist_success_rate:.2f}%")
+            if use_price_features or use_fundamentals_features:
+                print(f"   ℹ️  Paramètres étendus de 18 → {len(hist_params)} (features désactivées par défaut)")
         except Exception as e:
             print(f"⚠️ Réévaluation des paramètres historiques impossible: {e}")
 
     # 🔧 MODIFIÉ: Initialisation de l'optimiseur avec précision
-    optimizer = HybridOptimizer(stock_data, domain, montant, transaction_cost, precision)
+    optimizer = HybridOptimizer(stock_data, domain, montant, transaction_cost, precision, use_price_features, use_fundamentals_features)
 
     # 🔧 NOUVEAU: Ajuster le budget en fonction de la précision
     # Avec une plus grande précision, l'espace de recherche AUGMENTE
@@ -650,23 +833,103 @@ def optimize_sector_coefficients_hybrid(
     best_seuil_achat = float(best_params[16])  # Seuil global achat
     best_seuil_vente = float(best_params[17])  # Seuil global vente
 
+    # 🔧 DEBUG: Taille du vecteur de params
+    print(f"   🔍 Taille du meilleur vecteur de params: {len(best_params)} (expected: {len(optimizer.bounds)})")
+
+    # Extra params (price features) if present in vector
+    extra_params = None
+    if use_price_features and len(best_params) >= 24:
+        use_ps = int(round(np.clip(best_params[18], 0.0, 1.0)))
+        use_pa = int(round(np.clip(best_params[19], 0.0, 1.0)))
+        a_ps = float(np.clip(round(best_params[20], precision), 0.0, 3.0))
+        a_pa = float(np.clip(round(best_params[21], precision), 0.0, 3.0))
+        th_ps = float(np.clip(round(best_params[22], precision), -0.05, 0.05))
+        th_pa = float(np.clip(round(best_params[23], precision), -0.05, 0.05))
+        extra_params = {
+            'use_price_slope': use_ps,
+            'use_price_acc': use_pa,
+            'a_price_slope': a_ps,
+            'a_price_acc': a_pa,
+            'th_price_slope': th_ps,
+            'th_price_acc': th_pa,
+        }
+    
+    # Fundamentals extras if present in vector
+    fundamentals_extras = None
+    fundamentals_index_offset = 24 if use_price_features else 18
+    if use_fundamentals_features and len(best_params) >= (fundamentals_index_offset + 10):
+        use_fund = int(round(np.clip(best_params[fundamentals_index_offset], 0.0, 1.0)))
+        a_rev = float(np.clip(round(best_params[fundamentals_index_offset + 1], precision), 0.0, 3.0))
+        a_eps = float(np.clip(round(best_params[fundamentals_index_offset + 2], precision), 0.0, 3.0))
+        a_roe = float(np.clip(round(best_params[fundamentals_index_offset + 3], precision), 0.0, 3.0))
+        a_fcf = float(np.clip(round(best_params[fundamentals_index_offset + 4], precision), 0.0, 3.0))
+        a_de = float(np.clip(round(best_params[fundamentals_index_offset + 5], precision), 0.0, 3.0))
+        th_rev = float(np.clip(round(best_params[fundamentals_index_offset + 6], precision), -30.0, 30.0))
+        th_eps = float(np.clip(round(best_params[fundamentals_index_offset + 7], precision), -30.0, 30.0))
+        th_roe = float(np.clip(round(best_params[fundamentals_index_offset + 8], precision), -30.0, 30.0))
+        th_fcf = float(np.clip(round(best_params[fundamentals_index_offset + 9], precision), -10.0, 10.0))
+        fundamentals_extras = {
+            'use_fundamentals': use_fund,
+            'a_rev_growth': a_rev,
+            'a_eps_growth': a_eps,
+            'a_roe': a_roe,
+            'a_fcf_yield': a_fcf,
+            'a_de_ratio': a_de,
+            'th_rev_growth': th_rev,
+            'th_eps_growth': th_eps,
+            'th_roe': th_roe,
+            'th_fcf_yield': th_fcf,
+            'th_de_ratio': 0.0,  # Reserved
+        }
+
     # Calcul des statistiques finales
     total_success = 0
     total_trades = 0
-    for data in stock_data.values():
-        result = backtest_signals(
-            data['Close'], data['Volume'], domain,
-            domain_coeffs={domain: best_coeffs},
-            domain_thresholds={domain: best_feature_thresholds},  # V2.0: Passer tous les 8 seuils features
-            seuil_achat=best_seuil_achat, seuil_vente=best_seuil_vente,  # V2.0: Passer les 2 seuils globaux
-            montant=montant, transaction_cost=transaction_cost
-        )
-        total_success += result['gagnants']
-        total_trades += result['trades']
+    debug_trades_per_symbol = {}
+    
+    # 🔧 DEBUG: Afficher la configuration du recalcul
+    print(f"   🔍 Recalcul avec: use_price_features={use_price_features}, use_fundamentals_features={use_fundamentals_features}")
+    print(f"      extra_params={extra_params}")
+    print(f"      fundamentals_extras={fundamentals_extras}")
+    print(f"      Condition 1 (price): {use_price_features} and {extra_params is not None} = {use_price_features and extra_params is not None}")
+    print(f"      Condition 2 (fund): {use_fundamentals_features} and {fundamentals_extras is not None} = {use_fundamentals_features and fundamentals_extras is not None}")
+    
+    for symbol, data in stock_data.items():
+        if (use_price_features and extra_params is not None) or (use_fundamentals_features and fundamentals_extras is not None):
+            # Utiliser backtest_with_events pour les features étendues
+            result, _ = backtest_signals_with_events(
+                data['Close'], data['Volume'], domain,
+                domain_coeffs={domain: best_coeffs},
+                domain_thresholds={domain: best_feature_thresholds},
+                seuil_achat=best_seuil_achat, seuil_vente=best_seuil_vente,
+                montant=montant, transaction_cost=transaction_cost,
+                extra_params=extra_params,
+                fundamentals_extras=fundamentals_extras,
+                symbol_name=symbol
+            )
+        else:
+            # Backtest classique sans extras
+            result = backtest_signals(
+                data['Close'], data['Volume'], domain,
+                domain_coeffs={domain: best_coeffs},
+                domain_thresholds={domain: best_feature_thresholds},
+                seuil_achat=best_seuil_achat, seuil_vente=best_seuil_vente,
+                montant=montant, transaction_cost=transaction_cost
+            )
+        
+        symbol_trades = result.get('trades', 0)
+        debug_trades_per_symbol[symbol] = symbol_trades
+        total_success += result.get('gagnants', 0)
+        total_trades += symbol_trades
 
     success_rate = (total_success / total_trades * 100) if total_trades > 0 else 0.0
 
-    # 📊 Rapport synthétique secteur
+    # � DEBUG: Afficher les trades par symbole si le résultat semble incohérent
+    if total_trades == 0 and len(stock_data) > 0:
+        print(f"   ⚠️  DEBUG: Aucun trade malgré {len(stock_data)} symboles")
+        print(f"      Trades par symbole: {debug_trades_per_symbol}")
+
+    # �📊 Rapport synthétique secteur
     if hist_avg_gain is not None:
         delta = best_score - hist_avg_gain
         delta_pct = (delta / abs(hist_avg_gain) * 100) if hist_avg_gain != 0 else None
@@ -679,6 +942,17 @@ def optimize_sector_coefficients_hybrid(
 
     print(f"   coeffs: {best_coeffs}")
     print(f"   seuils: features={best_feature_thresholds}, achat={best_seuil_achat:.2f}, vente={best_seuil_vente:.2f}")
+    
+    # 🔧 Afficher les extras si présents
+    if extra_params:
+        print(f"   📊 Price features: use_slope={extra_params['use_price_slope']}, use_acc={extra_params['use_price_acc']}")
+        print(f"      Poids: slope={extra_params['a_price_slope']:.1f}, acc={extra_params['a_price_acc']:.1f}")
+        print(f"      Seuils: slope={extra_params['th_price_slope']:.3f}, acc={extra_params['th_price_acc']:.3f}")
+    
+    if fundamentals_extras:
+        print(f"   📊 Fundamentals: use={fundamentals_extras['use_fundamentals']}")
+        print(f"      Poids: rev={fundamentals_extras['a_rev_growth']:.1f}, eps={fundamentals_extras['a_eps_growth']:.1f}, roe={fundamentals_extras['a_roe']:.1f}, fcf={fundamentals_extras['a_fcf_yield']:.1f}, de={fundamentals_extras['a_de_ratio']:.1f}")
+        print(f"      Seuils: rev={fundamentals_extras['th_rev_growth']:.1f}%, eps={fundamentals_extras['th_eps_growth']:.1f}%, roe={fundamentals_extras['th_roe']:.1f}%, fcf={fundamentals_extras['th_fcf_yield']:.1f}%")
 
     # Sauvegarde des résultats - agrégé en un tuple unique
     all_thresholds = best_feature_thresholds + (best_seuil_achat, best_seuil_vente)
@@ -689,7 +963,7 @@ def optimize_sector_coefficients_hybrid(
     should_save = (hist_avg_gain is None) or (best_score > hist_avg_gain + save_epsilon)
     
     if should_save:
-        save_optimization_results(domain, best_coeffs, best_score, success_rate, total_trades, all_thresholds, cap_range)
+        save_optimization_results(domain, best_coeffs, best_score, success_rate, total_trades, all_thresholds, cap_range, extra_params=extra_params, fundamentals_extras=fundamentals_extras)
         hist_str = f"{hist_avg_gain:.2f}" if hist_avg_gain is not None else "N/A"
         print(f"💾 Sauvegarde: nouveau score {best_score:.2f} > historique réévalué {hist_str}")
     else:
@@ -708,7 +982,7 @@ def optimize_sector_coefficients_hybrid(
 
     return best_coeffs, best_score, success_rate, all_thresholds, summary
 
-def save_optimization_results(domain, coeffs, gain_total, success_rate, total_trades, thresholds, cap_range=None):
+def save_optimization_results(domain, coeffs, gain_total, success_rate, total_trades, thresholds, cap_range=None, extra_params=None, fundamentals_extras=None):
     """
     Sauvegarde les résultats d'optimisation dans la base de données SQLite avec le format attendu:
     Timestamp, Sector, Gain_moy, Success_Rate, Trades, Seuil_Achat, Seuil_Vente, a1-a8, th1-th8
@@ -726,6 +1000,39 @@ def save_optimization_results(domain, coeffs, gain_total, success_rate, total_tr
     import sqlite3
 
     db_path = 'signaux/optimization_hist.db'
+
+    def _ensure_opt_runs_schema(conn):
+        try:
+            cur = conn.cursor()
+            # Check existing columns
+            cur.execute("PRAGMA table_info(optimization_runs)")
+            cols = {row[1] for row in cur.fetchall()}
+
+            # Ensure market_cap_range exists (newer schema)
+            if 'market_cap_range' not in cols:
+                cur.execute("ALTER TABLE optimization_runs ADD COLUMN market_cap_range TEXT")
+
+            # Prepare new columns for price derivatives params (future use)
+            new_cols = [
+                ('a9', 'REAL'), ('a10', 'REAL'),
+                ('th9', 'REAL'), ('th10', 'REAL'),
+                ('use_price_slope', 'INTEGER DEFAULT 0'),
+                ('use_price_acc', 'INTEGER DEFAULT 0'),
+                # Fundamentals columns
+                ('a11', 'REAL'), ('a12', 'REAL'), ('a13', 'REAL'), ('a14', 'REAL'), ('a15', 'REAL'),
+                ('th11', 'REAL'), ('th12', 'REAL'), ('th13', 'REAL'), ('th14', 'REAL'), ('th15', 'REAL'),
+                ('use_fundamentals', 'INTEGER DEFAULT 0')
+            ]
+            for name, decl in new_cols:
+                if name not in cols:
+                    try:
+                        cur.execute(f"ALTER TABLE optimization_runs ADD COLUMN {name} {decl}")
+                    except Exception:
+                        pass
+            conn.commit()
+        except Exception:
+            # Non-fatal: keep retrocompat even if migration fails
+            pass
     
     try:
         # La décision de sauvegarder est déjà prise par l'appelant
@@ -748,16 +1055,43 @@ def save_optimization_results(domain, coeffs, gain_total, success_rate, total_tr
 
         # Connexion à SQLite et insertion
         conn = sqlite3.connect(db_path)
+        # Ensure schema is up-to-date (idempotent)
+        _ensure_opt_runs_schema(conn)
         cursor = conn.cursor()
         
         # Construire l'INSERT OR REPLACE avec tous les paramètres
+        # Prepare extras with defaults
+        ex = extra_params or {}
+        use_ps = int(ex.get('use_price_slope', 0) or 0)
+        use_pa = int(ex.get('use_price_acc', 0) or 0)
+        a9 = float(ex.get('a_price_slope', 0.0) or 0.0)
+        a10 = float(ex.get('a_price_acc', 0.0) or 0.0)
+        th9 = float(ex.get('th_price_slope', 0.0) or 0.0)
+        th10 = float(ex.get('th_price_acc', 0.0) or 0.0)
+        
+        # Prepare fundamentals extras with defaults
+        fx = fundamentals_extras or {}
+        use_fund = int(fx.get('use_fundamentals', 0) or 0)
+        a11 = float(fx.get('a_rev_growth', 0.0) or 0.0)
+        a12 = float(fx.get('a_eps_growth', 0.0) or 0.0)
+        a13 = float(fx.get('a_roe', 0.0) or 0.0)
+        a14 = float(fx.get('a_fcf_yield', 0.0) or 0.0)
+        a15 = float(fx.get('a_de_ratio', 0.0) or 0.0)
+        th11 = float(fx.get('th_rev_growth', 0.0) or 0.0)
+        th12 = float(fx.get('th_eps_growth', 0.0) or 0.0)
+        th13 = float(fx.get('th_roe', 0.0) or 0.0)
+        th14 = float(fx.get('th_fcf_yield', 0.0) or 0.0)
+        th15 = float(fx.get('th_de_ratio', 0.0) or 0.0)
+
         cursor.execute('''
             INSERT OR REPLACE INTO optimization_runs
             (timestamp, sector, market_cap_range, gain_moy, success_rate, trades,
              a1, a2, a3, a4, a5, a6, a7, a8,
              th1, th2, th3, th4, th5, th6, th7, th8,
-             seuil_achat, seuil_vente)
-            VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
+             seuil_achat, seuil_vente,
+             a9, a10, th9, th10, use_price_slope, use_price_acc,
+             a11, a12, a13, a14, a15, th11, th12, th13, th14, th15, use_fundamentals)
+            VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
         ''', (
             timestamp, normalized_sector, normalized_cap, gain_total, success_rate, total_trades,
             coeffs[0], coeffs[1], coeffs[2], coeffs[3],
@@ -771,7 +1105,9 @@ def save_optimization_results(domain, coeffs, gain_total, success_rate, total_tr
             thresholds[6] if len(thresholds) > 6 else 0.5,
             thresholds[7] if len(thresholds) > 7 else 4.20,
             thresholds[8] if len(thresholds) > 8 else 4.20,
-            thresholds[9] if len(thresholds) > 9 else -0.5
+            thresholds[9] if len(thresholds) > 9 else -0.5,
+            a9, a10, th9, th10, use_ps, use_pa,
+            a11, a12, a13, a14, a15, th11, th12, th13, th14, th15, use_fund
         ))
         
         conn.commit()
@@ -794,9 +1130,8 @@ if __name__ == "__main__":
         print("\n1️⃣  Chargement des symboles depuis SQLite...")
         init_symbols_table()
         try:
-            added = sync_txt_to_sqlite("optimisation_symbols.txt", list_type)
-            if added:
-                print(f"   ✅ {added} symboles synchronisés depuis optimisation_symbols.txt ({list_type})")
+            count = sync_txt_to_sqlite("optimisation_symbols.txt", list_type)
+            # Les messages sont maintenant affichés par sync_txt_to_sqlite
         except Exception as e:
             print(f"   ⚠️ Impossible de synchroniser optimisation_symbols.txt: {e}")
 
@@ -886,10 +1221,30 @@ if __name__ == "__main__":
     except ValueError:
         precision = 2
 
-    print(f"\n   🔧 Paramètres: stratégie={strategy}, précision={precision} décimales")
+    # 🎯 ACTIVATION DES FEATURES ÉTENDUES
+    print("\n   📊 Features d'optimisation:")
+    use_price_features_input = input("   Activer price features (slope, acceleration) ? (o/N) : ").strip().lower()
+    use_price_features = (use_price_features_input == 'o')
+    
+    use_fundamentals_features_input = input("   Activer fundamentals features (rev_growth, eps, roe, etc.) ? (o/N) : ").strip().lower()
+    use_fundamentals_features = (use_fundamentals_features_input == 'o')
+    
+    # Calcul du nombre de paramètres
+    param_count = 18  # Base
+    if use_price_features:
+        param_count += 6
+    if use_fundamentals_features:
+        param_count += 10
+    
+    print(f"\n   🔧 Configuration:")
+    print(f"      - Stratégie: {strategy}")
+    print(f"      - Précision: {precision} décimales")
+    print(f"      - Price features: {'✅ Activé' if use_price_features else '❌ Désactivé'}")
+    print(f"      - Fundamentals features: {'✅ Activé' if use_fundamentals_features else '❌ Désactivé'}")
+    print(f"      - Nombre de paramètres: {param_count}")
 
     # Adapter le budget selon la précision
-    budget_base = 1000
+    budget_base = 50#1000
     if precision == 1:
         budget_evaluations = int(budget_base * 0.5)
     elif precision == 2:
@@ -929,7 +1284,9 @@ if __name__ == "__main__":
                 transaction_cost=0.02,
                 budget_evaluations=budget_evaluations,
                 precision=precision,  # 🔧 NOUVEAU: Paramètre de précision
-                cap_range=cap_range
+                cap_range=cap_range,
+                use_price_features=use_price_features,  # 🎯 Features étendues
+                use_fundamentals_features=use_fundamentals_features  # 🎯 Features étendues
             )
 
             if coeffs:

@@ -39,8 +39,14 @@ def init_symbols_table():
     conn.commit()
     conn.close()
 
-def sync_txt_to_sqlite(txt_file: str, list_type: str = 'popular') -> int:
-    """Synchronise les symboles d'un fichier txt vers SQLite."""
+def sync_txt_to_sqlite(txt_file: str, list_type: str = 'popular', force_refresh: bool = False) -> int:
+    """Synchronise les symboles d'un fichier txt vers SQLite.
+    
+    Args:
+        txt_file: Chemin vers le fichier texte contenant les symboles
+        list_type: Type de liste ('popular', 'mes_symbols', etc.)
+        force_refresh: Si True, force la récupération des métadonnées même si elles existent
+    """
     path = Path(txt_file)
     if not path.exists():
         return 0
@@ -52,23 +58,65 @@ def sync_txt_to_sqlite(txt_file: str, list_type: str = 'popular') -> int:
     cursor = conn.cursor()
     
     added = 0
+    updated = 0
+    needs_fetch = []
+    
     for symbol in symbols:
         try:
-            sector = _get_sector_safe(symbol)
-            cap_range, market_cap = _get_cap_range_safe(symbol)
+            # Vérifier si le symbole existe déjà avec des métadonnées valides
+            if not force_refresh:
+                cursor.execute('''
+                    SELECT sector, market_cap_range, market_cap_value 
+                    FROM symbols 
+                    WHERE symbol = ? AND sector IS NOT NULL AND sector != 'Unknown'
+                ''', (symbol,))
+                existing = cursor.fetchone()
+                
+                if existing:
+                    # Le symbole existe avec des métadonnées valides, juste mettre à jour list_type
+                    cursor.execute('''
+                        UPDATE symbols 
+                        SET list_type = ?, is_active = 1
+                        WHERE symbol = ?
+                    ''', (list_type, symbol))
+                    updated += 1
+                    continue
             
-            cursor.execute('''
-                INSERT OR REPLACE INTO symbols 
-                (symbol, sector, market_cap_range, market_cap_value, list_type, last_checked, is_active)
-                VALUES (?, ?, ?, ?, ?, ?, 1)
-            ''', (symbol, sector, cap_range, market_cap, list_type, datetime.now().isoformat()))
-            added += 1
+            # Marquer pour récupération API
+            needs_fetch.append(symbol)
+            
         except Exception:
             pass
     
+    # Récupérer les métadonnées pour les symboles qui en ont besoin
+    if needs_fetch:
+        print(f"   📡 Récupération métadonnées pour {len(needs_fetch)} nouveaux symboles...")
+        for idx, symbol in enumerate(needs_fetch, 1):
+            if idx % 10 == 0:
+                print(f"      Progression: {idx}/{len(needs_fetch)}...")
+            
+            try:
+                sector = _get_sector_safe(symbol)
+                cap_range, market_cap = _get_cap_range_safe(symbol)
+                
+                cursor.execute('''
+                    INSERT OR REPLACE INTO symbols 
+                    (symbol, sector, market_cap_range, market_cap_value, list_type, last_checked, is_active)
+                    VALUES (?, ?, ?, ?, ?, ?, 1)
+                ''', (symbol, sector, cap_range, market_cap, list_type, datetime.now().isoformat()))
+                added += 1
+            except Exception:
+                pass
+    
     conn.commit()
     conn.close()
-    return added
+    
+    if updated > 0:
+        print(f"   ♻️  {updated} symboles déjà en cache (récupération instantanée)")
+    if added > 0:
+        print(f"   ✅ {added} nouveaux symboles ajoutés")
+    
+    return added + updated
 
 def get_symbols_by_list_type(list_type: str = 'popular', active_only: bool = True) -> List[str]:
     """Récupère les symboles pour un type de liste donné."""

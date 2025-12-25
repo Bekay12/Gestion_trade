@@ -2,7 +2,8 @@
 
 # Ce script télécharge les données boursières, calcule les indicateurs techniques et affiche
 
-import yfinance as yf
+# Import paresseux pour accélérer le chargement (yfinance ~1.9s)
+# import yfinance as yf  # Chargé à la demande dans download_stock_data
 import matplotlib.pyplot as plt
 import pandas as pd
 import numpy as np
@@ -19,6 +20,7 @@ from typing import List, Dict, Union
 from concurrent.futures import ThreadPoolExecutor
 import sys
 from pathlib import Path
+import yfinance as yf
 sys.path.append("C:\\Users\\berti\\Desktop\\Mes documents\\Gestion_trade\\stock-analysis-ui\\src\\trading_c_acceleration")
 from qsi_optimized import backtest_signals, extract_best_parameters, backtest_signals_with_events
 
@@ -139,6 +141,10 @@ def save_to_evolutive_csv(signals, filename="signaux_trading.csv"):
 
 from typing import Tuple, Dict, Union, List
 
+# Extras for parameters beyond the legacy 8 coeffs/8 thresholds.
+# Always includes price-related params when available; defaults otherwise.
+BEST_PARAM_EXTRAS: Dict[str, Dict[str, Union[int, float]]] = {}
+
 def extract_best_parameters(db_path: str = 'signaux/optimization_hist.db') -> Dict[str, Tuple[Tuple[float, ...], Tuple[float, ...], Tuple[float, float]]]:
     """
     Extrait les meilleurs coefficients et seuils pour chaque secteur à partir de SQLite.
@@ -164,7 +170,12 @@ def extract_best_parameters(db_path: str = 'signaux/optimization_hist.db') -> Di
             print(f"🚫 Table 'optimization_runs' non trouvée dans {db_path}")
             return {}
         
+        # Lire les colonnes présentes pour savoir si les champs 'price' existent
+        cursor.execute("PRAGMA table_info(optimization_runs)")
+        colnames = {row[1] for row in cursor.fetchall()}
+        
         # Récupérer la dernière ligne (plus récente) pour chaque secteur
+        # Sélectionner TOUS les champs, y compris price (a9, a10, th9, th10, use_price_*) et fundamentals (a11-a15, th11-th15, use_fundamentals)
         cursor.execute('''
             SELECT 
                 sector,
@@ -173,6 +184,8 @@ def extract_best_parameters(db_path: str = 'signaux/optimization_hist.db') -> Di
                 a1, a2, a3, a4, a5, a6, a7, a8,
                 th1, th2, th3, th4, th5, th6, th7, th8,
                 seuil_achat, seuil_vente,
+                a9, a10, th9, th10, use_price_slope, use_price_acc,
+                a11, a12, a13, a14, a15, th11, th12, th13, th14, th15, use_fundamentals,
                 timestamp
             FROM optimization_runs
             WHERE (sector, COALESCE(market_cap_range, 'Unknown'), timestamp) IN (
@@ -183,6 +196,9 @@ def extract_best_parameters(db_path: str = 'signaux/optimization_hist.db') -> Di
             ORDER BY sector, market_cap_range
         ''')
         
+        # Reset extras map
+        global BEST_PARAM_EXTRAS
+        BEST_PARAM_EXTRAS = {}
         result = {}
         for row in cursor.fetchall():
             sector = row['sector'].strip()
@@ -204,6 +220,50 @@ def extract_best_parameters(db_path: str = 'signaux/optimization_hist.db') -> Di
             if cap_range and cap_range.lower() != 'unknown':
                 key_comp = f"{sector}_{cap_range}"
                 result[key_comp] = (coefficients, thresholds, globals_thresholds, gain_moy)
+            
+            # Always extract price-related extras (not optional): provide defaults when absent
+            def _read_num(col, default):
+                try:
+                    return float(row[col]) if (col in colnames and row[col] is not None) else default
+                except Exception:
+                    return default
+            def _read_int(col, default):
+                try:
+                    return int(row[col]) if (col in colnames and row[col] is not None) else default
+                except Exception:
+                    return default
+
+            price_extras = {
+                'use_price_slope': _read_int('use_price_slope', 0),
+                'use_price_acc': _read_int('use_price_acc', 0),
+                'a_price_slope': _read_num('a9', 0.0),
+                'a_price_acc': _read_num('a10', 0.0),
+                'th_price_slope': _read_num('th9', 0.0),
+                'th_price_acc': _read_num('th10', 0.0),
+            }
+            
+            # Extract fundamentals extras (optional, defaults to 0 if not present)
+            fundamentals_extras = {
+                'use_fundamentals': _read_int('use_fundamentals', 0),
+                'a_rev_growth': _read_num('a11', 0.0),
+                'a_eps_growth': _read_num('a12', 0.0),
+                'a_roe': _read_num('a13', 0.0),
+                'a_fcf_yield': _read_num('a14', 0.0),
+                'a_de_ratio': _read_num('a15', 0.0),
+                'th_rev_growth': _read_num('th11', 0.0),
+                'th_eps_growth': _read_num('th12', 0.0),
+                'th_roe': _read_num('th13', 0.0),
+                'th_fcf_yield': _read_num('th14', 0.0),
+                'th_de_ratio': _read_num('th15', 0.0),
+            }
+            
+            # Combine extras
+            all_extras = {**price_extras, **fundamentals_extras}
+            
+            # Save extras for both sector and composite keys (if applicable)
+            BEST_PARAM_EXTRAS[sector] = all_extras
+            if cap_range and cap_range.lower() != 'unknown':
+                BEST_PARAM_EXTRAS[key_comp] = all_extras
         
         conn.close()
         
@@ -226,7 +286,9 @@ def extract_best_parameters(db_path: str = 'signaux/optimization_hist.db') -> Di
 
 def get_trading_signal(prices, volumes, domaine, domain_coeffs=None, domain_thresholds=None,
                       variation_seuil=-20, volume_seuil=100000, return_derivatives: bool = False, symbol: str = None,
-                      cap_range: str = None):
+                      cap_range: str = None, price_extras: Dict[str, Union[int, float]] = None,
+                      fundamentals_extras: Dict[str, Union[int, float]] = None,
+                      fundamentals_metrics: Dict[str, float] = None):
     """Détermine les signaux de trading avec validation des données
     
     Args:
@@ -244,6 +306,8 @@ def get_trading_signal(prices, volumes, domaine, domain_coeffs=None, domain_thre
     Returns:
         Tuple avec (signal, score, rsi, volume_mean, tendance)
     """
+    
+    global BEST_PARAM_EXTRAS
     
     # Conversion explicite en Series scalaires
     if isinstance(prices, pd.DataFrame):
@@ -500,6 +564,95 @@ def get_trading_signal(prices, volumes, domaine, domain_coeffs=None, domain_thre
     if sell_conditions:
         score -= a8
 
+    # Intégration des dérivées de prix (toujours supportées, activées via flags)
+    try:
+        # Choisir les extras: priorité aux paramètres fournis, sinon DB via BEST_PARAM_EXTRAS
+        extras = price_extras
+        if extras is None:
+            try:
+                from typing import Any
+                extras = BEST_PARAM_EXTRAS.get(selected_key or domaine, {})
+            except Exception:
+                extras = {}
+        use_ps = int(extras.get('use_price_slope', 0) or 0)
+        use_pa = int(extras.get('use_price_acc', 0) or 0)
+        a_ps = float(extras.get('a_price_slope', 0.0) or 0.0)
+        a_pa = float(extras.get('a_price_acc', 0.0) or 0.0)
+        th_ps = float(extras.get('th_price_slope', 0.0) or 0.0)
+        th_pa = float(extras.get('th_price_acc', 0.0) or 0.0)
+
+        if use_ps or use_pa:
+            # Calcul minimal des dérivées nécessaires si pas déjà présentes
+            local_deriv = {}
+            try:
+                local_deriv.update(compute_derivatives({'price': prices}, window=8))
+            except Exception:
+                local_deriv['price_slope_rel'] = 0.0
+            if use_pa:
+                try:
+                    local_deriv.update(compute_accelerations({'price': prices}, window=8))
+                except Exception:
+                    local_deriv['price_acc_rel'] = 0.0
+
+            price_slope_rel = local_deriv.get('price_slope_rel', 0.0)
+            price_acc_rel = local_deriv.get('price_acc_rel', 0.0)
+
+            if use_ps:
+                if price_slope_rel > th_ps:
+                    score += a_ps
+                else:
+                    score -= a_ps
+            if use_pa:
+                if price_acc_rel > th_pa:
+                    score += a_pa
+                else:
+                    score -= a_pa
+    except Exception:
+        pass
+
+    # Intégration des métriques fondamentales (optionnelles, activées via flags)
+    try:
+        # Choisir les extras: priorité aux paramètres fournis, sinon DB via BEST_PARAM_EXTRAS
+        fund_extras = fundamentals_extras
+        if fund_extras is None:
+            try:
+                from typing import Any
+                fund_extras = BEST_PARAM_EXTRAS.get(selected_key or domaine, {})
+            except Exception:
+                fund_extras = {}
+        
+        use_fund = int(fund_extras.get('use_fundamentals', 0) or 0)
+        
+        if use_fund and symbol:
+            # Lazy fetch fundamentals once per symbol if not provided
+            try:
+                fund_metrics = fundamentals_metrics
+                if fund_metrics is None:
+                    from fundamentals_cache import get_fundamental_metrics
+                    fund_metrics = get_fundamental_metrics(symbol, use_cache=True)
+                
+                # Scoring pour chaque métrique fondamentale
+                fund_keys = ['rev_growth', 'eps_growth', 'roe', 'fcf_yield', 'de_ratio']
+                fund_coeff_keys = ['a_rev_growth', 'a_eps_growth', 'a_roe', 'a_fcf_yield', 'a_de_ratio']
+                fund_thresh_keys = ['th_rev_growth', 'th_eps_growth', 'th_roe', 'th_fcf_yield', 'th_de_ratio']
+                
+                for metric_key, coeff_key, thresh_key in zip(fund_keys, fund_coeff_keys, fund_thresh_keys):
+                    metric_val = fund_metrics.get(metric_key) if fund_metrics else None
+                    coeff = float(fund_extras.get(coeff_key, 0.0) or 0.0)
+                    thresh = float(fund_extras.get(thresh_key, 0.0) or 0.0)
+                    
+                    if metric_val is not None and coeff != 0:
+                        if metric_val > thresh:
+                            score += coeff
+                        else:
+                            score -= coeff
+            except ImportError:
+                pass  # fundamentals_cache not available, skip
+            except Exception:
+                pass  # Any error in fundamentals scoring, continue
+    except Exception:
+        pass
+
     if volatility > 0.05:
         m4 = 0.75
     score *= m4
@@ -551,6 +704,47 @@ def get_trading_signal(prices, volumes, domaine, domain_coeffs=None, domain_thre
             deriv[f"{name}_slope_rel"] = rel
         return deriv
 
+    # Helper: compute a simple second-order effect (acceleration)
+    # using difference of slopes across two adjacent windows.
+    def compute_accelerations(series_dict, window: int = 8):
+        """
+        Approximate acceleration as the difference between the most recent
+        slope over the last `window` points and the slope over the preceding
+        `window` points. Returns both absolute and relative accelerations.
+
+        Keys: '<name>_acc' and '<name>_acc_rel'.
+        """
+        acc = {}
+        for name, ser in series_dict.items():
+            try:
+                arr = np.asarray(ser.dropna().values.astype(float)) if isinstance(ser, (pd.Series, pd.DataFrame)) else np.asarray(ser)
+                n = len(arr)
+                if n >= (window * 2):
+                    y_recent = arr[-window:]
+                    x_recent = np.arange(window, dtype=float)
+                    y_prev = arr[-(2*window):-window]
+                    x_prev = np.arange(window, dtype=float)
+                    try:
+                        p_recent = np.polyfit(x_recent, y_recent, 1)
+                        p_prev = np.polyfit(x_prev, y_prev, 1)
+                        slope_recent = float(p_recent[0])
+                        slope_prev = float(p_prev[0])
+                    except Exception:
+                        slope_recent = float(y_recent[-1] - y_recent[-2]) if window >= 2 else 0.0
+                        slope_prev = float(y_prev[-1] - y_prev[-2]) if window >= 2 else 0.0
+                    acc_abs = slope_recent - slope_prev
+                    last = float(arr[-1]) if n > 0 else 0.0
+                    acc_rel = float(acc_abs / last) if last != 0 else 0.0
+                else:
+                    acc_abs = 0.0
+                    acc_rel = 0.0
+            except Exception:
+                acc_abs = 0.0
+                acc_rel = 0.0
+            acc[f"{name}_acc"] = acc_abs
+            acc[f"{name}_acc_rel"] = acc_rel
+        return acc
+
     # Calculer les dérivées des indicateurs techniques si demandées
     if return_derivatives:
         try:
@@ -561,6 +755,14 @@ def get_trading_signal(prices, volumes, domaine, domain_coeffs=None, domain_thre
                 'volume': volumes
             }, window=8)
             derivatives.update(technical_derivatives)
+            # Ajouter également les accélérations (deuxième dérivée approximative)
+            technical_acc = compute_accelerations({
+                'price': prices,
+                'macd': macd,
+                'rsi': rsi,
+                'volume': volumes
+            }, window=8)
+            derivatives.update(technical_acc)
         except Exception as e:
             print(f"⚠️ Erreur calcul dérivées techniques: {e}")
             derivatives['price_slope'] = 0.0
@@ -571,6 +773,14 @@ def get_trading_signal(prices, volumes, domaine, domain_coeffs=None, domain_thre
             derivatives['rsi_slope_rel'] = 0.0
             derivatives['volume_slope'] = 0.0
             derivatives['volume_slope_rel'] = 0.0
+            derivatives['price_acc'] = 0.0
+            derivatives['price_acc_rel'] = 0.0
+            derivatives['macd_acc'] = 0.0
+            derivatives['macd_acc_rel'] = 0.0
+            derivatives['rsi_acc'] = 0.0
+            derivatives['rsi_acc_rel'] = 0.0
+            derivatives['volume_acc'] = 0.0
+            derivatives['volume_acc_rel'] = 0.0
 
     # Ajouter les dérivées financières si symbol fourni
     if symbol and return_derivatives:
@@ -611,6 +821,7 @@ def get_financial_metrics(symbol: str) -> dict:
     }
     
     try:
+        import yfinance as yf  # Import paresseux
         ticker = yf.Ticker(symbol)
         info = ticker.info
         
@@ -763,6 +974,7 @@ def compute_financial_derivatives(symbol: str, lookback_quarters: int = 4) -> di
             pass
 
     try:
+        import yfinance as yf  # Import paresseux
         ticker = yf.Ticker(symbol)
         info = ticker.info
         
@@ -1180,6 +1392,7 @@ def get_cached_data(symbol: str, period: str, max_age_hours: int = CACHE_MAX_AGE
     
     # Télécharger et mettre en cache
     try:
+        import yfinance as yf  # Import paresseux
         # print(f"🌐 Téléchargement {symbol}...")
         data = yf.download(symbol, period=period, progress=False)
         
@@ -1302,6 +1515,7 @@ def download_stock_data(symbols: List[str], period: str) -> Dict[str, Dict[str, 
     missing_symbols = [s for s in clean_symbols if s not in valid_data]
     
     if missing_symbols:
+        import yfinance as yf  # Import paresseux - chargé seulement si téléchargement nécessaire
         # Traitement par batch pour optimiser
         batch_size = 50  # Réduit pour éviter timeouts
         for i in range(0, len(missing_symbols), batch_size):
