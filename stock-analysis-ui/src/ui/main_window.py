@@ -45,7 +45,10 @@ class AnalysisThread(QThread):
             def custom_print(*args, **kwargs):
                 message = ' '.join(str(arg) for arg in args)
                 self.progress.emit(message)
-                original_print(*args, **kwargs)
+                # Force flush to keep console output visible when running UI from a terminal
+                kwargs_with_flush = dict(kwargs)
+                kwargs_with_flush.setdefault('flush', True)
+                original_print(*args, **kwargs_with_flush)
 
             builtins.print = custom_print
 
@@ -90,7 +93,10 @@ class DownloadThread(QThread):
             def custom_print(*args, **kwargs):
                 message = ' '.join(str(arg) for arg in args)
                 self.progress.emit(message)
-                original_print(*args, **kwargs)
+                # Force flush to keep console output visible when running UI from a terminal
+                kwargs_with_flush = dict(kwargs)
+                kwargs_with_flush.setdefault('flush', True)
+                original_print(*args, **kwargs_with_flush)
 
             import builtins
             builtins.print = custom_print
@@ -768,14 +774,30 @@ class MainWindow(QMainWindow):
                 prices = stock_data['Close']
                 volumes = stock_data['Volume']
 
+                row = next((r for r in filtered if r.get('Symbole') == sym), {})
+                score_val = row.get('Score')
+                precomp = {
+                    'signal': row.get('Signal'),
+                    'last_price': row.get('Prix'),
+                    'trend': row.get('Tendance'),
+                    'last_rsi': row.get('RSI'),
+                    'volume_moyen': row.get('Volume moyen'),
+                    'score': score_val,
+                    'domaine': row.get('Domaine'),
+                    'cap_range': row.get('CapRange'),
+                }
+
                 fig = Figure(figsize=(10, 5))
                 ax = fig.add_subplot(111)
                 show_xaxis = True if i == len(filtered_symbols) - 1 else False
                 try:
-                    plot_unified_chart(sym, prices, volumes, ax, show_xaxis=show_xaxis)
+                    plot_unified_chart(sym, prices, volumes, ax, show_xaxis=show_xaxis, score_override=score_val, precomputed=precomp)
                 except Exception:
                     ax.plot(prices.index, prices.values)
-                    ax.set_title(sym)
+                    if isinstance(score_val, (int, float)):
+                        ax.set_title(f"{sym} | Score: {score_val:.2f}")
+                    else:
+                        ax.set_title(sym)
 
                 canvas = FigureCanvas(fig)
                 canvas.setMinimumHeight(240)
@@ -980,14 +1002,31 @@ class MainWindow(QMainWindow):
                         prices = stock_data['Close']
                         volumes = stock_data['Volume']
 
+                        # Prélever les données pré-calculées (table ou item courant)
+                        pre_row = next((r for r in self.current_results if r.get('Symbole') == sym), s if isinstance(s, dict) else {})
+                        score_val = pre_row.get('Score')
+                        precomp = {
+                            'signal': pre_row.get('Signal'),
+                            'last_price': pre_row.get('Prix'),
+                            'trend': pre_row.get('Tendance'),
+                            'last_rsi': pre_row.get('RSI'),
+                            'volume_moyen': pre_row.get('Volume moyen'),
+                            'score': score_val,
+                            'domaine': pre_row.get('Domaine'),
+                            'cap_range': pre_row.get('CapRange'),
+                        }
+
                         fig = Figure(figsize=(10, 5))
                         ax = fig.add_subplot(111)
                         show_xaxis = True
                         try:
-                            plot_unified_chart(sym, prices, volumes, ax, show_xaxis=show_xaxis)
+                            plot_unified_chart(sym, prices, volumes, ax, show_xaxis=show_xaxis, score_override=score_val, precomputed=precomp)
                         except Exception:
                             ax.plot(prices.index, prices.values)
-                            ax.set_title(sym)
+                            if isinstance(score_val, (int, float)):
+                                ax.set_title(f"{sym} | Score: {score_val:.2f}")
+                            else:
+                                ax.set_title(sym)
 
                         # Add trade markers based on events déjà calculés par le backtest
                         events = events_map.get(sym, [])

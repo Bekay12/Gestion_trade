@@ -20,6 +20,13 @@ from scipy.stats import qmc
 import warnings
 warnings.filterwarnings("ignore")
 
+# CMA-ES (optionnel): accélère la recherche en haute dimension si installé
+try:
+    import cma
+    CMA_AVAILABLE = True
+except ImportError:
+    CMA_AVAILABLE = False
+
 # Import du gestionnaire de symboles SQLite
 try:
     from symbol_manager import (
@@ -500,6 +507,69 @@ class HybridOptimizer:
 
         return best_params, best_score
 
+    def cma_es_optimization(self, lhs_samples=1000, top_k=5, max_generations=20, pop_size=None):
+        """CMA-ES avec warm-start LHS. Nécessite le package 'cma'."""
+        if not CMA_AVAILABLE:
+            print("⚠️ CMA-ES indisponible (package 'cma' manquant). Fallback LHS.")
+            return self.latin_hypercube_sampling(lhs_samples)
+
+        dim = len(self.bounds)
+        l_bounds = np.array([b[0] for b in self.bounds], dtype=float)
+        u_bounds = np.array([b[1] for b in self.bounds], dtype=float)
+
+        # 1) Warm-start via LHS
+        lhs_samples = max(lhs_samples, top_k)
+        print(f"🚀 CMA-ES warm-start: LHS {lhs_samples} échantillons, top-{top_k} pour initialiser")
+        sampler = qmc.LatinHypercube(d=dim)
+        samples = sampler.random(n=lhs_samples)
+        scaled = qmc.scale(samples, l_bounds, u_bounds)
+        scaled = np.array([self.round_params(s) for s in scaled])
+
+        scores = []
+        for s in scaled:
+            scores.append(self.evaluate_config(s))
+        scores = np.array(scores)
+        best_indices = np.argsort(scores)[::-1][:top_k]
+        best_candidates = scaled[best_indices]
+        best_scores = scores[best_indices]
+
+        x0 = best_candidates[0]
+        spread = (u_bounds - l_bounds)
+        sigma = max(1e-3, float(np.median(spread) * 0.15))
+        pop_size = pop_size or int(4 + 3 * np.log(dim))
+
+        print(f"   CMA-ES init score={best_scores[0]:.3f}, sigma={sigma:.4f}, pop_size={pop_size}")
+        es = cma.CMAEvolutionStrategy(x0.tolist(), sigma, {
+            'bounds': [l_bounds.tolist(), u_bounds.tolist()],
+            'popsize': pop_size,
+            'maxiter': max_generations,
+            'verb_disp': 0,
+        })
+
+        best_params = x0
+        best_score = best_scores[0]
+
+        with tqdm(total=max_generations, desc="🌌 CMA-ES", unit="gen") as pbar:
+            for _ in range(max_generations):
+                candidates = es.ask()
+                fitness = []
+                for c in candidates:
+                    c_arr = np.array(c, dtype=float)
+                    c_arr = np.clip(c_arr, l_bounds, u_bounds)
+                    c_arr = self.round_params(c_arr)
+                    score = self.evaluate_config(c_arr)
+                    fitness.append(-score)  # cma minimise
+                    if score > best_score:
+                        best_score = score
+                        best_params = c_arr.copy()
+                es.tell(candidates, fitness)
+                pbar.set_postfix({'Meilleur': f"{best_score:.3f}", 'Trades': self.meilleur_trades})
+                pbar.update(1)
+                if es.stop():
+                    break
+
+        return best_params, best_score
+
     def particle_swarm_optimization(self, n_particles=30, max_iterations=50):
         """Optimisation par essaim particulaire (PSO) avec arrondi"""
         print(f"🐝 Particle Swarm Optimization (particles={n_particles}, iter={max_iterations}, précision={self.precision})")
@@ -618,7 +688,8 @@ def optimize_sector_coefficients_hybrid(
     - 'differential': Évolution différentielle  
     - 'pso': Particle Swarm Optimization
     - 'lhs': Latin Hypercube Sampling
-    - 'hybrid': Combine plusieurs méthodes
+    - 'cma': CMA-ES avec warm-start LHS
+    - 'hybrid': Combine plusieurs méthodes (LHS + CMA-ES + autres)
     
     precision: Nombre de décimales pour les paramètres (1, 2, ou 3)
     cap_range: Segment de capitalisation associé au secteur
@@ -795,11 +866,19 @@ def optimize_sector_coefficients_hybrid(
         params_pso, score_pso = optimizer.particle_swarm_optimization(n_particles, max_iter)
         results.append(('PSO', params_pso, score_pso))
 
-    if strategy == 'hybrid' or strategy == 'lhs':
-        # Latin Hypercube Sampling - 🔧 Utiliser pleinement le budget
-        n_samples = min(500, adjusted_budget // 2)  # Max 500 au lieu de 200
-        params_lhs, score_lhs = optimizer.latin_hypercube_sampling(n_samples)
+    # LHS toujours utilisé comme warm-start pour CMA ou en direct
+    if strategy in ('hybrid', 'lhs', 'cma'):
+        lhs_budget = max(200, min(3000, (3/2)*adjusted_budget))
+        params_lhs, score_lhs = optimizer.latin_hypercube_sampling(lhs_budget)
         results.append(('Latin Hypercube', params_lhs, score_lhs))
+
+    if strategy in ('hybrid', 'cma'):
+        lhs_samples = max(500, min(3000, adjusted_budget))
+        top_k = 8
+        max_gen = 25
+        pop_size = None  # laisse CMA choisir
+        params_cma, score_cma = optimizer.cma_es_optimization(lhs_samples=lhs_samples, top_k=top_k, max_generations=max_gen, pop_size=pop_size)
+        results.append(('CMA-ES', params_cma, score_cma))
 
     # Sélection du meilleur résultat
     best_method, best_params, best_score = max(results, key=lambda x: x[2])
@@ -841,10 +920,10 @@ def optimize_sector_coefficients_hybrid(
     if use_price_features and len(best_params) >= 24:
         use_ps = int(round(np.clip(best_params[18], 0.0, 1.0)))
         use_pa = int(round(np.clip(best_params[19], 0.0, 1.0)))
-        a_ps = float(np.clip(round(best_params[20], precision), 0.0, 3.0))
-        a_pa = float(np.clip(round(best_params[21], precision), 0.0, 3.0))
-        th_ps = float(np.clip(round(best_params[22], precision), -0.05, 0.05))
-        th_pa = float(np.clip(round(best_params[23], precision), -0.05, 0.05))
+        a_ps = float(np.clip(round(best_params[20], precision), -1.0, 3.0))
+        a_pa = float(np.clip(round(best_params[21], precision), -1.0, 3.0))
+        th_ps = float(np.clip(round(best_params[22], precision), -0.15, 0.15))
+        th_pa = float(np.clip(round(best_params[23], precision), -0.15, 0.15))
         extra_params = {
             'use_price_slope': use_ps,
             'use_price_acc': use_pa,
@@ -1202,9 +1281,9 @@ if __name__ == "__main__":
 
     # Paramètres d'optimisation
     print("\n3️⃣  Configuration de l'optimisation:")
-    search_strategies = ['hybrid', 'differential', 'genetic', 'pso', 'lhs']
+    search_strategies = ['hybrid', 'differential', 'genetic', 'pso', 'lhs', 'cma']
     
-    strategy = input("   Stratégie ('hybrid', 'differential', 'genetic', 'pso', 'lhs') : ").strip().lower()
+    strategy = input("   Stratégie ('hybrid', 'differential', 'genetic', 'pso', 'lhs', 'cma') : ").strip().lower()
     i=0
     while (strategy not in search_strategies) and i<3:
         strategy = input("   Stratégie invalide. Choisir parmi ('hybrid', 'differential', 'genetic', 'pso', 'lhs') : ").strip().lower()

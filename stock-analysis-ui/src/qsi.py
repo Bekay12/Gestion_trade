@@ -1622,8 +1622,14 @@ def download_stock_data(symbols: List[str], period: str) -> Dict[str, Dict[str, 
     
     return valid_data
 
-def plot_unified_chart(symbol, prices, volumes, ax, show_xaxis=False):
-    """Trace un graphique unifié avec prix, MACD et RSI intégré"""
+def plot_unified_chart(symbol, prices, volumes, ax, show_xaxis=False, score_override=None, precomputed=None):
+    """Trace un graphique unifié avec prix, MACD et RSI intégré.
+
+    score_override: force l'affichage du score (ex: celui du tableau UI).
+    precomputed: dict optionnel avec les clés 'signal', 'last_price', 'trend',
+    'last_rsi', 'volume_moyen', 'score', 'domaine', 'cap_range' pour éviter
+    de recalculer et garantir cohérence avec la table.
+    """
     # Vérification du format des prix
     if isinstance(prices, pd.DataFrame):
         prices = prices.squeeze()
@@ -1694,9 +1700,24 @@ def plot_unified_chart(symbol, prices, volumes, ax, show_xaxis=False):
     lines2, labels2 = ax2.get_legend_handles_labels()
     ax.legend(lines1 + lines2, labels1 + labels2, loc='best', fontsize=9)
 
-    # Récupérer le domaine (secteur) - utiliser cache en mode offline
+    # Préférence pour les données pré-calculées (cohérence UI/tableau)
+    signal = last_price = trend = last_rsi = volume_moyen = score = None
+    domaine_override = cap_range_override = None
+    if precomputed:
+        signal = precomputed.get('signal')
+        last_price = precomputed.get('last_price')
+        trend = precomputed.get('trend')
+        last_rsi = precomputed.get('last_rsi')
+        volume_moyen = precomputed.get('volume_moyen')
+        score = precomputed.get('score')
+        domaine_override = precomputed.get('domaine')
+        cap_range_override = precomputed.get('cap_range')
+
+    # Récupérer le domaine (secteur) - utiliser cache en mode offline, sauf override
     try:
-        if OFFLINE_MODE:
+        if domaine_override:
+            domaine = domaine_override
+        elif OFFLINE_MODE:
             cache_file = CACHE_DIR / f"{symbol}_financial.pkl"
             if cache_file.exists():
                 fin_cache = pd.read_pickle(cache_file)
@@ -1709,11 +1730,13 @@ def plot_unified_chart(symbol, prices, volumes, ax, show_xaxis=False):
     except Exception:
         domaine = "Inconnu"
 
-    cap_range = get_cap_range_for_symbol(symbol)
+    cap_range = cap_range_override if cap_range_override else get_cap_range_for_symbol(symbol)
 
     # Ajout des signaux trading (ne pas demander les dérivées ici — elles seront consommées par l'UI)
     try:
-        signal, last_price, trend, last_rsi, volume_moyen, score, _ = get_trading_signal(prices, volumes, domaine=domaine, cap_range=cap_range)
+        need_calc = any(v is None for v in (signal, last_price, trend, last_rsi, volume_moyen, score))
+        if need_calc:
+            signal, last_price, trend, last_rsi, volume_moyen, score, _ = get_trading_signal(prices, volumes, domaine=domaine, cap_range=cap_range)
     except Exception as e:
         print(f"⚠️ plot_unified_chart: Erreur get_trading_signal pour {symbol}: {e}")
         # Fallback: calculer manuellement les valeurs minimales
@@ -1735,13 +1758,18 @@ def plot_unified_chart(symbol, prices, volumes, ax, show_xaxis=False):
         progression = 0.0
 
     if last_price is not None:
-        trend_symbol = "Haussière" if trend else "Baissière"
+        if isinstance(trend, str):
+            trend_bool = trend.lower().startswith('haus')
+        else:
+            trend_bool = bool(trend)
+        trend_symbol = "Haussière" if trend_bool else "Baissière"
         rsi_status = "SURACH" if last_rsi > 70 else "SURVENTE" if last_rsi < 30 else "NEUTRE"
         signal_color = 'green' if signal == "ACHAT" else 'red' if signal == "VENTE" else 'black'
 
         # Compose a compact derivative summary for the title
+        score_display = score_override if score_override is not None else score
         title = (
-            f"{symbol} | Prix: {last_price:.2f} | Signal: {signal} ({score}) | "
+            f"{symbol} | Prix: {last_price:.2f} | Signal: {signal} ({score_display}) | "
             f"Tendance: {trend_symbol} | RSI: {last_rsi:.1f} ({rsi_status}) | "
             f"Progression: {progression:+.2f}% | Vol. moyen: {volume_moyen:,.0f} units"
         )
