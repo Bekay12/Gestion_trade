@@ -488,6 +488,17 @@ class MainWindow(QMainWindow):
                 ]
                 save_symbols_to_txt(symbols_main, filename)
                 
+                # 🔧 Synchroniser avec SQLite après sauvegarde txt
+                if SYMBOL_MANAGER_AVAILABLE:
+                    try:
+                        from symbol_manager import sync_txt_to_sqlite
+                        # Déterminer le type de liste pour SQLite
+                        list_type = 'personal' if 'mes_symbol' in filename.lower() else 'popular'
+                        sync_txt_to_sqlite(filename, list_type=list_type)
+                        print(f"✅ SQLite synchronisé pour {filename}")
+                    except Exception as e:
+                        print(f"⚠️ Erreur lors de la sync SQLite: {e}")
+                
                 if secondary_list:
                     filename_secondary = "popular_symbols.txt"
                     symbols_secondary = [
@@ -497,6 +508,15 @@ class MainWindow(QMainWindow):
                         for i in range(secondary_list.count())
                     ]
                     save_symbols_to_txt(symbols_secondary, filename_secondary)
+                    
+                    # 🔧 Synchroniser la liste secondaire avec SQLite
+                    if SYMBOL_MANAGER_AVAILABLE:
+                        try:
+                            from symbol_manager import sync_txt_to_sqlite
+                            sync_txt_to_sqlite(filename_secondary, list_type='popular')
+                            print(f"✅ SQLite synchronisé pour {filename_secondary}")
+                        except Exception as e:
+                            print(f"⚠️ Erreur lors de la sync SQLite: {e}")
             
             except Exception:
                 pass
@@ -536,6 +556,17 @@ class MainWindow(QMainWindow):
             from qsi import save_symbols_to_txt
             symbols = [list_widget.item(i).data(Qt.UserRole) if list_widget.item(i).data(Qt.UserRole) is not None else list_widget.item(i).text() for i in range(list_widget.count())]
             save_symbols_to_txt(symbols, filename)
+            
+            # 🔧 Synchroniser avec SQLite après suppression
+            if SYMBOL_MANAGER_AVAILABLE:
+                try:
+                    from symbol_manager import sync_txt_to_sqlite
+                    # Déterminer le type de liste pour SQLite
+                    list_type = 'personal' if 'mes_symbol' in filename.lower() else 'popular'
+                    sync_txt_to_sqlite(filename, list_type=list_type)
+                    print(f"✅ SQLite synchronisé (suppression) pour {filename}")
+                except Exception as e:
+                    print(f"⚠️ Erreur lors de la sync SQLite: {e}")
         except Exception:
             pass
 
