@@ -9,29 +9,51 @@ import pandas as pd
 import numpy as np
 import ta
 import time
-import csv
 from matplotlib import dates as mdates
 import logging
 import warnings
-import requests
 from pathlib import Path
 from datetime import datetime, timedelta
 from typing import List, Dict, Union
 from concurrent.futures import ThreadPoolExecutor
 import sys
-from pathlib import Path
 import yfinance as yf
 sys.path.append("C:\\Users\\berti\\Desktop\\Mes documents\\Gestion_trade\\stock-analysis-ui\\src\\trading_c_acceleration")
 from qsi_optimized import backtest_signals, extract_best_parameters, backtest_signals_with_events
+
+# Import config et cache utilities
+try:
+    from config import DATA_CACHE_DIR, get_pickle_cache, save_pickle_cache, CACHE_DIR
+except ImportError:
+    print("⚠️ config non disponible, cache desactive")
+    get_pickle_cache = None
+    save_pickle_cache = None
+    DATA_CACHE_DIR = None
+    CACHE_DIR = None
 
 # Import du gestionnaire de symboles
 try:
     from symbol_manager import (
         init_symbols_table, sync_txt_to_sqlite, 
-        get_symbols_by_list_type, get_symbols_by_sector_and_cap
+        get_symbols_by_list_type, get_symbols_by_sector_and_cap,
+        classify_cap_range
     )
 except ImportError:
     print("⚠️ symbol_manager non disponible, utilisation de la méthode txt")
+    # Fallback: define locally if symbol_manager not available
+    def classify_cap_range(market_cap_b):
+        try:
+            if market_cap_b is None or market_cap_b <= 0:
+                return 'Unknown'
+            if market_cap_b < 2.0:
+                return 'Small'
+            if market_cap_b < 10.0:
+                return 'Mid'
+            if market_cap_b < 100.0:
+                return 'Large'
+            return 'Mega'
+        except Exception:
+            return 'Unknown'
 
 # Supprimer les avertissements FutureWarning de yfinance
 warnings.filterwarnings("ignore", category=FutureWarning)
@@ -144,6 +166,18 @@ from typing import Tuple, Dict, Union, List
 # Extras for parameters beyond the legacy 8 coeffs/8 thresholds.
 # Always includes price-related params when available; defaults otherwise.
 BEST_PARAM_EXTRAS: Dict[str, Dict[str, Union[int, float]]] = {}
+
+# Cache léger des dérivées de prix par symbole et longueur de série
+# Clé: (symbol, len(prices)) → valeurs: {'price_slope_rel': float, 'price_acc_rel': float}
+DERIV_CACHE: Dict[tuple, Dict[str, float]] = {}
+
+# Cache des indicateurs techniques (instantanés scalaires) par symbole et longueur
+# Stocke uniquement les dernières valeurs nécessaires au scoring pour éviter recomputations
+# Clé: (symbol, len(prices)) → dict avec clés: last_close, last_ema20, last_ema50, last_ema200,
+# last_rsi, prev_rsi, delta_rsi, last_macd, prev_macd, last_signal, prev_signal,
+# variation_30j, variation_180j, volume_mean, volume_std, current_volume,
+# last_bb_percent, last_adx, last_ichimoku_base, last_ichimoku_conversion
+TA_CACHE: Dict[tuple, Dict[str, float]] = {}
 
 def extract_best_parameters(db_path: str = 'signaux/optimization_hist.db') -> Dict[str, Tuple[Tuple[float, ...], Tuple[float, ...], Tuple[float, float]]]:
     """
@@ -286,9 +320,7 @@ def extract_best_parameters(db_path: str = 'signaux/optimization_hist.db') -> Di
 
 def get_trading_signal(prices, volumes, domaine, domain_coeffs=None, domain_thresholds=None,
                       variation_seuil=-20, volume_seuil=100000, return_derivatives: bool = False, symbol: str = None,
-                      cap_range: str = None, price_extras: Dict[str, Union[int, float]] = None,
-                      fundamentals_extras: Dict[str, Union[int, float]] = None,
-                      fundamentals_metrics: Dict[str, float] = None):
+                      cap_range: str = None, price_extras: Dict[str, Union[int, float]] = None):
     """Détermine les signaux de trading avec validation des données
     
     Args:
@@ -321,66 +353,113 @@ def get_trading_signal(prices, volumes, domaine, domain_coeffs=None, domain_thre
     if len(prices) < 50:
         return "Données insuffisantes", None, None, None, None, None, derivatives
 
-    # Calcul des indicateurs
-    macd, signal_line = calculate_macd(prices)
-    rsi = ta.momentum.RSIIndicator(close=prices, window=17).rsi()
-    ema20 = prices.ewm(span=20, adjust=False).mean()
-    ema50 = prices.ewm(span=50, adjust=False).mean()
-    ema200 = prices.ewm(span=200, adjust=False).mean() if len(prices) >= 200 else ema50
-
-    # Validation des derniers points
-    if len(macd) < 2 or len(rsi) < 1:
-        return "Données récentes manquantes", None, None, None, None, None, derivatives
-
-    # CORRECTION 1: Conversion explicite en valeurs scalaires
+    # Snapshot TA avec cache
+    # 🚀 Clé stable: (symbol, last_close, last_volume, prices_length_trend)
+    # Cette clé reste valide même si l'historique change légèrement
     last_close = float(prices.iloc[-1])
-    last_ema20 = float(ema20.iloc[-1])
-    last_ema50 = float(ema50.iloc[-1])
-    last_ema200 = float(ema200.iloc[-1]) if len(prices) >= 200 else last_ema50
-    last_rsi = float(rsi.iloc[-1])
-    last_macd = float(macd.iloc[-1])
-    prev_macd = float(macd.iloc[-2])
-    last_signal = float(signal_line.iloc[-1])
-    prev_signal = float(signal_line.iloc[-2])
-    prev_rsi = float(rsi.iloc[-2])
-    delta_rsi = last_rsi - prev_rsi
-
-    # Performance long terme
-    variation_30j = ((last_close - float(prices.iloc[-30])) / float(prices.iloc[-30]) * 100) if len(prices) >= 30 else np.nan
-    variation_180j = ((last_close - float(prices.iloc[-180])) / float(prices.iloc[-180]) * 100) if len(prices) >= 180 else np.nan
-
-    # Calcul du volume moyen sur 30 jours
-    if len(volumes) >= 30:
-        volume_mean = float(volumes.rolling(window=30).mean().iloc[-1])
-        volume_std = float(volumes.rolling(window=30).std().iloc[-1])
+    last_volume = float(volumes.iloc[-1]) if len(volumes) > 0 else 0
+    prices_len = int(len(prices))
+    cache_key = (str(symbol), round(last_close, 2), round(last_volume, -2), prices_len) if symbol else None
+    snap = TA_CACHE.get(cache_key) if cache_key is not None else None
+    if snap is not None:
+        last_close = float(snap.get('last_close', float(prices.iloc[-1])))
+        last_ema20 = float(snap.get('last_ema20', float(prices.ewm(span=20, adjust=False).mean().iloc[-1])))
+        last_ema50 = float(snap.get('last_ema50', float(prices.ewm(span=50, adjust=False).mean().iloc[-1])))
+        last_ema200 = float(snap.get('last_ema200', last_ema50))
+        last_rsi = float(snap.get('last_rsi', 50.0))
+        prev_rsi = float(snap.get('prev_rsi', last_rsi))
+        delta_rsi = float(snap.get('delta_rsi', last_rsi - prev_rsi))
+        last_macd = float(snap.get('last_macd', 0.0))
+        prev_macd = float(snap.get('prev_macd', 0.0))
+        last_signal = float(snap.get('last_signal', 0.0))
+        prev_signal = float(snap.get('prev_signal', 0.0))
+        variation_30j = float(snap.get('variation_30j', np.nan))
+        variation_180j = float(snap.get('variation_180j', np.nan))
+        volume_mean = float(snap.get('volume_mean', 0.0))
+        volume_std = float(snap.get('volume_std', 0.0))
+        current_volume = float(snap.get('current_volume', float(volumes.iloc[-1])))
+        last_bb_percent = float(snap.get('last_bb_percent', 0.5))
+        last_adx = float(snap.get('last_adx', 0.0))
+        last_ichimoku_base = float(snap.get('last_ichimoku_base', last_close))
+        last_ichimoku_conversion = float(snap.get('last_ichimoku_conversion', last_close))
     else:
-        volume_mean = float(volumes.mean()) if len(volumes) > 0 else 0.0
-        volume_std = 0.0
+        # Calcul initial puis mise en cache
+        macd, signal_line = calculate_macd(prices)
+        rsi = ta.momentum.RSIIndicator(close=prices, window=17).rsi()
+        ema20 = prices.ewm(span=20, adjust=False).mean()
+        ema50 = prices.ewm(span=50, adjust=False).mean()
+        ema200 = prices.ewm(span=200, adjust=False).mean() if len(prices) >= 200 else ema50
 
-    current_volume = float(volumes.iloc[-1])
+        # Validation minimale
+        if len(macd) < 2 or len(rsi) < 1:
+            return "Données récentes manquantes", None, None, None, None, None, derivatives
 
-    # Nouveaux indicateurs pour confirmation
-    from ta.volatility import BollingerBands
-    from ta.trend import ADXIndicator, IchimokuIndicator
+        last_close = float(prices.iloc[-1])
+        last_ema20 = float(ema20.iloc[-1])
+        last_ema50 = float(ema50.iloc[-1])
+        last_ema200 = float(ema200.iloc[-1]) if len(prices) >= 200 else last_ema50
+        last_rsi = float(rsi.iloc[-1])
+        prev_rsi = float(rsi.iloc[-2])
+        delta_rsi = last_rsi - prev_rsi
+        last_macd = float(macd.iloc[-1])
+        prev_macd = float(macd.iloc[-2])
+        last_signal = float(signal_line.iloc[-1])
+        prev_signal = float(signal_line.iloc[-2])
 
-    # Bollinger Bands
-    bb = BollingerBands(close=prices, window=20, window_dev=2)
-    bb_upper = bb.bollinger_hband()
-    bb_lower = bb.bollinger_lband()
-    bb_percent = (prices - bb_lower) / (bb_upper - bb_lower)
-    last_bb_percent = float(bb_percent.iloc[-1]) if len(bb_percent) > 0 else 0.5
+        variation_30j = ((last_close - float(prices.iloc[-30])) / float(prices.iloc[-30]) * 100) if len(prices) >= 30 else np.nan
+        variation_180j = ((last_close - float(prices.iloc[-180])) / float(prices.iloc[-180]) * 100) if len(prices) >= 180 else np.nan
 
-    # ADX (Force de la tendance)
-    adx_indicator = ADXIndicator(high=prices, low=prices, close=prices, window=14)
-    adx = adx_indicator.adx()
-    last_adx = float(adx.iloc[-1]) if len(adx) > 0 else 0
+        if len(volumes) >= 30:
+            volume_mean = float(volumes.rolling(window=30).mean().iloc[-1])
+            volume_std = float(volumes.rolling(window=30).std().iloc[-1])
+        else:
+            volume_mean = float(volumes.mean()) if len(volumes) > 0 else 0.0
+            volume_std = 0.0
+        current_volume = float(volumes.iloc[-1])
 
-    # Ichimoku Cloud (Tendance globale)
-    ichimoku = IchimokuIndicator(high=prices, low=prices, window1=9, window2=26, window3=52)
-    ichimoku_base = ichimoku.ichimoku_base_line()
-    ichimoku_conversion = ichimoku.ichimoku_conversion_line()
-    last_ichimoku_base = float(ichimoku_base.iloc[-1]) if len(ichimoku_base) > 0 else last_close
-    last_ichimoku_conversion = float(ichimoku_conversion.iloc[-1]) if len(ichimoku_conversion) > 0 else last_close
+        from ta.volatility import BollingerBands
+        from ta.trend import ADXIndicator, IchimokuIndicator
+
+        bb = BollingerBands(close=prices, window=20, window_dev=2)
+        bb_upper = bb.bollinger_hband()
+        bb_lower = bb.bollinger_lband()
+        bb_percent = (prices - bb_lower) / (bb_upper - bb_lower)
+        last_bb_percent = float(bb_percent.iloc[-1]) if len(bb_percent) > 0 else 0.5
+
+        adx_indicator = ADXIndicator(high=prices, low=prices, close=prices, window=14)
+        adx = adx_indicator.adx()
+        last_adx = float(adx.iloc[-1]) if len(adx) > 0 else 0
+
+        ichimoku = IchimokuIndicator(high=prices, low=prices, window1=9, window2=26, window3=52)
+        ichimoku_base = ichimoku.ichimoku_base_line()
+        ichimoku_conversion = ichimoku.ichimoku_conversion_line()
+        last_ichimoku_base = float(ichimoku_base.iloc[-1]) if len(ichimoku_base) > 0 else last_close
+        last_ichimoku_conversion = float(ichimoku_conversion.iloc[-1]) if len(ichimoku_conversion) > 0 else last_close
+
+        # Mise en cache
+        if cache_key is not None:
+            TA_CACHE[cache_key] = {
+                'last_close': last_close,
+                'last_ema20': last_ema20,
+                'last_ema50': last_ema50,
+                'last_ema200': last_ema200,
+                'last_rsi': last_rsi,
+                'prev_rsi': prev_rsi,
+                'delta_rsi': delta_rsi,
+                'last_macd': last_macd,
+                'prev_macd': prev_macd,
+                'last_signal': last_signal,
+                'prev_signal': prev_signal,
+                'variation_30j': float(variation_30j) if not np.isnan(variation_30j) else np.nan,
+                'variation_180j': float(variation_180j) if not np.isnan(variation_180j) else np.nan,
+                'volume_mean': volume_mean,
+                'volume_std': volume_std,
+                'current_volume': current_volume,
+                'last_bb_percent': last_bb_percent,
+                'last_adx': last_adx,
+                'last_ichimoku_base': last_ichimoku_base,
+                'last_ichimoku_conversion': last_ichimoku_conversion,
+            }
 
     # Conditions d'achat optimisées
     is_macd_cross_up = prev_macd < prev_signal and last_macd > last_signal
@@ -394,7 +473,6 @@ def get_trading_signal(prices, volumes, domaine, domain_coeffs=None, domain_thre
 
     # RSI dynamique
     rsi_cross_up = prev_rsi < 30 and last_rsi >= 30
-    rsi_cross_mid = prev_rsi < 50 and last_rsi >= 50
     rsi_cross_down = prev_rsi > 65 and last_rsi <= 65
     rsi_ok = last_rsi < 75 and last_rsi > 40
 
@@ -420,10 +498,11 @@ def get_trading_signal(prices, volumes, domaine, domain_coeffs=None, domain_thre
     sharpe = returns.mean() / returns.std() * np.sqrt(252) if returns.std() > 0 else 0
 
     score = 0
-    default_coeffs = (1.75, 1.0, 1.5, 1.25, 1.75, 1.25, 1.0, 1.75)
-    # Seuils individuels pour les 8 features:
-    # 0=RSI_threshold, 1=MACD_threshold, 2=EMA_threshold, 3=Volume_threshold,
-    # 4=ADX_threshold, 5=Ichimoku_threshold, 6=Bollinger_threshold, 7=Score_threshold_global
+    # a3 (RSI cross mid) est gelé à 0.0 pour éviter l'optimisation d'une feature redondante
+    default_coeffs = (1.75, 1.0, 0.0, 1.25, 1.75, 1.25, 1.0, 1.75)
+    # Seuils individuels pour les 8 features (certains gelés / ignorés):
+    # 0=RSI_threshold, 1=MACD_threshold(fixe 0), 2=EMA_threshold(fixe 0), 3=Volume_threshold,
+    # 4=ADX_threshold, 5=Ichimoku_threshold(fixe 0), 6=Bollinger_threshold (fixe 0.5), 7=Score_threshold_global
     default_thresholds = (50.0, 0.0, 0.0, 1.2, 25.0, 0.0, 0.5, 4.20)
     
     best_params = extract_best_parameters()
@@ -463,8 +542,8 @@ def get_trading_signal(prices, volumes, domaine, domain_coeffs=None, domain_thre
     # Décompacter les 8 seuils individuels
     # 0=RSI_threshold, 1=MACD_threshold, 2=EMA_threshold, 3=Volume_threshold,
     # 4=ADX_threshold, 5=Ichimoku_threshold, 6=Bollinger_threshold, 7=Score_global_threshold
-    (rsi_threshold, macd_threshold, ema_threshold, volume_threshold,
-     adx_threshold, ichimoku_threshold, bollinger_threshold, score_threshold) = thresholds
+    (rsi_threshold, _macd_threshold_unused, _ema_threshold_unused, volume_threshold,
+     adx_threshold, _ichimoku_threshold_unused, bollinger_threshold, score_threshold) = thresholds
     
     m1, m2, m3, m4 = 1.0, 1.0, 1.0, 1.0
 
@@ -490,8 +569,6 @@ def get_trading_signal(prices, volumes, domaine, domain_coeffs=None, domain_thre
         score += a1
     if delta_rsi > 3:
         score += m3 * a2
-    if rsi_cross_mid:
-        score += a3
 
     # RSI : Signaux baissiers
     if rsi_cross_down:
@@ -532,7 +609,7 @@ def get_trading_signal(prices, volumes, domaine, domain_coeffs=None, domain_thre
     # Conditions d'achat renforcées
     buy_conditions = (
         (is_macd_cross_up or ema_structure_up) and
-        (rsi_cross_up or rsi_cross_mid) and
+        (rsi_cross_up) and
         (last_rsi < (100 - rsi_threshold)) and
         (last_bb_percent < bollinger_threshold + 0.2) and
         (strong_uptrend or adx_strong_trend) and
@@ -582,20 +659,71 @@ def get_trading_signal(prices, volumes, domaine, domain_coeffs=None, domain_thre
         th_pa = float(extras.get('th_price_acc', 0.0) or 0.0)
 
         if use_ps or use_pa:
-            # Calcul minimal des dérivées nécessaires si pas déjà présentes
-            local_deriv = {}
-            try:
-                local_deriv.update(compute_derivatives({'price': prices}, window=8))
-            except Exception:
-                local_deriv['price_slope_rel'] = 0.0
-            if use_pa:
+            # ⚡ Cache des dérivées de prix par symbole + longueur
+            price_slope_rel = 0.0
+            price_acc_rel = 0.0
+            cache_key = None
+            if symbol:
                 try:
-                    local_deriv.update(compute_accelerations({'price': prices}, window=8))
+                    # 🚀 Même clé stable que TA_CACHE pour cohérence
+                    last_close_deriv = float(prices.iloc[-1])
+                    last_volume_deriv = float(volumes.iloc[-1]) if len(volumes) > 0 else 0
+                    prices_len_deriv = int(len(prices))
+                    cache_key = (str(symbol), round(last_close_deriv, 2), round(last_volume_deriv, -2), prices_len_deriv)
                 except Exception:
-                    local_deriv['price_acc_rel'] = 0.0
+                    cache_key = None
+            cached = DERIV_CACHE.get(cache_key) if cache_key is not None else None
+            if cached is not None:
+                price_slope_rel = float(cached.get('price_slope_rel', 0.0) or 0.0)
+                price_acc_rel = float(cached.get('price_acc_rel', 0.0) or 0.0)
+            else:
+                try:
+                    arr = np.asarray(prices.dropna().values.astype(float)) if isinstance(prices, (pd.Series, pd.DataFrame)) else np.asarray(prices)
+                    n = len(arr)
+                    # slope relatifs (fenêtre 8)
+                    if n >= 2:
+                        k = min(8, n)
+                        y = arr[-k:]
+                        x = np.arange(k, dtype=float)
+                        try:
+                            p = np.polyfit(x, y, 1)
+                            slope = float(p[0])
+                        except Exception:
+                            slope = float(y[-1] - y[-2]) if k >= 2 else 0.0
+                        last = float(arr[-1]) if n > 0 else 0.0
+                        price_slope_rel = float(slope / last) if last != 0 else 0.0
+                    else:
+                        price_slope_rel = 0.0
 
-            price_slope_rel = local_deriv.get('price_slope_rel', 0.0)
-            price_acc_rel = local_deriv.get('price_acc_rel', 0.0)
+                    # acceleration relative (diff de pente sur deux fenêtres adjacentes)
+                    if use_pa and n >= 16:
+                        y_recent = arr[-8:]
+                        x_recent = np.arange(8, dtype=float)
+                        y_prev = arr[-16:-8]
+                        x_prev = np.arange(8, dtype=float)
+                        try:
+                            p_recent = np.polyfit(x_recent, y_recent, 1)
+                            p_prev = np.polyfit(x_prev, y_prev, 1)
+                            slope_recent = float(p_recent[0])
+                            slope_prev = float(p_prev[0])
+                        except Exception:
+                            slope_recent = float(y_recent[-1] - y_recent[-2]) if len(y_recent) >= 2 else 0.0
+                            slope_prev = float(y_prev[-1] - y_prev[-2]) if len(y_prev) >= 2 else 0.0
+                        acc_abs = slope_recent - slope_prev
+                        last = float(arr[-1]) if n > 0 else 0.0
+                        price_acc_rel = float(acc_abs / last) if last != 0 else 0.0
+                    else:
+                        price_acc_rel = 0.0
+                except Exception:
+                    price_slope_rel = 0.0
+                    price_acc_rel = 0.0
+
+                # Stocker en cache
+                if cache_key is not None:
+                    DERIV_CACHE[cache_key] = {
+                        'price_slope_rel': price_slope_rel,
+                        'price_acc_rel': price_acc_rel,
+                    }
 
             if use_ps:
                 if price_slope_rel > th_ps:
@@ -607,49 +735,6 @@ def get_trading_signal(prices, volumes, domaine, domain_coeffs=None, domain_thre
                     score += a_pa
                 else:
                     score -= a_pa
-    except Exception:
-        pass
-
-    # Intégration des métriques fondamentales (optionnelles, activées via flags)
-    try:
-        # Choisir les extras: priorité aux paramètres fournis, sinon DB via BEST_PARAM_EXTRAS
-        fund_extras = fundamentals_extras
-        if fund_extras is None:
-            try:
-                from typing import Any
-                fund_extras = BEST_PARAM_EXTRAS.get(selected_key or domaine, {})
-            except Exception:
-                fund_extras = {}
-        
-        use_fund = int(fund_extras.get('use_fundamentals', 0) or 0)
-        
-        if use_fund and symbol:
-            # Lazy fetch fundamentals once per symbol if not provided
-            try:
-                fund_metrics = fundamentals_metrics
-                if fund_metrics is None:
-                    from fundamentals_cache import get_fundamental_metrics
-                    fund_metrics = get_fundamental_metrics(symbol, use_cache=True)
-                
-                # Scoring pour chaque métrique fondamentale
-                fund_keys = ['rev_growth', 'eps_growth', 'roe', 'fcf_yield', 'de_ratio']
-                fund_coeff_keys = ['a_rev_growth', 'a_eps_growth', 'a_roe', 'a_fcf_yield', 'a_de_ratio']
-                fund_thresh_keys = ['th_rev_growth', 'th_eps_growth', 'th_roe', 'th_fcf_yield', 'th_de_ratio']
-                
-                for metric_key, coeff_key, thresh_key in zip(fund_keys, fund_coeff_keys, fund_thresh_keys):
-                    metric_val = fund_metrics.get(metric_key) if fund_metrics else None
-                    coeff = float(fund_extras.get(coeff_key, 0.0) or 0.0)
-                    thresh = float(fund_extras.get(thresh_key, 0.0) or 0.0)
-                    
-                    if metric_val is not None and coeff != 0:
-                        if metric_val > thresh:
-                            score += coeff
-                        else:
-                            score -= coeff
-            except ImportError:
-                pass  # fundamentals_cache not available, skip
-            except Exception:
-                pass  # Any error in fundamentals scoring, continue
     except Exception:
         pass
 
@@ -748,18 +833,21 @@ def get_trading_signal(prices, volumes, domaine, domain_coeffs=None, domain_thre
     # Calculer les dérivées des indicateurs techniques si demandées
     if return_derivatives:
         try:
+            # Recompute MACD/RSI series on-demand for derivatives
+            macd_series, _sig = calculate_macd(prices)
+            rsi_series = ta.momentum.RSIIndicator(close=prices, window=17).rsi()
             technical_derivatives = compute_derivatives({
                 'price': prices,
-                'macd': macd,
-                'rsi': rsi,
+                'macd': macd_series,
+                'rsi': rsi_series,
                 'volume': volumes
             }, window=8)
             derivatives.update(technical_derivatives)
             # Ajouter également les accélérations (deuxième dérivée approximative)
             technical_acc = compute_accelerations({
                 'price': prices,
-                'macd': macd,
-                'rsi': rsi,
+                'macd': macd_series,
+                'rsi': rsi_series,
                 'volume': volumes
             }, window=8)
             derivatives.update(technical_acc)
@@ -898,8 +986,11 @@ def compute_financial_derivatives(symbol: str, lookback_quarters: int = 4) -> di
         'sector': 'Inconnu'
     }
     
-    # Cache des métriques financières (7 jours)
-    cache_file = CACHE_DIR / f"{symbol}_financial.pkl"
+    # Essayer de charger du cache (7 jours TTL)
+    if get_pickle_cache is not None:
+        cached = get_pickle_cache(symbol, 'financial', ttl_hours=168)
+        if cached is not None and isinstance(cached, dict):
+            return cached
 
     def classify_cap_range(market_cap_b: float) -> str:
         try:
@@ -913,16 +1004,6 @@ def compute_financial_derivatives(symbol: str, lookback_quarters: int = 4) -> di
         except Exception:
             return 'Unknown'
 
-    def _get_cap_range_from_cache() -> str:
-        if cache_file.exists():
-            try:
-                d = pd.read_pickle(cache_file)
-                mc_b = float(d.get('market_cap_val', 0.0) or 0.0)
-                return classify_cap_range(mc_b)
-            except Exception:
-                return 'Unknown'
-        return 'Unknown'
-    
     def _ensure_relative_metrics(d: dict) -> dict:
         """Complète les métriques relatives (yield %) si manquantes depuis un cache ancien."""
         try:
@@ -1052,32 +1133,31 @@ def compute_financial_derivatives(symbol: str, lookback_quarters: int = 4) -> di
 # ===================================================================
 # SEGMENTATION PAR CAPITALISATION
 # ===================================================================
-
-def classify_cap_range_from_market_cap(market_cap_b: float) -> str:
-    """Retourne Small/Mid/Large/Unknown selon la market cap en milliards $."""
-    try:
-        if market_cap_b is None or market_cap_b <= 0:
-            return 'Unknown'
-        if market_cap_b < 2.0:
-            return 'Small'
-        if market_cap_b < 10.0:
-            return 'Mid'
-        if market_cap_b < 100.0:
-            return 'Large'
-        return 'Mega'
-    except Exception:
-        return 'Unknown'
+# Note: classify_cap_range() est maintenant dans symbol_manager.py
+# Les appels à classify_cap_range_from_market_cap() sont obsoletes; utiliser classify_cap_range() a la place
 
 def get_cap_range_for_symbol(symbol: str) -> str:
     """Tente de récupérer le range de market cap via le cache financier.
     Ne déclenche pas de téléchargement lourd; se contente du cache, sinon Unknown.
     """
     try:
-        cache_file = CACHE_DIR / f"{symbol}_financial.pkl"
-        if cache_file.exists():
-            d = pd.read_pickle(cache_file)
-            mc_b = float(d.get('market_cap_val', 0.0) or 0.0)
-            return classify_cap_range_from_market_cap(mc_b)
+        if get_pickle_cache is not None:
+            d = get_pickle_cache(symbol, 'financial', ttl_hours=24*365)  # Accepte même cache très ancien
+            if d is not None and isinstance(d, dict):
+                mc_b = float(d.get('market_cap_val', 0.0) or 0.0)
+                # Utiliser la fonction consolidée de symbol_manager si disponible
+                try:
+                    from symbol_manager import classify_cap_range
+                    return classify_cap_range(mc_b)
+                except Exception:
+                    # Fallback local
+                    if mc_b <= 0:
+                        return 'Unknown'
+                    if mc_b < 2.0:
+                        return 'Small'
+                    if mc_b < 10.0:
+                        return 'Mid'
+                    return 'Large'
     except Exception:
         pass
     return 'Unknown'
@@ -1092,24 +1172,15 @@ def get_consensus(symbol: str) -> dict:
     avec cache (7 jours). Retourne un dict:
       { 'label': 'Achat/Neutre/Vente', 'mean': float|None }
     """
-    cache_file = CACHE_DIR / f"{symbol}_consensus.pkl"
-    # OFFLINE -> cache uniquement
+    # Essayer de charger du cache (7 jours = 168 heures)
+    if get_pickle_cache is not None:
+        cached = get_pickle_cache(symbol, 'consensus', ttl_hours=168)
+        if cached is not None:
+            return cached
+    
+    # En mode offline, retourner neutre si pas de cache
     if OFFLINE_MODE:
-        if cache_file.exists():
-            try:
-                return pd.read_pickle(cache_file)
-            except Exception:
-                pass
         return { 'label': 'Neutre', 'mean': None }
-
-    # Cache frais 7 jours
-    if cache_file.exists():
-        try:
-            age_hours = (datetime.now() - datetime.fromtimestamp(cache_file.stat().st_mtime)).total_seconds() / 3600
-            if age_hours <= 168:
-                return pd.read_pickle(cache_file)
-        except Exception:
-            pass
 
     label = 'Neutre'
     mean = None
@@ -1128,10 +1199,11 @@ def get_consensus(symbol: str) -> dict:
         pass
 
     result = { 'label': label, 'mean': float(mean) if mean is not None else None }
-    try:
-        pd.to_pickle(result, cache_file)
-    except Exception:
-        pass
+    
+    # Sauvegarder dans le cache
+    if save_pickle_cache is not None:
+        save_pickle_cache(result, symbol, 'consensus')
+    
     return result
 
 def compute_simple_sentiment(prices: pd.Series) -> str:
@@ -1718,10 +1790,13 @@ def plot_unified_chart(symbol, prices, volumes, ax, show_xaxis=False, score_over
         if domaine_override:
             domaine = domaine_override
         elif OFFLINE_MODE:
-            cache_file = CACHE_DIR / f"{symbol}_financial.pkl"
-            if cache_file.exists():
-                fin_cache = pd.read_pickle(cache_file)
-                domaine = fin_cache.get('sector', 'Inconnu')
+            # Charger du cache financier
+            if get_pickle_cache is not None:
+                fin_cache = get_pickle_cache(symbol, 'financial', ttl_hours=24*365)  # Accepte même cache très ancien
+                if fin_cache is not None:
+                    domaine = fin_cache.get('sector', 'Inconnu')
+                else:
+                    domaine = "Inconnu"
             else:
                 domaine = "Inconnu"
         else:
@@ -1821,10 +1896,9 @@ def analyse_et_affiche(symbols, period="12mo"):
             # Récupérer le domaine - utiliser cache en mode offline
             try:
                 if OFFLINE_MODE:
-                    cache_file = CACHE_DIR / f"{symbol}_financial.pkl"
-                    if cache_file.exists():
-                        fin_cache = pd.read_pickle(cache_file)
-                        domaine = fin_cache.get('sector', 'Inconnu')
+                    if get_pickle_cache is not None:
+                        fin_cache = get_pickle_cache(symbol, 'financial', ttl_hours=24*365)
+                        domaine = fin_cache.get('sector', 'Inconnu') if fin_cache else "Inconnu"
                     else:
                         domaine = "Inconnu"
                 else:
@@ -2177,13 +2251,9 @@ def analyse_signaux_populaires(
             # Récupération du secteur
             try:
                 if OFFLINE_MODE:
-                    cache_file = CACHE_DIR / f"{symbol}_financial.pkl"
-                    if cache_file.exists():
-                        try:
-                            fin_cache = pd.read_pickle(cache_file)
-                            domaine = fin_cache.get('sector', 'ℹ️Inconnu!!')
-                        except Exception:
-                            domaine = "ℹ️Inconnu!!"
+                    if get_pickle_cache is not None:
+                        fin_cache = get_pickle_cache(symbol, 'financial', ttl_hours=24*365)
+                        domaine = fin_cache.get('sector', 'ℹ️Inconnu!!') if fin_cache else "ℹ️Inconnu!!"
                     else:
                         domaine = "ℹ️Inconnu!!"
                 else:
@@ -2328,12 +2398,10 @@ def analyse_signaux_populaires(
             # Ajout : récupération du domaine pour le backtest
             try:
                 if OFFLINE_MODE:
-                    cache_file = CACHE_DIR / f"{s['Symbole']}_financial.pkl"
-                    if cache_file.exists():
-                        fin_cache = pd.read_pickle(cache_file)
-                        domaine = fin_cache.get('sector', 'Inconnu')
+                    if get_pickle_cache is not None:
+                        fin_cache = get_pickle_cache(s['Symbole'], 'financial', ttl_hours=24*365)
+                        domaine = fin_cache.get('sector', 'Inconnu') if fin_cache else s.get('Domaine', 'Inconnu')
                     else:
-                        # Utiliser le domaine déjà dans le signal s'il existe
                         domaine = s.get('Domaine', 'Inconnu')
                 else:
                     info = yf.Ticker(s['Symbole']).info

@@ -8,8 +8,7 @@ from datetime import datetime
 import yfinance as yf
 from typing import List, Dict, Optional, Tuple
 import pandas as pd
-
-DB_PATH = "stock_analysis.db"
+from config import DB_PATH, CAP_RANGE_THRESHOLDS
 
 def init_symbols_table():
     """Crée la table symbols si elle n'existe pas."""
@@ -413,3 +412,139 @@ def add_sp500_to_popular(list_type: str = 'popular') -> Dict[str, int]:
     conn.commit()
     conn.close()
     return {"added": added, "updated": updated, "skipped": skipped}
+
+# ===================================================================
+# CACHE INTELLIGENT DES SECTEURS (DISQUE + MEMOIRE + TTL)
+# ===================================================================
+
+import json
+
+SECTOR_CACHE_FILE = Path("cache_data/sector_cache.json")
+SECTOR_CACHE_FILE.parent.mkdir(exist_ok=True)
+SECTOR_TTL_DAYS = 30
+SECTOR_TTL_UNKNOWN_DAYS = 7
+
+def _load_sector_cache() -> Dict:
+    """Charge le cache des secteurs depuis le disque."""
+    try:
+        if SECTOR_CACHE_FILE.exists():
+            with open(SECTOR_CACHE_FILE, "r", encoding="utf-8") as f:
+                return json.load(f)
+    except Exception as e:
+        print(f"Impossible de charger cache secteurs: {e}")
+    return {}
+
+def _save_sector_cache(cache: Dict) -> None:
+    """Sauvegarde le cache des secteurs sur disque."""
+    try:
+        with open(SECTOR_CACHE_FILE, "w", encoding="utf-8") as f:
+            json.dump(cache, f)
+    except Exception as e:
+        print(f"Impossible d'ecrire cache secteurs: {e}")
+
+def _is_sector_expired(entry: Dict) -> bool:
+    """Verifie si une entree cache est expiree."""
+    try:
+        ts = entry.get("ts")
+        if not ts:
+            return True
+        dt = datetime.fromisoformat(ts)
+        ttl_days = SECTOR_TTL_UNKNOWN_DAYS if entry.get("sector") == "Unknown" else SECTOR_TTL_DAYS
+        return (datetime.utcnow() - dt).days >= ttl_days
+    except Exception:
+        return True
+
+_sector_cache = _load_sector_cache()
+
+def get_sector_cached(symbol: str, use_cache: bool = True) -> str:
+    """Recupere le secteur d'une action avec cache intelligent (mémoire + disque + TTL).
+    
+    Args:
+        symbol: Le ticker de l'action
+        use_cache: Si True, utilise le cache; sinon recompute
+    
+    Returns:
+        Le secteur de l'action (ou 'Unknown' si indetermine)
+    """
+    global _sector_cache
+    
+    # Check cache memoire
+    if use_cache:
+        entry = _sector_cache.get(symbol)
+        if entry and not _is_sector_expired(entry):
+            return entry.get("sector", "Unknown")
+    
+    # Try SQLite database first
+    try:
+        conn = sqlite3.connect(DB_PATH)
+        cursor = conn.cursor()
+        cursor.execute("SELECT sector FROM symbols WHERE symbol=?", (symbol,))
+        row = cursor.fetchone()
+        conn.close()
+        if row and row[0] and row[0] != "Unknown":
+            # Cache hit from DB
+            _sector_cache[symbol] = {"sector": row[0], "ts": datetime.utcnow().isoformat()}
+            _save_sector_cache(_sector_cache)
+            return row[0]
+    except Exception:
+        pass
+    
+    # Fallback: fetch from yfinance
+    try:
+        ticker = yf.Ticker(symbol)
+        sector = ticker.info.get('sector', 'Unknown')
+        _sector_cache[symbol] = {"sector": sector, "ts": datetime.utcnow().isoformat()}
+        _save_sector_cache(_sector_cache)
+        return sector
+    except Exception:
+        # Cache the failure too
+        _sector_cache[symbol] = {"sector": "Unknown", "ts": datetime.utcnow().isoformat()}
+        _save_sector_cache(_sector_cache)
+        return "Unknown"
+
+
+# ===================================================================
+# CLASSIFICATION DE CAPITALISATION
+# ===================================================================
+
+def classify_cap_range(market_cap_b: Optional[float]) -> str:
+    """Classe la capitalisation en categories (Small/Mid/Large/Mega) ou Unknown.
+    
+    Args:
+        market_cap_b: Market cap en milliards de dollars (ou None)
+    
+    Returns:
+        Une des categories: 'Small', 'Mid', 'Large', 'Mega', 'Unknown'
+    """
+    try:
+        if market_cap_b is None or market_cap_b <= 0:
+            return 'Unknown'
+        
+        for label, (min_val, max_val) in CAP_RANGE_THRESHOLDS.items():
+            if min_val <= market_cap_b < max_val:
+                return label
+        
+        return 'Unknown'
+    except Exception:
+        return 'Unknown'
+
+
+def classify_cap_range_for_symbol(symbol: str) -> str:
+    """Classe la capitalisation d'un symbole en fetching depuis yfinance.
+    
+    Args:
+        symbol: Le ticker de l'action
+    
+    Returns:
+        La categorie de capitalisation ('Small', 'Mid', 'Large', 'Mega', 'Unknown')
+    """
+    try:
+        ticker = yf.Ticker(symbol)
+        market_cap = ticker.info.get('marketCap')
+        if market_cap is None:
+            return 'Unknown'
+        
+        market_cap_b = market_cap / 1e9
+        return classify_cap_range(market_cap_b)
+    except Exception:
+        return 'Unknown'
