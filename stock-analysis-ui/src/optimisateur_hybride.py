@@ -29,6 +29,19 @@ try:
 except ImportError:
     CMA_AVAILABLE = False
 
+# 🎯 CONFIGURATION VALIDATION & ANTI-OVERFITTING
+MIN_SYMBOLS_PER_GROUP = 5  # Minimum de symboles par cellule secteur×cap
+MAX_SYMBOLS_PER_GROUP = 12  # Maximum de symboles par groupe (échantillonnage si >12)
+TRAIN_MONTHS = 18  # Période d'entraînement (mois)
+VAL_MONTHS = 4  # Période de validation (mois)
+HOLDOUT_MONTHS = 2  # Hold-out final (mois récents)
+# Total = 24 mois (compatible yfinance: '24mo')
+MIN_GAIN_PER_TRADE = 1.0  # Seuil minimal de gain par trade ($)
+MAX_DRAWDOWN_PCT = 15.0  # Seuil maximal de drawdown (%)
+MIN_TRADES_PER_YEAR = 3  # Minimum de trades par an
+IGNORED_GROUPS_LOG = "ignored_groups.log"  # Log des groupes ignorés
+POPULAR_SYMBOLS_FILE = "popular_symbols.txt"  # Fichier des symboles populaires
+
 # Import du gestionnaire de symboles SQLite
 try:
     from symbol_manager import (
@@ -140,6 +153,308 @@ def classify_cap_range(symbol: str) -> str:
         return 'Mega'
     except Exception:
         return 'Unknown'
+
+def clean_sector_cap_groups(sector_cap_ranges: dict, min_symbols: int = MIN_SYMBOLS_PER_GROUP, max_symbols: int = MAX_SYMBOLS_PER_GROUP) -> tuple:
+    """🧼 Nettoie les groupes secteur×cap: complète <min, limite >max, ignore impossibles.
+    
+    Args:
+        sector_cap_ranges: Dict {sector: {cap_range: [symbols]}}
+        min_symbols: Nombre minimum de symboles par groupe
+        max_symbols: Nombre maximum de symboles par groupe
+    
+    Returns:
+        tuple: (cleaned_groups, ignored_groups_log)
+    """
+    cleaned = {}
+    ignored_log = []
+    completion_log = []
+    
+    # Utiliser cache SQLite (TTL 100j) pour eviter recalcul secteur/cap via yfinance
+    try:
+        from symbol_manager import get_cleaned_group_cache, save_cleaned_group_cache
+        use_cache = SYMBOL_MANAGER_AVAILABLE
+    except:
+        use_cache = False
+    
+    print(f"   Verif cache (TTL 100j)...")
+    cache_hits = 0
+    cache_misses = 0
+    
+    for sector, buckets in sector_cap_ranges.items():
+        cleaned[sector] = {}
+        for cap_range, syms in buckets.items():
+            if not syms:
+                continue
+            
+            # Essayer le cache d'abord
+            if use_cache:
+                try:
+                    cached = get_cleaned_group_cache(sector, cap_range, ttl_days=100)
+                    if cached is not None:
+                        cleaned[sector][cap_range] = cached
+                        cache_hits += 1
+                        continue
+                except Exception:
+                    pass
+            
+            cache_misses += 1
+            current_syms = list(syms)
+            
+            # Completion si <min
+            if len(current_syms) < min_symbols:
+                candidates = []
+                if SYMBOL_MANAGER_AVAILABLE:
+                    try:
+                        candidates = get_symbols_by_sector_and_cap(sector, cap_range, list_type='popular', active_only=True)
+                    except Exception:
+                        pass
+                
+                # Exclure ceux déjà présents
+                candidates = [c for c in candidates if c not in current_syms]
+                
+                # Ajouter jusqu'à min_symbols
+                needed = min_symbols - len(current_syms)
+                added = candidates[:needed]
+                current_syms.extend(added)
+                
+                if added:
+                    completion_log.append({
+                        'sector': sector,
+                        'cap_range': cap_range,
+                        'original_count': len(syms),
+                        'added': added,
+                        'final_count': len(current_syms)
+                    })
+            
+            # 2️⃣ Vérification finale: si toujours <min_symbols, ignorer
+            if len(current_syms) < min_symbols:
+                reason = f"Trop peu de symboles ({len(current_syms)} < {min_symbols}, complétion échouée)"
+                ignored_log.append({
+                    'sector': sector,
+                    'cap_range': cap_range,
+                    'count': len(current_syms),
+                    'symbols': current_syms,
+                    'reason': reason
+                })
+                continue
+            
+            # 3️⃣ Limitation si >max_symbols: échantillonnage aléatoire
+            if len(current_syms) > max_symbols:
+                original_count = len(current_syms)
+                current_syms = random.sample(current_syms, max_symbols)
+                completion_log.append({
+                    'sector': sector,
+                    'cap_range': cap_range,
+                    'action': 'limited',
+                    'original_count': original_count,
+                    'sampled': current_syms,
+                    'final_count': max_symbols
+                })
+            
+            # ✅ Groupe valide : sauvegarder en cache
+            cleaned[sector][cap_range] = current_syms
+            if use_cache:
+                try:
+                    save_cleaned_group_cache(sector, cap_range, current_syms)
+                except Exception:
+                    pass
+        
+        if not cleaned[sector]:
+            del cleaned[sector]
+    
+    # Afficher stats cache
+    if cache_hits + cache_misses > 0:
+        print(f"      Cache hits: {cache_hits}, misses: {cache_misses}")
+    
+    return cleaned, ignored_log
+
+def log_ignored_groups(ignored_log: list, log_file: str = IGNORED_GROUPS_LOG):
+    """Consigner les groupes ignorés dans un fichier log."""
+    if not ignored_log:
+        return
+    
+    with open(log_file, 'w', encoding='utf-8') as f:
+        f.write(f"# Groupes ignorés - {datetime.now().strftime('%Y-%m-%d %H:%M:%S')}\n")
+        f.write(f"# Minimum: {MIN_SYMBOLS_PER_GROUP} symboles/groupe\n\n")
+        
+        for entry in ignored_log:
+            f.write(f"Secteur: {entry['sector']}\n")
+            f.write(f"Cap Range: {entry['cap_range']}\n")
+            f.write(f"Symboles ({entry['count']}): {', '.join(entry['symbols'])}\n")
+            f.write(f"Raison: {entry['reason']}\n")
+            f.write("-" * 80 + "\n\n")
+    
+    print(f"   📝 {len(ignored_log)} groupes ignorés logés dans {log_file}")
+
+def split_data_temporal(stock_data: dict, train_months: int = TRAIN_MONTHS, val_months: int = VAL_MONTHS, holdout_months: int = HOLDOUT_MONTHS) -> tuple:
+    """📅 Split temporel des données: train / val / holdout.
+    
+    Args:
+        stock_data: Dict {symbol: {'Close': Series, 'Volume': Series}}
+        train_months: Mois pour training
+        val_months: Mois pour validation
+        holdout_months: Mois pour hold-out final
+    
+    Returns:
+        tuple: (train_data, val_data, holdout_data, dates_info)
+            - train_data: Dict {symbol: {'Close': Series, 'Volume': Series}}
+            - val_data: Dict {symbol: {'Close': Series, 'Volume': Series}}
+            - holdout_data: Dict {symbol: {'Close': Series, 'Volume': Series}}
+            - dates_info: Dict avec les dates de split
+    """
+    train_data = {}
+    val_data = {}
+    holdout_data = {}
+    
+    # Calculer les dates de split depuis la date la plus récente
+    latest_date = None
+    for symbol, data_dict in stock_data.items():
+        close_series = data_dict['Close']
+        if latest_date is None or close_series.index[-1] > latest_date:
+            latest_date = close_series.index[-1]
+    
+    # Définir les bornes temporelles
+    holdout_start = latest_date - timedelta(days=holdout_months * 30)
+    val_start = holdout_start - timedelta(days=val_months * 30)
+    train_start = val_start - timedelta(days=train_months * 30)
+    
+    dates_info = {
+        'train_start': train_start,
+        'val_start': val_start,
+        'holdout_start': holdout_start,
+        'latest_date': latest_date
+    }
+    
+    # Splitter chaque symbole
+    for symbol, data_dict in stock_data.items():
+        close_series = data_dict['Close']
+        volume_series = data_dict['Volume']
+        
+        # Train: [train_start, val_start)
+        train_mask = (close_series.index >= train_start) & (close_series.index < val_start)
+        train_data[symbol] = {
+            'Close': close_series[train_mask].copy(),
+            'Volume': volume_series[train_mask].copy()
+        }
+        
+        # Val: [val_start, holdout_start)
+        val_mask = (close_series.index >= val_start) & (close_series.index < holdout_start)
+        val_data[symbol] = {
+            'Close': close_series[val_mask].copy(),
+            'Volume': volume_series[val_mask].copy()
+        }
+        
+        # Holdout: [holdout_start, latest]
+        holdout_mask = close_series.index >= holdout_start
+        holdout_data[symbol] = {
+            'Close': close_series[holdout_mask].copy(),
+            'Volume': volume_series[holdout_mask].copy()
+        }
+    
+    return train_data, val_data, holdout_data, dates_info
+
+def validate_configs_on_split(configs_with_scores: list, val_data: dict, domain: str, 
+                             montant: float, transaction_cost: float,
+                             top_k: int = 20) -> list:
+    """✅ Valide les top-K configs sur les données de validation.
+    
+    Args:
+        configs_with_scores: List of (params, train_score) tuples
+        val_data: Dict {symbol: DataFrame} pour validation
+        domain: Secteur
+        montant, transaction_cost: Paramètres backtest
+        top_k: Nombre de configs à valider
+    
+    Returns:
+        list: [(params, train_score, val_score, val_metrics), ...] trié par val_score
+    """
+    # Trier par train_score et prendre top-K
+    sorted_configs = sorted(configs_with_scores, key=lambda x: x[1], reverse=True)[:top_k]
+    
+    validated = []
+    print(f"\n✅ Validation de {len(sorted_configs)} meilleures configs sur période val...")
+    
+    for params, train_score in tqdm(sorted_configs, desc="🔍 Validation"):
+        # Évaluer sur val
+        val_gain = 0.0
+        val_trades = 0
+        val_successes = 0
+        val_drawdown = 0.0
+        
+        coeffs = tuple(params[:8])
+        feature_thresholds = tuple(params[8:16])
+        seuil_achat = float(params[16])
+        seuil_vente = float(params[17])
+        
+        for symbol, data in val_data.items():
+            try:
+                result, _ = backtest_signals_with_events(
+                    data['Close'], data['Volume'], domain,
+                    montant=montant, transaction_cost=transaction_cost,
+                    domain_coeffs={domain: coeffs},
+                    domain_thresholds={domain: feature_thresholds},
+                    seuil_achat=seuil_achat, seuil_vente=seuil_vente,
+                    extra_params=None,
+                    fundamentals_extras=None,
+                    symbol_name=symbol
+                )
+                val_gain += result['gain_total']
+                val_trades += result.get('trades', 0)
+                if result.get('taux_reussite', 0) > 0:
+                    val_successes += 1
+                # TODO: calculer drawdown si disponible
+            except Exception:
+                continue
+        
+        avg_val_gain = val_gain / len(val_data) if val_data else 0.0
+        gain_per_trade = val_gain / val_trades if val_trades > 0 else 0.0
+        
+        val_metrics = {
+            'avg_gain': avg_val_gain,
+            'total_trades': val_trades,
+            'gain_per_trade': gain_per_trade,
+            'success_rate': (val_successes / len(val_data) * 100) if val_data else 0.0,
+            'drawdown': val_drawdown
+        }
+        
+        validated.append((params, train_score, avg_val_gain, val_metrics))
+    
+    # Trier par val_score
+    validated.sort(key=lambda x: x[2], reverse=True)
+    return validated
+
+def apply_validation_threshold(validated_configs: list, min_gain_per_trade: float = MIN_GAIN_PER_TRADE,
+                              max_drawdown_pct: float = MAX_DRAWDOWN_PCT,
+                              min_trades_per_year: int = MIN_TRADES_PER_YEAR) -> list:
+    """⛔ Filtre les configs qui ne passent pas les seuils de validation.
+    
+    Args:
+        validated_configs: List from validate_configs_on_split
+        min_gain_per_trade: Seuil minimal gain/trade
+        max_drawdown_pct: Seuil maximal drawdown
+        min_trades_per_year: Seuil minimal trades/an
+    
+    Returns:
+        list: Configs filtrées qui passent les seuils
+    """
+    filtered = []
+    for params, train_score, val_score, val_metrics in validated_configs:
+        # Appliquer les seuils
+        if val_metrics['gain_per_trade'] < min_gain_per_trade:
+            continue
+        if val_metrics['total_trades'] < min_trades_per_year / 2:  # Sur 6 mois = moitié de l'année
+            continue
+        # TODO: vérifier drawdown si disponible
+        
+        filtered.append((params, train_score, val_score, val_metrics))
+    
+    if not filtered:
+        print("   ⚠️ Aucune config ne passe les seuils de validation!")
+        # Fallback: retourner la meilleure même si elle échoue
+        if validated_configs:
+            return [validated_configs[0]]
+    
+    return filtered
 
 def get_best_gain_csv(domain, csv_path='signaux/optimization_hist_4stp.csv'):
     """Récupère le meilleur gain moyen historique pour le secteur dans le CSV."""
@@ -564,8 +879,14 @@ class HybridOptimizer:
                 mutated[i] = round(np.clip(new_value, bounds[i][0], bounds[i][1]), self.precision)
         return mutated
 
-    def differential_evolution_opt(self, population_size=45, max_iterations=100):
-        """Optimisation par évolution différentielle avec arrondi"""
+    def differential_evolution_opt(self, population_size=45, max_iterations=100, seed=None):
+        """Optimisation par évolution différentielle avec arrondi
+        
+        Args:
+            population_size: Taille de la population
+            max_iterations: Nombre d'itérations
+            seed: Vecteur de paramètres initial (warm-start) pour aider la convergence
+        """
         print(f"🔄 Démarrage évolution différentielle (pop={population_size}, iter={max_iterations}, précision={self.precision})")
         
         bounds = self.bounds
@@ -579,6 +900,18 @@ class HybridOptimizer:
             print(f"   ⚠️ Pop trop grande pour {dim} dimensions → réduit {population_size} → {max_popsize}")
             population_size = max_popsize
 
+        # 🌱 Préparer le seed comme point de départ (warm-start)
+        init_candidates = None
+        if seed is not None:
+            try:
+                seed_arr = np.array(seed, dtype=float)
+                seed_arr = np.clip(seed_arr, [b[0] for b in bounds], [b[1] for b in bounds])
+                seed_arr = self.round_params(seed_arr)
+                init_candidates = seed_arr
+                print(f"   🌱 Warm-start avec seed historique")
+            except Exception as e:
+                print(f"   ⚠️ Impossible d'utiliser seed: {e}")
+
         best_de_trades = [0]  # 🚀 Tracker les trades du meilleur score en DE (list pour closure)
         with tqdm(total=max_iterations, desc="🔄 Évolution différentielle", unit="iter") as pbar:
             def callback(xk, convergence):
@@ -586,21 +919,43 @@ class HybridOptimizer:
                 pbar.set_postfix({'Convergence': f"{convergence:.6f}", 'Trades': best_de_trades[0]})
                 pbar.update(1)
 
+            de_kwargs = {
+                'maxiter': max_iterations,
+                'popsize': population_size,
+                'mutation': (0.5, 1.5),
+                'recombination': 0.7,
+                'callback': callback,
+                'polish': False,
+                'seed': np.random.randint(0, 10000),
+                'workers': -1,  # Use all cores; safe thanks to top-level objective
+            }
+            
+            # 🌱 Ajouter le seed si disponible
+            if init_candidates is not None:
+                de_kwargs['init'] = 'latinhypercube'  # Utiliser LHC + ajouter seed
+                # Note: on ajoute le seed via la stratégie, pas via init directement
+                # car scipy DE n'a pas de paramètre x0 pour point de départ unique
+                # Solution: on évalue le seed séparément et on le compare au meilleur trouvé
+            
             result = differential_evolution(
                 _de_objective,
                 bounds,
                 args=(self,),
-                maxiter=max_iterations,
-                popsize=population_size,
-                mutation=(0.5, 1.5),
-                recombination=0.7,
-                callback=callback,
-                polish=False,
-                seed=np.random.randint(0, 10000),
-                workers=-1,  # Use all cores; safe thanks to top-level objective
+                **de_kwargs
             )
 
-        return self.round_params(result.x), -result.fun
+        # 🌱 Si seed fourni, comparer le seed au résultat DE
+        best_x = self.round_params(result.x)
+        best_f = -result.fun
+        
+        if init_candidates is not None:
+            seed_score = self.evaluate_config(init_candidates)
+            if seed_score > best_f:
+                print(f"   ℹ️ Seed meilleur que DE (seed={seed_score:.3f} vs DE={best_f:.3f}), en utilisant le seed")
+                best_x = init_candidates
+                best_f = seed_score
+        
+        return best_x, best_f
 
     def latin_hypercube_sampling(self, n_samples=500, seed=None):
         """Échantillonnage Latin Hypercube avec arrondi"""
@@ -860,7 +1215,8 @@ def optimize_sector_coefficients_hybrid(
     precision=2,  # 🔧 NOUVEAU: Paramètre de précision
     cap_range='Unknown',
     use_price_features=False,
-    use_fundamentals_features=False
+    use_fundamentals_features=False,
+    enable_temporal_validation=True  # 📅 NOUVEAU: Activer validation temporelle train/val/holdout
 ):
     """
     Optimisation hybride des coefficients sectoriels avec limitation des décimales
@@ -881,17 +1237,39 @@ def optimize_sector_coefficients_hybrid(
         return None, 0.0, 0.0, initial_thresholds, None
 
     # Téléchargement des données
-    stock_data = download_stock_data(sector_symbols, period=period)
+    # 📅 Si validation temporelle active, charger 24 mois (18 train + 4 val + 2 holdout)
+    if enable_temporal_validation:
+        total_months_needed = TRAIN_MONTHS + VAL_MONTHS + HOLDOUT_MONTHS
+        # Clamp à max 24mo (compatible yfinance)
+        period_extended = f"{min(total_months_needed, 24)}mo"
+        stock_data = download_stock_data(sector_symbols, period=period_extended)
+    else:
+        stock_data = download_stock_data(sector_symbols, period=period)
+    
     if not stock_data:
         print(f"🚨 Aucune donnée téléchargée pour le secteur {domain}")
         return None, 0.0, 0.0, initial_thresholds, None
 
     for symbol, data in stock_data.items():
         print(f"📊 {symbol}: {len(data['Close'])} points de données")
+    
+    # 📅 SPLIT TEMPOREL si validation activée
+    train_data, val_data, holdout_data, dates_info = None, None, None, None
+    if enable_temporal_validation:
+        train_data, val_data, holdout_data, dates_info = split_data_temporal(stock_data)
+        print(f"\n📅 Split temporel:")
+        print(f"   Train: {dates_info['train_start'].strftime('%Y-%m-%d')} → {dates_info['val_start'].strftime('%Y-%m-%d')} ({len(train_data)} symbols)")
+        print(f"   Val:   {dates_info['val_start'].strftime('%Y-%m-%d')} → {dates_info['holdout_start'].strftime('%Y-%m-%d')} ({len(val_data)} symbols)")
+        print(f"   Holdout: {dates_info['holdout_start'].strftime('%Y-%m-%d')} → {dates_info['latest_date'].strftime('%Y-%m-%d')} ({len(holdout_data)} symbols)")
+        # Utiliser train_data pour l'optimisation
+        optimization_data = train_data
+    else:
+        # Mode classique: utiliser toutes les données
+        optimization_data = stock_data
 
     # 🚀 PRÉ-CALCUL DES FEATURES TA POUR TOUS LES SYMBOLS
     # Cela peuple TA_CACHE et DERIV_CACHE dans qsi.py, évitant les recalculs pendant l'optimisation
-    precalculate_features(stock_data, domain)
+    precalculate_features(optimization_data, domain)
 
     # Récupération des meilleurs paramètres historiques
     db_path = 'signaux/optimization_hist.db'
@@ -1015,8 +1393,8 @@ def optimize_sector_coefficients_hybrid(
     # Utiliser n_jobs=2 ou plus pour activer la parallélisation par symboles
     # (n_jobs=1 reste séquentiel par défaut)
     # 🚀 Optimisation auto: ajuste n_jobs au nombre de stocks disponibles (max 4)
-    n_jobs_param = min(4, max(1, len(stock_data)))
-    optimizer = HybridOptimizer(stock_data, domain, montant, transaction_cost, precision, use_price_features, use_fundamentals_features, n_jobs=n_jobs_param)
+    n_jobs_param = min(4, max(1, len(optimization_data)))
+    optimizer = HybridOptimizer(optimization_data, domain, montant, transaction_cost, precision, use_price_features, use_fundamentals_features, n_jobs=n_jobs_param)
 
     # 🔧 NOUVEAU: Ajuster le budget en fonction de la précision
     # Avec une plus grande précision, l'espace de recherche AUGMENTE
@@ -1038,20 +1416,30 @@ def optimize_sector_coefficients_hybrid(
             seed_vector = None
 
     # 🔍 Étape rapide: affinement local autour de la graine historique
-    if seed_vector is not None:
+    # ⚠️ SKIP si le score historique est déjà très bon (>100) car local search
+    # n'améliorera probablement pas + coûte 2-3 minutes pour rien
+    historical_score = historical_candidate[2] if historical_candidate else 0
+    if seed_vector is not None and historical_score < 100.0:
         try:
             print("🔍 Quick local refinement around historical seed...")
-            refined_params, refined_score = optimizer.local_search_refinement(seed_vector, max_iterations=10)
-            results.append(('Local Refinement (seed)', refined_params, refined_score))
-            # Utiliser les paramètres affinés comme nouvelle graine pour les méthodes globales
-            seed_vector = refined_params.copy()
+            refined_params, refined_score = optimizer.local_search_refinement(seed_vector, max_iterations=5)
+            # ⚠️ N'ajouter la version affinée que si elle AMÉLIORE le score historique
+            if refined_score > historical_score:
+                results.append(('Local Refinement (seed)', refined_params, refined_score))
+                seed_vector = refined_params.copy()
+            else:
+                print(f"   ℹ️ Local refinement didn't improve (historical: {historical_score:.2f}, refined: {refined_score:.2f}), skipping")
+                # Garder le seed historique original comme graine
+                seed_vector = np.array(historical_candidate[1], dtype=float)
         except Exception as e:
             print(f"⚠️ Local refinement failed: {e}")
+    elif seed_vector is not None:
+        print(f"   ℹ️ Skipping local refinement (historical score {historical_score:.2f} already excellent)")
     print(f"🚀 Optimisation hybride pour {domain} avec stratégie '{strategy}' (précision: {precision} décimales)")
     print(f"📈 Budget d'évaluations initial: {budget_evaluations}")
     print(f"🔧 Budget ajusté selon la précision: {adjusted_budget} (facteur: {precision_factor:.2f}x)")
 
-    if strategy == 'hybrid' or strategy == 'genetic':
+    if strategy == 'genetic': # if strategy == 'genetic' or strategy == 'hybrid':
         # Algorithmes génétiques - 🔧 Augmenter max pop_size selon budget
         pop_size = min(100, adjusted_budget // 20)  # Max 100 au lieu de 50
         generations = min(50, adjusted_budget // pop_size)  # Generations aussi augmentées
@@ -1060,9 +1448,9 @@ def optimize_sector_coefficients_hybrid(
 
     if strategy == 'hybrid' or strategy == 'differential':
         # Évolution différentielle - 🔧 Augmenter max pop_size selon budget
-        pop_size = min(90, adjusted_budget // 25)  # Max 90 au lieu de 45
+        pop_size = min(60, adjusted_budget // 25)  # Max 60 au lieu de 45
         max_iter = min(100, adjusted_budget // pop_size)
-        params_de, score_de = optimizer.differential_evolution_opt(pop_size, max_iter)
+        params_de, score_de = optimizer.differential_evolution_opt(pop_size, max_iter, seed=seed_vector)
         results.append(('Differential Evolution', params_de, score_de))
 
     if strategy == 'hybrid' or strategy == 'pso':
@@ -1444,6 +1832,18 @@ if __name__ == "__main__":
                     print(f"   ✅ {sector} × {cap_range}: {len(syms)} symboles")
         
         print(f"\n   📊 Total: {total_combos} combinaisons secteur×cap_range avec symboles")
+        
+        # 🧼 NETTOYAGE DES GROUPES: filtrer <5 symboles
+        print(f"\n🧼 Nettoyage des groupes (minimum {MIN_SYMBOLS_PER_GROUP} symboles/groupe)...")
+        sector_cap_ranges, ignored_log = clean_sector_cap_groups(sector_cap_ranges, MIN_SYMBOLS_PER_GROUP)
+        
+        if ignored_log:
+            log_ignored_groups(ignored_log)
+            print(f"   ⚠️ {len(ignored_log)} groupes ignorés (trop peu de symboles)")
+        
+        # Recompter les combinaisons après nettoyage
+        total_combos_cleaned = sum(1 for s in sector_cap_ranges.values() for cap, syms in s.items() if syms)
+        print(f"   ✅ {total_combos_cleaned} combinaisons valides après nettoyage")
     
     else:
         print("\n⚠️ SQLite non disponible, utilisation de la méthode classique...")

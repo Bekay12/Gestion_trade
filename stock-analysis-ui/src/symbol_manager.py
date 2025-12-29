@@ -4,10 +4,11 @@ Module pour gérer les symboles boursiers dans SQLite - Version sans emojis pour
 
 import sqlite3
 from pathlib import Path
-from datetime import datetime
+from datetime import datetime, timedelta
 import yfinance as yf
 from typing import List, Dict, Optional, Tuple
 import pandas as pd
+import json
 from config import DB_PATH, CAP_RANGE_THRESHOLDS
 
 def init_symbols_table():
@@ -34,6 +35,19 @@ def init_symbols_table():
     cursor.execute('CREATE INDEX IF NOT EXISTS idx_sector ON symbols(sector)')
     cursor.execute('CREATE INDEX IF NOT EXISTS idx_market_cap_range ON symbols(market_cap_range)')
     cursor.execute('CREATE INDEX IF NOT EXISTS idx_is_active ON symbols(is_active)')
+    
+    # Table pour cacher les groupes nettoyés (complétion + limitation)
+    cursor.execute('''
+        CREATE TABLE IF NOT EXISTS cleaned_groups_cache (
+            id INTEGER PRIMARY KEY AUTOINCREMENT,
+            sector TEXT NOT NULL,
+            cap_range TEXT NOT NULL,
+            symbols_json TEXT NOT NULL,
+            cached_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+            UNIQUE(sector, cap_range)
+        )
+    ''')
+    cursor.execute('CREATE INDEX IF NOT EXISTS idx_cache_sector_cap ON cleaned_groups_cache(sector, cap_range)')
     
     conn.commit()
     conn.close()
@@ -548,3 +562,71 @@ def classify_cap_range_for_symbol(symbol: str) -> str:
         return classify_cap_range(market_cap_b)
     except Exception:
         return 'Unknown'
+
+def get_cleaned_group_cache(sector: str, cap_range: str, ttl_days: int = 20) -> Optional[List[str]]:
+    """Récupère un groupe nettoyé depuis le cache (si <TTL jours).
+    
+    Args:
+        sector: Secteur
+        cap_range: Gamme de cap
+        ttl_days: TTL en jours (défaut 20)
+    
+    Returns:
+        Liste des symboles si trouvé et valide, None sinon
+    """
+    init_symbols_table()
+    conn = sqlite3.connect(DB_PATH)
+    cursor = conn.cursor()
+    
+    cursor.execute('''
+        SELECT symbols_json, cached_at 
+        FROM cleaned_groups_cache 
+        WHERE sector = ? AND cap_range = ?
+    ''', (sector, cap_range))
+    
+    result = cursor.fetchone()
+    conn.close()
+    
+    if not result:
+        return None
+    
+    symbols_json, cached_at_str = result
+    cached_at = datetime.fromisoformat(cached_at_str)
+    
+    # Vérifier si le cache a expiré
+    if datetime.now() - cached_at > timedelta(days=ttl_days):
+        return None
+    
+    return json.loads(symbols_json)
+
+
+def save_cleaned_group_cache(sector: str, cap_range: str, symbols: List[str]) -> None:
+    """Sauvegarde un groupe nettoyé dans le cache.
+    
+    Args:
+        sector: Secteur
+        cap_range: Gamme de cap
+        symbols: Liste des symboles nettoyés
+    """
+    init_symbols_table()
+    conn = sqlite3.connect(DB_PATH)
+    cursor = conn.cursor()
+    
+    cursor.execute('''
+        INSERT OR REPLACE INTO cleaned_groups_cache 
+        (sector, cap_range, symbols_json, cached_at)
+        VALUES (?, ?, ?, ?)
+    ''', (sector, cap_range, json.dumps(symbols), datetime.now().isoformat()))
+    
+    conn.commit()
+    conn.close()
+
+
+def clear_cleaned_groups_cache() -> None:
+    """Efface complètement le cache des groupes nettoyés (force recalcul)."""
+    init_symbols_table()
+    conn = sqlite3.connect(DB_PATH)
+    cursor = conn.cursor()
+    cursor.execute('DELETE FROM cleaned_groups_cache')
+    conn.commit()
+    conn.close()
