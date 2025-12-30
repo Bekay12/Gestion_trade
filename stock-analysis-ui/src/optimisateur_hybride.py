@@ -8,453 +8,85 @@ from datetime import datetime, timedelta
 import random
 import sys
 from pathlib import Path
-from typing import Dict  # Type hints for annotations
 sys.path.append("C:\\Users\\berti\\Desktop\\Mes documents\\Gestion_trade\\stock-analysis-ui\\src\\trading_c_acceleration")
 from qsi import download_stock_data, load_symbols_from_txt, extract_best_parameters
 from qsi_optimized import backtest_signals, backtest_signals_with_events
+from pathlib import Path
 from tqdm import tqdm
-import qsi  # Import module pour accès aux caches globaux
-from joblib import Parallel, delayed  # Parallélisation par symboles
 # import yfinance as yf  # Import paresseux - chargé seulement si nécessaire
 from collections import deque
 from scipy.optimize import differential_evolution
 from scipy.stats import qmc
 import warnings
 warnings.filterwarnings("ignore")
-
-# CMA-ES (optionnel): accélère la recherche en haute dimension si installé
-try:
-    import cma
-    CMA_AVAILABLE = True
-except ImportError:
-    CMA_AVAILABLE = False
-
-# 🎯 CONFIGURATION VALIDATION & ANTI-OVERFITTING
-MIN_SYMBOLS_PER_GROUP = 5  # Minimum de symboles par cellule secteur×cap
-MAX_SYMBOLS_PER_GROUP = 12  # Maximum de symboles par groupe (échantillonnage si >12)
-TRAIN_MONTHS = 18  # Période d'entraînement (mois)
-VAL_MONTHS = 4  # Période de validation (mois)
-HOLDOUT_MONTHS = 2  # Hold-out final (mois récents)
-# Total = 24 mois (compatible yfinance: '24mo')
-MIN_GAIN_PER_TRADE = 1.0  # Seuil minimal de gain par trade ($)
-MAX_DRAWDOWN_PCT = 15.0  # Seuil maximal de drawdown (%)
-MIN_TRADES_PER_YEAR = 3  # Minimum de trades par an
-IGNORED_GROUPS_LOG = "ignored_groups.log"  # Log des groupes ignorés
-POPULAR_SYMBOLS_FILE = "popular_symbols.txt"  # Fichier des symboles populaires
+from typing import Dict, List
 
 # Import du gestionnaire de symboles SQLite
 try:
     from symbol_manager import (
         init_symbols_table, sync_txt_to_sqlite, get_symbols_by_list_type, get_all_sectors,
-        get_all_cap_ranges, get_symbols_by_sector_and_cap, get_symbol_count, get_sector_cached,
-        classify_cap_range_for_symbol
+        get_all_cap_ranges, get_symbols_by_sector_and_cap, get_symbol_count,
+        get_cleaned_group_cache, save_cleaned_group_cache
     )
     SYMBOL_MANAGER_AVAILABLE = True
 except ImportError:
     print("⚠️ symbol_manager non disponible, utilisation de la méthode classique")
     SYMBOL_MANAGER_AVAILABLE = False
-    get_sector_cached = None
-    classify_cap_range_for_symbol = None
 
-def precalculate_features(stock_data: Dict[str, pd.DataFrame], domain: str):
-    """🚀 Pré-calcule toutes les features TA et dérivées pour tous les symbols.
-    
-    Remplit TA_CACHE et DERIV_CACHE de qsi.py pour éviter les recalculs pendant l'optimisation.
-    Pré-charge aussi les fundamentals du SQLite pour éviter les requêtes yfinance répétées.
-    
-    Args:
-        stock_data: Dict {symbol: {'Close': Series, 'Volume': Series}}
-        domain: Secteur courant (pour logging)
-    """
-    print(f"\n⚙️  Pré-calcul des features pour {len(stock_data)} symbols ({domain})...")
-    
-    # Pré-charger les fundamentals du SQLite pour tous les symbols
-    fundamentals_preloaded = 0
+# 🔧 OPTIMISATION: Caching des secteurs (mémoire + disque)
+SECTOR_CACHE_FILE = Path("cache_data/sector_cache.json")
+SECTOR_CACHE_FILE.parent.mkdir(exist_ok=True)
+SECTOR_TTL_DAYS = 30
+SECTOR_TTL_UNKNOWN_DAYS = 7
+
+def _load_sector_cache():
     try:
-        from fundamentals_cache import get_fundamental_metrics
-        for symbol in stock_data.keys():
-            try:
-                _ = get_fundamental_metrics(symbol, use_cache=True)
-                fundamentals_preloaded += 1
-            except Exception:
-                pass  # Silencieux si fundamentals indisponibles
-    except ImportError:
-        pass  # fundamentals_cache optionnel
-    
-    for symbol, data in stock_data.items():
-        prices = data['Close']
-        volumes = data['Volume']
-        
-        if len(prices) < 50:
-            continue
-        
-        # Trigger le calcul et la mise en cache via get_trading_signal
-        # Cette fonction remplit automatiquement TA_CACHE et DERIV_CACHE
-        try:
-            result = qsi.get_trading_signal(
-                prices, volumes, domain,
-                domain_coeffs=None, domain_thresholds=None,
-                variation_seuil=-20, volume_seuil=100000,
-                return_derivatives=False,
-                symbol=symbol, cap_range=None,
-                price_extras=None
-            )
-            # Debug: vérifier si le cache s'est rempli
-            cache_key = (str(symbol), round(float(prices.iloc[-1]), 2), round(float(volumes.iloc[-1]) if len(volumes) > 0 else 0, -2), int(len(prices)))
-            if cache_key in qsi.TA_CACHE:
-                print(f"      ✓ {symbol}: TA_CACHE rempli")
-            else:
-                print(f"      ✗ {symbol}: TA_CACHE manquant!")
-        except Exception as e:
-            print(f"      ✗ {symbol}: Exception - {str(e)[:100]}")
-    
-    ta_cached = len(qsi.TA_CACHE)
-    deriv_cached = len(qsi.DERIV_CACHE)
-    print(f"   ✅ {ta_cached} entrées TA_CACHE, {deriv_cached} entrées DERIV_CACHE pré-calculées")
-    if fundamentals_preloaded > 0:
-        print(f"   ✅ {fundamentals_preloaded} symbols fundamentals pré-chargés du SQLite\n")
-    else:
-        print()
+        if SECTOR_CACHE_FILE.exists():
+            with open(SECTOR_CACHE_FILE, "r", encoding="utf-8") as f:
+                return json.load(f)
+    except Exception as e:
+        print(f"⚠️ Impossible de charger le cache secteurs: {e}")
+    return {}
+
+def _save_sector_cache(cache):
+    try:
+        with open(SECTOR_CACHE_FILE, "w", encoding="utf-8") as f:
+            json.dump(cache, f)
+    except Exception as e:
+        print(f"⚠️ Impossible d'écrire le cache secteurs: {e}")
+
+def _is_sector_expired(entry):
+    try:
+        ts = entry.get("ts")
+        if not ts:
+            return True
+        dt = datetime.fromisoformat(ts)
+        ttl_days = SECTOR_TTL_UNKNOWN_DAYS if entry.get("sector") == "ℹ️Inconnu!!" else SECTOR_TTL_DAYS
+        return (datetime.utcnow() - dt).days >= ttl_days
+    except Exception:
+        return True
+
+_sector_cache = _load_sector_cache()
 
 def get_sector(symbol, use_cache=True):
-    """Recupere le secteur d'une action avec cache intelligent.
-    Wrapper autour de symbol_manager.get_sector_cached()."""
-    if get_sector_cached is not None:
-        return get_sector_cached(symbol, use_cache=use_cache)
-    
-    # Fallback si symbol_manager non disponible
+    """Récupère le secteur d'une action avec cache mémoire + disque."""
+    if use_cache:
+        entry = _sector_cache.get(symbol)
+        if entry and not _is_sector_expired(entry):
+            return entry.get("sector", "ℹ️Inconnu!!")
+
     try:
-        import yfinance as yf
+        import yfinance as yf  # Import paresseux - chargé seulement si nécessaire
         ticker = yf.Ticker(symbol)
-        return ticker.info.get('sector', 'Unknown')
-    except Exception:
-        return 'Unknown'
-
-def classify_cap_range(symbol: str) -> str:
-    """Classe la capitalisation en categories. 
-    Wrapper autour de symbol_manager.classify_cap_range_for_symbol()."""
-    if classify_cap_range_for_symbol is not None:
-        return classify_cap_range_for_symbol(symbol)
-    
-    # Fallback si symbol_manager non disponible
-    try:
-        import yfinance as yf
-        ticker = yf.Ticker(symbol)
-        market_cap = ticker.info.get('marketCap')
-        if market_cap is None:
-            return 'Unknown'
-        market_cap_b = market_cap / 1e9
-        if market_cap_b < 2:
-            return 'Small'
-        if market_cap_b < 10:
-            return 'Mid'
-        if market_cap_b < 200:
-            return 'Large'
-        return 'Mega'
-    except Exception:
-        return 'Unknown'
-
-def clean_sector_cap_groups(sector_cap_ranges: dict, min_symbols: int = MIN_SYMBOLS_PER_GROUP, max_symbols: int = MAX_SYMBOLS_PER_GROUP) -> tuple:
-    """🧼 Nettoie les groupes secteur×cap: complète <min, limite >max, ignore impossibles.
-    
-    Args:
-        sector_cap_ranges: Dict {sector: {cap_range: [symbols]}}
-        min_symbols: Nombre minimum de symboles par groupe
-        max_symbols: Nombre maximum de symboles par groupe
-    
-    Returns:
-        tuple: (cleaned_groups, ignored_groups_log)
-    """
-    cleaned = {}
-    ignored_log = []
-    completion_log = []
-    
-    # Utiliser cache SQLite (TTL 100j) pour eviter recalcul secteur/cap via yfinance
-    try:
-        from symbol_manager import get_cleaned_group_cache, save_cleaned_group_cache
-        use_cache = SYMBOL_MANAGER_AVAILABLE
-    except:
-        use_cache = False
-    
-    print(f"   Verif cache (TTL 100j)...")
-    cache_hits = 0
-    cache_misses = 0
-    
-    for sector, buckets in sector_cap_ranges.items():
-        cleaned[sector] = {}
-        for cap_range, syms in buckets.items():
-            if not syms:
-                continue
-            
-            # Essayer le cache d'abord
-            if use_cache:
-                try:
-                    cached = get_cleaned_group_cache(sector, cap_range, ttl_days=100)
-                    if cached is not None:
-                        cleaned[sector][cap_range] = cached
-                        cache_hits += 1
-                        continue
-                except Exception:
-                    pass
-            
-            cache_misses += 1
-            current_syms = list(syms)
-            
-            # Completion si <min
-            if len(current_syms) < min_symbols:
-                candidates = []
-                if SYMBOL_MANAGER_AVAILABLE:
-                    try:
-                        candidates = get_symbols_by_sector_and_cap(sector, cap_range, list_type='popular', active_only=True)
-                    except Exception:
-                        pass
-                
-                # Exclure ceux déjà présents
-                candidates = [c for c in candidates if c not in current_syms]
-                
-                # Ajouter jusqu'à min_symbols
-                needed = min_symbols - len(current_syms)
-                added = candidates[:needed]
-                current_syms.extend(added)
-                
-                if added:
-                    completion_log.append({
-                        'sector': sector,
-                        'cap_range': cap_range,
-                        'original_count': len(syms),
-                        'added': added,
-                        'final_count': len(current_syms)
-                    })
-            
-            # 2️⃣ Vérification finale: si toujours <min_symbols, ignorer
-            if len(current_syms) < min_symbols:
-                reason = f"Trop peu de symboles ({len(current_syms)} < {min_symbols}, complétion échouée)"
-                ignored_log.append({
-                    'sector': sector,
-                    'cap_range': cap_range,
-                    'count': len(current_syms),
-                    'symbols': current_syms,
-                    'reason': reason
-                })
-                continue
-            
-            # 3️⃣ Limitation si >max_symbols: échantillonnage aléatoire
-            if len(current_syms) > max_symbols:
-                original_count = len(current_syms)
-                current_syms = random.sample(current_syms, max_symbols)
-                completion_log.append({
-                    'sector': sector,
-                    'cap_range': cap_range,
-                    'action': 'limited',
-                    'original_count': original_count,
-                    'sampled': current_syms,
-                    'final_count': max_symbols
-                })
-            
-            # ✅ Groupe valide : sauvegarder en cache
-            cleaned[sector][cap_range] = current_syms
-            if use_cache:
-                try:
-                    save_cleaned_group_cache(sector, cap_range, current_syms)
-                except Exception:
-                    pass
-        
-        if not cleaned[sector]:
-            del cleaned[sector]
-    
-    # Afficher stats cache
-    if cache_hits + cache_misses > 0:
-        print(f"      Cache hits: {cache_hits}, misses: {cache_misses}")
-    
-    return cleaned, ignored_log
-
-def log_ignored_groups(ignored_log: list, log_file: str = IGNORED_GROUPS_LOG):
-    """Consigner les groupes ignorés dans un fichier log."""
-    if not ignored_log:
-        return
-    
-    with open(log_file, 'w', encoding='utf-8') as f:
-        f.write(f"# Groupes ignorés - {datetime.now().strftime('%Y-%m-%d %H:%M:%S')}\n")
-        f.write(f"# Minimum: {MIN_SYMBOLS_PER_GROUP} symboles/groupe\n\n")
-        
-        for entry in ignored_log:
-            f.write(f"Secteur: {entry['sector']}\n")
-            f.write(f"Cap Range: {entry['cap_range']}\n")
-            f.write(f"Symboles ({entry['count']}): {', '.join(entry['symbols'])}\n")
-            f.write(f"Raison: {entry['reason']}\n")
-            f.write("-" * 80 + "\n\n")
-    
-    print(f"   📝 {len(ignored_log)} groupes ignorés logés dans {log_file}")
-
-def split_data_temporal(stock_data: dict, train_months: int = TRAIN_MONTHS, val_months: int = VAL_MONTHS, holdout_months: int = HOLDOUT_MONTHS) -> tuple:
-    """📅 Split temporel des données: train / val / holdout.
-    
-    Args:
-        stock_data: Dict {symbol: {'Close': Series, 'Volume': Series}}
-        train_months: Mois pour training
-        val_months: Mois pour validation
-        holdout_months: Mois pour hold-out final
-    
-    Returns:
-        tuple: (train_data, val_data, holdout_data, dates_info)
-            - train_data: Dict {symbol: {'Close': Series, 'Volume': Series}}
-            - val_data: Dict {symbol: {'Close': Series, 'Volume': Series}}
-            - holdout_data: Dict {symbol: {'Close': Series, 'Volume': Series}}
-            - dates_info: Dict avec les dates de split
-    """
-    train_data = {}
-    val_data = {}
-    holdout_data = {}
-    
-    # Calculer les dates de split depuis la date la plus récente
-    latest_date = None
-    for symbol, data_dict in stock_data.items():
-        close_series = data_dict['Close']
-        if latest_date is None or close_series.index[-1] > latest_date:
-            latest_date = close_series.index[-1]
-    
-    # Définir les bornes temporelles
-    holdout_start = latest_date - timedelta(days=holdout_months * 30)
-    val_start = holdout_start - timedelta(days=val_months * 30)
-    train_start = val_start - timedelta(days=train_months * 30)
-    
-    dates_info = {
-        'train_start': train_start,
-        'val_start': val_start,
-        'holdout_start': holdout_start,
-        'latest_date': latest_date
-    }
-    
-    # Splitter chaque symbole
-    for symbol, data_dict in stock_data.items():
-        close_series = data_dict['Close']
-        volume_series = data_dict['Volume']
-        
-        # Train: [train_start, val_start)
-        train_mask = (close_series.index >= train_start) & (close_series.index < val_start)
-        train_data[symbol] = {
-            'Close': close_series[train_mask].copy(),
-            'Volume': volume_series[train_mask].copy()
-        }
-        
-        # Val: [val_start, holdout_start)
-        val_mask = (close_series.index >= val_start) & (close_series.index < holdout_start)
-        val_data[symbol] = {
-            'Close': close_series[val_mask].copy(),
-            'Volume': volume_series[val_mask].copy()
-        }
-        
-        # Holdout: [holdout_start, latest]
-        holdout_mask = close_series.index >= holdout_start
-        holdout_data[symbol] = {
-            'Close': close_series[holdout_mask].copy(),
-            'Volume': volume_series[holdout_mask].copy()
-        }
-    
-    return train_data, val_data, holdout_data, dates_info
-
-def validate_configs_on_split(configs_with_scores: list, val_data: dict, domain: str, 
-                             montant: float, transaction_cost: float,
-                             top_k: int = 20) -> list:
-    """✅ Valide les top-K configs sur les données de validation.
-    
-    Args:
-        configs_with_scores: List of (params, train_score) tuples
-        val_data: Dict {symbol: DataFrame} pour validation
-        domain: Secteur
-        montant, transaction_cost: Paramètres backtest
-        top_k: Nombre de configs à valider
-    
-    Returns:
-        list: [(params, train_score, val_score, val_metrics), ...] trié par val_score
-    """
-    # Trier par train_score et prendre top-K
-    sorted_configs = sorted(configs_with_scores, key=lambda x: x[1], reverse=True)[:top_k]
-    
-    validated = []
-    print(f"\n✅ Validation de {len(sorted_configs)} meilleures configs sur période val...")
-    
-    for params, train_score in tqdm(sorted_configs, desc="🔍 Validation"):
-        # Évaluer sur val
-        val_gain = 0.0
-        val_trades = 0
-        val_successes = 0
-        val_drawdown = 0.0
-        
-        coeffs = tuple(params[:8])
-        feature_thresholds = tuple(params[8:16])
-        seuil_achat = float(params[16])
-        seuil_vente = float(params[17])
-        
-        for symbol, data in val_data.items():
-            try:
-                result, _ = backtest_signals_with_events(
-                    data['Close'], data['Volume'], domain,
-                    montant=montant, transaction_cost=transaction_cost,
-                    domain_coeffs={domain: coeffs},
-                    domain_thresholds={domain: feature_thresholds},
-                    seuil_achat=seuil_achat, seuil_vente=seuil_vente,
-                    extra_params=None,
-                    fundamentals_extras=None,
-                    symbol_name=symbol
-                )
-                val_gain += result['gain_total']
-                val_trades += result.get('trades', 0)
-                if result.get('taux_reussite', 0) > 0:
-                    val_successes += 1
-                # TODO: calculer drawdown si disponible
-            except Exception:
-                continue
-        
-        avg_val_gain = val_gain / len(val_data) if val_data else 0.0
-        gain_per_trade = val_gain / val_trades if val_trades > 0 else 0.0
-        
-        val_metrics = {
-            'avg_gain': avg_val_gain,
-            'total_trades': val_trades,
-            'gain_per_trade': gain_per_trade,
-            'success_rate': (val_successes / len(val_data) * 100) if val_data else 0.0,
-            'drawdown': val_drawdown
-        }
-        
-        validated.append((params, train_score, avg_val_gain, val_metrics))
-    
-    # Trier par val_score
-    validated.sort(key=lambda x: x[2], reverse=True)
-    return validated
-
-def apply_validation_threshold(validated_configs: list, min_gain_per_trade: float = MIN_GAIN_PER_TRADE,
-                              max_drawdown_pct: float = MAX_DRAWDOWN_PCT,
-                              min_trades_per_year: int = MIN_TRADES_PER_YEAR) -> list:
-    """⛔ Filtre les configs qui ne passent pas les seuils de validation.
-    
-    Args:
-        validated_configs: List from validate_configs_on_split
-        min_gain_per_trade: Seuil minimal gain/trade
-        max_drawdown_pct: Seuil maximal drawdown
-        min_trades_per_year: Seuil minimal trades/an
-    
-    Returns:
-        list: Configs filtrées qui passent les seuils
-    """
-    filtered = []
-    for params, train_score, val_score, val_metrics in validated_configs:
-        # Appliquer les seuils
-        if val_metrics['gain_per_trade'] < min_gain_per_trade:
-            continue
-        if val_metrics['total_trades'] < min_trades_per_year / 2:  # Sur 6 mois = moitié de l'année
-            continue
-        # TODO: vérifier drawdown si disponible
-        
-        filtered.append((params, train_score, val_score, val_metrics))
-    
-    if not filtered:
-        print("   ⚠️ Aucune config ne passe les seuils de validation!")
-        # Fallback: retourner la meilleure même si elle échoue
-        if validated_configs:
-            return [validated_configs[0]]
-    
-    return filtered
+        info = ticker.info
+        sector = info.get('sector', 'ℹ️Inconnu!!')
+        print(f"📋 {symbol}: Secteur = {sector}")
+        _sector_cache[symbol] = {"sector": sector, "ts": datetime.utcnow().isoformat()}
+        _save_sector_cache(_sector_cache)
+        return sector
+    except Exception as e:
+        print(f"⚠️ Erreur pour {symbol}: {e}")
+        return 'ℹ️Inconnu!!'
 
 def get_best_gain_csv(domain, csv_path='signaux/optimization_hist_4stp.csv'):
     """Récupère le meilleur gain moyen historique pour le secteur dans le CSV."""
@@ -489,6 +121,101 @@ def classify_cap_range(symbol: str) -> str:
     except Exception:
         return 'Unknown'
 
+# ----------------------------
+# Nettoyage paresseux des groupes secteur × cap_range (complément + réduction)
+# ----------------------------
+def clean_sector_cap_groups(sector_cap_ranges: Dict[str, Dict[str, List[str]]],
+                            ttl_days: int = 100,
+                            min_symbols: int = 4,
+                            max_symbols: int = 12) -> Dict[str, Dict[str, List[str]]]:
+    """Nettoie et équilibre les groupes de symboles avec complément et réduction.
+
+    Logique :
+    - Utilise get_cleaned_group_cache pour éviter de recalculer si disponible et non expiré (100 jours).
+    - Si groupe < 4 symboles : 
+      1. Complète en puisant dans les symboles populaires du même secteur
+      2. Si encore insuffisant, fusionne avec d'autres cap_range du même secteur
+      3. Si toujours insuffisant, fallback sur tous les populaires (fusion transsectorielle)
+    - Si groupe > 12 symboles : réduit à 12 (en gardant les meilleurs/premiers).
+    - Sauvegarde le résultat nettoyé via save_cleaned_group_cache.
+    """
+    from symbol_manager import get_popular_symbols_by_sector, get_all_popular_symbols
+    
+    cleaned: Dict[str, Dict[str, List[str]]] = {}
+    for sector, buckets in sector_cap_ranges.items():
+        cleaned[sector] = {}
+        for cap, syms in buckets.items():
+            if not syms:
+                cleaned[sector][cap] = []
+                continue
+            
+            # Essayer le cache en premier mais toujours revalider les bornes min/max
+            cached = None
+            try:
+                cached = get_cleaned_group_cache(sector, cap, ttl_days)
+            except Exception:
+                cached = None
+            
+            # Nettoyer et valider la liste de base (cache si dispo, sinon syms bruts)
+            source_list = cached if cached is not None else syms
+            base = [s for s in source_list if isinstance(s, str) and s.strip()]
+            base = [s.strip().upper() for s in base]
+            base = list(dict.fromkeys(base))  # Déduplicate
+            
+            # COMPLÉMENT (3 étapes) : si trop petit, remplir intelligemment
+            if len(base) < min_symbols:
+                needed = min_symbols - len(base)
+                exclude_set = set(base)
+                
+                # Étape 1 : Populaires du même secteur
+                try:
+                    popular_same_sector = get_popular_symbols_by_sector(sector, max_count=needed * 2, exclude_symbols=exclude_set)
+                    added = popular_same_sector[:needed]
+                    base.extend(added)
+                    exclude_set.update(added)
+                    needed = min_symbols - len(base)
+                except Exception:
+                    pass
+                
+                # Étape 2 : Fusion avec d'autres cap_range du même secteur si encore insuffisant
+                if needed > 0:
+                    for other_cap, other_syms in buckets.items():
+                        if other_cap == cap or needed <= 0:
+                            continue
+                        other_clean = [s.strip().upper() for s in other_syms if isinstance(s, str) and s.strip()]
+                        candidates = [s for s in other_clean if s not in exclude_set]
+                        added = candidates[:needed]
+                        base.extend(added)
+                        exclude_set.update(added)
+                        needed = min_symbols - len(base)
+                
+                # Étape 3 : Fallback sur TOUS les populaires (transsectoriel)
+                if needed > 0:
+                    try:
+                        all_popular = get_all_popular_symbols(max_count=needed * 2, exclude_symbols=exclude_set)
+                        added = all_popular[:needed]
+                        base.extend(added)
+                        exclude_set.update(added)
+                    except Exception:
+                        pass
+                
+                base = list(dict.fromkeys(base))  # Rédéduplicate final
+            
+            # RÉDUCTION : si trop grand, réduire à max_symbols
+            if len(base) > max_symbols:
+                base = base[:max_symbols]
+            
+            cleaned[sector][cap] = base
+            
+            # Sauvegarder le groupe nettoyé
+            try:
+                save_cleaned_group_cache(sector, cap, base)
+            except Exception:
+                pass
+    
+    return cleaned
+
+
 # ----
 # Top-level objective for SciPy DE (picklable on Windows)
 def _de_objective(params, optimizer):
@@ -502,49 +229,10 @@ def _de_objective(params, optimizer):
         # Penalize any evaluation failure to keep DE robust
         return 1000.0
 
-def _evaluate_single_symbol(symbol: str, data: dict, domain: str, params: np.ndarray, 
-                            montant: float, transaction_cost: float,
-                            have_active_price: bool, have_active_fund: bool,
-                            price_extras: dict, fundamentals_extras: dict) -> tuple:
-    """🚀 Évalue le backtest pour UN SEUL symbole (appelé en parallèle).
-    
-    Args:
-        symbol: Symbole boursier
-        data: Dict avec 'Close' et 'Volume' Series
-        domain: Secteur
-        params: Vecteur de paramètres (coeffs, seuils)
-        montant, transaction_cost: Paramètres backtest
-        have_active_price, have_active_fund: Flags pour activer extras
-        price_extras, fundamentals_extras: Dicts d'extras optionnels
-    
-    Returns:
-        tuple: (gain_total, num_trades) pour ce symbole
-    """
-    # Extraire les 18 paramètres de base
-    coeffs = tuple(params[:8])
-    feature_thresholds = tuple(params[8:16])
-    seuil_achat = float(params[16])
-    seuil_vente = float(params[17])
-    
-    try:
-        result, _ = backtest_signals_with_events(
-            data['Close'], data['Volume'], domain,
-            montant=montant, transaction_cost=transaction_cost,
-            domain_coeffs={domain: coeffs},
-            domain_thresholds={domain: feature_thresholds},
-            seuil_achat=seuil_achat, seuil_vente=seuil_vente,
-            extra_params=(price_extras if have_active_price else None),
-            fundamentals_extras=(fundamentals_extras if have_active_fund else None),
-            symbol_name=symbol
-        )
-        return result['gain_total'], result.get('trades', 0)  # 🚀 Retourner aussi les trades
-    except Exception as e:
-        return 0.0, 0  # Défaut si erreur
-
 class HybridOptimizer:
     """Optimiseur hybride utilisant plusieurs stratégies d'optimisation avec limitation des décimales"""
     
-    def __init__(self, stock_data, domain, montant=50, transaction_cost=1.0, precision=2, use_price_features: bool = False, use_fundamentals_features: bool = False, n_jobs: int = 1):
+    def __init__(self, stock_data, domain, montant=50, transaction_cost=1.0, precision=2, use_price_features: bool = False, use_fundamentals_features: bool = False):
         self.stock_data = stock_data
         self.domain = domain
         self.montant = montant
@@ -554,29 +242,20 @@ class HybridOptimizer:
         self.precision = precision  # 🔧 NUOVO: Précision des paramètres (nombre de décimales)
         self.use_price_features = use_price_features
         self.use_fundamentals_features = use_fundamentals_features
-        self.n_jobs = n_jobs  # 🚀 Nombre de workers pour parallélisation par symboles (1 = séquentiel)
         
         # 🔧 Définir les bounds (18 de base: 8 coeffs + 8 seuils + 2 globaux)
-        # a3 (RSI cross mid) gelé, et les thresholds binaires inutiles sont figés
-        coeff_bounds = [(0.5, 3.0)] * 8
-        coeff_bounds[2] = (0.0, 0.0)  # a3 inutilisé (RSI cross mid)
-
-        threshold_bounds = [
-            (30.0, 70.0),   # threshold 0: RSI_threshold (index 8)
-            (0.0, 0.0),     # threshold 1: MACD_threshold (gelé)
-            (0.0, 0.0),     # threshold 2: EMA_threshold (gelé)
-            (0.5, 2.5),     # threshold 3: Volume_threshold (index 11)
-            (15.0, 35.0),   # threshold 4: ADX_threshold (index 12)
-            (0.0, 0.0),     # threshold 5: Ichimoku_threshold (gelé)
-            (0.5, 0.5),     # threshold 6: Bollinger_threshold (fixé au mid-band)
-            (2.0, 6.0),     # threshold 7: Score_global_threshold (index 15)
-        ]
-
         base_bounds = (
-            coeff_bounds +
-            threshold_bounds +
-            [(2.0, 6.0)] +     # seuil_achat global (index 16)
-            [(-6.0, -2.0)]     # seuil_vente global (index 17)
+            [(0.5, 3.0)] * 8 +  # coefficients a1-a8 (indices 0-7)
+            [(30.0, 70.0)] +     # threshold 0: RSI_threshold (index 8) - garder
+            [(0.0, 0.0)] +       # threshold 1: MACD_threshold (index 9) - geler
+            [(0.0, 0.0)] +       # threshold 2: EMA_threshold (index 10) - geler
+            [(0.5, 2.5)] +       # threshold 3: Volume_threshold (index 11) - garder
+            [(15.0, 35.0)] +     # threshold 4: ADX_threshold (index 12) - garder
+            [(0.0, 0.0)] +       # threshold 5: Ichimoku_threshold (index 13) - geler
+            [(0.5, 0.5)] +       # threshold 6: Bollinger_threshold (index 14) - fixer
+            [(2.0, 6.0)] +       # threshold 7: Score_global_threshold (index 15) - garder
+            [(2.0, 6.0)] +       # seuil_achat global (index 16)
+            [(-6.0, -2.0)]       # seuil_vente global (index 17)
         )
         self.bounds = base_bounds
         
@@ -613,6 +292,7 @@ class HybridOptimizer:
         self.optimized_coeffs_loaded = False
         self.initial_coeffs = None
         self.initial_thresholds = None
+        self.meilleur_score = -float('inf')  # 🔧 Meilleur score trouvé (global)
         self.meilleur_trades = 0  # 🔧 Stocker le nombre de trades de la meilleure config
         
     def round_params(self, params):
@@ -630,25 +310,24 @@ class HybridOptimizer:
             return self.best_cache[param_key]
 
         # Extraire les paramètres : 8 coeffs + 8 seuils feature + 2 seuils globaux
-        coeffs = list(params[:8])
-        feature_thresholds = list(params[8:16])  # 8 seuils individuels (certains figés)
+        coeffs = tuple(params[:8])
+        feature_thresholds = tuple(params[8:16])  # 8 seuils individuels
         seuil_achat = float(params[16])  # Seuil global achat
         seuil_vente = float(params[17])  # Seuil global vente
 
         # Contraintes avec arrondi sur les coefficients
-        coeffs = list(np.clip(self.round_params(coeffs), 0.5, 3.0))
-        coeffs[2] = 0.0  # a3 gelé
-        coeffs = tuple(coeffs)
+        coeffs = tuple(np.clip(self.round_params(coeffs), 0.5, 3.0))
         
         # Contraintes sur les seuils features
-        feature_thresholds[0] = np.clip(round(feature_thresholds[0], self.precision), 30.0, 70.0)  # RSI_threshold
-        feature_thresholds[1] = 0.0  # MACD_threshold gelé
-        feature_thresholds[2] = 0.0  # EMA_threshold gelé
-        feature_thresholds[3] = np.clip(round(feature_thresholds[3], self.precision), 0.5, 2.5)    # Volume_threshold
-        feature_thresholds[4] = np.clip(round(feature_thresholds[4], self.precision), 15.0, 35.0)  # ADX_threshold
-        feature_thresholds[5] = 0.0  # Ichimoku_threshold gelé
-        feature_thresholds[6] = 0.5  # Bollinger_threshold fixé
-        feature_thresholds[7] = np.clip(round(feature_thresholds[7], self.precision), 2.0, 6.0)    # Score_global_threshold
+        feature_thresholds = list(feature_thresholds)
+        feature_thresholds[0] = np.clip(round(feature_thresholds[0], self.precision), 30.0, 70.0)  # RSI_threshold (garder)
+        feature_thresholds[1] = 0.0  # MACD_threshold (gelé)
+        feature_thresholds[2] = 0.0  # EMA_threshold (gelé)
+        feature_thresholds[3] = np.clip(round(feature_thresholds[3], self.precision), 0.5, 2.5)    # Volume_threshold (garder)
+        feature_thresholds[4] = np.clip(round(feature_thresholds[4], self.precision), 15.0, 35.0)  # ADX_threshold (garder)
+        feature_thresholds[5] = 0.0  # Ichimoku_threshold (gelé)
+        feature_thresholds[6] = 0.5  # Bollinger_threshold (fixé)
+        feature_thresholds[7] = np.clip(round(feature_thresholds[7], self.precision), 2.0, 6.0)    # Score_global_threshold (garder)
         feature_thresholds = tuple(feature_thresholds)
         
         # Contraintes sur les seuils globaux
@@ -702,56 +381,45 @@ class HybridOptimizer:
                 'th_de_ratio': 0.0,  # Placeholder for 5th threshold (reserved)
             }
 
-        # 🔧 Mise à jour: utiliser toujours le backtest "with_events" pour cohérence
-        # Même lorsque les features étendues sont désactivées, on passe extras=None.
-        have_active_price = bool(self.use_price_features and price_extras is not None and (
-            int(price_extras.get('use_price_slope', 0) or 0) or int(price_extras.get('use_price_acc', 0) or 0)
-        ))
-        have_active_fund = bool(self.use_fundamentals_features and fundamentals_extras is not None and (
-            int(fundamentals_extras.get('use_fundamentals', 0) or 0)
-        ))
-
         total_gain = 0.0
         total_trades = 0
         try:
-            # 🚀 PARALLÉLISATION PAR SYMBOLES
-            if self.n_jobs != 1 and len(self.stock_data) > 1:
-                # Utiliser joblib pour évaluation parallèle
-                results = Parallel(n_jobs=self.n_jobs, backend='loky')(
-                    delayed(_evaluate_single_symbol)(
-                        symbol, data, self.domain, params,
-                        self.montant, self.transaction_cost,
-                        have_active_price, have_active_fund,
-                        price_extras, fundamentals_extras
-                    )
-                    for symbol, data in self.stock_data.items()
-                )
-                gains = [r[0] for r in results]  # 🚀 Extraire les gains
-                trades = [r[1] for r in results]  # 🚀 Extraire les trades
-                total_gain = sum(gains)
-                total_trades = sum(trades)  # 🚀 Accumuler les trades
-            else:
-                # Évaluation séquentielle (original)
-                for symbol, data in self.stock_data.items():
-                    # Utiliser systématiquement la version avec événements pour des règles identiques
+            for symbol, data in self.stock_data.items():
+                if (self.use_price_features and price_extras is not None) or (self.use_fundamentals_features and fundamentals_extras is not None):
+                    # Use Python backtest with events to pass extras into qsi.get_trading_signal
                     result, _ = backtest_signals_with_events(
                         data['Close'], data['Volume'], self.domain,
                         montant=self.montant, transaction_cost=self.transaction_cost,
                         domain_coeffs={self.domain: coeffs},
                         domain_thresholds={self.domain: feature_thresholds},
                         seuil_achat=seuil_achat, seuil_vente=seuil_vente,
-                        extra_params=(price_extras if have_active_price else None),
-                        fundamentals_extras=(fundamentals_extras if have_active_fund else None),
+                        extra_params=price_extras,
+                        fundamentals_extras=fundamentals_extras,
                         symbol_name=symbol
                     )
-                    total_gain += result['gain_total']
-                    total_trades += result['trades']
+                else:
+                    result = backtest_signals(
+                        data['Close'], data['Volume'], self.domain,
+                        domain_coeffs={self.domain: coeffs},
+                        domain_thresholds={self.domain: feature_thresholds},
+                        seuil_achat=seuil_achat, seuil_vente=seuil_vente,
+                        montant=self.montant, transaction_cost=self.transaction_cost
+                    )
+                total_gain += result['gain_total']
+                total_trades += result['trades']
 
             avg_gain = total_gain / len(self.stock_data) if self.stock_data else 0.0
             self.evaluation_count += 1
+
+            # 🚦 Gardes: rejeter les configs sans trades pour éviter des scores incohérents
+            if total_trades == 0:
+                penalized = -1e6
+                self.best_cache[param_key] = penalized
+                return penalized
             
-            # 🔧 Tracker le nombre de trades de la meilleure config
-            if param_key not in self.best_cache or avg_gain > self.best_cache[param_key]:
+            # 🔧 Tracker le nombre de trades de la meilleure config (global, pas par cache)
+            if avg_gain > self.meilleur_score:
+                self.meilleur_score = avg_gain
                 self.meilleur_trades = total_trades
 
             # Cache le résultat
@@ -762,14 +430,14 @@ class HybridOptimizer:
             print(f"⚠️ evaluate_config error: {e}")  # Debug: show exceptions
             return -1000.0  # Pénalité pour configurations invalides
 
-    def genetic_algorithm(self, population_size=50, generations=30, mutation_rate=0.15, seed=None):
+    def genetic_algorithm(self, population_size=50, generations=30, mutation_rate=0.15):
         """Algorithme génétique pour l'optimisation avec précision limitée"""
         print(f"🧬 Démarrage algorithme génétique (pop={population_size}, gen={generations}, précision={self.precision})")
         
         # Utiliser self.bounds (16 paramètres: 8 coefficients + 8 seuils individuels)
         bounds = self.bounds
         population = []
-        for idx in range(population_size):
+        for _ in range(population_size):
             individual = []
             for low, high in bounds:
                 # 🔧 MODIFIÉ: Génération avec pas discret selon la précision
@@ -785,20 +453,10 @@ class HybridOptimizer:
                 random_step = np.random.randint(0, n_steps + 1)
                 value = low + random_step * step
                 individual.append(round(value, self.precision))
-            candidate = np.array(individual)
-            # 🔧 Injecter la graine historique comme premier individu si fournie
-            if seed is not None and idx == 0:
-                try:
-                    seed_arr = np.array(seed, dtype=float)
-                    seed_arr = np.clip(seed_arr, [b[0] for b in bounds], [b[1] for b in bounds])
-                    candidate = self.round_params(seed_arr)
-                except Exception:
-                    pass
-            population.append(candidate)
+            population.append(np.array(individual))
 
         best_fitness = -float('inf')
         best_individual = None
-        best_trades = 0  # 🚀 Tracker les trades du meilleur score
 
         with tqdm(total=generations, desc="🧬 Évolution génétique", unit="gen") as pbar:
             for gen in range(generations):
@@ -815,7 +473,6 @@ class HybridOptimizer:
                 if current_best > best_fitness:
                     best_fitness = current_best
                     best_individual = population[fitness_indices[0]].copy()
-                    best_trades = self.meilleur_trades  # 🚀 Capture les trades du nouveau meilleur
 
                 # Nouvelle génération
                 new_population = elite.copy()
@@ -837,7 +494,7 @@ class HybridOptimizer:
 
                 population = new_population[:population_size]
 
-                pbar.set_postfix({'Meilleur': f"{best_fitness:.3f}", 'Trades': best_trades})
+                pbar.set_postfix({'Meilleur': f"{best_fitness:.3f}", 'Trades': self.meilleur_trades})
                 pbar.update(1)
 
         return self.round_params(best_individual), best_fitness
@@ -879,14 +536,8 @@ class HybridOptimizer:
                 mutated[i] = round(np.clip(new_value, bounds[i][0], bounds[i][1]), self.precision)
         return mutated
 
-    def differential_evolution_opt(self, population_size=45, max_iterations=100, seed=None):
-        """Optimisation par évolution différentielle avec arrondi
-        
-        Args:
-            population_size: Taille de la population
-            max_iterations: Nombre d'itérations
-            seed: Vecteur de paramètres initial (warm-start) pour aider la convergence
-        """
+    def differential_evolution_opt(self, population_size=45, max_iterations=100):
+        """Optimisation par évolution différentielle avec arrondi"""
         print(f"🔄 Démarrage évolution différentielle (pop={population_size}, iter={max_iterations}, précision={self.precision})")
         
         bounds = self.bounds
@@ -900,110 +551,47 @@ class HybridOptimizer:
             print(f"   ⚠️ Pop trop grande pour {dim} dimensions → réduit {population_size} → {max_popsize}")
             population_size = max_popsize
 
-        # 🌱 Préparer le seed comme point de départ (warm-start)
-        init_candidates = None
-        if seed is not None:
-            try:
-                seed_arr = np.array(seed, dtype=float)
-                seed_arr = np.clip(seed_arr, [b[0] for b in bounds], [b[1] for b in bounds])
-                seed_arr = self.round_params(seed_arr)
-                init_candidates = seed_arr
-                print(f"   🌱 Warm-start avec seed historique")
-            except Exception as e:
-                print(f"   ⚠️ Impossible d'utiliser seed: {e}")
-
-        best_de_trades = [0]  # 🚀 Tracker les trades du meilleur score en DE (list pour closure)
         with tqdm(total=max_iterations, desc="🔄 Évolution différentielle", unit="iter") as pbar:
             def callback(xk, convergence):
-                best_de_trades[0] = self.meilleur_trades  # 🚀 Capture les trades du meilleur
-                pbar.set_postfix({'Convergence': f"{convergence:.6f}", 'Trades': best_de_trades[0]})
+                pbar.set_postfix({'Convergence': f"{convergence:.6f}", 'Trades': self.meilleur_trades})
                 pbar.update(1)
 
-            de_kwargs = {
-                'maxiter': max_iterations,
-                'popsize': population_size,
-                'mutation': (0.5, 1.5),
-                'recombination': 0.7,
-                'callback': callback,
-                'polish': False,
-                'seed': np.random.randint(0, 10000),
-                'workers': -1,  # Use all cores; safe thanks to top-level objective
-            }
-            
-            # 🌱 Ajouter le seed si disponible
-            if init_candidates is not None:
-                de_kwargs['init'] = 'latinhypercube'  # Utiliser LHC + ajouter seed
-                # Note: on ajoute le seed via la stratégie, pas via init directement
-                # car scipy DE n'a pas de paramètre x0 pour point de départ unique
-                # Solution: on évalue le seed séparément et on le compare au meilleur trouvé
-            
             result = differential_evolution(
                 _de_objective,
                 bounds,
                 args=(self,),
-                **de_kwargs
+                maxiter=max_iterations,
+                popsize=population_size,
+                mutation=(0.5, 1.5),
+                recombination=0.7,
+                callback=callback,
+                polish=False,
+                seed=np.random.randint(0, 10000),
+                workers=-1,  # Use all cores; safe thanks to top-level objective
             )
 
-        # 🌱 Si seed fourni, comparer le seed au résultat DE
-        best_x = self.round_params(result.x)
-        best_f = -result.fun
-        
-        if init_candidates is not None:
-            seed_score = self.evaluate_config(init_candidates)
-            if seed_score > best_f:
-                print(f"   ℹ️ Seed meilleur que DE (seed={seed_score:.3f} vs DE={best_f:.3f}), en utilisant le seed")
-                best_x = init_candidates
-                best_f = seed_score
-        
-        return best_x, best_f
+        return self.round_params(result.x), -result.fun
 
-    def latin_hypercube_sampling(self, n_samples=500, seed=None):
+    def latin_hypercube_sampling(self, n_samples=500):
         """Échantillonnage Latin Hypercube avec arrondi"""
         print(f"🎯 Latin Hypercube Sampling avec {n_samples} échantillons (précision={self.precision})")
+        
+        # 🔧 CORRIGÉ: Utiliser la dimension réelle des bounds au lieu de 18 hardcodé
+        n_dimensions = len(self.bounds)
+        sampler = qmc.LatinHypercube(d=n_dimensions)
+        samples = sampler.random(n=n_samples)
+
+        # Mise à l'échelle
         bounds = self.bounds
+        l_bounds = [b[0] for b in bounds]
+        u_bounds = [b[1] for b in bounds]
+        scaled_samples = qmc.scale(samples, l_bounds, u_bounds)
 
-        # Gérer les paramètres figés (l==u) : on ne les fait pas varier dans le LHS
-        var_idx = [i for i, (l, u) in enumerate(bounds) if u > l]
-        fixed_idx = [i for i, (l, u) in enumerate(bounds) if u == l]
-
-        if not var_idx:
-            # Tout est figé : un seul point
-            scaled_samples = np.array([[b[0] for b in bounds]] * n_samples, dtype=float)
-        else:
-            sampler = qmc.LatinHypercube(d=len(var_idx))
-            samples = sampler.random(n=n_samples)
-            l_bounds = [bounds[i][0] for i in var_idx]
-            u_bounds = [bounds[i][1] for i in var_idx]
-            var_scaled = qmc.scale(samples, l_bounds, u_bounds)
-
-            # Reconstituer la dimension complète en réinjectant les valeurs figées
-            scaled_samples = np.zeros((n_samples, len(bounds)), dtype=float)
-            # Remplir par défaut avec les bornes inf (qui == sup pour les figées)
-            for j, (l, _) in enumerate(bounds):
-                scaled_samples[:, j] = l
-            # Injecter les dimensions variables
-            for col, idx in enumerate(var_idx):
-                scaled_samples[:, idx] = var_scaled[:, col]
-
-        # 🔧 Arrondir les échantillons
+        # 🔧 MODIFIÉ: Arrondir les échantillons
         scaled_samples = np.array([self.round_params(sample) for sample in scaled_samples])
 
         best_params = None
         best_score = -float('inf')
-        best_trades = 0  # 🚀 Tracker les trades du meilleur score
-        
-        # 🔧 Évaluer d'abord une graine historique si fournie
-        if seed is not None:
-            try:
-                seed_arr = np.array(seed, dtype=float)
-                seed_arr = np.clip(seed_arr, [b[0] for b in bounds], [b[1] for b in bounds])
-                seed_arr = self.round_params(seed_arr)
-                seed_score = self.evaluate_config(seed_arr)
-                best_params = seed_arr.copy()
-                best_score = seed_score
-                best_trades = self.meilleur_trades  # Capture les trades du seed
-            except Exception:
-                pass
 
         with tqdm(total=n_samples, desc="🎯 LHS Exploration", unit="sample") as pbar:
             for sample in scaled_samples:
@@ -1011,118 +599,29 @@ class HybridOptimizer:
                 if score > best_score:
                     best_score = score
                     best_params = sample.copy()
-                    best_trades = self.meilleur_trades  # 🚀 Capture les trades du nouveau meilleur
 
-                pbar.set_postfix({'Meilleur': f"{best_score:.3f}", 'Trades': best_trades})
+                pbar.set_postfix({'Meilleur': f"{best_score:.3f}", 'Trades': self.meilleur_trades})
                 pbar.update(1)
 
         return best_params, best_score
 
-    def cma_es_optimization(self, lhs_samples=1000, top_k=5, max_generations=20, pop_size=None):
-        """CMA-ES avec warm-start LHS. Nécessite le package 'cma'."""
-        if not CMA_AVAILABLE:
-            print("⚠️ CMA-ES indisponible (package 'cma' manquant). Fallback LHS.")
-            return self.latin_hypercube_sampling(lhs_samples)
-
-        dim = len(self.bounds)
-
-        # 1) Warm-start via LHS en gérant les bornes figées
-        lhs_samples = max(lhs_samples, top_k)
-        print(f"🚀 CMA-ES warm-start: LHS {lhs_samples} échantillons, top-{top_k} pour initialiser")
-
-        var_idx = [i for i, (l, u) in enumerate(self.bounds) if u > l]
-        fixed_idx = [i for i, (l, u) in enumerate(self.bounds) if u == l]
-
-        if not var_idx:
-            scaled = np.array([[b[0] for b in self.bounds]] * lhs_samples, dtype=float)
-        else:
-            sampler = qmc.LatinHypercube(d=len(var_idx))
-            samples = sampler.random(n=lhs_samples)
-            l_bounds = [self.bounds[i][0] for i in var_idx]
-            u_bounds = [self.bounds[i][1] for i in var_idx]
-            var_scaled = qmc.scale(samples, l_bounds, u_bounds)
-
-            scaled = np.zeros((lhs_samples, dim), dtype=float)
-            for j, (l, _) in enumerate(self.bounds):
-                scaled[:, j] = l
-            for col, idx in enumerate(var_idx):
-                scaled[:, idx] = var_scaled[:, col]
-
-        scaled = np.array([self.round_params(s) for s in scaled])
-
-        scores = []
-        for s in scaled:
-            scores.append(self.evaluate_config(s))
-        scores = np.array(scores)
-        best_indices = np.argsort(scores)[::-1][:top_k]
-        best_candidates = scaled[best_indices]
-        best_scores = scores[best_indices]
-
-        x0 = best_candidates[0]
-        spread = (u_bounds - l_bounds)
-        sigma = max(1e-3, float(np.median(spread) * 0.15))
-        pop_size = pop_size or int(4 + 3 * np.log(dim))
-
-        print(f"   CMA-ES init score={best_scores[0]:.3f}, sigma={sigma:.4f}, pop_size={pop_size}")
-        es = cma.CMAEvolutionStrategy(x0.tolist(), sigma, {
-            'bounds': [l_bounds.tolist(), u_bounds.tolist()],
-            'popsize': pop_size,
-            'maxiter': max_generations,
-            'verb_disp': 0,
-        })
-
-        best_params = x0
-        best_score = best_scores[0]
-        best_cma_trades = [0]  # 🚀 Tracker les trades du meilleur score en CMA-ES (list pour closure)
-
-        with tqdm(total=max_generations, desc="🌌 CMA-ES", unit="gen") as pbar:
-            for _ in range(max_generations):
-                candidates = es.ask()
-                fitness = []
-                for c in candidates:
-                    c_arr = np.array(c, dtype=float)
-                    c_arr = np.clip(c_arr, l_bounds, u_bounds)
-                    c_arr = self.round_params(c_arr)
-                    score = self.evaluate_config(c_arr)
-                    fitness.append(-score)  # cma minimise
-                    if score > best_score:
-                        best_score = score
-                        best_params = c_arr.copy()
-                        best_cma_trades[0] = self.meilleur_trades  # 🚀 Capture les trades du nouveau meilleur
-                es.tell(candidates, fitness)
-                pbar.set_postfix({'Meilleur': f"{best_score:.3f}", 'Trades': best_cma_trades[0]})
-                pbar.update(1)
-                if es.stop():
-                    break
-
-        return best_params, best_score
-
-    def particle_swarm_optimization(self, n_particles=30, max_iterations=50, seed=None):
+    def particle_swarm_optimization(self, n_particles=30, max_iterations=50):
         """Optimisation par essaim particulaire (PSO) avec arrondi"""
         print(f"🐝 Particle Swarm Optimization (particles={n_particles}, iter={max_iterations}, précision={self.precision})")
         
         bounds = np.array(self.bounds)
 
         # Initialisation avec arrondi
-        particles = np.random.uniform(bounds[:, 0], bounds[:, 1], (n_particles, len(self.bounds)))
+        particles = np.random.uniform(bounds[:, 0], bounds[:, 1], (n_particles, 18))
         particles = np.array([self.round_params(p) for p in particles])  # 🔧 MODIFIÉ
-        # 🔧 Injecter la graine historique si disponible
-        if seed is not None:
-            try:
-                seed_arr = np.array(seed, dtype=float)
-                seed_arr = np.clip(seed_arr, bounds[:, 0], bounds[:, 1])
-                particles[0] = self.round_params(seed_arr)
-            except Exception:
-                pass
         
-        velocities = np.random.uniform(-1, 1, (n_particles, len(self.bounds)))
+        velocities = np.random.uniform(-1, 1, (n_particles, 18))
         personal_best_positions = particles.copy()
         personal_best_scores = np.array([self.evaluate_config(p) for p in particles])
 
         global_best_idx = np.argmax(personal_best_scores)
         global_best_position = personal_best_positions[global_best_idx].copy()
         global_best_score = personal_best_scores[global_best_idx]
-        global_best_trades = self.meilleur_trades  # 🚀 Tracker les trades du meilleur global
 
         w = 0.7  # Inertie
         c1 = 1.4  # Coefficient cognitif
@@ -1154,9 +653,8 @@ class HybridOptimizer:
                     if score > global_best_score:
                         global_best_score = score
                         global_best_position = particles[i].copy()
-                        global_best_trades = self.meilleur_trades  # 🚀 Capture les trades du nouveau meilleur
 
-                pbar.set_postfix({'Meilleur': f"{global_best_score:.3f}", 'Trades': global_best_trades})
+                pbar.set_postfix({'Meilleur': f"{global_best_score:.3f}", 'Trades': self.meilleur_trades})
                 pbar.update(1)
 
         return global_best_position, global_best_score
@@ -1215,8 +713,7 @@ def optimize_sector_coefficients_hybrid(
     precision=2,  # 🔧 NOUVEAU: Paramètre de précision
     cap_range='Unknown',
     use_price_features=False,
-    use_fundamentals_features=False,
-    enable_temporal_validation=True  # 📅 NOUVEAU: Activer validation temporelle train/val/holdout
+    use_fundamentals_features=False
 ):
     """
     Optimisation hybride des coefficients sectoriels avec limitation des décimales
@@ -1226,8 +723,7 @@ def optimize_sector_coefficients_hybrid(
     - 'differential': Évolution différentielle  
     - 'pso': Particle Swarm Optimization
     - 'lhs': Latin Hypercube Sampling
-    - 'cma': CMA-ES avec warm-start LHS
-    - 'hybrid': Combine plusieurs méthodes (LHS + CMA-ES + autres)
+    - 'hybrid': Combine plusieurs méthodes
     
     precision: Nombre de décimales pour les paramètres (1, 2, ou 3)
     cap_range: Segment de capitalisation associé au secteur
@@ -1237,39 +733,34 @@ def optimize_sector_coefficients_hybrid(
         return None, 0.0, 0.0, initial_thresholds, None
 
     # Téléchargement des données
-    # 📅 Si validation temporelle active, charger 24 mois (18 train + 4 val + 2 holdout)
-    if enable_temporal_validation:
-        total_months_needed = TRAIN_MONTHS + VAL_MONTHS + HOLDOUT_MONTHS
-        # Clamp à max 24mo (compatible yfinance)
-        period_extended = f"{min(total_months_needed, 24)}mo"
-        stock_data = download_stock_data(sector_symbols, period=period_extended)
-    else:
-        stock_data = download_stock_data(sector_symbols, period=period)
-    
+    stock_data = download_stock_data(sector_symbols, period=period)
     if not stock_data:
         print(f"🚨 Aucune donnée téléchargée pour le secteur {domain}")
         return None, 0.0, 0.0, initial_thresholds, None
 
+    # Pré-calcul léger des features pour chauffer les opérations pandas
+    def precalculate_features(sd: Dict[str, Dict[str, pd.Series]]):
+        try:
+            for sym, dat in sd.items():
+                close = dat.get('Close')
+                volume = dat.get('Volume')
+                if isinstance(close, pd.Series) and len(close) >= 50:
+                    # Calculs légers pour chauffer les caches internes
+                    _ema20 = close.ewm(span=20, adjust=False).mean()
+                    _ema50 = close.ewm(span=50, adjust=False).mean()
+                    _vol_mean = volume.rolling(window=30).mean() if isinstance(volume, pd.Series) else None
+                    # Stockage facultatif pour analyse future (non utilisé par backtest)
+                    dat['PRECALC_EMA20'] = _ema20
+                    dat['PRECALC_EMA50'] = _ema50
+                    if _vol_mean is not None:
+                        dat['PRECALC_VOL30'] = _vol_mean
+        except Exception:
+            pass
+
+    precalculate_features(stock_data)
+
     for symbol, data in stock_data.items():
         print(f"📊 {symbol}: {len(data['Close'])} points de données")
-    
-    # 📅 SPLIT TEMPOREL si validation activée
-    train_data, val_data, holdout_data, dates_info = None, None, None, None
-    if enable_temporal_validation:
-        train_data, val_data, holdout_data, dates_info = split_data_temporal(stock_data)
-        print(f"\n📅 Split temporel:")
-        print(f"   Train: {dates_info['train_start'].strftime('%Y-%m-%d')} → {dates_info['val_start'].strftime('%Y-%m-%d')} ({len(train_data)} symbols)")
-        print(f"   Val:   {dates_info['val_start'].strftime('%Y-%m-%d')} → {dates_info['holdout_start'].strftime('%Y-%m-%d')} ({len(val_data)} symbols)")
-        print(f"   Holdout: {dates_info['holdout_start'].strftime('%Y-%m-%d')} → {dates_info['latest_date'].strftime('%Y-%m-%d')} ({len(holdout_data)} symbols)")
-        # Utiliser train_data pour l'optimisation
-        optimization_data = train_data
-    else:
-        # Mode classique: utiliser toutes les données
-        optimization_data = stock_data
-
-    # 🚀 PRÉ-CALCUL DES FEATURES TA POUR TOUS LES SYMBOLS
-    # Cela peuple TA_CACHE et DERIV_CACHE dans qsi.py, évitant les recalculs pendant l'optimisation
-    precalculate_features(optimization_data, domain)
 
     # Récupération des meilleurs paramètres historiques
     db_path = 'signaux/optimization_hist.db'
@@ -1369,32 +860,33 @@ def optimize_sector_coefficients_hybrid(
             hist_success_rate = (total_success / total_trades * 100) if total_trades > 0 else 0.0
             hist_total_trades = total_trades
 
-            # Préparer un candidat pour la comparaison finale (18 paramètres de base)
-            hist_params = list(hist_coeffs + hist_feature_thresholds + (hist_seuil_achat, hist_seuil_vente))
-            
-            # 🔧 Étendre les paramètres historiques si des features sont activées
-            if use_price_features:
-                # Ajouter 6 paramètres par défaut pour price features (désactivés par défaut)
-                hist_params += [0.0, 0.0, 0.5, 0.5, 0.0, 0.0]  # use_slope=0, use_acc=0, weights=0.5, thresholds=0
-            
-            if use_fundamentals_features:
-                # Ajouter 10 paramètres par défaut pour fundamentals (désactivés par défaut)
-                hist_params += [0.0, 0.5, 0.5, 0.5, 0.5, 0.5, 0.0, 0.0, 0.0, 0.0]
-            
-            historical_candidate = ('Historical (re-eval)', tuple(hist_params), hist_avg_gain)
+            # 🚦 Gardes: ignorer les historiques sans trades
+            if total_trades == 0:
+                print(f"   ⚠️  Historique ignoré (0 trade)")
+                historical_candidate = None
+            else:
+                # Préparer un candidat pour la comparaison finale (18 paramètres de base)
+                hist_params = list(hist_coeffs + hist_feature_thresholds + (hist_seuil_achat, hist_seuil_vente))
+                
+                # 🔧 Étendre les paramètres historiques si des features sont activées
+                if use_price_features:
+                    # Ajouter 6 paramètres par défaut pour price features (désactivés par défaut)
+                    hist_params += [0.0, 0.0, 0.5, 0.5, 0.0, 0.0]  # use_slope=0, use_acc=0, weights=0.5, thresholds=0
+                
+                if use_fundamentals_features:
+                    # Ajouter 10 paramètres par défaut pour fundamentals (désactivés par défaut)
+                    hist_params += [0.0, 0.5, 0.5, 0.5, 0.5, 0.5, 0.0, 0.0, 0.0, 0.0]
+                
+                historical_candidate = ('Historical (re-eval)', tuple(hist_params), hist_avg_gain)
 
-            print(f"♻️ Paramètres historiques réévalués sur données actuelles: gain_moy={hist_avg_gain:.2f}, trades={total_trades}, success={hist_success_rate:.2f}%")
-            if use_price_features or use_fundamentals_features:
-                print(f"   ℹ️  Paramètres étendus de 18 → {len(hist_params)} (features désactivées par défaut)")
+                print(f"♻️ Paramètres historiques réévalués sur données actuelles: gain_moy={hist_avg_gain:.2f}, trades={total_trades}, success={hist_success_rate:.2f}%")
+                if use_price_features or use_fundamentals_features:
+                    print(f"   ℹ️  Paramètres étendus de 18 → {len(hist_params)} (features désactivées par défaut)")
         except Exception as e:
             print(f"⚠️ Réévaluation des paramètres historiques impossible: {e}")
 
-    # 🔧 MODIFIÉ: Initialisation de l'optimiseur avec précision et parallélisation
-    # Utiliser n_jobs=2 ou plus pour activer la parallélisation par symboles
-    # (n_jobs=1 reste séquentiel par défaut)
-    # 🚀 Optimisation auto: ajuste n_jobs au nombre de stocks disponibles (max 4)
-    n_jobs_param = min(4, max(1, len(optimization_data)))
-    optimizer = HybridOptimizer(optimization_data, domain, montant, transaction_cost, precision, use_price_features, use_fundamentals_features, n_jobs=n_jobs_param)
+    # 🔧 MODIFIÉ: Initialisation de l'optimiseur avec précision
+    optimizer = HybridOptimizer(stock_data, domain, montant, transaction_cost, precision, use_price_features, use_fundamentals_features)
 
     # 🔧 NOUVEAU: Ajuster le budget en fonction de la précision
     # Avec une plus grande précision, l'espace de recherche AUGMENTE
@@ -1406,73 +898,39 @@ def optimize_sector_coefficients_hybrid(
     
     # Stratégies d'optimisation
     results = []
-    # Ajouter le candidat "historical" réévalué si disponible
-    seed_vector = None
+    # Ajouter le candidat "historical" réévalué si disponible et valide
     if historical_candidate:
         results.append(historical_candidate)
-        try:
-            seed_vector = np.array(historical_candidate[1], dtype=float)
-        except Exception:
-            seed_vector = None
-
-    # 🔍 Étape rapide: affinement local autour de la graine historique
-    # ⚠️ SKIP si le score historique est déjà très bon (>100) car local search
-    # n'améliorera probablement pas + coûte 2-3 minutes pour rien
-    historical_score = historical_candidate[2] if historical_candidate else 0
-    if seed_vector is not None and historical_score < 100.0:
-        try:
-            print("🔍 Quick local refinement around historical seed...")
-            refined_params, refined_score = optimizer.local_search_refinement(seed_vector, max_iterations=5)
-            # ⚠️ N'ajouter la version affinée que si elle AMÉLIORE le score historique
-            if refined_score > historical_score:
-                results.append(('Local Refinement (seed)', refined_params, refined_score))
-                seed_vector = refined_params.copy()
-            else:
-                print(f"   ℹ️ Local refinement didn't improve (historical: {historical_score:.2f}, refined: {refined_score:.2f}), skipping")
-                # Garder le seed historique original comme graine
-                seed_vector = np.array(historical_candidate[1], dtype=float)
-        except Exception as e:
-            print(f"⚠️ Local refinement failed: {e}")
-    elif seed_vector is not None:
-        print(f"   ℹ️ Skipping local refinement (historical score {historical_score:.2f} already excellent)")
     print(f"🚀 Optimisation hybride pour {domain} avec stratégie '{strategy}' (précision: {precision} décimales)")
     print(f"📈 Budget d'évaluations initial: {budget_evaluations}")
     print(f"🔧 Budget ajusté selon la précision: {adjusted_budget} (facteur: {precision_factor:.2f}x)")
 
-    if strategy == 'genetic': # if strategy == 'genetic' or strategy == 'hybrid':
+    if strategy == 'hybrid' or strategy == 'genetic':
         # Algorithmes génétiques - 🔧 Augmenter max pop_size selon budget
         pop_size = min(100, adjusted_budget // 20)  # Max 100 au lieu de 50
         generations = min(50, adjusted_budget // pop_size)  # Generations aussi augmentées
-        params_ga, score_ga = optimizer.genetic_algorithm(pop_size, generations, seed=seed_vector)
+        params_ga, score_ga = optimizer.genetic_algorithm(pop_size, generations)
         results.append(('Genetic Algorithm', params_ga, score_ga))
 
     if strategy == 'hybrid' or strategy == 'differential':
         # Évolution différentielle - 🔧 Augmenter max pop_size selon budget
-        pop_size = min(60, adjusted_budget // 25)  # Max 60 au lieu de 45
+        pop_size = min(90, adjusted_budget // 25)  # Max 90 au lieu de 45
         max_iter = min(100, adjusted_budget // pop_size)
-        params_de, score_de = optimizer.differential_evolution_opt(pop_size, max_iter, seed=seed_vector)
+        params_de, score_de = optimizer.differential_evolution_opt(pop_size, max_iter)
         results.append(('Differential Evolution', params_de, score_de))
 
     if strategy == 'hybrid' or strategy == 'pso':
         # PSO - 🔧 Augmenter max particules selon budget
         n_particles = min(50, adjusted_budget // 30)  # Max 50 au lieu de 30
         max_iter = min(100, adjusted_budget // n_particles)
-        params_pso, score_pso = optimizer.particle_swarm_optimization(n_particles, max_iter, seed=seed_vector)
+        params_pso, score_pso = optimizer.particle_swarm_optimization(n_particles, max_iter)
         results.append(('PSO', params_pso, score_pso))
 
-    # LHS toujours utilisé comme warm-start pour CMA ou en direct
-    if strategy in ('hybrid', 'lhs', 'cma'):
-        lhs_budget = int(max(200, min(3000, (3/2)*adjusted_budget)))
-        params_lhs, score_lhs = optimizer.latin_hypercube_sampling(lhs_budget, seed=seed_vector)
+    if strategy == 'hybrid' or strategy == 'lhs':
+        # Latin Hypercube Sampling - 🔧 Utiliser pleinement le budget
+        n_samples = min(500, adjusted_budget // 2)  # Max 500 au lieu de 200
+        params_lhs, score_lhs = optimizer.latin_hypercube_sampling(n_samples)
         results.append(('Latin Hypercube', params_lhs, score_lhs))
-
-    if strategy in ('hybrid', 'cma'):
-        lhs_samples = int(max(500, min(3000, adjusted_budget)))
-        top_k = 8
-        max_gen = 25
-        pop_size = None  # laisse CMA choisir
-        params_cma, score_cma = optimizer.cma_es_optimization(lhs_samples=lhs_samples, top_k=top_k, max_generations=max_gen, pop_size=pop_size)
-        results.append(('CMA-ES', params_cma, score_cma))
 
     # Sélection du meilleur résultat
     best_method, best_params, best_score = max(results, key=lambda x: x[2])
@@ -1514,10 +972,10 @@ def optimize_sector_coefficients_hybrid(
     if use_price_features and len(best_params) >= 24:
         use_ps = int(round(np.clip(best_params[18], 0.0, 1.0)))
         use_pa = int(round(np.clip(best_params[19], 0.0, 1.0)))
-        a_ps = float(np.clip(round(best_params[20], precision), -1.0, 3.0))
-        a_pa = float(np.clip(round(best_params[21], precision), -1.0, 3.0))
-        th_ps = float(np.clip(round(best_params[22], precision), -0.15, 0.15))
-        th_pa = float(np.clip(round(best_params[23], precision), -0.15, 0.15))
+        a_ps = float(np.clip(round(best_params[20], precision), 0.0, 3.0))
+        a_pa = float(np.clip(round(best_params[21], precision), 0.0, 3.0))
+        th_ps = float(np.clip(round(best_params[22], precision), -0.05, 0.05))
+        th_pa = float(np.clip(round(best_params[23], precision), -0.05, 0.05))
         extra_params = {
             'use_price_slope': use_ps,
             'use_price_acc': use_pa,
@@ -1634,6 +1092,9 @@ def optimize_sector_coefficients_hybrid(
     # Comparaison avec hist_avg_gain (réévalué), pas avec le gain de la base de données
     save_epsilon = 0.01
     should_save = (hist_avg_gain is None) or (best_score > hist_avg_gain + save_epsilon)
+    if total_trades == 0:
+        # Ne rien sauvegarder si la config ne déclenche aucun trade
+        should_save = False
     
     if should_save:
         save_optimization_results(domain, best_coeffs, best_score, success_rate, total_trades, all_thresholds, cap_range, extra_params=extra_params, fundamentals_extras=fundamentals_extras)
@@ -1832,18 +1293,10 @@ if __name__ == "__main__":
                     print(f"   ✅ {sector} × {cap_range}: {len(syms)} symboles")
         
         print(f"\n   📊 Total: {total_combos} combinaisons secteur×cap_range avec symboles")
-        
-        # 🧼 NETTOYAGE DES GROUPES: filtrer <5 symboles
-        print(f"\n🧼 Nettoyage des groupes (minimum {MIN_SYMBOLS_PER_GROUP} symboles/groupe)...")
-        sector_cap_ranges, ignored_log = clean_sector_cap_groups(sector_cap_ranges, MIN_SYMBOLS_PER_GROUP)
-        
-        if ignored_log:
-            log_ignored_groups(ignored_log)
-            print(f"   ⚠️ {len(ignored_log)} groupes ignorés (trop peu de symboles)")
-        
-        # Recompter les combinaisons après nettoyage
-        total_combos_cleaned = sum(1 for s in sector_cap_ranges.values() for cap, syms in s.items() if syms)
-        print(f"   ✅ {total_combos_cleaned} combinaisons valides après nettoyage")
+
+        # Nettoyage paresseux avec cache
+        print("\n   🧹 Nettoyage des groupes avec cache (complément + réduction)...")
+        sector_cap_ranges = clean_sector_cap_groups(sector_cap_ranges, ttl_days=100, min_symbols=4, max_symbols=12)
     
     else:
         print("\n⚠️ SQLite non disponible, utilisation de la méthode classique...")
@@ -1885,11 +1338,15 @@ if __name__ == "__main__":
                 if syms:
                     print(f"{sector} [{cap_range}]: {len(syms)} symboles")
 
+        # Nettoyage paresseux avec cache sur la méthode fallback
+        print("\n   🧹 Nettoyage des groupes avec cache (complément + réduction)...")
+        sector_cap_ranges = clean_sector_cap_groups(sector_cap_ranges, ttl_days=100, min_symbols=4, max_symbols=12)
+
     # Paramètres d'optimisation
     print("\n3️⃣  Configuration de l'optimisation:")
-    search_strategies = ['hybrid', 'differential', 'genetic', 'pso', 'lhs', 'cma']
+    search_strategies = ['hybrid', 'differential', 'genetic', 'pso', 'lhs']
     
-    strategy = input("   Stratégie ('hybrid', 'differential', 'genetic', 'pso', 'lhs', 'cma') : ").strip().lower()
+    strategy = input("   Stratégie ('hybrid', 'differential', 'genetic', 'pso', 'lhs') : ").strip().lower()
     i=0
     while (strategy not in search_strategies) and i<3:
         strategy = input("   Stratégie invalide. Choisir parmi ('hybrid', 'differential', 'genetic', 'pso', 'lhs') : ").strip().lower()
@@ -1929,7 +1386,7 @@ if __name__ == "__main__":
     print(f"      - Nombre de paramètres: {param_count}")
 
     # Adapter le budget selon la précision
-    budget_base = 700#1000
+    budget_base = 50#1000
     if precision == 1:
         budget_evaluations = int(budget_base * 0.5)
     elif precision == 2:

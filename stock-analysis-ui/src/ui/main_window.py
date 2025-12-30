@@ -166,6 +166,7 @@ class MainWindow(QMainWindow):
         # Charger les listes au démarrage (SQLite si dispo, sinon txt)
         self.popular_symbols_data = self._load_symbols_preferred("popular_symbols.txt", "popular")
         self.mes_symbols_data = self._load_symbols_preferred("mes_symbols.txt", "personal")
+        self.optim_symbols_data = self._load_symbols_preferred("optimisation_symbols.txt", "optimization")
         
         self.central_widget = QWidget()
         self.setCentralWidget(self.central_widget)
@@ -209,7 +210,10 @@ class MainWindow(QMainWindow):
         popular_sorted = sorted(self.popular_symbols_data)
         popular_layout = QHBoxLayout()
         popular_listcol = QVBoxLayout()
-        popular_layout.addWidget(QLabel("Symboles populaires:"))
+        self.popular_label = QLabel()
+        self.popular_label.setAlignment(Qt.AlignCenter)
+        self.popular_label.setWordWrap(True)
+        popular_layout.addWidget(self.popular_label)
         self.popular_list = QListWidget()
         self.popular_list.setMaximumHeight(70)
         for s in popular_sorted:
@@ -239,7 +243,10 @@ class MainWindow(QMainWindow):
         mes_sorted = sorted(self.mes_symbols_data)
         mes_layout = QHBoxLayout()
         mes_listcol = QVBoxLayout()
-        mes_layout.addWidget(QLabel("Mes symboles:"))
+        self.mes_label = QLabel()
+        self.mes_label.setAlignment(Qt.AlignCenter)
+        self.mes_label.setWordWrap(True)
+        mes_layout.addWidget(self.mes_label)
         self.mes_list = QListWidget()
         self.mes_list.setMaximumHeight(70)
         for s in mes_sorted:
@@ -262,6 +269,41 @@ class MainWindow(QMainWindow):
         mes_layout.addLayout(mes_btns)
 
         lists_container.addLayout(mes_layout)
+
+        lists_container.addItem(QSpacerItem(48, 20, QSizePolicy.MinimumExpanding, QSizePolicy.Minimum))
+
+        # Liste optimisation (prioritaire pour le nettoyage)
+        optim_sorted = sorted(self.optim_symbols_data)
+        optim_layout = QHBoxLayout()
+        optim_listcol = QVBoxLayout()
+        self.optim_label = QLabel()
+        self.optim_label.setAlignment(Qt.AlignCenter)
+        self.optim_label.setWordWrap(True)
+        optim_layout.addWidget(self.optim_label)
+        self.optim_list = QListWidget()
+        self.optim_list.setMaximumHeight(70)
+        for s in optim_sorted:
+            if s:
+                item = QListWidgetItem(s)
+                item.setData(Qt.UserRole, s)
+                self.optim_list.addItem(item)
+        self.optim_list.setSelectionMode(QAbstractItemView.ExtendedSelection)
+        optim_listcol.addWidget(self.optim_list)
+        optim_layout.addLayout(optim_listcol)
+
+        optim_btns = QVBoxLayout()
+        optim_btns.setSpacing(2)
+        self.optim_add_btn = QPushButton("Ajouter")
+        self.optim_del_btn = QPushButton("Supprimer")
+        self.optim_show_btn = QPushButton("Afficher")
+        self.optim_clean_btn = QPushButton("Aperçu nettoyage")
+        optim_btns.addWidget(self.optim_add_btn)
+        optim_btns.addWidget(self.optim_del_btn)
+        optim_btns.addWidget(self.optim_show_btn)
+        optim_btns.addWidget(self.optim_clean_btn)
+        optim_layout.addLayout(optim_btns)
+
+        lists_container.addLayout(optim_layout)
         self.layout.addLayout(lists_container)
 
         top_controls = QHBoxLayout()
@@ -373,6 +415,11 @@ class MainWindow(QMainWindow):
         self.mes_add_btn.clicked.connect(lambda: self.add_symbol(self.mes_list, "mes_symbols.txt"))
         self.mes_del_btn.clicked.connect(lambda: self.remove_selected(self.mes_list, "mes_symbols.txt"))
         self.mes_show_btn.clicked.connect(lambda: self.show_selected(self.mes_list))
+        self.optim_add_btn.clicked.connect(lambda: self.add_symbol(self.optim_list, "optimisation_symbols.txt"))
+        self.optim_del_btn.clicked.connect(lambda: self.remove_selected(self.optim_list, "optimisation_symbols.txt"))
+        self.optim_show_btn.clicked.connect(lambda: self.show_selected(self.optim_list))
+        self.optim_clean_btn.clicked.connect(self.preview_cleaned_optimization)
+        self._update_list_counts()
     
     def validate_ticker(self, symbol):
         """Validation rapide mais moins fiable"""
@@ -385,6 +432,14 @@ class MainWindow(QMainWindow):
         except:
             return False
 
+
+    def _map_list_type(self, filename: str) -> str:
+        lower = filename.lower()
+        if 'mes_symbol' in lower:
+            return 'personal'
+        if 'optimisation' in lower or 'optimization' in lower:
+            return 'optimization'
+        return 'popular'
 
     def add_symbol(self, list_widget, filename):
         """Ajoute un ou plusieurs symboles (séparés par des virgules) à la liste.
@@ -492,8 +547,7 @@ class MainWindow(QMainWindow):
                 if SYMBOL_MANAGER_AVAILABLE:
                     try:
                         from symbol_manager import sync_txt_to_sqlite
-                        # Déterminer le type de liste pour SQLite
-                        list_type = 'personal' if 'mes_symbol' in filename.lower() else 'popular'
+                        list_type = self._map_list_type(filename)
                         sync_txt_to_sqlite(filename, list_type=list_type)
                         print(f"✅ SQLite synchronisé pour {filename}")
                     except Exception as e:
@@ -517,6 +571,9 @@ class MainWindow(QMainWindow):
                             print(f"✅ SQLite synchronisé pour {filename_secondary}")
                         except Exception as e:
                             print(f"⚠️ Erreur lors de la sync SQLite: {e}")
+
+                # Rafraîchir les compteurs après ajouts/sauvegardes
+                self._update_list_counts()
             
             except Exception:
                 pass
@@ -544,6 +601,24 @@ class MainWindow(QMainWindow):
             item.setData(Qt.UserRole, data)
             list_widget.addItem(item)
 
+        # Mettre à jour les compteurs après réinjection
+        self._update_list_counts()
+
+    def _update_list_counts(self):
+        """Met à jour les libellés avec le nombre d'éléments de chaque liste."""
+        try:
+            pop_count = self.popular_list.count() if hasattr(self, "popular_list") else 0
+            mes_count = self.mes_list.count() if hasattr(self, "mes_list") else 0
+            optim_count = self.optim_list.count() if hasattr(self, "optim_list") else 0
+            if hasattr(self, "popular_label"):
+                self.popular_label.setText(f"Symboles\npopulaires ({pop_count})")
+            if hasattr(self, "mes_label"):
+                self.mes_label.setText(f"Mes\nsymboles ({mes_count})")
+            if hasattr(self, "optim_label"):
+                self.optim_label.setText(f"Symboles\noptimisation ({optim_count})")
+        except Exception:
+            pass
+
 
     def remove_selected(self, list_widget, filename):
         items = list_widget.selectedItems()
@@ -552,6 +627,7 @@ class MainWindow(QMainWindow):
             return
         for it in items:
             list_widget.takeItem(list_widget.row(it))
+        self._update_list_counts()
         try:
             from qsi import save_symbols_to_txt
             symbols = [list_widget.item(i).data(Qt.UserRole) if list_widget.item(i).data(Qt.UserRole) is not None else list_widget.item(i).text() for i in range(list_widget.count())]
@@ -562,13 +638,14 @@ class MainWindow(QMainWindow):
                 try:
                     from symbol_manager import sync_txt_to_sqlite
                     # Déterminer le type de liste pour SQLite
-                    list_type = 'personal' if 'mes_symbol' in filename.lower() else 'popular'
+                    list_type = self._map_list_type(filename)
                     sync_txt_to_sqlite(filename, list_type=list_type)
                     print(f"✅ SQLite synchronisé (suppression) pour {filename}")
                 except Exception as e:
                     print(f"⚠️ Erreur lors de la sync SQLite: {e}")
         except Exception:
             pass
+        self._update_list_counts()
 
     def show_selected(self, list_widget):
         items = list_widget.selectedItems()
@@ -577,6 +654,89 @@ class MainWindow(QMainWindow):
             return
         symbols = [it.data(Qt.UserRole) if it.data(Qt.UserRole) is not None else it.text() for it in items]
         self.symbol_input.setText(", ".join(symbols))
+
+    def preview_cleaned_optimization(self):
+        """Affiche un aperçu des groupes nettoyés (sector × cap) en priorisant les symboles ajoutés manuellement."""
+        if not SYMBOL_MANAGER_AVAILABLE:
+            QMessageBox.warning(self, "SQLite requis", "Le nettoyage nécessite SQLite/symbol_manager.")
+            return
+        try:
+            from symbol_manager import (
+                get_all_sectors,
+                get_all_cap_ranges,
+                get_symbols_by_sector_and_cap,
+            )
+            from optimisateur_hybride import clean_sector_cap_groups
+
+            list_type = "optimization"
+            sectors = get_all_sectors(list_type=list_type)
+            caps = get_all_cap_ranges(list_type=list_type)
+
+            sector_cap_ranges = {}
+            for sec in sectors:
+                buckets = {}
+                for cap in caps:
+                    syms = get_symbols_by_sector_and_cap(sec, cap, list_type=list_type, active_only=True)
+                    if syms:
+                        buckets[cap] = syms
+                if buckets:
+                    sector_cap_ranges[sec] = buckets
+
+            if not sector_cap_ranges:
+                QMessageBox.information(self, "Aperçu nettoyage", "Aucune donnée d'optimisation trouvée.")
+                return
+
+            cleaned = clean_sector_cap_groups(sector_cap_ranges, ttl_days=100, min_symbols=4, max_symbols=12)
+
+            # Prioriser les symboles ajoutés manuellement : ils restent en tête et ne sont pas élagués en premier
+            manual_order = [self.optim_list.item(i).text() for i in range(self.optim_list.count())]
+            manual_set = set(manual_order)
+            for sec, buckets in cleaned.items():
+                for cap, syms in buckets.items():
+                    manual_first = [s for s in manual_order if s in syms]
+                    rest = [s for s in syms if s not in manual_set]
+                    cleaned[sec][cap] = manual_first + rest
+
+            # Aplatir en liste unique (ordre: secteurs triés, cap triés, avec priorité manuelle déjà appliquée)
+            seen = set()
+            flat_cleaned = []
+            for sec in sorted(cleaned.keys()):
+                for cap in sorted(cleaned[sec].keys()):
+                    for s in cleaned[sec][cap]:
+                        if s not in seen:
+                            seen.add(s)
+                            flat_cleaned.append(s)
+
+            # Mettre à jour la QList optimisation avec la version nettoyée
+            self.optim_list.clear()
+            for s in flat_cleaned:
+                item = QListWidgetItem(s)
+                item.setData(Qt.UserRole, s)
+                self.optim_list.addItem(item)
+
+            # Sauvegarder dans le fichier + SQLite
+            try:
+                from qsi import save_symbols_to_txt
+                save_symbols_to_txt(flat_cleaned, "optimisation_symbols.txt")
+                if SYMBOL_MANAGER_AVAILABLE:
+                    from symbol_manager import sync_txt_to_sqlite
+                    sync_txt_to_sqlite("optimisation_symbols.txt", list_type="optimization")
+            except Exception as e:
+                QMessageBox.warning(self, "Avertissement", f"Nettoyage appliqué mais sauvegarde non confirmée: {e}")
+
+            # Rafraîchir compteurs
+            self._update_list_counts()
+
+            lines = ["=== Résumé des groupes nettoyés (optimisation) ==="]
+            for sec in sorted(cleaned.keys()):
+                for cap in sorted(cleaned[sec].keys()):
+                    syms = cleaned[sec][cap]
+                    preview = ", ".join(syms[:18]) + (" …" if len(syms) > 18 else "")
+                    lines.append(f"{sec} × {cap}: {len(syms)} -> {preview}")
+
+            QMessageBox.information(self, "Nettoyage appliqué", "\n".join(lines))
+        except Exception as e:
+            QMessageBox.critical(self, "Erreur", f"Impossible d'afficher l'aperçu du nettoyage: {e}")
 
     def analyze_popular_signals(self):
         # Use selected items if any, otherwise fallback to full lists

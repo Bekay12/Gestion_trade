@@ -173,6 +173,12 @@ def get_symbols_by_sector(sector: str, list_type: str = None, active_only: bool 
     
     return symbols
 
+def get_popular_symbols_by_sector(sector: str, max_count: Optional[int] = None, exclude_symbols: Optional[set] = None) -> List[str]:
+    """Retourne les symboles populaires d'un secteur, en excluant éventuellement certains tickers."""
+    exclude = set(exclude_symbols or [])
+    symbols = [s for s in get_symbols_by_sector(sector, list_type='popular', active_only=True) if s not in exclude]
+    return symbols[:max_count] if max_count is not None else symbols
+
 def get_symbols_by_cap_range(cap_range: str, list_type: str = None, active_only: bool = True) -> List[str]:
     """Récupère les symboles d'une gamme de capitalisation donnée."""
     init_symbols_table()
@@ -194,6 +200,12 @@ def get_symbols_by_cap_range(cap_range: str, list_type: str = None, active_only:
     conn.close()
     
     return symbols
+
+def get_all_popular_symbols(max_count: Optional[int] = None, exclude_symbols: Optional[set] = None) -> List[str]:
+    """Retourne tous les symboles populaires en respectant une éventuelle exclusion."""
+    exclude = set(exclude_symbols or [])
+    symbols = [s for s in get_symbols_by_list_type('popular', active_only=True) if s not in exclude]
+    return symbols[:max_count] if max_count is not None else symbols
 
 def get_symbols_by_sector_and_cap(sector: str, cap_range: str, list_type: str = None, active_only: bool = True) -> List[str]:
     """Récupère les symboles d'un secteur ET d'une gamme de capitalisation."""
