@@ -11,6 +11,7 @@ from matplotlib.figure import Figure
 import sys
 import os
 import math
+import yfinance as yf
 
 # Ensure project `src` root is on sys.path
 PROJECT_SRC = os.path.abspath(os.path.join(os.path.dirname(__file__), '..'))
@@ -162,6 +163,16 @@ class MainWindow(QMainWindow):
         super().__init__()
         self.setWindowTitle("Stock Analysis Tool")
         self.setGeometry(100, 100, 1200, 800)
+
+        # 🔄 Synchroniser personal et optimization vers popular au démarrage
+        if SYMBOL_MANAGER_AVAILABLE:
+            try:
+                from symbol_manager import sync_all_to_popular
+                stats = sync_all_to_popular()
+                if stats['total'] > 0:
+                    print(f"🔄 Auto-sync au démarrage: {stats['total']} symboles ajoutés à popular")
+            except Exception as e:
+                print(f"⚠️ Erreur sync auto popular: {e}")
 
         # Charger les listes au démarrage (SQLite si dispo, sinon txt)
         self.popular_symbols_data = self._load_symbols_preferred("popular_symbols.txt", "popular")
@@ -794,9 +805,7 @@ class MainWindow(QMainWindow):
                 prices = stock_data['Close']
                 volumes = stock_data['Volume']
 
-                # ✅ OPTIMISATION MAJEURE: get_trading_signal retourne déjà domaine et métriques financières
-                # Plus besoin d'appeler yf.Ticker().info qui est TRÈS LENT (3-5 sec par symbole)
-                domaine = 'Inconnu'
+                # ✅ Récupération du secteur AVANT l'analyse (cohérence avec backtest)
                 sig = "NEUTRE"
                 last_price = float(prices.iloc[-1]) if len(prices) > 0 else 0.0
                 trend = False
@@ -806,23 +815,71 @@ class MainWindow(QMainWindow):
                 derivatives = {}
                 cap_range = qsi.get_cap_range_for_symbol(symbol)
                 
+                # Récupérer le secteur depuis le cache ou yfinance
                 try:
-                    # Première passe: obtenir dérivées et secteur sans coût supplémentaire
+                    if qsi.OFFLINE_MODE:
+                        if qsi.get_pickle_cache is not None:
+                            fin_cache = qsi.get_pickle_cache(symbol, 'financial', ttl_hours=24*365)
+                            domaine = fin_cache.get('sector', 'Inconnu') if fin_cache else "Inconnu"
+                        else:
+                            domaine = "Inconnu"
+                    else:
+                        info = yf.Ticker(symbol).info
+                        domaine = info.get("sector", "Inconnu")
+                    print(f"🔍 DEBUG {symbol}: secteur récupéré = {domaine}")
+                except Exception as e:
+                    domaine = "Inconnu"
+                    print(f"⚠️ DEBUG {symbol}: erreur récupération secteur: {e}")
+                
+                # ✅ Appliquer fallback pour cap_range "Unknown" : essayer Large, Mid, Mega
+                if cap_range == "Unknown" or not cap_range:
+                    best_params_all = qsi.extract_best_parameters()
+                    for fallback_cap in ["Large", "Mid", "Mega"]:
+                        test_key = f"{domaine}_{fallback_cap}"
+                        if test_key in best_params_all:
+                            cap_range = fallback_cap
+                            break
+                
+                # ✅ Appliquer fallback universel pour "Inconnu" (même logique que backtest)
+                original_domaine = domaine
+                if domaine == "Inconnu":
+                    best_params_all = qsi.extract_best_parameters()
+                    for fallback_sector in ["Technology", "Healthcare", "Financial Services"]:
+                        if fallback_sector in best_params_all:
+                            domaine = fallback_sector
+                            break
+                    if domaine == "Inconnu" and best_params_all:
+                        first_key = list(best_params_all.keys())[0]
+                        domaine = first_key.split('_')[0] if '_' in first_key else first_key
+                    print(f"🔄 DEBUG {symbol}: fallback appliqué {original_domaine} -> {domaine}")
+                
+                # ✅ Extraire les seuils globaux optimisés
+                seuil_achat_opt = None
+                seuil_vente_opt = None
+                best_params_all = qsi.extract_best_parameters()
+                # Chercher la clé optimale : secteur_cap ou secteur seul
+                param_key = None
+                if cap_range and cap_range != "Unknown":
+                    test_key = f"{domaine}_{cap_range}"
+                    if test_key in best_params_all:
+                        param_key = test_key
+                if not param_key and domaine in best_params_all:
+                    param_key = domaine
+                
+                if param_key and param_key in best_params_all:
+                    params = best_params_all[param_key]
+                    if len(params) > 2 and params[2]:
+                        globals_th = params[2]
+                        if isinstance(globals_th, (tuple, list)) and len(globals_th) >= 2:
+                            seuil_achat_opt = float(globals_th[0])
+                            seuil_vente_opt = float(globals_th[1])
+                
+                try:
+                    # Un seul appel avec le bon domaine (ou fallback) et seuils globaux optimisés
                     sig, last_price, trend, last_rsi, volume_mean, score, derivatives = get_trading_signal(
-                        prices, volumes, domaine='Inconnu', return_derivatives=True, symbol=symbol, cap_range=cap_range
+                        prices, volumes, domaine=domaine, return_derivatives=True, symbol=symbol, cap_range=cap_range,
+                        seuil_achat=seuil_achat_opt, seuil_vente=seuil_vente_opt
                     )
-                    # Utiliser le secteur détecté pour recalculer le score avec paramètres optimisés
-                    domaine = derivatives.get('sector', 'Inconnu') if derivatives else 'Inconnu'
-                    if domaine and domaine != 'Inconnu':
-                        try:
-                            sig2, last_price2, trend2, last_rsi2, volume_mean2, score2, derivatives2 = get_trading_signal(
-                                prices, volumes, domaine=domaine, return_derivatives=True, symbol=symbol, cap_range=cap_range
-                            )
-                            # Remplacer par la version cohérente avec le secteur
-                            sig, trend, last_rsi, volume_mean, score = sig2, trend2, last_rsi2, volume_mean2, score2
-                            derivatives = derivatives2  # Utiliser les dérivées du deuxième appel aussi
-                        except Exception:
-                            pass
                     
                     # 🔍 Debug: vérifier si les métriques financières sont présentes
                     if not derivatives.get('rev_growth_val') and not derivatives.get('market_cap_val'):
@@ -848,16 +905,16 @@ class MainWindow(QMainWindow):
                     # Consensus (stable via cache/offline fallback)
                     'Consensus': qsi.get_consensus(symbol).get('label', 'Neutre'),
                     'ConsensusMean': qsi.get_consensus(symbol).get('mean', None),
-                    'dPrice': round(derivatives.get('price_slope_rel', 0.0) * 100, 2),
-                    'dMACD': round(derivatives.get('macd_slope_rel', 0.0) * 100, 2),
-                    'dRSI': round(derivatives.get('rsi_slope_rel', 0.0) * 100, 2),
-                    'dVolRel': round(derivatives.get('volume_slope_rel', 0.0) * 100, 2),
-                    # ✅ Métriques financières simples
-                    'Rev. Growth (%)': round(float(derivatives.get('rev_growth_val', 0.0) or 0.0), 2),
-                    'EBITDA Yield (%)': round(float(derivatives.get('ebitda_yield_pct', 0.0) or 0.0), 2),
-                    'FCF Yield (%)': round(float(derivatives.get('fcf_yield_pct', 0.0) or 0.0), 2),
-                    'D/E Ratio': round(float(derivatives.get('debt_to_equity', 0.0) or 0.0), 2),
-                    'Market Cap (B$)': round(float(derivatives.get('market_cap_val', 0.0) or 0.0), 2)
+                    'dPrice': round((derivatives.get('price_slope_rel') or 0.0) * 100, 2),
+                    'dMACD': round((derivatives.get('macd_slope_rel') or 0.0) * 100, 2),
+                    'dRSI': round((derivatives.get('rsi_slope_rel') or 0.0) * 100, 2),
+                    'dVolRel': round((derivatives.get('volume_slope_rel') or 0.0) * 100, 2),
+                    # ✅ Métriques financières simples - protection contre None
+                    'Rev. Growth (%)': round(float((derivatives.get('rev_growth_val') or 0.0)), 2),
+                    'EBITDA Yield (%)': round(float((derivatives.get('ebitda_yield_pct') or 0.0)), 2),
+                    'FCF Yield (%)': round(float((derivatives.get('fcf_yield_pct') or 0.0)), 2),
+                    'D/E Ratio': round(float((derivatives.get('debt_to_equity') or 0.0)), 2),
+                    'Market Cap (B$)': round(float((derivatives.get('market_cap_val') or 0.0)), 2)
                 }
 
                 self.current_results.append(row_info)

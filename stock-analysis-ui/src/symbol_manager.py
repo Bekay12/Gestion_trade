@@ -12,10 +12,11 @@ import json
 from config import DB_PATH, CAP_RANGE_THRESHOLDS
 
 def init_symbols_table():
-    """Crée la table symbols si elle n'existe pas."""
+    """Crée les tables symbols et symbol_lists si elles n'existent pas."""
     conn = sqlite3.connect(DB_PATH)
     cursor = conn.cursor()
     
+    # Table principale des symboles (métadonnées uniques)
     cursor.execute('''
         CREATE TABLE IF NOT EXISTS symbols (
             id INTEGER PRIMARY KEY AUTOINCREMENT,
@@ -23,18 +24,40 @@ def init_symbols_table():
             sector TEXT,
             market_cap_range TEXT,
             market_cap_value REAL,
-            list_type TEXT,
             added_date TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
             last_checked TIMESTAMP,
             is_active BOOLEAN DEFAULT 1
         )
     ''')
     
+    # Table de jonction many-to-many : un symbole peut appartenir à plusieurs listes
+    cursor.execute('''
+        CREATE TABLE IF NOT EXISTS symbol_lists (
+            id INTEGER PRIMARY KEY AUTOINCREMENT,
+            symbol TEXT NOT NULL,
+            list_type TEXT NOT NULL,
+            added_date TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+            UNIQUE(symbol, list_type),
+            FOREIGN KEY (symbol) REFERENCES symbols(symbol) ON DELETE CASCADE
+        )
+    ''')
+    
     cursor.execute('CREATE INDEX IF NOT EXISTS idx_symbol ON symbols(symbol)')
-    cursor.execute('CREATE INDEX IF NOT EXISTS idx_list_type ON symbols(list_type)')
     cursor.execute('CREATE INDEX IF NOT EXISTS idx_sector ON symbols(sector)')
     cursor.execute('CREATE INDEX IF NOT EXISTS idx_market_cap_range ON symbols(market_cap_range)')
     cursor.execute('CREATE INDEX IF NOT EXISTS idx_is_active ON symbols(is_active)')
+    cursor.execute('CREATE INDEX IF NOT EXISTS idx_symbol_lists_symbol ON symbol_lists(symbol)')
+    cursor.execute('CREATE INDEX IF NOT EXISTS idx_symbol_lists_type ON symbol_lists(list_type)')
+    
+    # Migration: Migrer les anciennes données list_type vers symbol_lists si nécessaire
+    cursor.execute("PRAGMA table_info(symbols)")
+    columns = [col[1] for col in cursor.fetchall()]
+    if 'list_type' in columns:
+        # Migrer les données existantes
+        cursor.execute('''
+            INSERT OR IGNORE INTO symbol_lists (symbol, list_type)
+            SELECT symbol, list_type FROM symbols WHERE list_type IS NOT NULL
+        ''')
     
     # Table pour cacher les groupes nettoyés (complétion + limitation)
     cursor.execute('''
@@ -86,12 +109,12 @@ def sync_txt_to_sqlite(txt_file: str, list_type: str = 'popular', force_refresh:
                 existing = cursor.fetchone()
                 
                 if existing:
-                    # Le symbole existe avec des métadonnées valides, juste mettre à jour list_type
+                    # Le symbole existe avec des métadonnées valides, juste ajouter à la liste
+                    cursor.execute('UPDATE symbols SET is_active = 1 WHERE symbol = ?', (symbol,))
                     cursor.execute('''
-                        UPDATE symbols 
-                        SET list_type = ?, is_active = 1
-                        WHERE symbol = ?
-                    ''', (list_type, symbol))
+                        INSERT OR IGNORE INTO symbol_lists (symbol, list_type)
+                        VALUES (?, ?)
+                    ''', (symbol, list_type))
                     updated += 1
                     continue
             
@@ -112,11 +135,18 @@ def sync_txt_to_sqlite(txt_file: str, list_type: str = 'popular', force_refresh:
                 sector = _get_sector_safe(symbol)
                 cap_range, market_cap = _get_cap_range_safe(symbol)
                 
+                # Insérer ou mettre à jour les métadonnées du symbole
                 cursor.execute('''
                     INSERT OR REPLACE INTO symbols 
-                    (symbol, sector, market_cap_range, market_cap_value, list_type, last_checked, is_active)
-                    VALUES (?, ?, ?, ?, ?, ?, 1)
-                ''', (symbol, sector, cap_range, market_cap, list_type, datetime.now().isoformat()))
+                    (symbol, sector, market_cap_range, market_cap_value, last_checked, is_active)
+                    VALUES (?, ?, ?, ?, ?, 1)
+                ''', (symbol, sector, cap_range, market_cap, datetime.now().isoformat()))
+                
+                # Ajouter à la liste (relation many-to-many)
+                cursor.execute('''
+                    INSERT OR IGNORE INTO symbol_lists (symbol, list_type)
+                    VALUES (?, ?)
+                ''', (symbol, list_type))
                 added += 1
             except Exception:
                 pass
@@ -129,6 +159,12 @@ def sync_txt_to_sqlite(txt_file: str, list_type: str = 'popular', force_refresh:
     if added > 0:
         print(f"   ✅ {added} nouveaux symboles ajoutés")
     
+    # 🔄 Auto-sync vers popular : tous les symboles de personal/optimization vont aussi dans popular
+    if list_type in ['personal', 'optimization'] and (added > 0 or updated > 0):
+        synced = auto_add_to_popular(symbols)
+        if synced > 0:
+            print(f"   🔄 {synced} symboles auto-synchronisés vers popular")
+    
     return added + updated
 
 def get_symbols_by_list_type(list_type: str = 'popular', active_only: bool = True) -> List[str]:
@@ -137,13 +173,19 @@ def get_symbols_by_list_type(list_type: str = 'popular', active_only: bool = Tru
     conn = sqlite3.connect(DB_PATH)
     cursor = conn.cursor()
     
-    query = 'SELECT symbol FROM symbols WHERE list_type = ?'
+    # Utiliser la table de jonction symbol_lists
+    query = '''
+        SELECT DISTINCT s.symbol 
+        FROM symbols s
+        INNER JOIN symbol_lists sl ON s.symbol = sl.symbol
+        WHERE sl.list_type = ?
+    '''
     params = [list_type]
     
     if active_only:
-        query += ' AND is_active = 1'
+        query += ' AND s.is_active = 1'
     
-    query += ' ORDER BY added_date DESC'
+    query += ' ORDER BY sl.added_date DESC'
     
     cursor.execute(query, params)
     symbols = [row[0] for row in cursor.fetchall()]
@@ -151,21 +193,86 @@ def get_symbols_by_list_type(list_type: str = 'popular', active_only: bool = Tru
     
     return symbols
 
+def auto_add_to_popular(symbols: List[str]) -> int:
+    """
+    Ajoute automatiquement des symboles à la liste 'popular' s'ils n'y sont pas déjà.
+    Utilisé pour maintenir popular comme liste master contenant tous les symboles.
+    
+    Returns:
+        Nombre de symboles ajoutés à popular
+    """
+    if not symbols:
+        return 0
+    
+    init_symbols_table()
+    conn = sqlite3.connect(DB_PATH)
+    cursor = conn.cursor()
+    
+    added = 0
+    for symbol in symbols:
+        try:
+            # Vérifier si le symbole existe dans la table symbols
+            cursor.execute('SELECT symbol FROM symbols WHERE symbol = ?', (symbol,))
+            if cursor.fetchone():
+                # Ajouter à popular s'il n'y est pas déjà
+                cursor.execute('''
+                    INSERT OR IGNORE INTO symbol_lists (symbol, list_type)
+                    VALUES (?, 'popular')
+                ''', (symbol,))
+                if cursor.rowcount > 0:
+                    added += 1
+        except Exception:
+            pass
+    
+    conn.commit()
+    conn.close()
+    
+    return added
+
+def sync_all_to_popular() -> Dict[str, int]:
+    """
+    Synchronise tous les symboles de 'personal' et 'optimization' vers 'popular'.
+    Popular devient la liste master qui contient tous les symboles.
+    
+    Returns:
+        Dict avec les compteurs {personal_synced, optimization_synced}
+    """
+    init_symbols_table()
+    
+    # Récupérer tous les symboles de personal et optimization
+    personal_symbols = get_symbols_by_list_type('personal', active_only=True)
+    optimization_symbols = get_symbols_by_list_type('optimization', active_only=True)
+    
+    # Ajouter à popular
+    personal_added = auto_add_to_popular(personal_symbols)
+    optimization_added = auto_add_to_popular(optimization_symbols)
+    
+    return {
+        'personal_synced': personal_added,
+        'optimization_synced': optimization_added,
+        'total': personal_added + optimization_added
+    }
+
 def get_symbols_by_sector(sector: str, list_type: str = None, active_only: bool = True) -> List[str]:
     """Récupère les symboles d'un secteur donné."""
     init_symbols_table()
     conn = sqlite3.connect(DB_PATH)
     cursor = conn.cursor()
     
-    query = 'SELECT symbol FROM symbols WHERE sector = ?'
-    params = [sector]
-    
     if list_type:
-        query += ' AND list_type = ?'
-        params.append(list_type)
+        query = '''
+            SELECT DISTINCT s.symbol 
+            FROM symbols s
+            INNER JOIN symbol_lists sl ON s.symbol = sl.symbol
+            WHERE s.sector = ? AND sl.list_type = ?
+        '''
+        params = [sector, list_type]
+    else:
+        query = 'SELECT symbol FROM symbols WHERE sector = ?'
+        params = [sector]
     
     if active_only:
-        query += ' AND is_active = 1'
+        query += ' AND s.is_active = 1' if list_type else ' AND is_active = 1'
     
     cursor.execute(query, params)
     symbols = [row[0] for row in cursor.fetchall()]
@@ -185,15 +292,20 @@ def get_symbols_by_cap_range(cap_range: str, list_type: str = None, active_only:
     conn = sqlite3.connect(DB_PATH)
     cursor = conn.cursor()
     
-    query = 'SELECT symbol FROM symbols WHERE market_cap_range = ?'
-    params = [cap_range]
-    
     if list_type:
-        query += ' AND list_type = ?'
-        params.append(list_type)
+        query = '''
+            SELECT DISTINCT s.symbol 
+            FROM symbols s
+            INNER JOIN symbol_lists sl ON s.symbol = sl.symbol
+            WHERE s.market_cap_range = ? AND sl.list_type = ?
+        '''
+        params = [cap_range, list_type]
+    else:
+        query = 'SELECT symbol FROM symbols WHERE market_cap_range = ?'
+        params = [cap_range]
     
     if active_only:
-        query += ' AND is_active = 1'
+        query += ' AND s.is_active = 1' if list_type else ' AND is_active = 1'
     
     cursor.execute(query, params)
     symbols = [row[0] for row in cursor.fetchall()]
@@ -213,15 +325,20 @@ def get_symbols_by_sector_and_cap(sector: str, cap_range: str, list_type: str = 
     conn = sqlite3.connect(DB_PATH)
     cursor = conn.cursor()
     
-    query = 'SELECT symbol FROM symbols WHERE sector = ? AND market_cap_range = ?'
-    params = [sector, cap_range]
-    
     if list_type:
-        query += ' AND list_type = ?'
-        params.append(list_type)
+        query = '''
+            SELECT DISTINCT s.symbol 
+            FROM symbols s
+            INNER JOIN symbol_lists sl ON s.symbol = sl.symbol
+            WHERE s.sector = ? AND s.market_cap_range = ? AND sl.list_type = ?
+        '''
+        params = [sector, cap_range, list_type]
+    else:
+        query = 'SELECT symbol FROM symbols WHERE sector = ? AND market_cap_range = ?'
+        params = [sector, cap_range]
     
     if active_only:
-        query += ' AND is_active = 1'
+        query += ' AND s.is_active = 1' if list_type else ' AND is_active = 1'
     
     cursor.execute(query, params)
     symbols = [row[0] for row in cursor.fetchall()]
@@ -235,14 +352,18 @@ def get_all_sectors(list_type: Optional[str] = None) -> List[str]:
     conn = sqlite3.connect(DB_PATH)
     cursor = conn.cursor()
 
-    query = 'SELECT DISTINCT sector FROM symbols WHERE is_active = 1'
-    params: List[str] = []
-
     if list_type:
-        query += ' AND list_type = ?'
-        params.append(list_type)
-
-    query += ' ORDER BY sector'
+        query = '''
+            SELECT DISTINCT s.sector 
+            FROM symbols s
+            INNER JOIN symbol_lists sl ON s.symbol = sl.symbol
+            WHERE s.is_active = 1 AND sl.list_type = ?
+            ORDER BY s.sector
+        '''
+        params = [list_type]
+    else:
+        query = 'SELECT DISTINCT sector FROM symbols WHERE is_active = 1 ORDER BY sector'
+        params = []
 
     cursor.execute(query, params)
     sectors = [row[0] for row in cursor.fetchall()]
@@ -256,15 +377,20 @@ def get_all_cap_ranges(list_type: Optional[str] = None) -> List[str]:
     conn = sqlite3.connect(DB_PATH)
     cursor = conn.cursor()
 
-    query = '''
-        SELECT DISTINCT market_cap_range FROM symbols 
-        WHERE is_active = 1 AND market_cap_range IS NOT NULL
-    '''
-    params: List[str] = []
-
     if list_type:
-        query += ' AND list_type = ?'
-        params.append(list_type)
+        query = '''
+            SELECT DISTINCT s.market_cap_range 
+            FROM symbols s
+            INNER JOIN symbol_lists sl ON s.symbol = sl.symbol
+            WHERE s.is_active = 1 AND s.market_cap_range IS NOT NULL AND sl.list_type = ?
+        '''
+        params = [list_type]
+    else:
+        query = '''
+            SELECT DISTINCT market_cap_range FROM symbols 
+            WHERE is_active = 1 AND market_cap_range IS NOT NULL
+        '''
+        params = []
 
     query += '''
         ORDER BY 
@@ -411,25 +537,36 @@ def add_sp500_to_popular(list_type: str = 'popular') -> Dict[str, int]:
     for sym in sp500:
         try:
             # Vérifier s'il existe déjà
-            cursor.execute("SELECT sector, market_cap_range, list_type FROM symbols WHERE symbol = ?", (sym,))
+            cursor.execute("SELECT sector, market_cap_range FROM symbols WHERE symbol = ?", (sym,))
             row = cursor.fetchone()
 
             sector = _get_sector_safe(sym)
             cap_range, market_cap = _get_cap_range_safe(sym)
 
             if row is None:
+                # Nouveau symbole : insérer dans symbols et symbol_lists
                 cursor.execute(
-                    '''INSERT INTO symbols (symbol, sector, market_cap_range, market_cap_value, list_type, last_checked, is_active)
-                       VALUES (?, ?, ?, ?, ?, ?, 1)''',
-                    (sym, sector, cap_range, market_cap, list_type, datetime.now().isoformat())
+                    '''INSERT INTO symbols (symbol, sector, market_cap_range, market_cap_value, last_checked, is_active)
+                       VALUES (?, ?, ?, ?, ?, 1)''',
+                    (sym, sector, cap_range, market_cap, datetime.now().isoformat())
+                )
+                cursor.execute(
+                    '''INSERT OR IGNORE INTO symbol_lists (symbol, list_type)
+                       VALUES (?, ?)''',
+                    (sym, list_type)
                 )
                 added += 1
             else:
-                # Mettre à jour le list_type à 'popular' si différent, et rafraîchir métadonnées
+                # Symbole existe : mettre à jour métadonnées et ajouter à la liste si absent
                 cursor.execute(
-                    '''UPDATE symbols SET sector=?, market_cap_range=?, market_cap_value=?, list_type=?, last_checked=?, is_active=1
+                    '''UPDATE symbols SET sector=?, market_cap_range=?, market_cap_value=?, last_checked=?, is_active=1
                        WHERE symbol=?''',
-                    (sector, cap_range, market_cap, list_type, datetime.now().isoformat(), sym)
+                    (sector, cap_range, market_cap, datetime.now().isoformat(), sym)
+                )
+                cursor.execute(
+                    '''INSERT OR IGNORE INTO symbol_lists (symbol, list_type)
+                       VALUES (?, ?)''',
+                    (sym, list_type)
                 )
                 updated += 1
         except Exception:
@@ -642,3 +779,131 @@ def clear_cleaned_groups_cache() -> None:
     cursor.execute('DELETE FROM cleaned_groups_cache')
     conn.commit()
     conn.close()
+
+
+def display_popular_symbols_distribution():
+    """
+    Affiche la répartition des symboles 'popular' par secteur et capital range.
+    Utile pour analyser la composition du portefeuille de trading.
+    """
+    init_symbols_table()
+    conn = sqlite3.connect(DB_PATH)
+    cursor = conn.cursor()
+    
+    # Récupérer tous les symboles populaires avec leurs métadonnées
+    cursor.execute('''
+        SELECT s.sector, s.market_cap_range, COUNT(*) as count
+        FROM symbols s
+        INNER JOIN symbol_lists sl ON s.symbol = sl.symbol
+        WHERE sl.list_type = 'popular' AND s.is_active = 1
+        GROUP BY s.sector, s.market_cap_range
+        ORDER BY s.sector, s.market_cap_range
+    ''')
+    
+    results = cursor.fetchall()
+    
+    # Également récupérer les totaux par secteur et par capital range
+    cursor.execute('''
+        SELECT s.sector, COUNT(*) as count
+        FROM symbols s
+        INNER JOIN symbol_lists sl ON s.symbol = sl.symbol
+        WHERE sl.list_type = 'popular' AND s.is_active = 1
+        GROUP BY s.sector
+        ORDER BY s.sector
+    ''')
+    
+    sector_totals = {row[0]: row[1] for row in cursor.fetchall()}
+    
+    cursor.execute('''
+        SELECT s.market_cap_range, COUNT(*) as count
+        FROM symbols s
+        INNER JOIN symbol_lists sl ON s.symbol = sl.symbol
+        WHERE sl.list_type = 'popular' AND s.is_active = 1
+        GROUP BY s.market_cap_range
+        ORDER BY s.market_cap_range
+    ''')
+    
+    cap_totals = {row[0]: row[1] for row in cursor.fetchall()}
+    
+    cursor.execute('''
+        SELECT COUNT(DISTINCT s.symbol) FROM symbols s
+        INNER JOIN symbol_lists sl ON s.symbol = sl.symbol
+        WHERE sl.list_type = 'popular' AND s.is_active = 1
+    ''')
+    
+    total_symbols = cursor.fetchone()[0]
+    conn.close()
+    
+    # Affichage
+    print("\n" + "="*100)
+    print("RÉPARTITION DES SYMBOLES POPULAIRES PAR SECTEUR × CAPITAL RANGE")
+    print("="*100)
+    
+    # Créer un tableau
+    sectors = sorted(set(row[0] for row in results))
+    cap_ranges = sorted(set(row[1] for row in results))
+    
+    # En-tête
+    header = "Secteur".ljust(25) + "  |  ".join([f"{cap:^12}" for cap in cap_ranges]) + "  |  Total"
+    print("\n" + header)
+    print("-" * len(header))
+    
+    # Créer une matrice pour les données
+    data_matrix = {}
+    for sector, cap_range, count in results:
+        if sector not in data_matrix:
+            data_matrix[sector] = {}
+        data_matrix[sector][cap_range] = count
+    
+    # Afficher les lignes
+    for sector in sectors:
+        row_data = sector.ljust(25) + "  |  "
+        row_counts = []
+        for cap_range in cap_ranges:
+            count = data_matrix.get(sector, {}).get(cap_range, 0)
+            row_counts.append(count)
+            row_data += f"{count:^12}"
+        
+        row_data += f"  |  {sector_totals.get(sector, 0):>3}"
+        print(row_data)
+    
+    # Ligne des totaux
+    print("-" * len(header))
+    footer = "TOTAL".ljust(25) + "  |  "
+    for cap_range in cap_ranges:
+        footer += f"{cap_totals.get(cap_range, 0):^12}"
+    footer += f"  |  {total_symbols:>3}"
+    print(footer)
+    
+    print("\n" + "="*100)
+    print(f"TOTAL GÉNÉRAL: {total_symbols} symboles populaires actifs")
+    print("="*100 + "\n")
+    
+    # Statistiques supplémentaires
+    print("\nSTATISTIQUES PAR SECTEUR:")
+    print("-" * 50)
+    for sector in sectors:
+        count = sector_totals.get(sector, 0)
+        pct = (count / total_symbols * 100) if total_symbols > 0 else 0
+        print(f"  {sector:30s}: {count:3d} symboles ({pct:5.1f}%)")
+    
+    print("\nSTATISTIQUES PAR CAPITAL RANGE:")
+    print("-" * 50)
+    for cap_range in cap_ranges:
+        count = cap_totals.get(cap_range, 0)
+        pct = (count / total_symbols * 100) if total_symbols > 0 else 0
+        print(f"  {cap_range:30s}: {count:3d} symboles ({pct:5.1f}%)")
+    
+    print("\n")
+    
+    return {
+        'total': total_symbols,
+        'by_sector': sector_totals,
+        'by_cap_range': cap_totals,
+        'matrix': data_matrix
+    }
+
+
+# Exemple d'utilisation
+if __name__ == '__main__':
+    display_popular_symbols_distribution()

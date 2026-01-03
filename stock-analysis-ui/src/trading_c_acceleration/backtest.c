@@ -1,5 +1,6 @@
 #include "backtest.h"
 #include <stdlib.h>
+#include <math.h>
 
 double get_trading_signal_score(TechnicalIndicators *indicators, TradingCoefficients *coeffs, 
                                double *prices, double *volumes, int length, int current_idx) {
@@ -117,6 +118,74 @@ double get_trading_signal_score(TechnicalIndicators *indicators, TradingCoeffici
     
     if (buy_conditions) score += coeffs->a8;
     if (sell_conditions) score -= coeffs->a8;
+    
+    // 🚀 PRICE FEATURES (nouveau - identique à Python)
+    if (coeffs->use_price_slope && current_idx >= 10) {
+        // Calcul price_slope_rel = (prix_actuel - prix_10j) / prix_10j
+        double price_10d_ago = prices[current_idx - 10];
+        if (price_10d_ago > 0) {
+            double price_slope_rel = (last_close - price_10d_ago) / price_10d_ago;
+            if (price_slope_rel > coeffs->th_price_slope) {
+                score += coeffs->a_price_slope;
+            } else if (price_slope_rel < -coeffs->th_price_slope) {
+                score -= coeffs->a_price_slope;
+            }
+        }
+    }
+    
+    if (coeffs->use_price_acc && current_idx >= 20) {
+        // Calcul price_acc_rel = slope_recent - slope_ancien
+        double price_10d_ago = prices[current_idx - 10];
+        double price_20d_ago = prices[current_idx - 20];
+        if (price_10d_ago > 0 && price_20d_ago > 0) {
+            double slope_recent = (last_close - price_10d_ago) / price_10d_ago;
+            double slope_old = (price_10d_ago - price_20d_ago) / price_20d_ago;
+            double price_acc_rel = slope_recent - slope_old;
+            if (price_acc_rel > coeffs->th_price_acc) {
+                score += coeffs->a_price_acc;
+            } else if (price_acc_rel < -coeffs->th_price_acc) {
+                score -= coeffs->a_price_acc;
+            }
+        }
+    }
+    
+    // 🚀 FUNDAMENTALS FEATURES (nouveau - identique à Python)
+    if (coeffs->use_fundamentals) {
+        // Revenue Growth
+        if (coeffs->fund_rev_growth > coeffs->th_rev_growth) {
+            score += coeffs->a_rev_growth;
+        } else if (coeffs->fund_rev_growth < -fabs(coeffs->th_rev_growth)) {
+            score -= coeffs->a_rev_growth * 0.5;
+        }
+        
+        // EPS Growth
+        if (coeffs->fund_eps_growth > coeffs->th_eps_growth) {
+            score += coeffs->a_eps_growth;
+        } else if (coeffs->fund_eps_growth < -fabs(coeffs->th_eps_growth)) {
+            score -= coeffs->a_eps_growth * 0.5;
+        }
+        
+        // ROE
+        if (coeffs->fund_roe > coeffs->th_roe) {
+            score += coeffs->a_roe;
+        } else if (coeffs->fund_roe < coeffs->th_roe * 0.5) {
+            score -= coeffs->a_roe * 0.3;
+        }
+        
+        // FCF Yield
+        if (coeffs->fund_fcf_yield > coeffs->th_fcf_yield) {
+            score += coeffs->a_fcf_yield;
+        } else if (coeffs->fund_fcf_yield < 0) {
+            score -= coeffs->a_fcf_yield * 0.5;
+        }
+        
+        // D/E Ratio (inverse - lower is better)
+        if (coeffs->fund_de_ratio < coeffs->th_de_ratio && coeffs->fund_de_ratio >= 0) {
+            score += coeffs->a_de_ratio;
+        } else if (coeffs->fund_de_ratio > coeffs->th_de_ratio * 2) {
+            score -= coeffs->a_de_ratio * 0.3;
+        }
+    }
     
     // Volatilité (comme dans votre Python)
     if (current_idx > 0 && prices[current_idx-1] != 0.0) {

@@ -10,7 +10,7 @@ import sys
 from pathlib import Path
 sys.path.append("C:\\Users\\berti\\Desktop\\Mes documents\\Gestion_trade\\stock-analysis-ui\\src\\trading_c_acceleration")
 from qsi import download_stock_data, load_symbols_from_txt, extract_best_parameters
-from qsi_optimized import backtest_signals, backtest_signals_with_events
+from qsi_optimized import backtest_signals, backtest_signals_with_events, backtest_signals_c_extended
 from pathlib import Path
 from tqdm import tqdm
 # import yfinance as yf  # Import paresseux - chargé seulement si nécessaire
@@ -20,6 +20,11 @@ from scipy.stats import qmc
 import warnings
 warnings.filterwarnings("ignore")
 from typing import Dict, List
+from concurrent.futures import ThreadPoolExecutor, as_completed
+import os
+
+# 🚀 PERFORMANCE: Détection automatique du nombre de workers
+MAX_WORKERS = min(os.cpu_count() or 4, 12)  # Max 12 pour éviter surcharge
 
 # Import du gestionnaire de symboles SQLite
 try:
@@ -243,39 +248,38 @@ class HybridOptimizer:
         self.use_price_features = use_price_features
         self.use_fundamentals_features = use_fundamentals_features
         
-        # 🔧 Définir les bounds (18 de base: 8 coeffs + 8 seuils + 2 globaux)
+        # 🔧 Définir les bounds avec dimension réduite
+        # - 8 coeffs (a1..a8)
+        # - 4 seuils optimisés seulement: RSI, Volume, ADX, Score
+        #   (les seuils MACD/EMA/Ichimoku/Bollinger sont fixés)
+        # - 2 seuils globaux achat/vente
         base_bounds = (
             [(0.5, 3.0)] * 8 +  # coefficients a1-a8 (indices 0-7)
-            [(30.0, 70.0)] +     # threshold 0: RSI_threshold (index 8) - garder
-            [(0.0, 0.0)] +       # threshold 1: MACD_threshold (index 9) - geler
-            [(0.0, 0.0)] +       # threshold 2: EMA_threshold (index 10) - geler
-            [(0.5, 2.5)] +       # threshold 3: Volume_threshold (index 11) - garder
-            [(15.0, 35.0)] +     # threshold 4: ADX_threshold (index 12) - garder
-            [(0.0, 0.0)] +       # threshold 5: Ichimoku_threshold (index 13) - geler
-            [(0.5, 0.5)] +       # threshold 6: Bollinger_threshold (index 14) - fixer
-            [(2.0, 6.0)] +       # threshold 7: Score_global_threshold (index 15) - garder
-            [(2.0, 6.0)] +       # seuil_achat global (index 16)
-            [(-6.0, -2.0)]       # seuil_vente global (index 17)
+            [(30.0, 70.0)] +     # threshold RSI (index 8) - garder
+            [(0.5, 2.5)] +       # threshold Volume (index 9) - garder
+            [(15.0, 35.0)] +     # threshold ADX (index 10) - garder
+            [(2.0, 6.0)] +       # threshold Score (index 11) - garder
+            [(2.0, 6.0)] +       # seuil_achat global (index 12)
+            [(-6.0, -2.0)]       # seuil_vente global (index 13)
         )
         self.bounds = base_bounds
         
         if self.use_price_features:
             # Extra 6 params: flags (rounded to 0/1), weights a9/a10, thresholds th9/th10 on relative values
             price_bounds = [
-                (0.0, 1.0),  # use_price_slope (index 18)
-                (0.0, 1.0),  # use_price_acc   (index 19)
-                (0.0, 3.0),  # a9 weight       (index 20)
-                (0.0, 3.0),  # a10 weight      (index 21)
-                (-0.05, 0.05),  # th9 on price_slope_rel (index 22)
-                (-0.05, 0.05),  # th10 on price_acc_rel  (index 23)
+                (0.0, 1.0),  # use_price_slope
+                (0.0, 1.0),  # use_price_acc
+                (-0.5, 3.0),  # a9 weight
+                (-0.5, 3.0),  # a10 weight
+                (-0.15, 0.15),  # th9 on price_slope_rel
+                (-0.15, 0.15),  # th10 on price_acc_rel
             ]
             self.bounds += price_bounds
-        
+
         if self.use_fundamentals_features:
             # Extra 10 params for fundamentals: 1 flag, 5 weights, 4 thresholds
-            # Indices: 24+ (or 18+ if price_features disabled)
             fundamentals_bounds = [
-                (0.0, 1.0),    # use_fundamentals flag (index 24 or 18)
+                (0.0, 1.0),    # use_fundamentals flag
                 (0.0, 3.0),    # a_rev_growth weight
                 (0.0, 3.0),    # a_eps_growth weight
                 (0.0, 3.0),    # a_roe weight
@@ -309,25 +313,38 @@ class HybridOptimizer:
         if param_key in self.best_cache:
             return self.best_cache[param_key]
 
-        # Extraire les paramètres : 8 coeffs + 8 seuils feature + 2 seuils globaux
+        # Extraire les paramètres : 8 coeffs + 4 seuils optimisés + 2 seuils globaux
         coeffs = tuple(params[:8])
-        feature_thresholds = tuple(params[8:16])  # 8 seuils individuels
-        seuil_achat = float(params[16])  # Seuil global achat
-        seuil_vente = float(params[17])  # Seuil global vente
+        thr_rsi, thr_vol, thr_adx, thr_score = params[8:12]
+        seuil_achat = float(params[12])  # Seuil global achat
+        seuil_vente = float(params[13])  # Seuil global vente
 
         # Contraintes avec arrondi sur les coefficients
         coeffs = tuple(np.clip(self.round_params(coeffs), 0.5, 3.0))
         
-        # Contraintes sur les seuils features
-        feature_thresholds = list(feature_thresholds)
-        feature_thresholds[0] = np.clip(round(feature_thresholds[0], self.precision), 30.0, 70.0)  # RSI_threshold (garder)
-        feature_thresholds[1] = 0.0  # MACD_threshold (gelé)
-        feature_thresholds[2] = 0.0  # EMA_threshold (gelé)
-        feature_thresholds[3] = np.clip(round(feature_thresholds[3], self.precision), 0.5, 2.5)    # Volume_threshold (garder)
-        feature_thresholds[4] = np.clip(round(feature_thresholds[4], self.precision), 15.0, 35.0)  # ADX_threshold (garder)
-        feature_thresholds[5] = 0.0  # Ichimoku_threshold (gelé)
-        feature_thresholds[6] = 0.5  # Bollinger_threshold (fixé)
-        feature_thresholds[7] = np.clip(round(feature_thresholds[7], self.precision), 2.0, 6.0)    # Score_global_threshold (garder)
+        # Contraintes sur les seuils features (optimisés ou fixés)
+        thr_rsi = np.clip(round(thr_rsi, self.precision), 30.0, 70.0)      # RSI (optimisé)
+        thr_vol = np.clip(round(thr_vol, self.precision), 0.5, 2.5)        # Volume (optimisé)
+        thr_adx = np.clip(round(thr_adx, self.precision), 15.0, 35.0)      # ADX (optimisé)
+        thr_score = np.clip(round(thr_score, self.precision), 2.0, 6.0)    # Score (optimisé)
+
+        # Seuils fixés/gélés non optimisés
+        thr_macd = 0.0
+        thr_ema = 0.0
+        thr_ichimoku = 0.0
+        thr_boll = 0.5
+
+        # Reconstituer le vecteur complet de 8 seuils attendu par backtest
+        feature_thresholds = [
+            thr_rsi,
+            thr_macd,
+            thr_ema,
+            thr_vol,
+            thr_adx,
+            thr_ichimoku,
+            thr_boll,
+            thr_score,
+        ]
         feature_thresholds = tuple(feature_thresholds)
         
         # Contraintes sur les seuils globaux
@@ -336,14 +353,14 @@ class HybridOptimizer:
 
         # Extract optional price extras
         price_extras = None
-        if self.use_price_features and len(params) >= 24:
+        if self.use_price_features and len(params) >= 20:
             # Round flags to 0/1
-            use_ps = int(round(np.clip(params[18], 0.0, 1.0)))
-            use_pa = int(round(np.clip(params[19], 0.0, 1.0)))
-            a_ps = float(np.clip(round(params[20], self.precision), 0.0, 3.0))
-            a_pa = float(np.clip(round(params[21], self.precision), 0.0, 3.0))
-            th_ps = float(np.clip(round(params[22], self.precision), -0.05, 0.05))
-            th_pa = float(np.clip(round(params[23], self.precision), -0.05, 0.05))
+            use_ps = int(round(np.clip(params[14], 0.0, 1.0)))
+            use_pa = int(round(np.clip(params[15], 0.0, 1.0)))
+            a_ps = float(np.clip(round(params[16], self.precision), 0.0, 3.0))
+            a_pa = float(np.clip(round(params[17], self.precision), 0.0, 3.0))
+            th_ps = float(np.clip(round(params[18], self.precision), -0.05, 0.05))
+            th_pa = float(np.clip(round(params[19], self.precision), -0.05, 0.05))
             price_extras = {
                 'use_price_slope': use_ps,
                 'use_price_acc': use_pa,
@@ -355,7 +372,10 @@ class HybridOptimizer:
         
         # Extract optional fundamentals extras
         fundamentals_extras = None
-        fundamentals_index_offset = 24 if self.use_price_features else 18
+        # Nouveau décalage après réduction de dimension :
+        # base = 14 (8 coeffs + 4 seuils + 2 globaux)
+        # price features = +6
+        fundamentals_index_offset = 20 if self.use_price_features else 14
         if self.use_fundamentals_features and len(params) >= (fundamentals_index_offset + 10):
             use_fund = int(round(np.clip(params[fundamentals_index_offset], 0.0, 1.0)))
             a_rev = float(np.clip(round(params[fundamentals_index_offset + 1], self.precision), 0.0, 3.0))
@@ -383,30 +403,34 @@ class HybridOptimizer:
 
         total_gain = 0.0
         total_trades = 0
+        
+        # 🚀 Helper function for parallel execution
+        def evaluate_symbol(symbol, data):
+            try:
+                # 🚀 TOUJOURS utiliser l'accélération C (même avec features)
+                result = backtest_signals_c_extended(
+                    data['Close'], data['Volume'],
+                    coeffs=coeffs,
+                    seuil_achat=seuil_achat, seuil_vente=seuil_vente,
+                    montant=self.montant, transaction_cost=self.transaction_cost,
+                    price_extras=price_extras if self.use_price_features else None,
+                    fundamentals_extras=fundamentals_extras if self.use_fundamentals_features else None,
+                    symbol_name=symbol
+                )
+                return result['gain_total'], result['trades']
+            except Exception as e:
+                return 0.0, 0
+        
         try:
-            for symbol, data in self.stock_data.items():
-                if (self.use_price_features and price_extras is not None) or (self.use_fundamentals_features and fundamentals_extras is not None):
-                    # Use Python backtest with events to pass extras into qsi.get_trading_signal
-                    result, _ = backtest_signals_with_events(
-                        data['Close'], data['Volume'], self.domain,
-                        montant=self.montant, transaction_cost=self.transaction_cost,
-                        domain_coeffs={self.domain: coeffs},
-                        domain_thresholds={self.domain: feature_thresholds},
-                        seuil_achat=seuil_achat, seuil_vente=seuil_vente,
-                        extra_params=price_extras,
-                        fundamentals_extras=fundamentals_extras,
-                        symbol_name=symbol
-                    )
-                else:
-                    result = backtest_signals(
-                        data['Close'], data['Volume'], self.domain,
-                        domain_coeffs={self.domain: coeffs},
-                        domain_thresholds={self.domain: feature_thresholds},
-                        seuil_achat=seuil_achat, seuil_vente=seuil_vente,
-                        montant=self.montant, transaction_cost=self.transaction_cost
-                    )
-                total_gain += result['gain_total']
-                total_trades += result['trades']
+            # ⚡⚡ PARALLÉLISATION: Évaluer tous les symboles en parallèle
+            with ThreadPoolExecutor(max_workers=min(MAX_WORKERS, len(self.stock_data))) as executor:
+                futures = {executor.submit(evaluate_symbol, symbol, data): symbol 
+                          for symbol, data in self.stock_data.items()}
+                
+                for future in as_completed(futures):
+                    gain, trades = future.result()
+                    total_gain += gain
+                    total_trades += trades
 
             avg_gain = total_gain / len(self.stock_data) if self.stock_data else 0.0
             self.evaluation_count += 1
@@ -543,14 +567,6 @@ class HybridOptimizer:
         bounds = self.bounds
         dim = len(bounds)
 
-        # Cap initial population size to avoid huge first generation (popsize * dim)
-        # Target around ~600 evaluations per generation
-        target_evals_per_gen = 600
-        max_popsize = max(8, target_evals_per_gen // max(1, dim))
-        if population_size > max_popsize:
-            print(f"   ⚠️ Pop trop grande pour {dim} dimensions → réduit {population_size} → {max_popsize}")
-            population_size = max_popsize
-
         with tqdm(total=max_iterations, desc="🔄 Évolution différentielle", unit="iter") as pbar:
             def callback(xk, convergence):
                 pbar.set_postfix({'Convergence': f"{convergence:.6f}", 'Trades': self.meilleur_trades})
@@ -610,12 +626,13 @@ class HybridOptimizer:
         print(f"🐝 Particle Swarm Optimization (particles={n_particles}, iter={max_iterations}, précision={self.precision})")
         
         bounds = np.array(self.bounds)
+        n_dims = len(self.bounds)  # 🔧 Dimension dynamique
 
         # Initialisation avec arrondi
-        particles = np.random.uniform(bounds[:, 0], bounds[:, 1], (n_particles, 18))
+        particles = np.random.uniform(bounds[:, 0], bounds[:, 1], (n_particles, n_dims))
         particles = np.array([self.round_params(p) for p in particles])  # 🔧 MODIFIÉ
         
-        velocities = np.random.uniform(-1, 1, (n_particles, 18))
+        velocities = np.random.uniform(-1, 1, (n_particles, n_dims))
         personal_best_positions = particles.copy()
         personal_best_scores = np.array([self.evaluate_config(p) for p in particles])
 
@@ -799,8 +816,8 @@ def optimize_sector_coefficients_hybrid(
             # print(f"   🔍 DEBUG: Je cherche domain='{domain}'")
             # print(f"   🔍 DEBUG: domain in dict? {domain in BEST_PARAM_EXTRAS}")
             if domain in BEST_PARAM_EXTRAS:
-                print(f"      Clés disponibles: {list(BEST_PARAM_EXTRAS[domain].keys())}")
                 extras_dict = BEST_PARAM_EXTRAS[domain]
+                print(f"      Extras historiques: use_price_slope={extras_dict.get('use_price_slope')}, use_price_acc={extras_dict.get('use_price_acc')}, use_fundamentals={extras_dict.get('use_fundamentals')}")
                 # Vérifier si des extras de price existent dans le dictionnaire
                 if 'use_price_slope' in extras_dict:
                     hist_extra_params = {
@@ -832,8 +849,15 @@ def optimize_sector_coefficients_hybrid(
             total_trades = 0
             total_success = 0
             for symbol, data in stock_data.items():
-                # 🔧 Utiliser backtest_with_events si des extras historiques existent
-                if hist_extra_params is not None or hist_fundamentals_extras is not None:
+                # 🔧 Vérifier si les features sont RÉELLEMENT activées (pas juste présentes)
+                price_features_active = hist_extra_params is not None and (
+                    hist_extra_params.get('use_price_slope', 0) or hist_extra_params.get('use_price_acc', 0)
+                )
+                fund_features_active = hist_fundamentals_extras is not None and (
+                    hist_fundamentals_extras.get('use_fundamentals', 0)
+                )
+                
+                if price_features_active or fund_features_active:
                     result, _ = backtest_signals_with_events(
                         data['Close'], data['Volume'], domain,
                         domain_coeffs={domain: hist_coeffs},
@@ -845,6 +869,7 @@ def optimize_sector_coefficients_hybrid(
                         symbol_name=symbol
                     )
                 else:
+                    # Features désactivées → backtest classique C accéléré
                     result = backtest_signals(
                         data['Close'], data['Volume'], domain,
                         domain_coeffs={domain: hist_coeffs},
@@ -865,23 +890,75 @@ def optimize_sector_coefficients_hybrid(
                 print(f"   ⚠️  Historique ignoré (0 trade)")
                 historical_candidate = None
             else:
-                # Préparer un candidat pour la comparaison finale (18 paramètres de base)
-                hist_params = list(hist_coeffs + hist_feature_thresholds + (hist_seuil_achat, hist_seuil_vente))
+                # ✨ Appliquer la nouvelle structure réduite : 8 coeffs + 4 seuils optimisés + 2 globaux
+                # Recomposer les 8 seuils attendus par le backtest avec les valeurs gelées
+                hist_thr_rsi = hist_feature_thresholds[0] if len(hist_feature_thresholds) > 0 else 50.0
+                hist_thr_vol = hist_feature_thresholds[3] if len(hist_feature_thresholds) > 3 else 1.0
+                hist_thr_adx = hist_feature_thresholds[4] if len(hist_feature_thresholds) > 4 else 25.0
+                hist_thr_score = hist_feature_thresholds[7] if len(hist_feature_thresholds) > 7 else 4.0
+                hist_feature_thresholds = (
+                    round(hist_thr_rsi, precision),  # RSI optimisé
+                    0.0,                              # MACD gelé
+                    0.0,                              # EMA gelé
+                    round(hist_thr_vol, precision),   # Volume optimisé
+                    round(hist_thr_adx, precision),   # ADX optimisé
+                    0.0,                              # Ichimoku gelé
+                    0.5,                              # Bollinger gelé
+                    round(hist_thr_score, precision), # Score optimisé
+                )
+
+                # Paramètres de base pour comparaison finale : 14 (8 coeffs + 4 seuils + 2 globaux)
+                hist_params = list(hist_coeffs[:8] + (hist_thr_rsi, hist_thr_vol, hist_thr_adx, hist_thr_score, hist_seuil_achat, hist_seuil_vente))
+                print(f"   🔍 DEBUG: Après base (14 params): len={len(hist_params)}")
                 
                 # 🔧 Étendre les paramètres historiques si des features sont activées
+                # IMPORTANT: Utiliser les vraies valeurs historiques depuis BEST_PARAM_EXTRAS, pas des 0 !
                 if use_price_features:
-                    # Ajouter 6 paramètres par défaut pour price features (désactivés par défaut)
-                    hist_params += [0.0, 0.0, 0.5, 0.5, 0.0, 0.0]  # use_slope=0, use_acc=0, weights=0.5, thresholds=0
+                    # Récupérer les valeurs historiques ou utiliser des valeurs par défaut si absentes
+                    if hist_extra_params:
+                        hist_params += [
+                            float(hist_extra_params.get('use_price_slope', 0)),
+                            float(hist_extra_params.get('use_price_acc', 0)),
+                            float(hist_extra_params.get('a_price_slope', 0.5)),
+                            float(hist_extra_params.get('a_price_acc', 0.5)),
+                            float(hist_extra_params.get('th_price_slope', 0.0)),
+                            float(hist_extra_params.get('th_price_acc', 0.0))
+                        ]
+                    else:
+                        # Pas de paramètres historiques → features désactivées
+                        hist_params += [0.0, 0.0, 0.5, 0.5, 0.0, 0.0]
+                    print(f"   🔍 DEBUG: Après price (+6 params): len={len(hist_params)}")
                 
                 if use_fundamentals_features:
-                    # Ajouter 10 paramètres par défaut pour fundamentals (désactivés par défaut)
-                    hist_params += [0.0, 0.5, 0.5, 0.5, 0.5, 0.5, 0.0, 0.0, 0.0, 0.0]
+                    # Récupérer les valeurs historiques ou utiliser des valeurs par défaut si absentes
+                    if hist_fundamentals_extras:
+                        hist_params += [
+                            float(hist_fundamentals_extras.get('use_fundamentals', 0)),
+                            float(hist_fundamentals_extras.get('a_rev_growth', 0.5)),
+                            float(hist_fundamentals_extras.get('a_eps_growth', 0.5)),
+                            float(hist_fundamentals_extras.get('a_roe', 0.5)),
+                            float(hist_fundamentals_extras.get('a_fcf_yield', 0.5)),
+                            float(hist_fundamentals_extras.get('a_de_ratio', 0.5)),
+                            float(hist_fundamentals_extras.get('th_rev_growth', 0.0)),
+                            float(hist_fundamentals_extras.get('th_eps_growth', 0.0)),
+                            float(hist_fundamentals_extras.get('th_roe', 0.0)),
+                            float(hist_fundamentals_extras.get('th_fcf_yield', 0.0)),
+                            float(hist_fundamentals_extras.get('th_de_ratio', 0.0))
+                        ]
+                    else:
+                        # Pas de paramètres historiques → features désactivées
+                        hist_params += [0.0, 0.5, 0.5, 0.5, 0.5, 0.5, 0.0, 0.0, 0.0, 0.0]
+                    print(f"   🔍 DEBUG: Après fundamentals (+10 params): len={len(hist_params)}")
                 
                 historical_candidate = ('Historical (re-eval)', tuple(hist_params), hist_avg_gain)
 
                 print(f"♻️ Paramètres historiques réévalués sur données actuelles: gain_moy={hist_avg_gain:.2f}, trades={total_trades}, success={hist_success_rate:.2f}%")
                 if use_price_features or use_fundamentals_features:
-                    print(f"   ℹ️  Paramètres étendus de 18 → {len(hist_params)} (features désactivées par défaut)")
+                    # Afficher l'état réel des features historiques
+                    price_active = hist_extra_params and (hist_extra_params.get('use_price_slope', 0) or hist_extra_params.get('use_price_acc', 0))
+                    fund_active = hist_fundamentals_extras and hist_fundamentals_extras.get('use_fundamentals', 0)
+                    status_msg = f"price={'✅' if price_active else '❌'}, fundamentals={'✅' if fund_active else '❌'}"
+                    print(f"   ℹ️  Paramètres étendus de 14 → {len(hist_params)} ({status_msg})")
         except Exception as e:
             print(f"⚠️ Réévaluation des paramètres historiques impossible: {e}")
 
@@ -905,7 +982,7 @@ def optimize_sector_coefficients_hybrid(
     print(f"📈 Budget d'évaluations initial: {budget_evaluations}")
     print(f"🔧 Budget ajusté selon la précision: {adjusted_budget} (facteur: {precision_factor:.2f}x)")
 
-    if strategy == 'hybrid' or strategy == 'genetic':
+    if  strategy == 'genetic': # or strategy == 'hybrid':
         # Algorithmes génétiques - 🔧 Augmenter max pop_size selon budget
         pop_size = min(100, adjusted_budget // 20)  # Max 100 au lieu de 50
         generations = min(50, adjusted_budget // pop_size)  # Generations aussi augmentées
@@ -957,25 +1034,40 @@ def optimize_sector_coefficients_hybrid(
             best_score = refined_score
             print(f"✨ Affinement réussi: nouveau score {best_score:.4f}")
 
-    # 🔧 MODIFIÉ: Extraction des paramètres finaux avec conversion Python natif
-    # V2.0: Extraire 8 coefficients + 8 seuils individuels + 2 seuils globaux
-    best_coeffs = tuple(float(x) for x in best_params[:8])  # 8 coefficients
-    best_feature_thresholds = tuple(float(best_params[i]) for i in range(8, 16))  # 8 seuils features
-    best_seuil_achat = float(best_params[16])  # Seuil global achat
-    best_seuil_vente = float(best_params[17])  # Seuil global vente
+    # 🔧 MODIFIÉ: Extraction conforme à la nouvelle structure (8 coeffs + 4 seuils optimisés + 2 globaux)
+    best_coeffs = tuple(float(x) for x in best_params[:8])
+    thr_rsi = float(best_params[8])
+    thr_vol = float(best_params[9])
+    thr_adx = float(best_params[10])
+    thr_score = float(best_params[11])
+    best_seuil_achat = float(best_params[12])
+    best_seuil_vente = float(best_params[13])
+
+    # Recomposer les 8 seuils attendus par le backtest avec valeurs gelées
+    best_feature_thresholds = (
+        thr_rsi,
+        0.0,
+        0.0,
+        thr_vol,
+        thr_adx,
+        0.0,
+        0.5,
+        thr_score,
+    )
 
     # 🔧 DEBUG: Taille du vecteur de params
     print(f"   🔍 Taille du meilleur vecteur de params: {len(best_params)} (expected: {len(optimizer.bounds)})")
 
-    # Extra params (price features) if present in vector
+    # Extra params (price features) if present in vector (nouvelle position: après 14 de base)
     extra_params = None
-    if use_price_features and len(best_params) >= 24:
-        use_ps = int(round(np.clip(best_params[18], 0.0, 1.0)))
-        use_pa = int(round(np.clip(best_params[19], 0.0, 1.0)))
-        a_ps = float(np.clip(round(best_params[20], precision), 0.0, 3.0))
-        a_pa = float(np.clip(round(best_params[21], precision), 0.0, 3.0))
-        th_ps = float(np.clip(round(best_params[22], precision), -0.05, 0.05))
-        th_pa = float(np.clip(round(best_params[23], precision), -0.05, 0.05))
+    price_index_offset = 14
+    if use_price_features and len(best_params) >= (price_index_offset + 6):
+        use_ps = int(round(np.clip(best_params[price_index_offset], 0.0, 1.0)))
+        use_pa = int(round(np.clip(best_params[price_index_offset + 1], 0.0, 1.0)))
+        a_ps = float(np.clip(round(best_params[price_index_offset + 2], precision), 0.0, 3.0))
+        a_pa = float(np.clip(round(best_params[price_index_offset + 3], precision), 0.0, 3.0))
+        th_ps = float(np.clip(round(best_params[price_index_offset + 4], precision), -0.05, 0.05))
+        th_pa = float(np.clip(round(best_params[price_index_offset + 5], precision), -0.05, 0.05))
         extra_params = {
             'use_price_slope': use_ps,
             'use_price_acc': use_pa,
@@ -985,9 +1077,9 @@ def optimize_sector_coefficients_hybrid(
             'th_price_acc': th_pa,
         }
     
-    # Fundamentals extras if present in vector
+    # Fundamentals extras if present in vector (nouvelle position: après prix ou base)
     fundamentals_extras = None
-    fundamentals_index_offset = 24 if use_price_features else 18
+    fundamentals_index_offset = price_index_offset + 6 if use_price_features else 14
     if use_fundamentals_features and len(best_params) >= (fundamentals_index_offset + 10):
         use_fund = int(round(np.clip(best_params[fundamentals_index_offset], 0.0, 1.0)))
         a_rev = float(np.clip(round(best_params[fundamentals_index_offset + 1], precision), 0.0, 3.0))
@@ -1018,15 +1110,21 @@ def optimize_sector_coefficients_hybrid(
     total_trades = 0
     debug_trades_per_symbol = {}
     
-    # 🔧 DEBUG: Afficher la configuration du recalcul
+    # 🔧 Vérifier si les features sont RÉELLEMENT activées
+    price_features_active = extra_params is not None and (
+        extra_params.get('use_price_slope', 0) or extra_params.get('use_price_acc', 0)
+    )
+    fund_features_active = fundamentals_extras is not None and (
+        fundamentals_extras.get('use_fundamentals', 0)
+    )
+    
     print(f"   🔍 Recalcul avec: use_price_features={use_price_features}, use_fundamentals_features={use_fundamentals_features}")
     print(f"      extra_params={extra_params}")
     print(f"      fundamentals_extras={fundamentals_extras}")
-    print(f"      Condition 1 (price): {use_price_features} and {extra_params is not None} = {use_price_features and extra_params is not None}")
-    print(f"      Condition 2 (fund): {use_fundamentals_features} and {fundamentals_extras is not None} = {use_fundamentals_features and fundamentals_extras is not None}")
+    print(f"      Features réellement actives: price={price_features_active}, fund={fund_features_active}")
     
     for symbol, data in stock_data.items():
-        if (use_price_features and extra_params is not None) or (use_fundamentals_features and fundamentals_extras is not None):
+        if price_features_active or fund_features_active:
             # Utiliser backtest_with_events pour les features étendues
             result, _ = backtest_signals_with_events(
                 data['Close'], data['Volume'], domain,
@@ -1293,6 +1391,17 @@ if __name__ == "__main__":
                     print(f"   ✅ {sector} × {cap_range}: {len(syms)} symboles")
         
         print(f"\n   📊 Total: {total_combos} combinaisons secteur×cap_range avec symboles")
+        
+        # Résumé par secteur
+        print(f"\n   📈 Détail par secteur:")
+        sector_symbol_counts = {}
+        for sector, cap_dict in sector_cap_ranges.items():
+            total_syms = sum(len(syms) for syms in cap_dict.values())
+            if total_syms > 0:
+                sector_symbol_counts[sector] = total_syms
+                print(f"      • {sector}: {total_syms} symboles ({len(cap_dict)} cap_range(s))")
+        
+        print(f"      Total secteurs: {len(sector_symbol_counts)}")
 
         # Nettoyage paresseux avec cache
         print("\n   🧹 Nettoyage des groupes avec cache (complément + réduction)...")
@@ -1371,22 +1480,32 @@ if __name__ == "__main__":
     use_fundamentals_features_input = input("   Activer fundamentals features (rev_growth, eps, roe, etc.) ? (o/N) : ").strip().lower()
     use_fundamentals_features = (use_fundamentals_features_input == 'o')
     
-    # Calcul du nombre de paramètres
-    param_count = 18  # Base
+    # Calcul du nombre de paramètres (ajusté après réduction de dimension)
+    param_count = 14  # Base réduite: 8 coeffs + 4 seuils optimisés + 2 globaux
     if use_price_features:
         param_count += 6
     if use_fundamentals_features:
         param_count += 10
     
+    # Vérifier si accélération C disponible
+    try:
+        from trading_c_acceleration.qsi_optimized import C_ACCELERATION
+        accel_status = "⚡ Module C activé" if C_ACCELERATION else "🐍 Python vectorisé"
+    except:
+        accel_status = "🐍 Python vectorisé"
+    
     print(f"\n   🔧 Configuration:")
     print(f"      - Stratégie: {strategy}")
     print(f"      - Précision: {precision} décimales")
-    print(f"      - Price features: {'✅ Activé' if use_price_features else '❌ Désactivé'}")
-    print(f"      - Fundamentals features: {'✅ Activé' if use_fundamentals_features else '❌ Désactivé'}")
+    print(f"      - Accélération: {accel_status}")
+    print(f"      - Parallélisation: ⚡⚡ {min(MAX_WORKERS, len(symbols))} workers (ThreadPool)")
+    print(f"      - Price features: {'✅ Activé (C accéléré)' if use_price_features else '❌ Désactivé'}")
+    print(f"      - Fundamentals features: {'✅ Activé (C accéléré)' if use_fundamentals_features else '❌ Désactivé'}")
     print(f"      - Nombre de paramètres: {param_count}")
+    print(f"      - Seuils gelés: MACD=0, EMA=0, Ichimoku=0, Bollinger=0.5")
 
     # Adapter le budget selon la précision
-    budget_base = 50#1000
+    budget_base = 1500#1000
     if precision == 1:
         budget_evaluations = int(budget_base * 0.5)
     elif precision == 2:

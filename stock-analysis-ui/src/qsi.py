@@ -320,7 +320,8 @@ def extract_best_parameters(db_path: str = 'signaux/optimization_hist.db') -> Di
 
 def get_trading_signal(prices, volumes, domaine, domain_coeffs=None, domain_thresholds=None,
                       variation_seuil=-20, volume_seuil=100000, return_derivatives: bool = False, symbol: str = None,
-                      cap_range: str = None, price_extras: Dict[str, Union[int, float]] = None):
+                      cap_range: str = None, price_extras: Dict[str, Union[int, float]] = None,
+                      seuil_achat: float = None, seuil_vente: float = None):
     """Détermine les signaux de trading avec validation des données
     
     Args:
@@ -334,6 +335,8 @@ def get_trading_signal(prices, volumes, domaine, domain_coeffs=None, domain_thre
         volume_seuil: Seuil de volume minimum (défaut: 100000)
         return_derivatives: Retourner les dérivées des indicateurs
         symbol: Symbole de l'action
+        seuil_achat: Seuil global pour signal ACHAT (défaut: 4.2)
+        seuil_vente: Seuil global pour signal VENTE (défaut: -0.5)
     
     Returns:
         Tuple avec (signal, score, rsi, volume_mean, tendance)
@@ -742,10 +745,21 @@ def get_trading_signal(prices, volumes, domaine, domain_coeffs=None, domain_thre
         m4 = 0.75
     score *= m4
 
-    # Interprétation du score avec le seuil global (index 7)
-    # Utiliser le seuil global (thresholds[7]) pour les décisions ACHAT/VENTE
-    buy_threshold = score_threshold if len(thresholds) > 7 else 4.20
-    sell_threshold = -score_threshold if len(thresholds) > 7 else -0.5
+    # Interprétation du score avec les seuils globaux optimisés
+    # Utiliser seuil_achat/seuil_vente si fournis, sinon fallback sur thresholds[7] ou valeurs par défaut
+    if seuil_achat is not None:
+        buy_threshold = seuil_achat
+    elif len(thresholds) > 7:
+        buy_threshold = score_threshold
+    else:
+        buy_threshold = 4.20
+    
+    if seuil_vente is not None:
+        sell_threshold = seuil_vente
+    elif len(thresholds) > 7:
+        sell_threshold = -score_threshold
+    else:
+        sell_threshold = -0.5
     
     if score >= buy_threshold:
         signal = "ACHAT"
@@ -985,6 +999,9 @@ def compute_financial_derivatives(symbol: str, lookback_quarters: int = 4) -> di
         'fcf_yield_pct': 0.0,      # FCF / MarketCap * 100
         'sector': 'Inconnu'
     }
+    
+    # Définir le chemin du cache
+    cache_file = CACHE_DIR / f"{symbol}_financial.pkl"
     
     # Essayer de charger du cache (7 jours TTL)
     if get_pickle_cache is not None:
@@ -1694,6 +1711,37 @@ def download_stock_data(symbols: List[str], period: str) -> Dict[str, Dict[str, 
     
     return valid_data
 
+def auto_register_analyzed_symbols(symbols: List[str], list_type: str = 'popular'):
+    """
+    Enregistre automatiquement les symboles analysés dans la base SQLite.
+    Par défaut, tous les symboles analysés sont ajoutés à 'popular' qui devient
+    la liste master contenant tous les symboles.
+    
+    Args:
+        symbols: Liste des symboles analysés
+        list_type: Type de liste (par défaut 'popular')
+    """
+    try:
+        from symbol_manager import init_symbols_table, auto_add_to_popular
+        from symbol_manager import sync_txt_to_sqlite
+        import sqlite3
+        from config import DB_PATH
+        
+        if not symbols:
+            return
+        
+        init_symbols_table()
+        
+        # Enregistrer chaque symbole analysé
+        added = auto_add_to_popular(symbols)
+        
+        if added > 0:
+            print(f"🔄 {added} nouveaux symboles auto-enregistrés dans popular")
+            
+    except Exception as e:
+        # Silencieux - ne pas bloquer l'analyse si l'enregistrement échoue
+        pass
+
 def plot_unified_chart(symbol, prices, volumes, ax, show_xaxis=False, score_override=None, precomputed=None):
     """Trace un graphique unifié avec prix, MACD et RSI intégré.
 
@@ -2236,6 +2284,10 @@ def analyse_signaux_populaires(
         print(f"   Paramètres chargés: {len(best_params)} ensembles")
         print(f"\n🔍 Analyse des signaux pour actions populaires (parallèle: {max_workers} workers)...")
 
+    # 🔄 Auto-enregistrer tous les symboles analysés dans popular
+    all_symbols = list(set(popular_symbols + mes_symbols))
+    auto_register_analyzed_symbols(all_symbols, list_type='popular')
+
     signals = []
     signals_lock = Lock()
 
@@ -2263,18 +2315,71 @@ def analyse_signaux_populaires(
                 domaine = "ℹ️Inconnu!!"
 
             cap_range = get_cap_range_for_symbol(symbol)
+            
+            # ✅ Fallback pour cap_range Unknown : essayer Large, Mid, Mega
+            if cap_range == "Unknown" or not cap_range:
+                for fallback_cap in ["Large", "Mid", "Mega"]:
+                    test_key = f"{domaine}_{fallback_cap}"
+                    if test_key in best_params:
+                        cap_range = fallback_cap
+                        break
+            
             selected_key = None
-            if cap_range:
+            if cap_range and cap_range != "Unknown":
                 comp_key = f"{domaine}_{cap_range}"
                 if comp_key in best_params:
                     selected_key = comp_key
             if not selected_key and domaine in best_params:
                 selected_key = domaine
+            
+            # ✅ Fallback pour domaines inconnus : utiliser le premier disponible ou Technology
+            if not selected_key and "Inconnu" in domaine:
+                # Essayer des secteurs génériques courants
+                for fallback_sector in ["Technology", "Healthcare", "Financial Services"]:
+                    if fallback_sector in best_params:
+                        selected_key = fallback_sector
+                        domaine = fallback_sector  # Mettre à jour le domaine pour cohérence
+                        break
+                # Si aucun fallback trouvé, prendre le premier disponible
+                if not selected_key and best_params:
+                    selected_key = list(best_params.keys())[0]
+                    domaine = selected_key.split('_')[0] if '_' in selected_key else selected_key
+            
+            # ✅ Extraire les seuils globaux optimisés depuis best_params
+            seuil_achat_opt = None
+            seuil_vente_opt = None
+            if selected_key and selected_key in best_params:
+                params = best_params[selected_key]
+                if len(params) > 2 and params[2]:
+                    globals_th = params[2]
+                    if isinstance(globals_th, (tuple, list)) and len(globals_th) >= 2:
+                        seuil_achat_opt = float(globals_th[0])
+                        seuil_vente_opt = float(globals_th[1])
 
-            # Récupération du signal et des dérivés
+            # Récupération du signal et des dérivés avec seuils globaux optimisés
             signal, last_price, trend, last_rsi, volume_mean, score, derivatives = get_trading_signal(
-                prices, volumes, domaine, return_derivatives=True, symbol=symbol, cap_range=cap_range
+                prices, volumes, domaine, return_derivatives=True, symbol=symbol, cap_range=cap_range,
+                seuil_achat=seuil_achat_opt, seuil_vente=seuil_vente_opt
             )
+            
+            # 🔍 Debug: afficher le résultat pour comprendre le filtrage
+            if verbose and signal == "NEUTRE":
+                print(f"   ⚪ {symbol}: Signal={signal}, Score={score:.2f}, Domaine={domaine}, CapRange={cap_range}, ParamKey={selected_key}")
+                # Afficher les paramètres utilisés si disponibles
+                if selected_key and selected_key in best_params:
+                    params = best_params[selected_key]
+                    coeffs = params[0] if len(params) > 0 and params[0] else "N/A"
+                    thresholds = params[1] if len(params) > 1 and params[1] else "N/A"
+                    globals_th = params[2] if len(params) > 2 and params[2] else "N/A"
+                    extras = params[3] if len(params) > 3 else None
+                    print(f"      📊 Paramètres base: coeffs={coeffs}")
+                    print(f"         seuils={thresholds}, globaux={globals_th}")
+                    if extras and isinstance(extras, dict):
+                        print(f"      ✨ Features supplémentaires:")
+                        for key, val in extras.items():
+                            print(f"         {key}: {val}")
+                    elif extras:
+                        print(f"      ⚠️ Format extras inattendu (type={type(extras).__name__}): {extras}")
 
             if signal != "NEUTRE" and last_price is not None and score is not None:
                 consensus = get_consensus(symbol)
@@ -2291,28 +2396,35 @@ def analyse_signaux_populaires(
                     'Volume moyen': volume_mean,
                     'Consensus': consensus.get('label', 'Neutre'),
                     'ConsensusMean': consensus.get('mean', None),
-                    'dPrice': round(derivatives.get('price_slope_rel', 0.0) * 100, 2),
-                    'dMACD': round(derivatives.get('macd_slope_rel', 0.0) * 100, 2),
-                    'dRSI': round(derivatives.get('rsi_slope_rel', 0.0) * 100, 2),
-                    'dVolRel': round(derivatives.get('volume_slope_rel', 0.0) * 100, 2),
-                    'Rev. Growth (%)': round(derivatives.get('rev_growth_val', 0.0), 2),
-                    'EBITDA Yield (%)': round(derivatives.get('ebitda_yield_pct', 0.0), 2),
-                    'FCF Yield (%)': round(derivatives.get('fcf_yield_pct', 0.0), 2),
-                    'D/E Ratio': round(derivatives.get('debt_to_equity', 0.0), 2),
-                    'Market Cap (B$)': round(derivatives.get('market_cap_val', 0.0), 2)
+                    'dPrice': round((derivatives.get('price_slope_rel') or 0.0) * 100, 2),
+                    'dMACD': round((derivatives.get('macd_slope_rel') or 0.0) * 100, 2),
+                    'dRSI': round((derivatives.get('rsi_slope_rel') or 0.0) * 100, 2),
+                    'dVolRel': round((derivatives.get('volume_slope_rel') or 0.0) * 100, 2),
+                    'Rev. Growth (%)': round(float(derivatives.get('rev_growth_val') or 0.0), 2),
+                    'EBITDA Yield (%)': round(float(derivatives.get('ebitda_yield_pct') or 0.0), 2),
+                    'FCF Yield (%)': round(float(derivatives.get('fcf_yield_pct') or 0.0), 2),
+                    'D/E Ratio': round(float(derivatives.get('debt_to_equity') or 0.0), 2),
+                    'Market Cap (B$)': round(float(derivatives.get('market_cap_val') or 0.0), 2)
                 }
         except Exception as e:
             if verbose:
                 print(f"⚠️ Erreur {symbol}: {e}")
+            # 🔍 Debug supplémentaire
+            import traceback
+            traceback.print_exc()
         return None
 
     for i in range(0, len(popular_symbols), chunk_size):
         chunk = popular_symbols[i:i+chunk_size]
         if verbose:
             print(f"\n🔎 Lot {i//chunk_size + 1}: {', '.join(chunk)}")
+            print(f"   Verbose={verbose}, chunk contient {len(chunk)} symboles")
 
         try:
             chunk_data = download_stock_data(chunk, period)
+            
+            if verbose:
+                print(f"   Téléchargement OK: {len(chunk_data)} symboles récupérés")
             
             # Traitement parallèle des symboles du chunk
             with ThreadPoolExecutor(max_workers=max_workers) as executor:
@@ -2326,6 +2438,12 @@ def analyse_signaux_populaires(
                     if result:
                         with signals_lock:
                             signals.append(result)
+                        if verbose:
+                            print(f"   ✅ {result['Symbole']}: Signal={result['Signal']}, Score={result['Score']:.2f}")
+                    else:
+                        symbol_name = futures.get(future, '?')
+                        if verbose:
+                            print(f"   ⚪ {symbol_name}: Aucun signal retourné (probablement NEUTRE ou erreur)")
 
         except Exception as e:
             if verbose:
