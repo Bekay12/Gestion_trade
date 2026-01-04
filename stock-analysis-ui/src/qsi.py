@@ -248,12 +248,6 @@ def extract_best_parameters(db_path: str = 'signaux/optimization_hist.db') -> Di
             globals_thresholds = (float(row['seuil_achat']), float(row['seuil_vente']))
             
             gain_moy = float(row['gain_moy'])
-            # Clé sector (fallback)
-            result[sector] = (coefficients, thresholds, globals_thresholds, gain_moy)
-            # Clé secteur + range si disponible
-            if cap_range and cap_range.lower() != 'unknown':
-                key_comp = f"{sector}_{cap_range}"
-                result[key_comp] = (coefficients, thresholds, globals_thresholds, gain_moy)
             
             # Always extract price-related extras (not optional): provide defaults when absent
             def _read_num(col, default):
@@ -293,6 +287,13 @@ def extract_best_parameters(db_path: str = 'signaux/optimization_hist.db') -> Di
             
             # Combine extras
             all_extras = {**price_extras, **fundamentals_extras}
+            
+            # Store result with all_extras as 5th element (coefficients, thresholds, globals_thresholds, gain_moy, all_extras)
+            result[sector] = (coefficients, thresholds, globals_thresholds, gain_moy, all_extras)
+            # Key with sector + cap_range if available
+            if cap_range and cap_range.lower() != 'unknown':
+                key_comp = f"{sector}_{cap_range}"
+                result[key_comp] = (coefficients, thresholds, globals_thresholds, gain_moy, all_extras)
             
             # Save extras for both sector and composite keys (if applicable)
             BEST_PARAM_EXTRAS[sector] = all_extras
@@ -523,9 +524,9 @@ def get_trading_signal(prices, volumes, domaine, domain_coeffs=None, domain_thre
         coeffs = domain_coeffs.get(selected_key or domaine, default_coeffs)
     else:
         if selected_key:
-            coeffs, legacy_thresholds, globals_thresholds, gain_moyen = best_params[selected_key]
+            coeffs, legacy_thresholds, globals_thresholds, gain_moyen, _ = best_params[selected_key]
         elif domaine in best_params:
-            coeffs, legacy_thresholds, globals_thresholds, gain_moyen = best_params[domaine]
+            coeffs, legacy_thresholds, globals_thresholds, gain_moyen, _ = best_params[domaine]
         else:
             coeffs = default_coeffs
     
@@ -534,9 +535,9 @@ def get_trading_signal(prices, volumes, domaine, domain_coeffs=None, domain_thre
         thresholds = domain_thresholds.get(selected_key or domaine, default_thresholds)
     else:
         if selected_key:
-            _, thresholds, _, _ = best_params[selected_key]
+            _, thresholds, _, _, _ = best_params[selected_key]
         elif domaine in best_params:
-            _, thresholds, _, _ = best_params[domaine]
+            _, thresholds, _, _, _ = best_params[domaine]
         else:
             thresholds = default_thresholds
 
@@ -2316,14 +2317,7 @@ def analyse_signaux_populaires(
 
             cap_range = get_cap_range_for_symbol(symbol)
             
-            # ✅ Fallback pour cap_range Unknown : essayer Large, Mid, Mega
-            if cap_range == "Unknown" or not cap_range:
-                for fallback_cap in ["Large", "Mid", "Mega"]:
-                    test_key = f"{domaine}_{fallback_cap}"
-                    if test_key in best_params:
-                        cap_range = fallback_cap
-                        break
-            
+            # Recherche de la clé de paramètres optimisés
             selected_key = None
             if cap_range and cap_range != "Unknown":
                 comp_key = f"{domaine}_{cap_range}"
@@ -2331,19 +2325,6 @@ def analyse_signaux_populaires(
                     selected_key = comp_key
             if not selected_key and domaine in best_params:
                 selected_key = domaine
-            
-            # ✅ Fallback pour domaines inconnus : utiliser le premier disponible ou Technology
-            if not selected_key and "Inconnu" in domaine:
-                # Essayer des secteurs génériques courants
-                for fallback_sector in ["Technology", "Healthcare", "Financial Services"]:
-                    if fallback_sector in best_params:
-                        selected_key = fallback_sector
-                        domaine = fallback_sector  # Mettre à jour le domaine pour cohérence
-                        break
-                # Si aucun fallback trouvé, prendre le premier disponible
-                if not selected_key and best_params:
-                    selected_key = list(best_params.keys())[0]
-                    domaine = selected_key.split('_')[0] if '_' in selected_key else selected_key
             
             # ✅ Extraire les seuils globaux optimisés depuis best_params
             seuil_achat_opt = None
@@ -2356,10 +2337,16 @@ def analyse_signaux_populaires(
                         seuil_achat_opt = float(globals_th[0])
                         seuil_vente_opt = float(globals_th[1])
 
-            # Récupération du signal et des dérivés avec seuils globaux optimisés
+            # 🔧 Récupérer les extras depuis les paramètres
+            extras_to_use = None
+            if selected_key and selected_key in best_params and len(best_params[selected_key]) > 4:
+                extras_to_use = best_params[selected_key][4]
+            
+            # Récupération du signal et des dérivés avec seuils globaux optimisés + extras
             signal, last_price, trend, last_rsi, volume_mean, score, derivatives = get_trading_signal(
                 prices, volumes, domaine, return_derivatives=True, symbol=symbol, cap_range=cap_range,
-                seuil_achat=seuil_achat_opt, seuil_vente=seuil_vente_opt
+                seuil_achat=seuil_achat_opt, seuil_vente=seuil_vente_opt,
+                price_extras=extras_to_use  # 🔧 Passer les extras pour utiliser les features (price + fundamentals)
             )
             
             # 🔍 Debug: afficher le résultat pour comprendre le filtrage
@@ -2371,7 +2358,7 @@ def analyse_signaux_populaires(
                     coeffs = params[0] if len(params) > 0 and params[0] else "N/A"
                     thresholds = params[1] if len(params) > 1 and params[1] else "N/A"
                     globals_th = params[2] if len(params) > 2 and params[2] else "N/A"
-                    extras = params[3] if len(params) > 3 else None
+                    extras = params[4] if len(params) > 4 else None  # 🔧 Changé de params[3] à params[4]
                     print(f"      📊 Paramètres base: coeffs={coeffs}")
                     print(f"         seuils={thresholds}, globaux={globals_th}")
                     if extras and isinstance(extras, dict):
@@ -2543,7 +2530,7 @@ def analyse_signaux_populaires(
             if not selected_key and domaine in best_params:
                 selected_key = domaine
 
-            coeffs, thresholds, globals_thresholds, _ = best_params.get(selected_key or domaine, (None, None, (4.2, -0.5), None))
+            coeffs, thresholds, globals_thresholds, _, _ = best_params.get(selected_key or domaine, (None, None, (4.2, -0.5), None, {}))
             domain_coeffs = {domaine: coeffs} if coeffs else None
             feature_thresholds = thresholds[:8] if thresholds and len(thresholds) >= 8 else None
             domain_thresholds = {domaine: feature_thresholds} if feature_thresholds else None
@@ -2737,7 +2724,7 @@ def analyse_signaux_populaires(
             if not selected_key:
                 selected_key = signal_info['Domaine']
 
-            _, _, globals_thresholds, _ = best_params.get(selected_key, (None, None, (4.2, -0.5), None))
+            _, _, globals_thresholds, _, _ = best_params.get(selected_key, (None, None, (4.2, -0.5), None, {}))
             seuil_achat = globals_thresholds[0]
             seuil_vente = globals_thresholds[1]
             

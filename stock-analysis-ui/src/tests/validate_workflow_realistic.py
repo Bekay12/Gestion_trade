@@ -96,8 +96,9 @@ def compute_daily_reliability(close: pd.Series, volume: pd.Series, domain: str,
                 domain_coeffs={domain: domain_coeffs},
                 domain_thresholds={domain: domain_thresholds},
                 price_extras=price_extras,
-                fundamentals_extras=fundamentals_extras,
-                volume_seuil=volume_min
+                volume_seuil=volume_min,
+                seuil_achat=seuil_achat,
+                seuil_vente=seuil_vente
             )
             last_price = float(prices.iloc[-1])
             
@@ -165,8 +166,9 @@ def compute_reliability_walkforward(close: pd.Series, volume: pd.Series, domain:
                 domain_coeffs={domain: domain_coeffs},
                 domain_thresholds={domain: domain_thresholds},
                 price_extras=price_extras,
-                fundamentals_extras=fundamentals_extras,
-                volume_seuil=volume_min
+                volume_seuil=volume_min,
+                seuil_achat=seuil_achat,
+                seuil_vente=seuil_vente
             )
             last_price = float(prices.iloc[-1])
 
@@ -315,9 +317,10 @@ def walk_forward_simulation(symbols: List[str],
                 domain_coeffs={domain: coeffs},
                 domain_thresholds={domain: thresholds},
                 price_extras=prix_ex,
-                fundamentals_extras=fund_ex,
                 symbol=sym,
-                volume_seuil=volume_min
+                volume_seuil=volume_min,
+                seuil_achat=globals_[0],
+                seuil_vente=globals_[1]
             )
 
             last_price = float(prices.iloc[-1])
@@ -436,7 +439,16 @@ def build_domain_params_from_db(db_path: str = 'signaux/optimization_hist.db') -
     price_extras_by_domain: Dict[str, Dict[str, float]] = {}
     fundamentals_extras_by_domain: Dict[str, Dict[str, float]] = {}
 
-    for domain, (coeffs, thresholds, globals_thresholds, _gain) in best_params.items():
+    for domain, params_tuple in best_params.items():
+        # Handle both 4-tuple (old) and 5-tuple (new with extras)
+        if len(params_tuple) == 4:
+            coeffs, thresholds, globals_thresholds, _gain = params_tuple
+            _extras = {}
+        elif len(params_tuple) == 5:
+            coeffs, thresholds, globals_thresholds, _gain, _extras = params_tuple
+        else:
+            continue  # Skip invalid tuples
+            
         domain_params_map[domain] = (tuple(coeffs[:8]), tuple(thresholds[:8]), (float(globals_thresholds[0]), float(globals_thresholds[1])))
         extras = BEST_PARAM_EXTRAS.get(domain, {})
         # Split extras
@@ -469,7 +481,7 @@ def build_domain_params_from_db(db_path: str = 'signaux/optimization_hist.db') -
 
 def parse_args():
     p = argparse.ArgumentParser(description="Realistic workflow validation (1-year walk-forward)")
-    p.add_argument('--list-type', default='optimization', help="Symbols list type in SQLite (popular, personal, optimization)")
+    p.add_argument('--list-type', default='personal', help="Symbols list type in SQLite (popular, personal, optimization)")
     p.add_argument('--reliability', type=float, default=60.0, help="Minimum success rate on training window (e.g., 30,50,60,80)")
     p.add_argument('--min-hold-days', type=int, default=14, help="Minimum holding period after a buy signal")
     p.add_argument('--trade-amount', type=float, default=100.0, help="Amount invested per position")

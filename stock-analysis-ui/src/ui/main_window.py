@@ -126,7 +126,7 @@ class DownloadThread(QThread):
                             except Exception:
                                 best_params = {}
 
-                            coeffs, feature_thresholds, globals_thresholds, _ = best_params.get(domaine, (None, None, (4.2, -0.5), None))
+                            coeffs, feature_thresholds, globals_thresholds, _, _ = best_params.get(domaine, (None, None, (4.2, -0.5), None, {}))
                             domain_coeffs = {domaine: coeffs} if coeffs else None
                             
                             # ✨ V2.0: Utiliser les paramètres optimisés si disponibles

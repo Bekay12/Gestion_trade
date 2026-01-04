@@ -463,7 +463,7 @@ def backtest_signals_accelerated(prices: Union[pd.Series, pd.DataFrame], volumes
         coeffs = domain_coeffs.get(selected_key, default_coeffs)
     else:
         if selected_key in best_params:
-            coeffs, legacy_thresholds, globals_thresholds, _ = best_params[selected_key]
+            coeffs, legacy_thresholds, globals_thresholds, _, _ = best_params[selected_key]
             # Les anciens seuils legacy ne sont pas utilisés si domain_thresholds fourni
         else:
             coeffs = default_coeffs
@@ -474,13 +474,13 @@ def backtest_signals_accelerated(prices: Union[pd.Series, pd.DataFrame], volumes
         thresholds = domain_thresholds.get(selected_key, default_thresholds)
     else:
         if selected_key in best_params:
-            _, thresholds, _, _ = best_params[selected_key]
+            _, thresholds, _, _, _ = best_params[selected_key]
         else:
             thresholds = default_thresholds
 
     # Seuils globaux (legacy): utiliser Seuil_Achat/Seuil_Vente s'ils sont extraits
     if selected_key in best_params:
-        _, _, globals_thresholds, _ = best_params[selected_key]
+        _, _, globals_thresholds, _, _ = best_params[selected_key]
         seuil_achat = globals_thresholds[0]
         seuil_vente = globals_thresholds[1]
     

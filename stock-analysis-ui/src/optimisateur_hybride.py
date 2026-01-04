@@ -277,7 +277,7 @@ class HybridOptimizer:
             self.bounds += price_bounds
 
         if self.use_fundamentals_features:
-            # Extra 10 params for fundamentals: 1 flag, 5 weights, 4 thresholds
+            # Extra 11 params for fundamentals: 1 flag, 5 weights, 5 thresholds
             fundamentals_bounds = [
                 (0.0, 1.0),    # use_fundamentals flag
                 (0.0, 3.0),    # a_rev_growth weight
@@ -289,6 +289,7 @@ class HybridOptimizer:
                 (-30.0, 30.0),  # th_eps_growth
                 (-30.0, 30.0),  # th_roe
                 (-10.0, 10.0),  # th_fcf_yield
+                (-10.0, 10.0),  # th_de_ratio (MANQUANT AVANT!)
             ]
             self.bounds += fundamentals_bounds
         
@@ -376,7 +377,7 @@ class HybridOptimizer:
         # base = 14 (8 coeffs + 4 seuils + 2 globaux)
         # price features = +6
         fundamentals_index_offset = 20 if self.use_price_features else 14
-        if self.use_fundamentals_features and len(params) >= (fundamentals_index_offset + 10):
+        if self.use_fundamentals_features and len(params) >= (fundamentals_index_offset + 11):  # 🔧 Changé de 10 à 11
             use_fund = int(round(np.clip(params[fundamentals_index_offset], 0.0, 1.0)))
             a_rev = float(np.clip(round(params[fundamentals_index_offset + 1], self.precision), 0.0, 3.0))
             a_eps = float(np.clip(round(params[fundamentals_index_offset + 2], self.precision), 0.0, 3.0))
@@ -387,6 +388,7 @@ class HybridOptimizer:
             th_eps = float(np.clip(round(params[fundamentals_index_offset + 7], self.precision), -30.0, 30.0))
             th_roe = float(np.clip(round(params[fundamentals_index_offset + 8], self.precision), -30.0, 30.0))
             th_fcf = float(np.clip(round(params[fundamentals_index_offset + 9], self.precision), -10.0, 10.0))
+            th_de = float(np.clip(round(params[fundamentals_index_offset + 10], self.precision), -10.0, 10.0))  # 🔧 Nouveau: lire le 11ème param
             fundamentals_extras = {
                 'use_fundamentals': use_fund,
                 'a_rev_growth': a_rev,
@@ -398,7 +400,7 @@ class HybridOptimizer:
                 'th_eps_growth': th_eps,
                 'th_roe': th_roe,
                 'th_fcf_yield': th_fcf,
-                'th_de_ratio': 0.0,  # Placeholder for 5th threshold (reserved)
+                'th_de_ratio': th_de,  # 🔧 Utiliser la vraie valeur au lieu de 0.0
             }
 
         total_gain = 0.0
@@ -784,7 +786,7 @@ def optimize_sector_coefficients_hybrid(
     best_params_per_sector = extract_best_parameters(db_path)
 
     if domain in best_params_per_sector:
-        csv_coeffs, csv_thresholds, csv_globals, csv_gain = best_params_per_sector[domain]
+        csv_coeffs, csv_thresholds, csv_globals, csv_gain, _ = best_params_per_sector[domain]
         # 🔧 Sécuriser en float (déjà des floats depuis SQLite, mais par sécurité)
         csv_coeffs = tuple(float(x) for x in csv_coeffs)
         csv_thresholds = tuple(float(x) for x in csv_thresholds)
@@ -817,7 +819,6 @@ def optimize_sector_coefficients_hybrid(
             # print(f"   🔍 DEBUG: domain in dict? {domain in BEST_PARAM_EXTRAS}")
             if domain in BEST_PARAM_EXTRAS:
                 extras_dict = BEST_PARAM_EXTRAS[domain]
-                print(f"      Extras historiques: use_price_slope={extras_dict.get('use_price_slope')}, use_price_acc={extras_dict.get('use_price_acc')}, use_fundamentals={extras_dict.get('use_fundamentals')}")
                 # Vérifier si des extras de price existent dans le dictionnaire
                 if 'use_price_slope' in extras_dict:
                     hist_extra_params = {
@@ -909,7 +910,6 @@ def optimize_sector_coefficients_hybrid(
 
                 # Paramètres de base pour comparaison finale : 14 (8 coeffs + 4 seuils + 2 globaux)
                 hist_params = list(hist_coeffs[:8] + (hist_thr_rsi, hist_thr_vol, hist_thr_adx, hist_thr_score, hist_seuil_achat, hist_seuil_vente))
-                print(f"   🔍 DEBUG: Après base (14 params): len={len(hist_params)}")
                 
                 # 🔧 Étendre les paramètres historiques si des features sont activées
                 # IMPORTANT: Utiliser les vraies valeurs historiques depuis BEST_PARAM_EXTRAS, pas des 0 !
@@ -927,7 +927,6 @@ def optimize_sector_coefficients_hybrid(
                     else:
                         # Pas de paramètres historiques → features désactivées
                         hist_params += [0.0, 0.0, 0.5, 0.5, 0.0, 0.0]
-                    print(f"   🔍 DEBUG: Après price (+6 params): len={len(hist_params)}")
                 
                 if use_fundamentals_features:
                     # Récupérer les valeurs historiques ou utiliser des valeurs par défaut si absentes
@@ -947,8 +946,7 @@ def optimize_sector_coefficients_hybrid(
                         ]
                     else:
                         # Pas de paramètres historiques → features désactivées
-                        hist_params += [0.0, 0.5, 0.5, 0.5, 0.5, 0.5, 0.0, 0.0, 0.0, 0.0]
-                    print(f"   🔍 DEBUG: Après fundamentals (+10 params): len={len(hist_params)}")
+                        hist_params += [0.0, 0.5, 0.5, 0.5, 0.5, 0.5, 0.0, 0.0, 0.0, 0.0, 0.0]
                 
                 historical_candidate = ('Historical (re-eval)', tuple(hist_params), hist_avg_gain)
 
