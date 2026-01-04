@@ -1,0 +1,112 @@
+{
+  "winners": [
+    "CDTX",
+    "SEZL",
+    "OUST",
+    "OKLO",
+    "TRVI"
+  ],
+  "losers": [
+    "RDDT",
+    "NVDA",
+    "AVGO",
+    "LAES",
+    "GEV"
+  ],
+  "common_markers": {
+    "sectors": {},
+    "market_caps": {},
+    "avg_volume": {
+      "CDTX": 1590060.0,
+      "SEZL": 988692.5,
+      "OUST": 2039717.5
+    },
+    "price_ranges": {
+      "CDTX": [
+        15.22,
+        221.2
+      ],
+      "SEZL": [
+        24.86,
+        186.74
+      ],
+      "OUST": [
+        6.34,
+        41.65
+      ]
+    },
+    "volatility": {
+      "CDTX": 10.141170596523951,
+      "SEZL": 5.006629453758063,
+      "OUST": 6.0079801862185,
+      "OKLO": 6.726997150786406,
+      "TRVI": 4.174067116640977
+    }
+  },
+  "differentiators": {
+    "sectors": {
+      "winners": {},
+      "losers": {},
+      "overrepresented_in_winners": []
+    },
+    "market_cap": {
+      "winners_avg": 0,
+      "losers_avg": 0
+    },
+    "volatility": {
+      "winners_avg": 6.41136890078558,
+      "losers_avg": 4.0043759251671265
+    }
+  },
+  "sector_analysis": {
+    "winners": {},
+    "losers": {},
+    "winner_dominance": {}
+  },
+  "market_cap_analysis": {
+    "winners_ranges": {},
+    "losers_ranges": {}
+  },
+  "price_patterns": {
+    "winners": {
+      "CDTX": {
+        "recent_change": 338.11693842761133,
+        "days_analyzed": 125
+      },
+      "SEZL": {
+        "recent_change": -60.30585536605846,
+        "days_analyzed": 125
+      },
+      "OUST": {
+        "recent_change": 0.950329262757423,
+        "days_analyzed": 125
+      }
+    },
+    "losers": {
+      "RDDT": {
+        "recent_change": 65.72347784543315,
+        "days_analyzed": 125
+      },
+      "NVDA": {
+        "recent_change": 18.044481493545046,
+        "days_analyzed": 125
+      },
+      "AVGO": {
+        "recent_change": 28.359774801560807,
+        "days_analyzed": 125
+      }
+    }
+  },
+  "volatility_analysis": {
+    "winners": {
+      "CDTX": 10.141170596523951,
+      "SEZL": 5.006629453758063,
+      "OUST": 6.0079801862185
+    },
+    "losers": {
+      "RDDT": 4.058311855199795,
+      "NVDA": 2.0510662809743714,
+      "AVGO": 2.8891516282170833
+    }
+  }
+}

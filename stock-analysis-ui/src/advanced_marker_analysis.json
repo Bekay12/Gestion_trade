@@ -1,0 +1,96 @@
+{
+  "winners_count": 5,
+  "losers_count": 5,
+  "metrics": {
+    "momentum_momentum_1m": {
+      "winners_mean": -6.727056276152156,
+      "losers_mean": 1.8987457684235334,
+      "winners_median": -2.0946794403885654,
+      "losers_median": 5.16204709763951,
+      "winners_std": 8.152509300154003,
+      "losers_std": 9.271024269768594,
+      "difference": -8.625802044575689
+    },
+    "momentum_momentum_3m": {
+      "winners_mean": 11.869516076931461,
+      "losers_mean": 5.2385625504399425,
+      "winners_median": -20.080956564391407,
+      "losers_median": 0.8061171057025026,
+      "winners_std": 59.93817580476469,
+      "losers_std": 8.12216820101342,
+      "difference": 6.630953526491519
+    },
+    "momentum_momentum_1y": {
+      "winners_mean": 264.279529402572,
+      "losers_mean": 43.16633329465022,
+      "winners_median": 188.59224935898965,
+      "losers_median": 47.999263201410415,
+      "winners_std": 240.89846934976032,
+      "losers_std": 43.977929371427045,
+      "difference": 221.11319610792177
+    },
+    "momentum_rsi_14": {
+      "winners_mean": 39.85369755199436,
+      "losers_mean": 45.54227140809452,
+      "winners_median": 37.50000592099125,
+      "losers_median": 44.20299133030947,
+      "winners_std": 12.891536916913248,
+      "losers_std": 12.06397381954107,
+      "difference": -5.688573856100163
+    },
+    "volatility_volatility_daily": {
+      "winners_mean": 7.189438258006845,
+      "losers_mean": 5.423371738012068,
+      "winners_median": 7.957412843361795,
+      "losers_median": 3.4084019573878055,
+      "winners_std": 1.310074755782888,
+      "losers_std": 3.292631653789705,
+      "difference": 1.7660665199947774
+    },
+    "volatility_volatility_annual": {
+      "winners_mean": 114.12879418163725,
+      "losers_mean": 86.09335731741646,
+      "winners_median": 126.3200127780401,
+      "losers_median": 54.106703684363424,
+      "winners_std": 20.796792016231198,
+      "losers_std": 52.2689070892013,
+      "difference": 28.035436864220785
+    },
+    "volatility_bb_position": {
+      "winners_mean": 0.38047902022141294,
+      "losers_mean": 0.6493156433254175,
+      "winners_median": 0.3226530024524437,
+      "losers_median": 0.6775948079213956,
+      "winners_std": 0.2880272879415734,
+      "losers_std": 0.21433008620211771,
+      "difference": -0.2688366231040045
+    },
+    "trend_ema_bullish_signal": {
+      "winners_mean": 1.2,
+      "losers_mean": 2.4,
+      "winners_median": 1.0,
+      "losers_median": 3.0,
+      "winners_std": 1.16619037896906,
+      "losers_std": 0.8,
+      "difference": -1.2
+    },
+    "trend_price_vs_ema20": {
+      "winners_mean": -2.360092772291811,
+      "losers_mean": 2.2029462727925253,
+      "winners_median": -4.065003733193473,
+      "losers_median": 2.3569100977716584,
+      "winners_std": 4.061995643828132,
+      "losers_std": 2.9227078090956446,
+      "difference": -4.563039045084336
+    },
+    "volume_volume_ratio_20_200": {
+      "winners_mean": 0.8534489047407663,
+      "losers_mean": 0.9359236259216873,
+      "winners_median": 0.99041696932745,
+      "losers_median": 0.7965299765541984,
+      "winners_std": 0.21276241018648762,
+      "losers_std": 0.40002898600251724,
+      "difference": -0.08247472118092103
+    }
+  }
+}

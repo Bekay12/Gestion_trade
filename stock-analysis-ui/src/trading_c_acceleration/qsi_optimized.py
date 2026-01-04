@@ -190,6 +190,8 @@ def extract_best_parameters(db_path: str = 'signaux/optimization_hist.db') -> Di
                 a1, a2, a3, a4, a5, a6, a7, a8,
                 th1, th2, th3, th4, th5, th6, th7, th8,
                 seuil_achat, seuil_vente,
+                a9, a10, th9, th10, use_price_slope, use_price_acc,
+                a11, a12, a13, a14, a15, th11, th12, th13, th14, th15, use_fundamentals,
                 timestamp
             FROM optimization_runs
             WHERE (sector, COALESCE(market_cap_range, 'Unknown'), timestamp) IN (

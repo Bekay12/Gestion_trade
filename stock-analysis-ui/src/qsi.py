@@ -322,6 +322,7 @@ def extract_best_parameters(db_path: str = 'signaux/optimization_hist.db') -> Di
 def get_trading_signal(prices, volumes, domaine, domain_coeffs=None, domain_thresholds=None,
                       variation_seuil=-20, volume_seuil=100000, return_derivatives: bool = False, symbol: str = None,
                       cap_range: str = None, price_extras: Dict[str, Union[int, float]] = None,
+                      fundamentals_extras: Dict[str, Union[int, float]] = None,
                       seuil_achat: float = None, seuil_vente: float = None):
     """Détermine les signaux de trading avec validation des données
     
@@ -336,6 +337,10 @@ def get_trading_signal(prices, volumes, domaine, domain_coeffs=None, domain_thre
         volume_seuil: Seuil de volume minimum (défaut: 100000)
         return_derivatives: Retourner les dérivées des indicateurs
         symbol: Symbole de l'action
+        cap_range: Tranche de capitalisation
+        price_extras: Dict avec use_price_slope, use_price_acc, a_price_slope, a_price_acc, th_price_slope, th_price_acc
+        fundamentals_extras: Dict avec use_fundamentals, a_rev_growth, a_eps_growth, a_roe, a_fcf_yield, a_de_ratio, 
+                            th_rev_growth, th_eps_growth, th_roe, th_fcf_yield, th_de_ratio
         seuil_achat: Seuil global pour signal ACHAT (défaut: 4.2)
         seuil_vente: Seuil global pour signal VENTE (défaut: -0.5)
     
@@ -739,6 +744,73 @@ def get_trading_signal(prices, volumes, domaine, domain_coeffs=None, domain_thre
                     score += a_pa
                 else:
                     score -= a_pa
+    except Exception:
+        pass
+
+    # Intégration des métriques fondamentales (si activées)
+    try:
+        # Choisir les fundamentals_extras: priorité aux paramètres fournis
+        fund_extras = fundamentals_extras
+        if fund_extras is None:
+            try:
+                fund_extras = BEST_PARAM_EXTRAS.get(selected_key or domaine, {})
+            except Exception:
+                fund_extras = {}
+        
+        use_fund = int(fund_extras.get('use_fundamentals', 0) or 0)
+        
+        if use_fund and symbol:
+            # Charger les métriques fondamentales pour ce symbole
+            a_rev_g = float(fund_extras.get('a_rev_growth', 0.0) or 0.0)
+            a_eps_g = float(fund_extras.get('a_eps_growth', 0.0) or 0.0)
+            a_roe = float(fund_extras.get('a_roe', 0.0) or 0.0)
+            a_fcf = float(fund_extras.get('a_fcf_yield', 0.0) or 0.0)
+            a_de = float(fund_extras.get('a_de_ratio', 0.0) or 0.0)
+            
+            th_rev_g = float(fund_extras.get('th_rev_growth', 10.0) or 10.0)
+            th_eps_g = float(fund_extras.get('th_eps_growth', 10.0) or 10.0)
+            th_roe = float(fund_extras.get('th_roe', 15.0) or 15.0)
+            th_fcf = float(fund_extras.get('th_fcf_yield', 5.0) or 5.0)
+            th_de = float(fund_extras.get('th_de_ratio', 1.0) or 1.0)
+            
+            # Charger les données fondamentales du cache
+            fin_data = get_pickle_cache(symbol, 'financial', ttl_hours=24*30) if get_pickle_cache is not None else None
+            
+            if fin_data:
+                # Revenue Growth
+                rev_growth = float(fin_data.get('revenue_growth', 0.0) or 0.0)
+                if rev_growth > th_rev_g:
+                    score += a_rev_g
+                elif a_rev_g != 0:
+                    score -= a_rev_g
+                
+                # EPS Growth
+                eps_growth = float(fin_data.get('earnings_growth', 0.0) or 0.0)
+                if eps_growth > th_eps_g:
+                    score += a_eps_g
+                elif a_eps_g != 0:
+                    score -= a_eps_g
+                
+                # ROE
+                roe = float(fin_data.get('roe', 0.0) or 0.0)
+                if roe > th_roe:
+                    score += a_roe
+                elif a_roe != 0:
+                    score -= a_roe
+                
+                # FCF Yield
+                fcf_yield = float(fin_data.get('fcf_yield', 0.0) or 0.0)
+                if fcf_yield > th_fcf:
+                    score += a_fcf
+                elif a_fcf != 0:
+                    score -= a_fcf
+                
+                # Debt-to-Equity Ratio (lower is better)
+                de_ratio = float(fin_data.get('debt_to_equity', 2.0) or 2.0)
+                if de_ratio < th_de:
+                    score += a_de
+                elif a_de != 0:
+                    score -= a_de
     except Exception:
         pass
 
