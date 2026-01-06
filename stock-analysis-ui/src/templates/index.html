@@ -408,35 +408,39 @@
                 const res = await fetch(`${API_BASE}/api/analyze`, {
                     method: 'POST',
                     headers: { 'Content-Type': 'application/json' },
-                    body: JSON.stringify({ symbol, period })
+                    body: JSON.stringify({ symbol, period, include_backtest: false })
                 });
                 
                 const data = await res.json();
                 
                 if (data.error) {
                     alert('Erreur: ' + data.error);
-                } else if (data.result) {
-                    const r = data.result;
+                } else if (data.signals && data.signals.length > 0) {
+                    const sig = data.signals[0];
                     
-                    document.getElementById('resultSymbol').textContent = r.symbol;
+                    document.getElementById('resultSymbol').textContent = sig.symbol;
                     
                     const sigEl = document.getElementById('resultSignal');
-                    sigEl.textContent = r.signal;
-                    sigEl.className = r.signal === 'BUY' ? 'signal-buy' : 
-                                     r.signal === 'SELL' ? 'signal-sell' : 'signal-hold';
+                    sigEl.textContent = sig.signal;
+                    sigEl.className = sig.signal === 'BUY' ? 'signal-buy' : 
+                                     sig.signal === 'SELL' ? 'signal-sell' : 'signal-hold';
                     
-                    document.getElementById('resultPrice').textContent = `$${r.price?.toFixed(2) || '-'}`;
-                    document.getElementById('resultReliability').textContent = `${r.reliability?.toFixed(1) || '-'}%`;
-                    document.getElementById('resultRSI').textContent = r.indicators?.rsi?.toFixed(1) || '-';
-                    document.getElementById('resultMACD').textContent = r.indicators?.macd_signal || '-';
-                    document.getElementById('resultTrend').textContent = r.indicators?.trend || '-';
-                    document.getElementById('resultVolume').textContent = r.indicators?.volume_signal || '-';
+                    document.getElementById('resultPrice').textContent = `$${sig.prix?.toFixed(2) || '-'}`;
+                    document.getElementById('resultReliability').textContent = `${sig.fiabilite?.toFixed(1) || '-'}%`;
+                    document.getElementById('resultRSI').textContent = sig.rsi?.toFixed(1) || '-';
+                    document.getElementById('resultMACD').textContent = sig.tendance || '-';
+                    document.getElementById('resultTrend').textContent = sig.tendance || '-';
+                    document.getElementById('resultVolume').textContent = sig.volume_moyen ? sig.volume_moyen.toLocaleString() : '-';
                     
                     resultCard.classList.add('active');
                     
                     // Reload signals and stats
                     loadSignals();
                     loadStats();
+                } else if (data.status === 'no_signals') {
+                    alert(`Pas de signaux fiables trouvés pour ${symbol}`);
+                } else {
+                    alert('Erreur: Impossible d\'analyser le symbole');
                 }
             } catch (e) {
                 alert('Erreur de connexion: ' + e.message);
