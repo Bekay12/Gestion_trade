@@ -230,15 +230,6 @@ def analyze_symbol():
     """
     Analyse un symbole et génère un signal de trading
     Utilise EXACTEMENT le même backend que le UI desktop (main_window.py)
-    
-    Body JSON:
-    {
-        "symbol": "AAPL",
-        "period": "12mo" (optionnel),
-        "include_backtest": true (optionnel)
-    }
-    
-    Response: Structure identique à celle du UI desktop
     """
     try:
         data = request.get_json()
@@ -251,26 +242,31 @@ def analyze_symbol():
         
         print(f"📊 Analysing {symbol}...")
         
-        # Utiliser analyse_signaux_populaires EXACTEMENT comme le UI desktop
-        results = analyse_signaux_populaires(
-            popular_symbols=[symbol],
-            mes_symbols=[],
-            period=period,
-            afficher_graphiques=False,
-            verbose=False,
-            save_csv=False,
-            plot_all=False
-        )
-        
-        # Le retour d'analyse_signaux_populaires contient:
-        # - 'signaux_fiables': liste de signaux
-        # - 'backtest_results': liste de backtests (si demandé)
-        # - 'data': dict avec les données téléchargées
+        try:
+            # Utiliser analyse_signaux_populaires EXACTEMENT comme le UI desktop
+            results = analyse_signaux_populaires(
+                popular_symbols=[symbol],
+                mes_symbols=[],
+                period=period,
+                afficher_graphiques=False,
+                verbose=True,  # Verbose pour debug
+                save_csv=False,
+                plot_all=False
+            )
+        except Exception as e:
+            print(f"❌ analyse_signaux_populaires failed: {e}")
+            import traceback
+            traceback.print_exc()
+            return jsonify({
+                'error': f'Analysis failed: {str(e)}',
+                'symbol': symbol,
+                'status': 'error'
+            }), 500
         
         signals_list = results.get('signaux_fiables', [])
         backtest_list = results.get('backtest_results', [])
         
-        # Structure de réponse unifiée (identique à ce que retourne le UI)
+        # Structure de réponse unifiée
         response = {
             'symbol': symbol,
             'period': period,
