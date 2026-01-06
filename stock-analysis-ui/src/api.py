@@ -12,7 +12,7 @@ from pathlib import Path
 from dotenv import load_dotenv
 from functools import wraps
 
-from flask import Flask, request, jsonify, send_file
+from flask import Flask, request, jsonify, send_file, render_template
 from flask_cors import CORS
 import pandas as pd
 import numpy as np
@@ -24,6 +24,9 @@ load_dotenv()
 SRC_PATH = os.path.join(os.path.dirname(__file__), 'src')
 if SRC_PATH not in sys.path:
     sys.path.insert(0, SRC_PATH)
+
+# Get template directory
+TEMPLATE_DIR = os.path.join(os.path.dirname(__file__), 'templates')
 
 # Import core modules
 try:
@@ -42,7 +45,7 @@ except ImportError as e:
 # FLASK APP CONFIGURATION
 # ============================================================================
 
-app = Flask(__name__)
+app = Flask(__name__, template_folder=TEMPLATE_DIR)
 CORS(app)  # Enable CORS for all routes
 
 app.config['JSON_SORT_KEYS'] = False
@@ -86,6 +89,11 @@ def handle_errors(f):
 # ============================================================================
 # HEALTH & STATUS ENDPOINTS
 # ============================================================================
+
+@app.route('/', methods=['GET'])
+def index():
+    """Page d'accueil avec interface web"""
+    return render_template('index.html')
 
 @app.route('/health', methods=['GET'])
 def health_check():
