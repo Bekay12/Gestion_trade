@@ -229,33 +229,131 @@ def get_symbol_signals(symbol):
 @handle_errors
 def analyze_symbol():
     """
-    Analyse un symbole et génère un signal de trading
-    Utilise EXACTEMENT le même backend que le UI desktop (main_window.py)
+    Analyse un symbole - VERSION SIMPLIFIÉE comme le desktop UI
+    Ne filtre PAS par fiabilité, retourne TOUS les signaux
     """
     try:
         data = request.get_json()
         symbol = data.get('symbol', '').upper()
-        period = data.get('period', '12mo')
-        include_backtest = data.get('include_backtest', False)
+        period = data.get('period', '1mo')
         
         if not symbol:
             return jsonify({'error': 'symbol required'}), 400
         
-        print(f"📊 Analysing {symbol}...")
+        print(f"📊 Analyse simple de {symbol} (période: {period})...")
         
         try:
-            # Utiliser analyse_signaux_populaires EXACTEMENT comme le UI desktop
-            results = analyse_signaux_populaires(
-                popular_symbols=[symbol],
-                mes_symbols=[],
-                period=period,
-                afficher_graphiques=False,
-                verbose=True,  # Verbose pour debug
-                save_csv=False,
-                plot_all=False
+            # Télécharger les données (comme le desktop UI)
+            from qsi import download_stock_data, get_trading_signal, get_cap_range_for_symbol, extract_best_parameters
+            import yfinance as yf
+            
+            stock_data_dict = download_stock_data([symbol], period)
+            
+            if not stock_data_dict or symbol not in stock_data_dict:
+                return jsonify({
+                    'error': f'Impossible de télécharger les données pour {symbol}',
+                    'symbol': symbol,
+                    'status': 'error'
+                }), 404
+            
+            stock_data = stock_data_dict[symbol]
+            prices = stock_data['Close']
+            volumes = stock_data['Volume']
+            
+            # Récupérer le secteur (comme le desktop UI)
+            try:
+                info = yf.Ticker(symbol).info
+                domaine = info.get("sector", "Inconnu")
+            except Exception:
+                domaine = "Inconnu"
+            
+            # Cap range
+            cap_range = get_cap_range_for_symbol(symbol)
+            if cap_range == "Unknown" or not cap_range:
+                best_params_all = extract_best_parameters()
+                for fallback_cap in ["Large", "Mid", "Mega"]:
+                    test_key = f"{domaine}_{fallback_cap}"
+                    if test_key in best_params_all:
+                        cap_range = fallback_cap
+                        break
+            
+            # Fallback domaine
+            original_domaine = domaine
+            if domaine == "Inconnu":
+                best_params_all = extract_best_parameters()
+                for fallback_sector in ["Technology", "Healthcare", "Financial Services"]:
+                    if fallback_sector in best_params_all:
+                        domaine = fallback_sector
+                        break
+                if domaine == "Inconnu" and best_params_all:
+                    first_key = list(best_params_all.keys())[0]
+                    domaine = first_key.split('_')[0] if '_' in first_key else first_key
+            
+            # Extraire seuils optimisés
+            seuil_achat_opt = None
+            seuil_vente_opt = None
+            best_params_all = extract_best_parameters()
+            param_key = None
+            if cap_range and cap_range != "Unknown":
+                test_key = f"{domaine}_{cap_range}"
+                if test_key in best_params_all:
+                    param_key = test_key
+            if not param_key and domaine in best_params_all:
+                param_key = domaine
+            
+            if param_key and param_key in best_params_all:
+                params = best_params_all[param_key]
+                if len(params) > 2 and params[2]:
+                    globals_th = params[2]
+                    if isinstance(globals_th, (tuple, list)) and len(globals_th) >= 2:
+                        seuil_achat_opt = float(globals_th[0])
+                        seuil_vente_opt = float(globals_th[1])
+            
+            # Appeler get_trading_signal DIRECTEMENT (comme le desktop UI)
+            sig, last_price, trend, last_rsi, volume_mean, score, derivatives = get_trading_signal(
+                prices, volumes, domaine=domaine, return_derivatives=True, symbol=symbol, 
+                cap_range=cap_range, seuil_achat=seuil_achat_opt, seuil_vente=seuil_vente_opt
             )
+            
+            # Construire la réponse
+            signal_data = {
+                'symbol': symbol,
+                'signal': sig,
+                'prix': float(last_price) if last_price is not None else 0.0,
+                'rsi': float(last_rsi) if last_rsi is not None else 0.0,
+                'tendance': 'Haussière' if trend else 'Baissière',
+                'volume_moyen': float(volume_mean) if volume_mean is not None else 0.0,
+                'domaine': original_domaine,
+                'cap_range': cap_range,
+                'fiabilite': float(score) if score is not None else 0.0,
+                'score': float(score) if score is not None else 0.0
+            }
+            
+            # Ajouter les dérivées si disponibles
+            if derivatives:
+                signal_data.update({
+                    'prix_sma20': derivatives.get('prix_sma20'),
+                    'prix_sma50': derivatives.get('prix_sma50'),
+                    'prix_sma200': derivatives.get('prix_sma200'),
+                    'dPrice': derivatives.get('dPrice'),
+                    'dMACD': derivatives.get('dMACD'),
+                    'dRSI': derivatives.get('dRSI'),
+                    'dVolRel': derivatives.get('dVolRel')
+                })
+            
+            response = {
+                'symbol': symbol,
+                'period': period,
+                'signals': [signal_data],
+                'timestamp': datetime.utcnow().isoformat(),
+                'status': 'success'
+            }
+            
+            print(f"✅ Analyse terminée: {sig} (score: {score})")
+            return jsonify(response), 200
+            
         except Exception as e:
-            print(f"❌ analyse_signaux_populaires failed: {e}")
+            print(f"❌ Erreur analyse: {e}")
             import traceback
             traceback.print_exc()
             return jsonify({
@@ -264,90 +362,8 @@ def analyze_symbol():
                 'status': 'error'
             }), 500
         
-        signals_list = results.get('signaux_fiables', [])
-        backtest_list = results.get('backtest_results', [])
-        
-        # Structure de réponse unifiée
-        response = {
-            'symbol': symbol,
-            'period': period,
-            'signals': [],
-            'backtest_results': [],
-            'timestamp': datetime.utcnow().isoformat(),
-            'status': 'success' if signals_list else 'no_signals'
-        }
-        
-        # Traiter chaque signal (normalement 1 seul pour un symbole unique)
-        for sig in signals_list:
-            signal_data = {
-                'symbol': symbol,
-                'signal': sig.get('signal', 'HOLD'),
-                'score': sig.get('score', 0.0),
-                'prix': sig.get('prix'),
-                'rsi': sig.get('rsi'),
-                'tendance': sig.get('tendance'),
-                'volume_moyen': sig.get('volume_moyen'),
-                'domaine': sig.get('domaine'),
-                'cap_range': sig.get('cap_range'),
-                'fiabilite': sig.get('fiabilite'),
-                'prix_sma20': sig.get('prix_sma20'),
-                'prix_sma50': sig.get('prix_sma50'),
-                'prix_sma200': sig.get('prix_sma200'),
-                'variations': {
-                    'last_30d': sig.get('variation_30j'),
-                    'last_180d': sig.get('variation_180j')
-                },
-                'derivatives': {
-                    'price_slope': sig.get('dPrice'),
-                    'macd_slope': sig.get('dMACD'),
-                    'rsi_slope': sig.get('dRSI'),
-                    'volume_slope': sig.get('dVolRel')
-                },
-                'fundamentals': {
-                    'rev_growth': sig.get('Rev. Growth (%)'),
-                    'ebitda_yield': sig.get('EBITDA Yield (%)'),
-                    'fcf_yield': sig.get('FCF Yield (%)'),
-                    'd_e_ratio': sig.get('D/E Ratio'),
-                    'market_cap': sig.get('Market Cap (B$)')
-                }
-            }
-            response['signals'].append(signal_data)
-        
-        # Ajouter les résultats de backtest si disponibles
-        if include_backtest and backtest_list:
-            for bt in backtest_list:
-                backtest_data = {
-                    'symbol': bt.get('Symbole'),
-                    'gain_total': bt.get('gain_total'),
-                    'gain_moyen': bt.get('gain_moyen'),
-                    'taux_reussite': bt.get('taux_reussite'),
-                    'trades': bt.get('trades'),
-                    'gagnants': bt.get('gagnants'),
-                    'perdants': bt.get('perdants'),
-                    'params': {
-                        'fast_ma': bt.get('fast_ma'),
-                        'slow_ma': bt.get('slow_ma'),
-                        'signal_period': bt.get('signal_period')
-                    }
-                }
-                response['backtest_results'].append(backtest_data)
-        
-        # Si pas de signaux, retourner quand même la structure avec un message
-        if not signals_list:
-            response['message'] = f'No reliable signals found for {symbol} in period {period}'
-            return jsonify(response), 200
-        
-        return jsonify(response), 200
-        
     except Exception as e:
-        print(f"❌ Error in /analyze: {e}")
-        import traceback
-        traceback.print_exc()
-        return jsonify({
-            'error': str(e),
-            'symbol': data.get('symbol') if 'data' in locals() else 'unknown',
-            'status': 'error'
-        }), 500
+        return jsonify({'error': str(e)}), 500
 
 @app.route('/api/backtest', methods=['POST'])
 @handle_errors
