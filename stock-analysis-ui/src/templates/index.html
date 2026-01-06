@@ -526,6 +526,10 @@
         async function loadStats() {
             try {
                 const res = await fetch(`${API_BASE}/api/stats`);
+                if (!res.ok) {
+                    console.warn('Stats endpoint not ready yet');
+                    return;
+                }
                 const data = await res.json();
                 if (data.stats || data.total_signals !== undefined) {
                     const stats = data.stats || data;
@@ -537,6 +541,7 @@
                 }
             } catch (e) {
                 console.error('Error loading stats:', e);
+                // Pas d'erreur visible à l'utilisateur
             }
         }
         
@@ -577,13 +582,28 @@
         async function loadLists() {
             try {
                 const res = await fetch(`${API_BASE}/api/lists`);
+                if (!res.ok) {
+                    throw new Error(`HTTP ${res.status}`);
+                }
                 const data = await res.json();
                 
-                document.getElementById('popularList').innerHTML = data.popular.join(', ') || 'Aucun symbole';
-                document.getElementById('personalList').innerHTML = data.personal.join(', ') || 'Aucun symbole';
-                document.getElementById('optimizationList').innerHTML = data.optimization.join(', ') || 'Aucun symbole';
+                const popularEl = document.getElementById('popularList');
+                const personalEl = document.getElementById('personalList');
+                const optimizationEl = document.getElementById('optimizationList');
+                
+                if (popularEl) popularEl.innerHTML = (data.popular && data.popular.length > 0) ? data.popular.join(', ') : 'Aucun symbole';
+                if (personalEl) personalEl.innerHTML = (data.personal && data.personal.length > 0) ? data.personal.join(', ') : 'Aucun symbole';
+                if (optimizationEl) optimizationEl.innerHTML = (data.optimization && data.optimization.length > 0) ? data.optimization.join(', ') : 'Aucun symbole';
             } catch (e) {
                 console.error('Error loading lists:', e);
+                // Afficher message d'erreur dans les listes
+                const popularEl = document.getElementById('popularList');
+                const personalEl = document.getElementById('personalList');
+                const optimizationEl = document.getElementById('optimizationList');
+                
+                if (popularEl) popularEl.innerHTML = 'Erreur de chargement';
+                if (personalEl) personalEl.innerHTML = 'Erreur de chargement';
+                if (optimizationEl) optimizationEl.innerHTML = 'Erreur de chargement';
             }
         }
         
@@ -752,7 +772,7 @@
         
         async function analyzeSymbol() {
             const symbol = document.getElementById('symbol').value.toUpperCase().trim();
-            const period = document.getElementById('period').value;
+            const period = document.getElementById('period').value || '1mo';
             
             if (!symbol) {
                 alert('Veuillez entrer un symbole');
@@ -764,6 +784,7 @@
             const resultCard = document.getElementById('resultCard');
             
             btn.disabled = true;
+            btn.textContent = 'Analyse en cours...';
             loading.classList.add('active');
             resultCard.classList.remove('active');
             
@@ -808,6 +829,7 @@
                 alert('Erreur de connexion: ' + e.message);
             } finally {
                 btn.disabled = false;
+                btn.textContent = 'Analyser';
                 loading.classList.remove('active');
             }
         }

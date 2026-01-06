@@ -12,6 +12,7 @@ import os
 
 # Utiliser un chemin absolu basé sur le répertoire de ce fichier config.py
 _CONFIG_DIR = Path(__file__).parent.resolve()
+PROJECT_ROOT = _CONFIG_DIR  # Alias pour compatibilité
 DB_PATH = str(_CONFIG_DIR / "stock_analysis.db")
 OPTIMIZATION_DB_PATH = str(_CONFIG_DIR / "signaux" / "optimization_hist.db")
 CACHE_DIR = _CONFIG_DIR / "cache_data"
