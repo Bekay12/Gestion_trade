@@ -33,7 +33,8 @@ try:
     from qsi import (
         analyse_signaux_populaires,
         download_stock_data,
-        backtest_signals
+        backtest_signals,
+        load_symbols_from_txt
     )
     from config import SIGNALS_DIR, DATA_CACHE_DIR
 except ImportError as e:
@@ -394,22 +395,10 @@ def run_backtest():
         print(f"❌ Error in /backtest: {e}")
         return jsonify({'error': str(e)}), 500
 
-# ============================================================================
-# BATCH ANALYSIS ENDPOINTS
-# ============================================================================
-
 @app.route('/api/analyze-batch', methods=['POST'])
 @handle_errors
 def analyze_batch():
-    """
-    Analyse plusieurs symboles (max 20 à la fois)
-    
-    Body JSON:
-    {
-        "symbols": ["AAPL", "MSFT", "GOOGL"],
-        "period": "12mo"
-    }
-    """
+    """Analyse plusieurs symboles (max 20 à la fois)"""
     try:
         data = request.get_json()
         symbols = data.get('symbols', [])
@@ -424,25 +413,181 @@ def analyze_batch():
         symbols = [s.upper() for s in symbols]
         
         print(f"📊 Analysing {len(symbols)} symbols...")
-        
-        # Analyser tous les symboles
         results = analyse_signaux_populaires(
-            symbols=symbols,
+            popular_symbols=symbols,
             mes_symbols=[],
             period=period,
             afficher_graphiques=False,
-            verbose=False
+            verbose=False,
+            save_csv=False
         )
         
         return jsonify({
             'symbols': symbols,
             'count': len(symbols),
-            'results': results,
+            'signals': results.get('signaux_fiables', []),
             'timestamp': datetime.utcnow().isoformat()
         }), 200
         
     except Exception as e:
         print(f"❌ Error in /analyze-batch: {e}")
+        return jsonify({'error': str(e)}), 500
+
+@app.route('/api/analyze-popular', methods=['POST'])
+@handle_errors
+def analyze_popular_signals():
+    """
+    Analyser les mouvements fiables (signaux populaires)
+    Équivalent à 'Analyser mouvements fiables (populaires)' du UI desktop
+    
+    Body JSON:
+    {
+        "popular_symbols": ["AAPL", "MSFT"],
+        "mes_symbols": ["0005.HK"],
+        "period": "12mo"
+    }
+    """
+    try:
+        data = request.get_json()
+        popular_symbols = data.get('popular_symbols', [])
+        mes_symbols = data.get('mes_symbols', [])
+        period = data.get('period', '12mo')
+        
+        if not popular_symbols and not mes_symbols:
+            return jsonify({'error': 'At least one symbol list required'}), 400
+        
+        print(f"📊 Analyzing popular signals... ({len(popular_symbols)} popular, {len(mes_symbols)} personal)")
+        
+        # Utiliser la même fonction que le UI
+        results = analyse_signaux_populaires(
+            popular_symbols=popular_symbols,
+            mes_symbols=mes_symbols,
+            period=period,
+            afficher_graphiques=False,
+            verbose=True,
+            save_csv=False,
+            plot_all=False
+        )
+        
+        return jsonify({
+            'popular_symbols': popular_symbols,
+            'mes_symbols': mes_symbols,
+            'signals': results.get('signaux_fiables', []),
+            'backtest_results': results.get('backtest_results', []),
+            'count': len(results.get('signaux_fiables', [])),
+            'timestamp': datetime.utcnow().isoformat()
+        }), 200
+        
+    except Exception as e:
+        print(f"❌ Error in /analyze-popular: {e}")
+        import traceback
+        traceback.print_exc()
+        return jsonify({'error': str(e)}), 500
+
+@app.route('/api/lists', methods=['GET'])
+@handle_errors
+def get_lists():
+    """
+    Récupère les listes de symboles actuelles (populaires, personnels, optimisation)
+    """
+    try:
+        from config import PROJECT_ROOT
+        
+        lists_data = {
+            'popular': [],
+            'personal': [],
+            'optimization': [],
+            'timestamp': datetime.utcnow().isoformat()
+        }
+        
+        # Charger depuis les fichiers txt
+        txt_files = {
+            'popular': PROJECT_ROOT / 'popular_symbols.txt',
+            'personal': PROJECT_ROOT / 'mes_symbols.txt',
+            'optimization': PROJECT_ROOT / 'optimisation_symbols.txt'
+        }
+        
+        for list_type, filepath in txt_files.items():
+            try:
+                if filepath.exists():
+                    with open(filepath, 'r', encoding='utf-8') as f:
+                        symbols = [s.strip().upper() for s in f.readlines() if s.strip()]
+                        lists_data[list_type] = sorted(symbols)
+            except Exception as e:
+                print(f"⚠️ Error loading {list_type}: {e}")
+        
+        return jsonify(lists_data), 200
+        
+    except Exception as e:
+        return jsonify({'error': str(e)}), 500
+
+@app.route('/api/lists/<list_type>', methods=['POST'])
+@handle_errors
+def update_list(list_type):
+    """
+    Ajoute/Supprime des symboles d'une liste
+    
+    Body JSON:
+    {
+        "action": "add" ou "remove",
+        "symbols": ["AAPL", "MSFT"]
+    }
+    """
+    try:
+        from config import PROJECT_ROOT
+        
+        if list_type not in ['popular', 'personal', 'optimization']:
+            return jsonify({'error': 'Invalid list type'}), 400
+        
+        data = request.get_json()
+        action = data.get('action', '').lower()
+        symbols = data.get('symbols', [])
+        
+        if not symbols:
+            return jsonify({'error': 'symbols required'}), 400
+        
+        if action not in ['add', 'remove']:
+            return jsonify({'error': 'Invalid action (add or remove)'}), 400
+        
+        # Mapper list_type à filename
+        list_map = {
+            'popular': 'popular_symbols.txt',
+            'personal': 'mes_symbols.txt',
+            'optimization': 'optimisation_symbols.txt'
+        }
+        
+        filepath = PROJECT_ROOT / list_map[list_type]
+        
+        # Lire la liste actuelle
+        current_symbols = set()
+        if filepath.exists():
+            with open(filepath, 'r', encoding='utf-8') as f:
+                current_symbols = {s.strip().upper() for s in f.readlines() if s.strip()}
+        
+        # Ajouter ou supprimer
+        symbols_upper = {s.upper() for s in symbols}
+        if action == 'add':
+            current_symbols.update(symbols_upper)
+            message = f"Added {len(symbols)} symbols"
+        else:  # remove
+            current_symbols -= symbols_upper
+            message = f"Removed {len(symbols)} symbols"
+        
+        # Écrire la nouvelle liste (triée)
+        with open(filepath, 'w', encoding='utf-8') as f:
+            for s in sorted(current_symbols):
+                f.write(f"{s}\n")
+        
+        return jsonify({
+            'list': list_type,
+            'action': action,
+            'message': message,
+            'count': len(current_symbols),
+            'timestamp': datetime.utcnow().isoformat()
+        }), 200
+        
+    except Exception as e:
+        print(f"❌ Error in /lists/{list_type}: {e}")
         return jsonify({'error': str(e)}), 500
 
 # ============================================================================
