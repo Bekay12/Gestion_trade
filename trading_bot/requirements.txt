@@ -1,5 +1,5 @@
-# Trading Bot - Dépendances Python
-# Version basée sur vos imports existants
+# Trading Bot - Dï¿½pendances Python
+# Version basï¿½e sur vos imports existants
 
 # Core data analysis
 pandas>=1.5.0
@@ -29,7 +29,7 @@ black>=22.0.0
 flake8>=5.0.0
 mypy>=0.990
 
-# Future UI dependencies (placeholder)
-# tkinter (built-in Python)
-# PyQt5>=5.15.0  # Alternative UI
+# UI dependencies
+PyQt5>=5.15.0  # Desktop UI
+streamlit>=1.28.0  # Web UI for cloud deployment
 # Pillow>=9.0.0  # Image processing for UI
