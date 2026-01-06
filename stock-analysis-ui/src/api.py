@@ -33,7 +33,6 @@ try:
     from qsi import (
         analyse_signaux_populaires,
         download_stock_data,
-        get_trading_signal,
         backtest_signals
     )
     from config import SIGNALS_DIR, DATA_CACHE_DIR
@@ -230,42 +229,124 @@ def get_symbol_signals(symbol):
 def analyze_symbol():
     """
     Analyse un symbole et génère un signal de trading
-    
-    Body JSON:
-    {
-        "symbol": "AAPL",
-        "period": "12mo" (optionnel)
-    }
+    Utilise EXACTEMENT le même backend que le UI desktop (main_window.py)
     """
     try:
         data = request.get_json()
         symbol = data.get('symbol', '').upper()
         period = data.get('period', '12mo')
+        include_backtest = data.get('include_backtest', False)
         
         if not symbol:
             return jsonify({'error': 'symbol required'}), 400
         
         print(f"📊 Analysing {symbol}...")
         
-        # Télécharger données
-        df = download_stock_data([symbol], period=period)
-        if df is None or df.empty:
-            return jsonify({'error': f'Could not download data for {symbol}'}), 400
+        try:
+            # Utiliser analyse_signaux_populaires EXACTEMENT comme le UI desktop
+            results = analyse_signaux_populaires(
+                popular_symbols=[symbol],
+                mes_symbols=[],
+                period=period,
+                afficher_graphiques=False,
+                verbose=True,  # Verbose pour debug
+                save_csv=False,
+                plot_all=False
+            )
+        except Exception as e:
+            print(f"❌ analyse_signaux_populaires failed: {e}")
+            import traceback
+            traceback.print_exc()
+            return jsonify({
+                'error': f'Analysis failed: {str(e)}',
+                'symbol': symbol,
+                'status': 'error'
+            }), 500
         
-        # Générer signal
-        signal = get_trading_signal(symbol, period=period)
+        signals_list = results.get('signaux_fiables', [])
+        backtest_list = results.get('backtest_results', [])
         
-        return jsonify({
+        # Structure de réponse unifiée
+        response = {
             'symbol': symbol,
-            'signal': signal,
             'period': period,
+            'signals': [],
+            'backtest_results': [],
             'timestamp': datetime.utcnow().isoformat(),
-            'data_points': len(df)
-        }), 200
+            'status': 'success' if signals_list else 'no_signals'
+        }
+        
+        # Traiter chaque signal (normalement 1 seul pour un symbole unique)
+        for sig in signals_list:
+            signal_data = {
+                'symbol': symbol,
+                'signal': sig.get('signal', 'HOLD'),
+                'score': sig.get('score', 0.0),
+                'prix': sig.get('prix'),
+                'rsi': sig.get('rsi'),
+                'tendance': sig.get('tendance'),
+                'volume_moyen': sig.get('volume_moyen'),
+                'domaine': sig.get('domaine'),
+                'cap_range': sig.get('cap_range'),
+                'fiabilite': sig.get('fiabilite'),
+                'prix_sma20': sig.get('prix_sma20'),
+                'prix_sma50': sig.get('prix_sma50'),
+                'prix_sma200': sig.get('prix_sma200'),
+                'variations': {
+                    'last_30d': sig.get('variation_30j'),
+                    'last_180d': sig.get('variation_180j')
+                },
+                'derivatives': {
+                    'price_slope': sig.get('dPrice'),
+                    'macd_slope': sig.get('dMACD'),
+                    'rsi_slope': sig.get('dRSI'),
+                    'volume_slope': sig.get('dVolRel')
+                },
+                'fundamentals': {
+                    'rev_growth': sig.get('Rev. Growth (%)'),
+                    'ebitda_yield': sig.get('EBITDA Yield (%)'),
+                    'fcf_yield': sig.get('FCF Yield (%)'),
+                    'd_e_ratio': sig.get('D/E Ratio'),
+                    'market_cap': sig.get('Market Cap (B$)')
+                }
+            }
+            response['signals'].append(signal_data)
+        
+        # Ajouter les résultats de backtest si disponibles
+        if include_backtest and backtest_list:
+            for bt in backtest_list:
+                backtest_data = {
+                    'symbol': bt.get('Symbole'),
+                    'gain_total': bt.get('gain_total'),
+                    'gain_moyen': bt.get('gain_moyen'),
+                    'taux_reussite': bt.get('taux_reussite'),
+                    'trades': bt.get('trades'),
+                    'gagnants': bt.get('gagnants'),
+                    'perdants': bt.get('perdants'),
+                    'params': {
+                        'fast_ma': bt.get('fast_ma'),
+                        'slow_ma': bt.get('slow_ma'),
+                        'signal_period': bt.get('signal_period')
+                    }
+                }
+                response['backtest_results'].append(backtest_data)
+        
+        # Si pas de signaux, retourner quand même la structure avec un message
+        if not signals_list:
+            response['message'] = f'No reliable signals found for {symbol} in period {period}'
+            return jsonify(response), 200
+        
+        return jsonify(response), 200
         
     except Exception as e:
         print(f"❌ Error in /analyze: {e}")
-        return jsonify({'error': str(e)}), 500
+        import traceback
+        traceback.print_exc()
+        return jsonify({
+            'error': str(e),
+            'symbol': data.get('symbol') if 'data' in locals() else 'unknown',
+            'status': 'error'
+        }), 500
 
 @app.route('/api/backtest', methods=['POST'])
 @handle_errors
