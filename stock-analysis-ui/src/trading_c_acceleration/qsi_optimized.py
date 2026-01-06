@@ -156,7 +156,12 @@ from typing import Tuple, Dict, Union, List
 
 BEST_PARAM_EXTRAS: Dict[str, Dict[str, Union[int, float]]] = {}
 
-def extract_best_parameters(db_path: str = 'signaux/optimization_hist.db') -> Dict[str, Tuple[Tuple[float, ...], Tuple[float, ...], Tuple[float, float]]]:
+def extract_best_parameters(db_path: str = None) -> Dict[str, Tuple[Tuple[float, ...], Tuple[float, ...], Tuple[float, float]]]:
+    if db_path is None:
+        import sys
+        from pathlib import Path
+        config_dir = Path(__file__).parent.parent.resolve()
+        db_path = str(config_dir / 'signaux' / 'optimization_hist.db')
     """Extrait les meilleurs coefficients/seuils par secteur ET tranche de capitalisation.
 
     Retourne aussi les clés composites "{sector}_{cap_range}" pour faciliter l'accès.

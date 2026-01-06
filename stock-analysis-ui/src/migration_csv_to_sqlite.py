@@ -14,8 +14,9 @@ def migrate_csv_to_sqlite():
     """Convertit le CSV existant en SQLite et crée les indices optimaux."""
     
     csv_path = 'signaux/optimization_hist_4stpV2.csv'
-    db_path = 'signaux/optimization_hist.db'
-    backup_path = 'signaux/optimization_hist.db.backup'
+    from config import OPTIMIZATION_DB_PATH
+    db_path = OPTIMIZATION_DB_PATH
+    backup_path = OPTIMIZATION_DB_PATH + '.backup'
     
     print("🔄 Migration: CSV → SQLite")
     print("=" * 70)

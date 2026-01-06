@@ -4,16 +4,20 @@ Tous les chemins et constantes globales en un seul endroit.
 """
 
 from pathlib import Path
+import os
 
 # ===================================================================
 # CHEMINS BASE
 # ===================================================================
 
-DB_PATH = "stock_analysis.db"
-CACHE_DIR = Path("cache_data")
-DATA_CACHE_DIR = Path("data_cache")
-CACHE_LOGS_DIR = Path("cache_logs")
-SIGNALS_DIR = Path("signaux")
+# Utiliser un chemin absolu basé sur le répertoire de ce fichier config.py
+_CONFIG_DIR = Path(__file__).parent.resolve()
+DB_PATH = str(_CONFIG_DIR / "stock_analysis.db")
+OPTIMIZATION_DB_PATH = str(_CONFIG_DIR / "signaux" / "optimization_hist.db")
+CACHE_DIR = _CONFIG_DIR / "cache_data"
+DATA_CACHE_DIR = _CONFIG_DIR / "data_cache"
+CACHE_LOGS_DIR = _CONFIG_DIR / "cache_logs"
+SIGNALS_DIR = _CONFIG_DIR / "signaux"
 
 # Créer les répertoires s'ils n'existent pas
 CACHE_DIR.mkdir(exist_ok=True)
@@ -32,10 +36,10 @@ CACHE_INDEX_FILE = CACHE_DIR / "cache_index.json"
 # FICHIERS DE SYMBOLES
 # ===================================================================
 
-POPULAR_SYMBOLS_FILE = "popular_symbols.txt"
-PERSONAL_SYMBOLS_FILE = "mes_symbols.txt"
-OPTIMIZATION_SYMBOLS_FILE = "optimisation_symbols.txt"
-SP500_SYMBOLS_FILE = "sp500_symbols.txt"
+POPULAR_SYMBOLS_FILE = str(_CONFIG_DIR / "popular_symbols.txt")
+PERSONAL_SYMBOLS_FILE = str(_CONFIG_DIR / "mes_symbols.txt")
+OPTIMIZATION_SYMBOLS_FILE = str(_CONFIG_DIR / "optimisation_symbols.txt")
+SP500_SYMBOLS_FILE = str(_CONFIG_DIR / "sp500_symbols.txt")
 
 # ===================================================================
 # PARAMETRES DE CACHE

@@ -16,7 +16,7 @@ if PROJECT_SRC not in sys.path:
 
 # Project imports
 from qsi import download_stock_data, get_trading_signal
-from qsi_optimized import extract_best_parameters, backtest_signals_with_events
+from trading_c_acceleration.qsi_optimized import extract_best_parameters, backtest_signals_with_events
 
 try:
     import symbol_manager
@@ -426,7 +426,12 @@ def walk_forward_simulation(symbols: List[str],
     }
 
 
-def build_domain_params_from_db(db_path: str = 'signaux/optimization_hist.db') -> Tuple[Dict, Dict, Dict]:
+def build_domain_params_from_db(db_path: str = None) -> Tuple[Dict, Dict, Dict]:
+    if db_path is None:
+        import sys
+        from pathlib import Path
+        config_dir = Path(__file__).parent.parent.resolve()
+        db_path = str(config_dir / 'signaux' / 'optimization_hist.db')
     """Load per-sector optimized parameters.
     Returns:
       domain_params_map: domain -> (coeffs, thresholds, (seuil_achat, seuil_vente))
@@ -506,12 +511,22 @@ def main():
 
     # Load symbols
     if SYMBOLS_DB_AVAILABLE and get_symbols_by_list_type:
-        symbols = get_symbols_by_list_type(args.list_type, active_only=True)
+        print(f"🔧 SQLite DB available, loading symbols (list_type={args.list_type})...")
+        try:
+            import symbol_manager
+            print(f"   DB_PATH: {symbol_manager.DB_PATH}")
+            symbols = get_symbols_by_list_type(args.list_type, active_only=False)  # Test without active_only filter
+            print(f"📊 Loaded {len(symbols) if symbols else 0} symbols from DB (list_type={args.list_type})")
+        except Exception as e:
+            print(f"❌ Error loading from DB: {e}")
+            symbols = []
     else:
         # Fallback: load from txt
+        print(f"⚠️ SQLite DB not available, falling back to txt files")
         from qsi import load_symbols_from_txt
         fname = 'popular_symbols.txt' if args.list_type == 'popular' else 'mes_symbols.txt'
         symbols = load_symbols_from_txt(fname, use_sqlite=False)
+        print(f"📊 Loaded {len(symbols) if symbols else 0} symbols from {fname}")
 
     if not symbols:
         print("🚫 No symbols to simulate.")

@@ -9,7 +9,8 @@ from pathlib import Path
 def validate_migration():
     """Valide la configuration SQLite."""
     
-    db_path = 'signaux/optimization_hist.db'
+    from config import OPTIMIZATION_DB_PATH
+    db_path = OPTIMIZATION_DB_PATH
     
     print("🔍 Validation de la migration SQLite")
     print("=" * 70)
