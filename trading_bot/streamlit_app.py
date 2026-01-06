@@ -8,6 +8,8 @@ import os
 from pathlib import Path
 import streamlit as st
 import pandas as pd
+import matplotlib
+matplotlib.use('Agg')  # Set backend before importing pyplot
 import matplotlib.pyplot as plt
 from io import BytesIO
 
@@ -114,14 +116,10 @@ def main():
             else:
                 with st.spinner(f"Analyse en cours de {len(symbols)} symbole(s)..."):
                     try:
-                        # Capture matplotlib output
-                        import matplotlib
-                        matplotlib.use('Agg')
-                        
                         analysis_charts.analyse_et_affiche(symbols, period)
                         
                         st.success(f"✅ Analyse graphique terminée pour {len(symbols)} symbole(s).")
-                        st.info("📊 Les graphiques ont été générés. Note: Dans une interface web, les graphiques s'affichent dans le navigateur.")
+                        st.info("📊 Les graphiques ont été générés. Dans la version actuelle, les graphiques s'affichent via matplotlib. Pour une intégration complète dans le navigateur, une mise à jour future permettra d'afficher les graphiques directement dans Streamlit.")
                         
                     except Exception as e:
                         st.error(f"❌ Erreur lors de l'analyse: {str(e)}")
@@ -232,22 +230,15 @@ def main():
             st.caption(f"Total: {len(personal_symbols)} symboles")
         
         st.markdown("---")
-        st.subheader("➕ Ajouter des Symboles")
+        st.subheader("ℹ️ À propos de la gestion des symboles")
+        st.info("""
+        Pour modifier vos listes de symboles:
+        1. Éditez les fichiers dans `data/symbols/`
+        2. `popular_symbols.txt` - Symboles populaires
+        3. `mes_symbols.txt` - Vos symboles personnels
         
-        new_symbols = st.text_input(
-            "Nouveaux symboles (séparés par des virgules)",
-            help="Ajoutez des symboles à votre liste personnelle"
-        )
-        
-        col1, col2 = st.columns([1, 4])
-        with col1:
-            add_btn = st.button("➕ Ajouter", key="add_symbols")
-        
-        if add_btn and new_symbols:
-            symbols_to_add = parse_symbols(new_symbols)
-            if symbols_to_add:
-                st.info(f"Fonction à implémenter: Ajouter {len(symbols_to_add)} symbole(s)")
-                # Future: Implement symbol addition to file
+        Une fonctionnalité d'ajout interactif sera disponible dans une future mise à jour.
+        """)
     
     # Tab 4: Documentation
     with tab4:
