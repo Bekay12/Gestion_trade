@@ -195,6 +195,37 @@
         }
         .empty-state svg { width: 80px; height: 80px; margin-bottom: 20px; opacity: 0.5; }
         
+        /* Tabs Styling */
+        .tab-content { 
+            display: none; 
+            animation: fadeIn 0.3s ease-in;
+        }
+        .tab-content.active { 
+            display: block; 
+        }
+        @keyframes fadeIn { 
+            from { opacity: 0; transform: translateY(10px); } 
+            to { opacity: 1; transform: translateY(0); } 
+        }
+        .tab-btn { 
+            padding: 10px 20px;
+            background: transparent;
+            border: none;
+            color: #aaa;
+            cursor: pointer;
+            font-weight: bold;
+            transition: all 0.3s ease;
+            border-bottom: 2px solid transparent;
+            font-size: 1.05em;
+        }
+        .tab-btn:hover { 
+            color: #00d4ff;
+        }
+        .tab-btn.active { 
+            color: #00d4ff !important; 
+            border-bottom: 2px solid #00d4ff !important;
+        }
+        
         footer {
             text-align: center;
             padding: 30px;
@@ -211,6 +242,14 @@
     </header>
     
     <div class="container">
+        <!-- Tabs Navigation -->
+        <div style="display: flex; gap: 10px; margin-bottom: 30px; border-bottom: 2px solid rgba(0,212,255,0.2); padding-bottom: 15px;">
+            <button class="tab-btn active" onclick="switchTab('analyze')">🔍 Analyser</button>
+            <button class="tab-btn" onclick="switchTab('lists')">📋 Listes</button>
+            <button class="tab-btn" onclick="switchTab('batch')">📊 Batch</button>
+            <button class="tab-btn" onclick="switchTab('backtest')">🔬 Backtest</button>
+        </div>
+        
         <!-- Stats -->
         <div class="stats-grid" id="statsGrid">
             <div class="stat-card">
@@ -231,73 +270,197 @@
             </div>
         </div>
         
-        <!-- Analyze Form -->
-        <div class="section">
-            <h2>🔍 Analyser un Symbole</h2>
-            <div class="analyze-form">
-                <div class="form-row">
-                    <div class="form-group">
-                        <label for="symbol">Symbole</label>
-                        <input type="text" id="symbol" placeholder="Ex: AAPL, MSFT, GOOGL" value="AAPL">
-                    </div>
-                    <div class="form-group">
-                        <label for="period">Période</label>
-                        <select id="period">
-                            <option value="1mo">1 Mois</option>
-                            <option value="3mo">3 Mois</option>
-                            <option value="6mo" selected>6 Mois</option>
-                            <option value="1y">1 An</option>
-                            <option value="2y">2 Ans</option>
-                        </select>
-                    </div>
-                    <div class="form-group">
-                        <button class="btn btn-primary" id="analyzeBtn" onclick="analyzeSymbol()">
-                            Analyser
-                        </button>
+        <!-- TAB 1: ANALYSER -->
+        <div id="tab-analyze" class="tab-content active">
+            <div class="section">
+                <h2>🔍 Analyser un Symbole</h2>
+                <div class="analyze-form">
+                    <div class="form-row">
+                        <div class="form-group">
+                            <label for="symbol">Symbole</label>
+                            <input type="text" id="symbol" placeholder="Ex: AAPL, MSFT, GOOGL" value="AAPL">
+                        </div>
+                        <div class="form-group">
+                            <label for="period">Période</label>
+                            <select id="period">
+                                <option value="1mo">1 Mois</option>
+                                <option value="3mo">3 Mois</option>
+                                <option value="6mo" selected>6 Mois</option>
+                                <option value="1y">1 An</option>
+                                <option value="2y">2 Ans</option>
+                            </select>
+                        </div>
+                        <div class="form-group">
+                            <button class="btn btn-primary" id="analyzeBtn" onclick="analyzeSymbol()">
+                                Analyser
+                            </button>
+                        </div>
                     </div>
                 </div>
-            </div>
-            
-            <div class="loading" id="loading">
-                <div class="spinner"></div>
-                <p>Analyse en cours...</p>
-            </div>
-            
-            <div class="result-card" id="resultCard">
-                <div class="result-header">
-                    <h3 id="resultSymbol">AAPL</h3>
-                    <span class="signal-buy" id="resultSignal">BUY</span>
+                
+                <div class="loading" id="loading">
+                    <div class="spinner"></div>
+                    <p>Analyse en cours...</p>
                 </div>
-                <div class="result-grid">
-                    <div class="result-item">
-                        <label>Prix Actuel</label>
-                        <div class="val" id="resultPrice">$0.00</div>
+                
+                <div class="result-card" id="resultCard">
+                    <div class="result-header">
+                        <h3 id="resultSymbol">AAPL</h3>
+                        <span class="signal-buy" id="resultSignal">BUY</span>
                     </div>
-                    <div class="result-item">
-                        <label>Fiabilité</label>
-                        <div class="val" id="resultReliability">0%</div>
-                    </div>
-                    <div class="result-item">
-                        <label>RSI</label>
-                        <div class="val" id="resultRSI">-</div>
-                    </div>
-                    <div class="result-item">
-                        <label>MACD Signal</label>
-                        <div class="val" id="resultMACD">-</div>
-                    </div>
-                    <div class="result-item">
-                        <label>Tendance</label>
-                        <div class="val" id="resultTrend">-</div>
-                    </div>
-                    <div class="result-item">
-                        <label>Volume</label>
-                        <div class="val" id="resultVolume">-</div>
+                    <div class="result-grid">
+                        <div class="result-item">
+                            <label>Prix Actuel</label>
+                            <div class="val" id="resultPrice">$0.00</div>
+                        </div>
+                        <div class="result-item">
+                            <label>Fiabilité</label>
+                            <div class="val" id="resultReliability">0%</div>
+                        </div>
+                        <div class="result-item">
+                            <label>RSI</label>
+                            <div class="val" id="resultRSI">-</div>
+                        </div>
+                        <div class="result-item">
+                            <label>Tendance</label>
+                            <div class="val" id="resultTrend">-</div>
+                        </div>
+                        <div class="result-item">
+                            <label>Domaine</label>
+                            <div class="val" id="resultDomain">-</div>
+                        </div>
+                        <div class="result-item">
+                            <label>Volume</label>
+                            <div class="val" id="resultVolume">-</div>
+                        </div>
                     </div>
                 </div>
             </div>
         </div>
         
-        <!-- Signals Table -->
+        <!-- TAB 2: LISTES -->
+        <div id="tab-lists" class="tab-content">
+            <div class="section">
+                <h2>📋 Gérer les Listes</h2>
+                
+                <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(300px, 1fr)); gap: 20px; margin-bottom: 30px;">
+                    <!-- Listes populaires -->
+                    <div style="background: rgba(255,255,255,0.05); border-radius: 12px; padding: 20px; border: 1px solid rgba(255,255,255,0.1);">
+                        <h3 style="margin-bottom: 15px;">Symboles Populaires</h3>
+                        <div id="popularList" style="background: rgba(0,0,0,0.2); border-radius: 8px; padding: 10px; min-height: 100px; max-height: 200px; overflow-y: auto; margin-bottom: 10px; color: #aaa; font-size: 0.9em;">Chargement...</div>
+                        <div class="form-row">
+                            <input type="text" id="popularInput" placeholder="Ajouter symboles (virgule séparés)" style="flex: 1; padding: 10px 15px; border: 1px solid rgba(255,255,255,0.2); border-radius: 8px; background: rgba(0,0,0,0.3); color: #fff;">
+                            <button class="btn btn-primary" onclick="addToList('popular')" style="padding: 10px 20px;">Ajouter</button>
+                        </div>
+                    </div>
+                    
+                    <!-- Listes personnelles -->
+                    <div style="background: rgba(255,255,255,0.05); border-radius: 12px; padding: 20px; border: 1px solid rgba(255,255,255,0.1);">
+                        <h3 style="margin-bottom: 15px;">Symboles Personnels</h3>
+                        <div id="personalList" style="background: rgba(0,0,0,0.2); border-radius: 8px; padding: 10px; min-height: 100px; max-height: 200px; overflow-y: auto; margin-bottom: 10px; color: #aaa; font-size: 0.9em;">Chargement...</div>
+                        <div class="form-row">
+                            <input type="text" id="personalInput" placeholder="Ajouter symboles (virgule séparés)" style="flex: 1; padding: 10px 15px; border: 1px solid rgba(255,255,255,0.2); border-radius: 8px; background: rgba(0,0,0,0.3); color: #fff;">
+                            <button class="btn btn-primary" onclick="addToList('personal')" style="padding: 10px 20px;">Ajouter</button>
+                        </div>
+                    </div>
+                    
+                    <!-- Listes optimisation -->
+                    <div style="background: rgba(255,255,255,0.05); border-radius: 12px; padding: 20px; border: 1px solid rgba(255,255,255,0.1);">
+                        <h3 style="margin-bottom: 15px;">Symboles Optimisation</h3>
+                        <div id="optimizationList" style="background: rgba(0,0,0,0.2); border-radius: 8px; padding: 10px; min-height: 100px; max-height: 200px; overflow-y: auto; margin-bottom: 10px; color: #aaa; font-size: 0.9em;">Chargement...</div>
+                        <div class="form-row">
+                            <input type="text" id="optimizationInput" placeholder="Ajouter symboles (virgule séparés)" style="flex: 1; padding: 10px 15px; border: 1px solid rgba(255,255,255,0.2); border-radius: 8px; background: rgba(0,0,0,0.3); color: #fff;">
+                            <button class="btn btn-primary" onclick="addToList('optimization')" style="padding: 10px 20px;">Ajouter</button>
+                        </div>
+                    </div>
+                </div>
+                
+                <button class="btn btn-primary" onclick="analyzePopularSignals()" style="width: 100%; padding: 15px;">Analyser Signaux Populaires</button>
+            </div>
+        </div>
+        
+        <!-- TAB 3: BATCH -->
+        <div id="tab-batch" class="tab-content">
+            <div class="section">
+                <h2>📊 Analyser Plusieurs Symboles</h2>
+                <div class="analyze-form">
+                    <div class="form-row">
+                        <div class="form-group" style="flex: 1;">
+                            <label for="batchSymbols">Symboles (virgule séparés, max 20)</label>
+                            <textarea id="batchSymbols" placeholder="AAPL, MSFT, GOOGL, TSLA..." style="width: 100%; padding: 12px 15px; border: 1px solid rgba(255,255,255,0.2); border-radius: 8px; background: rgba(0,0,0,0.3); color: #fff; font-family: monospace; height: 100px;"></textarea>
+                        </div>
+                    </div>
+                    <div class="form-row">
+                        <div class="form-group">
+                            <label for="batchPeriod">Période</label>
+                            <select id="batchPeriod">
+                                <option value="1mo">1 Mois</option>
+                                <option value="3mo">3 Mois</option>
+                                <option value="6mo" selected>6 Mois</option>
+                                <option value="1y">1 An</option>
+                                <option value="18mo">18 Mois</option>
+                                <option value="2y">2 Ans</option>
+                            </select>
+                        </div>
+                        <div class="form-group">
+                            <button class="btn btn-primary" id="batchBtn" onclick="analyzeBatch()">Analyser Batch</button>
+                        </div>
+                    </div>
+                </div>
+                
+                <div class="loading" id="batchLoading" style="display: none;">
+                    <div class="spinner"></div>
+                    <p>Analyse en cours...</p>
+                </div>
+                
+                <div id="batchResults"></div>
+            </div>
+        </div>
+        
+        <!-- TAB 4: BACKTEST -->
+        <div id="tab-backtest" class="tab-content">
+            <div class="section">
+                <h2>🔬 Backtest</h2>
+                <div class="analyze-form">
+                    <div class="form-row">
+                        <div class="form-group">
+                            <label for="backtestSymbol">Symbole</label>
+                            <input type="text" id="backtestSymbol" placeholder="AAPL" value="AAPL">
+                        </div>
+                        <div class="form-group">
+                            <label for="backtestPeriod">Période</label>
+                            <select id="backtestPeriod">
+                                <option value="1y">1 An</option>
+                                <option value="2y" selected>2 Ans</option>
+                                <option value="5y">5 Ans</option>
+                            </select>
+                        </div>
+                    </div>
+                    <div class="form-row">
+                        <div class="form-group">
+                            <label for="fastMA">Fast MA</label>
+                            <input type="number" id="fastMA" value="12" min="5" max="50">
+                        </div>
+                        <div class="form-group">
+                            <label for="slowMA">Slow MA</label>
+                            <input type="number" id="slowMA" value="26" min="10" max="100">
+                        </div>
+                        <div class="form-group">
+                            <button class="btn btn-primary" id="backtestBtn" onclick="runBacktest()">Lancer Backtest</button>
+                        </div>
+                    </div>
+                </div>
+                
+                <div class="loading" id="backtestLoading" style="display: none;">
+                    <div class="spinner"></div>
+                    <p>Backtest en cours...</p>
+                </div>
+                
+                <div id="backtestResults"></div>
+            </div>
+        </div>
+        
+        <!-- Derniers Signaux -->
         <div class="section">
             <h2>📋 Derniers Signaux</h2>
             <div id="signalsContainer">
@@ -306,7 +469,6 @@
                         <path stroke-linecap="round" stroke-linejoin="round" stroke-width="1" d="M9 19v-6a2 2 0 00-2-2H5a2 2 0 00-2 2v6a2 2 0 002 2h2a2 2 0 002-2zm0 0V9a2 2 0 012-2h2a2 2 0 012 2v10m-6 0a2 2 0 002 2h2a2 2 0 002-2m0 0V5a2 2 0 012-2h2a2 2 0 012 2v14a2 2 0 01-2 2h-2a2 2 0 01-2-2z" />
                     </svg>
                     <p>Aucun signal enregistré pour le moment.</p>
-                    <p style="margin-top: 10px; font-size: 0.9em;">Analysez un symbole pour générer des signaux.</p>
                 </div>
                 <table class="signals-table" id="signalsTable" style="display: none;">
                     <thead>
@@ -331,21 +493,46 @@
     <script>
         const API_BASE = window.location.origin;
         
+        // Tab switching
+        function switchTab(tabName) {
+            // Hide all tabs
+            document.querySelectorAll('.tab-content').forEach(tab => {
+                tab.classList.remove('active');
+            });
+            // Remove active class from buttons
+            document.querySelectorAll('.tab-btn').forEach(btn => {
+                btn.classList.remove('active');
+            });
+            // Show selected tab
+            const selectedTab = document.getElementById('tab-' + tabName);
+            if (selectedTab) {
+                selectedTab.classList.add('active');
+                selectedTab.style.display = 'block';
+            }
+            // Mark button as active
+            const targetBtn = event?.target;
+            if (targetBtn) {
+                targetBtn.classList.add('active');
+            }
+        }
+        
         // Load initial data
         document.addEventListener('DOMContentLoaded', () => {
             loadStats();
             loadSignals();
+            loadLists();
         });
         
         async function loadStats() {
             try {
                 const res = await fetch(`${API_BASE}/api/stats`);
                 const data = await res.json();
-                if (data.stats) {
-                    document.getElementById('totalSignals').textContent = data.stats.total_signals || 0;
-                    document.getElementById('buySignals').textContent = data.stats.buy_signals || 0;
-                    document.getElementById('sellSignals').textContent = data.stats.sell_signals || 0;
-                    const avg = data.stats.avg_reliability;
+                if (data.stats || data.total_signals !== undefined) {
+                    const stats = data.stats || data;
+                    document.getElementById('totalSignals').textContent = stats.total_signals || 0;
+                    document.getElementById('buySignals').textContent = stats.buy_signals || 0;
+                    document.getElementById('sellSignals').textContent = stats.sell_signals || 0;
+                    const avg = stats.avg_reliability;
                     document.getElementById('avgReliability').textContent = avg ? avg.toFixed(1) + '%' : '-';
                 }
             } catch (e) {
@@ -373,17 +560,193 @@
                         
                         tbody.innerHTML += `
                             <tr>
-                                <td><strong>${sig.symbol}</strong></td>
-                                <td><span class="${signalClass}">${sig.signal}</span></td>
-                                <td>$${sig.price?.toFixed(2) || '-'}</td>
-                                <td><span class="reliability ${reliabilityClass}">${sig.reliability?.toFixed(1) || '-'}%</span></td>
-                                <td>${sig.date || '-'}</td>
+                                <td><strong>${sig.symbol || sig.Symbol || '-'}</strong></td>
+                                <td><span class="${signalClass}">${sig.signal || sig.Signal || '-'}</span></td>
+                                <td>$${(sig.price || sig.Prix || 0).toFixed(2)}</td>
+                                <td><span class="reliability ${reliabilityClass}">${(sig.reliability || sig.Reliability || 0).toFixed(1) || '-'}%</span></td>
+                                <td>${sig.date || sig.Date || '-'}</td>
                             </tr>
                         `;
                     });
                 }
             } catch (e) {
                 console.error('Error loading signals:', e);
+            }
+        }
+        
+        async function loadLists() {
+            try {
+                const res = await fetch(`${API_BASE}/api/lists`);
+                const data = await res.json();
+                
+                document.getElementById('popularList').innerHTML = data.popular.join(', ') || 'Aucun symbole';
+                document.getElementById('personalList').innerHTML = data.personal.join(', ') || 'Aucun symbole';
+                document.getElementById('optimizationList').innerHTML = data.optimization.join(', ') || 'Aucun symbole';
+            } catch (e) {
+                console.error('Error loading lists:', e);
+            }
+        }
+        
+        async function addToList(listType) {
+            const inputId = listType === 'popular' ? 'popularInput' : 
+                           listType === 'personal' ? 'personalInput' : 'optimizationInput';
+            const symbols = document.getElementById(inputId).value.split(',').map(s => s.trim().toUpperCase()).filter(s => s);
+            
+            if (!symbols.length) {
+                alert('Veuillez entrer au moins un symbole');
+                return;
+            }
+            
+            try {
+                const res = await fetch(`${API_BASE}/api/lists/${listType}`, {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({ action: 'add', symbols })
+                });
+                const data = await res.json();
+                if (res.ok) {
+                    alert('Symboles ajoutés!');
+                    document.getElementById(inputId).value = '';
+                    loadLists();
+                } else {
+                    alert('Erreur: ' + data.error);
+                }
+            } catch (e) {
+                alert('Erreur: ' + e.message);
+            }
+        }
+        
+        async function analyzePopularSignals() {
+            const res = await fetch(`${API_BASE}/api/lists`);
+            const lists = await res.json();
+            
+            if (!lists.popular.length && !lists.personal.length) {
+                alert('Aucun symbole à analyser');
+                return;
+            }
+            
+            document.getElementById('tab-analyze').style.display = 'none';
+            document.getElementById('loading').style.display = 'block';
+            document.getElementById('resultCard').style.display = 'none';
+            
+            try {
+                const res = await fetch(`${API_BASE}/api/analyze-popular`, {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({
+                        popular_symbols: lists.popular,
+                        mes_symbols: lists.personal,
+                        period: '12mo'
+                    })
+                });
+                
+                const data = await res.json();
+                if (data.signals && data.signals.length > 0) {
+                    alert(`✅ ${data.signals.length} signaux trouvés!`);
+                    loadStats();
+                    loadSignals();
+                } else {
+                    alert('Aucun signal fiable trouvé');
+                }
+            } catch (e) {
+                alert('Erreur: ' + e.message);
+            } finally {
+                document.getElementById('loading').style.display = 'none';
+                document.getElementById('tab-analyze').style.display = 'block';
+            }
+        }
+        
+        async function analyzeBatch() {
+            const symbolsText = document.getElementById('batchSymbols').value;
+            const symbols = symbolsText.split(',').map(s => s.trim().toUpperCase()).filter(s => s);
+            const period = document.getElementById('batchPeriod').value;
+            
+            if (!symbols.length) {
+                alert('Veuillez entrer au moins un symbole');
+                return;
+            }
+            
+            if (symbols.length > 20) {
+                alert('Maximum 20 symboles par analyse');
+                return;
+            }
+            
+            document.getElementById('batchBtn').disabled = true;
+            document.getElementById('batchLoading').style.display = 'block';
+            document.getElementById('batchResults').innerHTML = '';
+            
+            try {
+                const res = await fetch(`${API_BASE}/api/analyze-batch`, {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({ symbols, period })
+                });
+                
+                const data = await res.json();
+                if (data.signals && data.signals.length > 0) {
+                    let html = `<h3>✅ Résultats (${data.signals.length} signaux)</h3><table class="signals-table"><thead><tr><th>Symbole</th><th>Signal</th><th>Prix</th><th>Fiabilité</th><th>Domaine</th></tr></thead><tbody>`;
+                    
+                    data.signals.forEach(sig => {
+                        const sigClass = sig.signal === 'BUY' ? 'signal-buy' : sig.signal === 'SELL' ? 'signal-sell' : 'signal-hold';
+                        html += `<tr><td><strong>${sig.symbol}</strong></td><td><span class="${sigClass}">${sig.signal}</span></td><td>$${sig.prix?.toFixed(2) || '-'}</td><td>${sig.fiabilite?.toFixed(1) || '-'}%</td><td>${sig.domaine || '-'}</td></tr>`;
+                    });
+                    
+                    html += '</tbody></table>';
+                    document.getElementById('batchResults').innerHTML = html;
+                } else {
+                    document.getElementById('batchResults').innerHTML = '<p style="text-align: center; color: #aaa;">Aucun signal fiable trouvé</p>';
+                }
+            } catch (e) {
+                document.getElementById('batchResults').innerHTML = `<p style="color: #ff5252;">Erreur: ${e.message}</p>`;
+            } finally {
+                document.getElementById('batchBtn').disabled = false;
+                document.getElementById('batchLoading').style.display = 'none';
+            }
+        }
+        
+        async function runBacktest() {
+            const symbol = document.getElementById('backtestSymbol').value.toUpperCase().trim();
+            const period = document.getElementById('backtestPeriod').value;
+            const fast_ma = parseInt(document.getElementById('fastMA').value);
+            const slow_ma = parseInt(document.getElementById('slowMA').value);
+            
+            if (!symbol) {
+                alert('Veuillez entrer un symbole');
+                return;
+            }
+            
+            document.getElementById('backtestBtn').disabled = true;
+            document.getElementById('backtestLoading').style.display = 'block';
+            document.getElementById('backtestResults').innerHTML = '';
+            
+            try {
+                const res = await fetch(`${API_BASE}/api/backtest`, {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({ symbol, period, fast_ma, slow_ma })
+                });
+                
+                const data = await res.json();
+                if (data.results) {
+                    document.getElementById('backtestResults').innerHTML = `
+                        <div style="background: rgba(255,255,255,0.05); border-radius: 12px; padding: 20px; margin-top: 20px;">
+                            <h3>Résultats du Backtest - ${symbol}</h3>
+                            <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(150px, 1fr)); gap: 15px; margin-top: 15px;">
+                                <div><label style="color: #888;">Gain Total</label><div style="font-size: 1.5em; font-weight: bold; color: ${data.results.gain_total >= 0 ? '#00c853' : '#ff5252'}">${data.results.gain_total?.toFixed(2) || '-'}</div></div>
+                                <div><label style="color: #888;">Win Rate</label><div style="font-size: 1.5em; font-weight: bold; color: #00d4ff">${data.results.win_rate?.toFixed(1) || '-'}%</div></div>
+                                <div><label style="color: #888;">Nb Trades</label><div style="font-size: 1.5em; font-weight: bold;">${data.results.trades || '-'}</div></div>
+                                <div><label style="color: #888;">Gagnants</label><div style="font-size: 1.5em; font-weight: bold; color: #00c853">${data.results.winning_trades || '-'}</div></div>
+                            </div>
+                        </div>
+                    `;
+                } else {
+                    document.getElementById('backtestResults').innerHTML = `<p style="color: #ff5252;">Erreur: ${data.error}</p>`;
+                }
+            } catch (e) {
+                document.getElementById('backtestResults').innerHTML = `<p style="color: #ff5252;">Erreur: ${e.message}</p>`;
+            } finally {
+                document.getElementById('backtestBtn').disabled = false;
+                document.getElementById('backtestLoading').style.display = 'none';
             }
         }
         
@@ -428,13 +791,12 @@
                     document.getElementById('resultPrice').textContent = `$${sig.prix?.toFixed(2) || '-'}`;
                     document.getElementById('resultReliability').textContent = `${sig.fiabilite?.toFixed(1) || '-'}%`;
                     document.getElementById('resultRSI').textContent = sig.rsi?.toFixed(1) || '-';
-                    document.getElementById('resultMACD').textContent = sig.tendance || '-';
                     document.getElementById('resultTrend').textContent = sig.tendance || '-';
+                    document.getElementById('resultDomain').textContent = sig.domaine || '-';
                     document.getElementById('resultVolume').textContent = sig.volume_moyen ? sig.volume_moyen.toLocaleString() : '-';
                     
                     resultCard.classList.add('active');
                     
-                    // Reload signals and stats
                     loadSignals();
                     loadStats();
                 } else if (data.status === 'no_signals') {
