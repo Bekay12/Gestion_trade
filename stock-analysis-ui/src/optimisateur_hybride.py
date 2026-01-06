@@ -10,7 +10,7 @@ import sys
 from pathlib import Path
 sys.path.append("C:\\Users\\berti\\Desktop\\Mes documents\\Gestion_trade\\stock-analysis-ui\\src\\trading_c_acceleration")
 from qsi import download_stock_data, load_symbols_from_txt, extract_best_parameters
-from qsi_optimized import backtest_signals, backtest_signals_with_events, backtest_signals_c_extended
+from trading_c_acceleration.qsi_optimized import backtest_signals, backtest_signals_with_events, backtest_signals_c_extended
 from pathlib import Path
 from tqdm import tqdm
 # import yfinance as yf  # Import paresseux - chargé seulement si nécessaire
@@ -782,7 +782,8 @@ def optimize_sector_coefficients_hybrid(
         print(f"📊 {symbol}: {len(data['Close'])} points de données")
 
     # Récupération des meilleurs paramètres historiques
-    db_path = 'signaux/optimization_hist.db'
+    from config import OPTIMIZATION_DB_PATH
+    db_path = OPTIMIZATION_DB_PATH
     best_params_per_sector = extract_best_parameters(db_path)
 
     if domain in best_params_per_sector:
@@ -1228,8 +1229,9 @@ def save_optimization_results(domain, coeffs, gain_total, success_rate, total_tr
     """
     from datetime import datetime
     import sqlite3
+    from config import OPTIMIZATION_DB_PATH
 
-    db_path = 'signaux/optimization_hist.db'
+    db_path = OPTIMIZATION_DB_PATH
 
     def _ensure_opt_runs_schema(conn):
         try:

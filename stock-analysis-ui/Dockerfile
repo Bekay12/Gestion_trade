@@ -50,15 +50,8 @@ HEALTHCHECK --interval=30s --timeout=10s --start-period=40s --retries=3 \
 # Default command (API server with gunicorn)
 # Pour développement: python src/api.py
 # Pour production: gunicorn
-CMD ["gunicorn", \
-     "--bind", "0.0.0.0:5000", \
-     "--workers", "4", \
-     "--threads", "2", \
-     "--worker-class", "gthread", \
-     "--timeout", "120", \
-     "--access-logfile", "-", \
-     "--error-logfile", "-", \
-     "src.api:app"]
+# Utiliser PORT de l'environnement (Render utilise $PORT dynamique)
+CMD gunicorn --bind 0.0.0.0:${PORT:-5000} --workers 4 --threads 2 --worker-class gthread --timeout 120 --access-logfile - --error-logfile - src.api:app
 
 # Alternative: démarrer en mode développement
 # CMD ["python", "src/api.py"]

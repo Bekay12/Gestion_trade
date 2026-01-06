@@ -1194,3 +1194,58 @@
 2026-01-06 21:02:50,726 - INFO - 127.0.0.1 - - [06/Jan/2026 21:02:50] "GET /api/stats HTTP/1.1" 200 -
 2026-01-06 21:02:52,790 - INFO - 127.0.0.1 - - [06/Jan/2026 21:02:52] "[33mGET /api/nonexistent HTTP/1.1[0m" 404 -
 2026-01-06 21:02:54,840 - INFO - 127.0.0.1 - - [06/Jan/2026 21:02:54] "[31m[1mPOST /api/analyze HTTP/1.1[0m" 400 -
+2026-01-06 21:09:24,069 - INFO - 127.0.0.1 - - [06/Jan/2026 21:09:24] "GET /health HTTP/1.1" 200 -
+2026-01-06 21:09:35,562 - INFO - 127.0.0.1 - - [06/Jan/2026 21:09:35] "GET /health HTTP/1.1" 200 -
+2026-01-06 21:09:36,033 - INFO - 127.0.0.1 - - [06/Jan/2026 21:09:36] "[33mGET /favicon.ico HTTP/1.1[0m" 404 -
+2026-01-06 21:09:49,345 - INFO - 127.0.0.1 - - [06/Jan/2026 21:09:49] "[33mGET / HTTP/1.1[0m" 404 -
+2026-01-06 21:09:52,394 - INFO - 127.0.0.1 - - [06/Jan/2026 21:09:52] "[33mGET / HTTP/1.1[0m" 404 -
+2026-01-06 21:11:26,967 - INFO - [31m[1mWARNING: This is a development server. Do not use it in a production deployment. Use a production WSGI server instead.[0m
+ * Running on all addresses (0.0.0.0)
+ * Running on http://127.0.0.1:5000
+ * Running on http://192.168.1.7:5000
+2026-01-06 21:11:26,968 - INFO - [33mPress CTRL+C to quit[0m
+2026-01-06 21:11:53,803 - INFO - 127.0.0.1 - - [06/Jan/2026 21:11:53] "GET /health HTTP/1.1" 200 -
+2026-01-06 21:11:56,934 - INFO - 127.0.0.1 - - [06/Jan/2026 21:11:56] "GET /api/docs HTTP/1.1" 200 -
+2026-01-06 21:12:08,806 - INFO - 127.0.0.1 - - [06/Jan/2026 21:12:08] "GET /api/docs HTTP/1.1" 200 -
+2026-01-06 21:13:16,911 - INFO - 127.0.0.1 - - [06/Jan/2026 21:13:16] "GET /health HTTP/1.1" 200 -
+2026-01-06 21:13:18,986 - INFO - 127.0.0.1 - - [06/Jan/2026 21:13:18] "GET /api/stats HTTP/1.1" 200 -
+2026-01-06 21:43:54,027 - ERROR - HTTP Error 404: 
+2026-01-06 21:43:54,902 - ERROR - HTTP Error 404: 
+2026-01-06 21:45:14,358 - ERROR - HTTP Error 404: 
+2026-01-06 21:45:15,485 - ERROR - HTTP Error 404: 
+2026-01-06 21:46:07,642 - ERROR - HTTP Error 404: 
+2026-01-06 21:46:08,570 - ERROR - HTTP Error 404: 
+2026-01-06 21:48:51,840 - ERROR - HTTP Error 404: 
+2026-01-06 22:06:53,947 - ERROR - 
+1 Failed download:
+2026-01-06 22:06:53,947 - ERROR - ['SAND']: YFPricesMissingError('possibly delisted; no price data found  (period=24mo) (Yahoo error = "No data found, symbol may be delisted")')
+2026-01-06 22:07:37,623 - ERROR - 
+1 Failed download:
+2026-01-06 22:07:37,624 - ERROR - ['ERJ']: YFPricesMissingError('possibly delisted; no price data found  (period=24mo) (Yahoo error = "No data found, symbol may be delisted")')
+2026-01-06 22:07:52,196 - ERROR - 
+1 Failed download:
+2026-01-06 22:07:52,196 - ERROR - ['COMP-USD']: YFPricesMissingError('possibly delisted; no price data found  (period=24mo)')
+2026-01-06 22:07:52,905 - ERROR - 
+1 Failed download:
+2026-01-06 22:07:52,905 - ERROR - ['AGS']: YFPricesMissingError('possibly delisted; no price data found  (period=24mo) (Yahoo error = "No data found, symbol may be delisted")')
+2026-01-06 22:07:57,313 - ERROR - 
+1 Failed download:
+2026-01-06 22:07:57,313 - ERROR - ['CCRD']: YFPricesMissingError('possibly delisted; no price data found  (period=24mo) (Yahoo error = "No data found, symbol may be delisted")')
+2026-01-06 22:11:52,461 - ERROR - 
+1 Failed download:
+2026-01-06 22:11:52,462 - ERROR - ['CEI']: YFPricesMissingError('possibly delisted; no price data found  (period=24mo) (Yahoo error = "No data found, symbol may be delisted")')
+2026-01-06 22:11:54,110 - ERROR - 
+1 Failed download:
+2026-01-06 22:11:54,110 - ERROR - ['GOGL.OL']: YFPricesMissingError('possibly delisted; no price data found  (period=24mo) (Yahoo error = "No data found, symbol may be delisted")')
+2026-01-06 22:11:56,995 - ERROR - 
+1 Failed download:
+2026-01-06 22:11:56,996 - ERROR - ['PFC.L']: YFPricesMissingError('possibly delisted; no price data found  (period=24mo) (Yahoo error = "No data found, symbol may be delisted")')
+2026-01-06 22:11:57,741 - ERROR - 
+1 Failed download:
+2026-01-06 22:11:57,742 - ERROR - ['PLL']: YFPricesMissingError('possibly delisted; no price data found  (period=24mo) (Yahoo error = "No data found, symbol may be delisted")')
+2026-01-06 22:11:58,537 - ERROR - 
+1 Failed download:
+2026-01-06 22:11:58,537 - ERROR - ['SAGE']: YFPricesMissingError('possibly delisted; no price data found  (period=24mo) (Yahoo error = "No data found, symbol may be delisted")')
+2026-01-06 22:11:59,728 - ERROR - 
+1 Failed download:
+2026-01-06 22:11:59,728 - ERROR - ['SKX']: YFPricesMissingError('possibly delisted; no price data found  (period=24mo) (Yahoo error = "No data found, symbol may be delisted")')

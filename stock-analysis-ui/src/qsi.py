@@ -19,7 +19,7 @@ from concurrent.futures import ThreadPoolExecutor
 import sys
 import yfinance as yf
 sys.path.append("C:\\Users\\berti\\Desktop\\Mes documents\\Gestion_trade\\stock-analysis-ui\\src\\trading_c_acceleration")
-from qsi_optimized import backtest_signals, extract_best_parameters, backtest_signals_with_events
+from trading_c_acceleration.qsi_optimized import backtest_signals, extract_best_parameters, backtest_signals_with_events
 
 # Import config et cache utilities
 try:
@@ -179,7 +179,7 @@ DERIV_CACHE: Dict[tuple, Dict[str, float]] = {}
 # last_bb_percent, last_adx, last_ichimoku_base, last_ichimoku_conversion
 TA_CACHE: Dict[tuple, Dict[str, float]] = {}
 
-def extract_best_parameters(db_path: str = 'signaux/optimization_hist.db') -> Dict[str, Tuple[Tuple[float, ...], Tuple[float, ...], Tuple[float, float]]]:
+def extract_best_parameters(db_path: str = None) -> Dict[str, Tuple[Tuple[float, ...], Tuple[float, ...], Tuple[float, float]]]:
     """
     Extrait les meilleurs coefficients et seuils pour chaque secteur à partir de SQLite.
     Sélectionne la ligne la plus récente (par Timestamp) pour chaque secteur.
@@ -191,6 +191,9 @@ def extract_best_parameters(db_path: str = 'signaux/optimization_hist.db') -> Di
         Dict[str, Tuple[Tuple[float, ...], Tuple[float, ...], Tuple[float, float]]]: 
         Dictionnaire avec pour chaque secteur: (coefficients_8, thresholds_8, globals_2, gain)
     """
+    if db_path is None:
+        from config import OPTIMIZATION_DB_PATH
+        db_path = OPTIMIZATION_DB_PATH
     try:
         import sqlite3
         

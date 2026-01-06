@@ -20,7 +20,7 @@ if PROJECT_SRC not in sys.path:
 from qsi import analyse_signaux_populaires, analyse_et_affiche, load_symbols_from_txt, period
 from qsi import download_stock_data, backtest_signals, plot_unified_chart, get_trading_signal
 import qsi
-from qsi_optimized import extract_best_parameters
+from trading_c_acceleration.qsi_optimized import extract_best_parameters
 
 try:
     from symbol_manager import get_symbols_by_list_type

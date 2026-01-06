@@ -10,7 +10,8 @@ import sys
 def test_save_functionality():
     """Test la fonction de sauvegarde SQLite."""
     
-    db_path = 'signaux/optimization_hist.db'
+    from config import OPTIMIZATION_DB_PATH
+    db_path = OPTIMIZATION_DB_PATH
     
     print("🧪 Test de la sauvegarde SQLite")
     print("=" * 70)

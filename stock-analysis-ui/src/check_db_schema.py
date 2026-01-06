@@ -1,6 +1,7 @@
 import sqlite3
+from config import OPTIMIZATION_DB_PATH
 
-conn = sqlite3.connect('signaux/optimization_hist.db')
+conn = sqlite3.connect(OPTIMIZATION_DB_PATH)
 cursor = conn.cursor()
 
 # Check table info
