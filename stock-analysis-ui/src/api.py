@@ -33,7 +33,6 @@ try:
     from qsi import (
         analyse_signaux_populaires,
         download_stock_data,
-        get_trading_signal,
         backtest_signals
     )
     from config import SIGNALS_DIR, DATA_CACHE_DIR
@@ -247,24 +246,54 @@ def analyze_symbol():
         
         print(f"📊 Analysing {symbol}...")
         
-        # Télécharger données
-        df = download_stock_data([symbol], period=period)
-        if df is None or df.empty:
-            return jsonify({'error': f'Could not download data for {symbol}'}), 400
+        # Utiliser analyse_signaux_populaires pour un seul symbole
+        results = analyse_signaux_populaires(
+            popular_symbols=[symbol],
+            mes_symbols=[],
+            period=period,
+            afficher_graphiques=False,
+            verbose=False,
+            save_csv=False,
+            plot_all=False
+        )
         
-        # Générer signal
-        signal = get_trading_signal(symbol, period=period)
+        # Extraire le résultat
+        signals_list = results.get('signaux_fiables', [])
         
-        return jsonify({
-            'symbol': symbol,
-            'signal': signal,
-            'period': period,
-            'timestamp': datetime.utcnow().isoformat(),
-            'data_points': len(df)
-        }), 200
+        if signals_list:
+            sig = signals_list[0]
+            result = {
+                'symbol': symbol,
+                'signal': sig.get('signal', 'HOLD'),
+                'price': sig.get('prix'),
+                'reliability': sig.get('fiabilite', 0),
+                'score': sig.get('score'),
+                'indicators': {
+                    'rsi': sig.get('rsi'),
+                    'macd_signal': 'bullish' if sig.get('score', 0) > 0 else 'bearish',
+                    'trend': sig.get('tendance'),
+                    'volume_signal': 'high' if sig.get('volume_moyen', 0) > 1000000 else 'normal'
+                },
+                'domain': sig.get('domaine'),
+                'period': period,
+                'timestamp': datetime.utcnow().isoformat()
+            }
+        else:
+            # Pas de signal fiable trouvé
+            result = {
+                'symbol': symbol,
+                'signal': 'NO_DATA',
+                'message': 'Could not generate reliable signal',
+                'period': period,
+                'timestamp': datetime.utcnow().isoformat()
+            }
+        
+        return jsonify({'result': result}), 200
         
     except Exception as e:
         print(f"❌ Error in /analyze: {e}")
+        import traceback
+        traceback.print_exc()
         return jsonify({'error': str(e)}), 500
 
 @app.route('/api/backtest', methods=['POST'])
