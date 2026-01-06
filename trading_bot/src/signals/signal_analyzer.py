@@ -352,6 +352,7 @@ class SignalAnalyzer:
         logger.info("=" * 115)
 
 # Instance globale
+signal_analyzer = SignalAnalyzer()
 
 
 # Fonction de compatibilité
