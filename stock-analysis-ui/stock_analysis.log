@@ -1180,3 +1180,17 @@
 2025-07-22 14:18:46,414 - ERROR - 
 1 Failed download:
 2025-07-22 14:18:46,414 - ERROR - ['COMP-USD']: YFPricesMissingError('possibly delisted; no price data found  (period=12mo)')
+2026-01-06 21:01:10,566 - INFO - [31m[1mWARNING: This is a development server. Do not use it in a production deployment. Use a production WSGI server instead.[0m
+ * Running on all addresses (0.0.0.0)
+ * Running on http://127.0.0.1:5000
+ * Running on http://192.168.1.7:5000
+2026-01-06 21:01:10,566 - INFO - [33mPress CTRL+C to quit[0m
+2026-01-06 21:02:38,377 - INFO - 127.0.0.1 - - [06/Jan/2026 21:02:38] "GET /health HTTP/1.1" 200 -
+2026-01-06 21:02:40,426 - INFO - 127.0.0.1 - - [06/Jan/2026 21:02:40] "GET /status HTTP/1.1" 200 -
+2026-01-06 21:02:42,491 - INFO - 127.0.0.1 - - [06/Jan/2026 21:02:42] "GET /api/docs HTTP/1.1" 200 -
+2026-01-06 21:02:44,545 - INFO - 127.0.0.1 - - [06/Jan/2026 21:02:44] "GET /api/signals?limit=5 HTTP/1.1" 200 -
+2026-01-06 21:02:46,589 - INFO - 127.0.0.1 - - [06/Jan/2026 21:02:46] "GET /api/signals?limit=10&min_reliability=50 HTTP/1.1" 200 -
+2026-01-06 21:02:48,656 - INFO - 127.0.0.1 - - [06/Jan/2026 21:02:48] "GET /api/signals/AAPL HTTP/1.1" 200 -
+2026-01-06 21:02:50,726 - INFO - 127.0.0.1 - - [06/Jan/2026 21:02:50] "GET /api/stats HTTP/1.1" 200 -
+2026-01-06 21:02:52,790 - INFO - 127.0.0.1 - - [06/Jan/2026 21:02:52] "[33mGET /api/nonexistent HTTP/1.1[0m" 404 -
+2026-01-06 21:02:54,840 - INFO - 127.0.0.1 - - [06/Jan/2026 21:02:54] "[31m[1mPOST /api/analyze HTTP/1.1[0m" 400 -

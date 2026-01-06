@@ -1,0 +1,15 @@
+# ============================================================================
+# HEROKU.YML - CONFIGURATION HEROKU
+# Alternative au Procfile pour déploiements avancés
+# ============================================================================
+
+build:
+  docker:
+    web: Dockerfile
+  config:
+    PYTHONUNBUFFERED: 1
+
+run:
+  web: gunicorn --bind 0.0.0.0:$PORT --workers 4 --threads 2 --worker-class gthread --timeout 120 src.api:app
+  worker: python src/background_worker.py
+  scheduler: python src/scheduler.py

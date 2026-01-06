@@ -1,0 +1,122 @@
+# ============================================================================
+# .GITIGNORE - PRODUCTION DEPLOYMENT
+# Fichiers à exclure du contrôle de version
+# ============================================================================
+
+# ==================== ENVIRONMENT & SECRETS ====================
+.env
+.env.local
+.env.*.local
+*.pem
+*.key
+*.crt
+secrets.json
+
+# ==================== PYTHON ====================
+__pycache__/
+*.py[cod]
+*$py.class
+*.so
+.Python
+build/
+develop-eggs/
+dist/
+downloads/
+eggs/
+.eggs/
+lib/
+lib64/
+parts/
+sdist/
+var/
+wheels/
+pip-wheel-metadata/
+share/python-wheels/
+*.egg-info/
+.installed.cfg
+*.egg
+MANIFEST
+pip-log.txt
+pip-delete-this-directory.txt
+
+# ==================== VIRTUAL ENV ====================
+venv/
+ENV/
+env/
+.venv
+
+# ==================== IDE ====================
+.vscode/
+.idea/
+*.swp
+*.swo
+*~
+.DS_Store
+*.sublime-workspace
+*.sublime-project
+
+# ==================== DATA & CACHE ====================
+*.db
+*.sqlite
+*.sqlite3
+data_cache/
+cache_data/
+cache_logs/
+logs/
+*.log
+*.csv (garder optionnellement)
+
+# ==================== OS ====================
+Thumbs.db
+.AppleDouble
+.LSOverride
+
+# ==================== NODE (si UI web) ====================
+node_modules/
+npm-debug.log
+yarn-error.log
+
+# ==================== DOCKER ====================
+docker-compose.override.yml
+.docker/
+
+# ==================== COVERAGE ====================
+.coverage
+.coverage.*
+htmlcov/
+.pytest_cache/
+.tox/
+
+# ==================== BUILD ====================
+*.egg-info
+dist/
+build/
+
+# ==================== TEST RESULTS ====================
+.pytest_cache/
+.coverage
+htmlcov/
+
+# ==================== TEMPORARY FILES ====================
+*.tmp
+*.temp
+*.backup
+*.bak
+*~
+
+# ==================== CREDENTIALS ====================
+credentials.json
+tokens.json
+auth.token
+
+# ==================== KEEP THESE (NE PAS IGNORER) ====================
+!requirements.txt
+!Dockerfile
+!docker-compose.yml
+!.env.example
+!Procfile
+!runtime.txt
+!heroku.yml
+!nginx.conf
+!src/**/*.py
+!tests/**/*.py

@@ -1,0 +1,132 @@
+# ============================================================================
+# DOCKER COMPOSE - STOCK ANALYSIS UI
+# Start:  docker-compose up -d
+# Stop:   docker-compose down
+# Logs:   docker-compose logs -f api
+# ============================================================================
+
+version: '3.8'
+
+services:
+  # ========================================================================
+  # API SERVICE (Main application)
+  # ========================================================================
+  api:
+    build:
+      context: .
+      dockerfile: Dockerfile
+    container_name: stock-analysis-api
+    ports:
+      - "5000:5000"
+    environment:
+      - FLASK_ENV=production
+      - FLASK_APP=api.py
+      - DATABASE_URL=sqlite:///stock_analysis.db
+    volumes:
+      # Persist data directories
+      - ./data_cache:/app/data_cache
+      - ./cache_data:/app/cache_data
+      - ./signaux:/app/signaux
+      - ./logs:/app/logs
+    restart: unless-stopped
+    healthcheck:
+      test: ["CMD", "curl", "-f", "http://localhost:5000/health"]
+      interval: 30s
+      timeout: 10s
+      retries: 3
+      start_period: 40s
+    networks:
+      - stock-analysis-network
+
+  # ========================================================================
+  # NGINX (Reverse proxy & load balancer - OPTIONNEL)
+  # ========================================================================
+  nginx:
+    image: nginx:alpine
+    container_name: stock-analysis-nginx
+    ports:
+      - "80:80"
+      - "443:443"
+    volumes:
+      - ./nginx.conf:/etc/nginx/nginx.conf:ro
+      - ./ssl:/etc/nginx/ssl:ro  # Pour certificats SSL
+    depends_on:
+      - api
+    restart: unless-stopped
+    networks:
+      - stock-analysis-network
+    profiles:
+      - with-nginx  # Démarrer avec: docker-compose --profile with-nginx up
+
+  # ========================================================================
+  # PostgreSQL (OPTIONNEL - pour production scalable)
+  # ========================================================================
+  # postgres:
+  #   image: postgres:15-alpine
+  #   container_name: stock-analysis-db
+  #   environment:
+  #     - POSTGRES_DB=stock_analysis
+  #     - POSTGRES_USER=stock_user
+  #     - POSTGRES_PASSWORD=change_me_in_production
+  #   volumes:
+  #     - postgres_data:/var/lib/postgresql/data
+  #   restart: unless-stopped
+  #   networks:
+  #     - stock-analysis-network
+  #   profiles:
+  #     - with-postgres
+
+  # ========================================================================
+  # REDIS (OPTIONNEL - pour caching distribué)
+  # ========================================================================
+  # redis:
+  #   image: redis:7-alpine
+  #   container_name: stock-analysis-cache
+  #   ports:
+  #     - "6379:6379"
+  #   volumes:
+  #     - redis_data:/data
+  #   restart: unless-stopped
+  #   networks:
+  #     - stock-analysis-network
+  #   profiles:
+  #     - with-redis
+
+# ============================================================================
+# VOLUMES
+# ============================================================================
+volumes:
+  postgres_data:
+  redis_data:
+
+# ============================================================================
+# NETWORKS
+# ============================================================================
+networks:
+  stock-analysis-network:
+    driver: bridge
+
+# ============================================================================
+# COMMANDES UTILES
+# ============================================================================
+# Démarrage basique (API seule):
+#   docker-compose up -d
+#
+# Avec Nginx:
+#   docker-compose --profile with-nginx up -d
+#
+# Avec PostgreSQL + Redis:
+#   docker-compose --profile with-postgres --profile with-redis up -d
+#
+# Tous les services:
+#   docker-compose --profile with-nginx --profile with-postgres --profile with-redis up -d
+#
+# Consulter les logs:
+#   docker-compose logs -f api
+#   docker-compose logs -f nginx
+#
+# Arrêter:
+#   docker-compose down
+#
+# Reconstruire l'image:
+#   docker-compose build --no-cache

@@ -1,0 +1,27 @@
+# ============================================================================
+# PROCFILE - HEROKU DEPLOYMENT
+# Déployer sur Heroku: git push heroku main
+# ============================================================================
+
+# Service API principal
+web: gunicorn --bind 0.0.0.0:$PORT --workers 4 --threads 2 --worker-class gthread --timeout 120 src.api:app
+
+# Service worker pour tâches en arrière-plan (calcul des signaux quotidiens)
+worker: python src/background_worker.py
+
+# Service de scheduler pour tâches planifiées
+scheduler: python src/scheduler.py
+
+# ============================================================================
+# FICHIERS DE CONFIGURATION HEROKU SUPPLÉMENTAIRES
+# ============================================================================
+
+# runtime.txt (spécifier la version Python)
+# python-3.11.0
+
+# heroku.yml (alternative à Procfile, pour builds personnalisés)
+# build:
+#   docker:
+#     web: Dockerfile
+# run:
+#   web: gunicorn src.api:app
