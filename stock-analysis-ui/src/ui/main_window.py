@@ -831,8 +831,9 @@ class MainWindow(QMainWindow):
                     domaine = "Inconnu"
                     print(f"⚠️ DEBUG {symbol}: erreur récupération secteur: {e}")
                 
-                # ✅ Appliquer fallback pour cap_range "Unknown" : essayer Large, Mid, Mega
-                if cap_range == "Unknown" or not cap_range:
+                # ✅ Appliquer fallback pour cap_range "Unknown" : essayer Large, Mid, Mega (configurable)
+                from config import CAP_FALLBACK_ENABLED
+                if CAP_FALLBACK_ENABLED and (cap_range == "Unknown" or not cap_range):
                     best_params_all = qsi.extract_best_parameters()
                     for fallback_cap in ["Large", "Mid", "Mega"]:
                         test_key = f"{domaine}_{fallback_cap}"
@@ -840,9 +841,10 @@ class MainWindow(QMainWindow):
                             cap_range = fallback_cap
                             break
                 
-                # ✅ Appliquer fallback universel pour "Inconnu" (même logique que backtest)
+                # ✅ Appliquer fallback universel pour "Inconnu" (même logique que backtest) - configurable
                 original_domaine = domaine
-                if domaine == "Inconnu":
+                from config import DOMAIN_FALLBACK_ENABLED
+                if DOMAIN_FALLBACK_ENABLED and domaine == "Inconnu":
                     best_params_all = qsi.extract_best_parameters()
                     for fallback_sector in ["Technology", "Healthcare", "Financial Services"]:
                         if fallback_sector in best_params_all:
@@ -899,6 +901,7 @@ class MainWindow(QMainWindow):
                     'Prix': last_price,
                     'Tendance': 'Hausse' if trend else 'Baisse',
                     'RSI': last_rsi,
+                    'DomaineOriginal': original_domaine,
                     'Domaine': domaine,
                     'CapRange': cap_range,
                     'Volume moyen': volume_mean,

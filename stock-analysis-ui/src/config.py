@@ -84,6 +84,20 @@ DEFAULT_RELIABILITY_THRESHOLD = 60.0
 DEFAULT_TRAILING_MONTHS = 9
 DEFAULT_RECALC_RELIABILITY_EVERY = 5
 
+# ===================================================================
+# FALLBACK CONTROLS (UI + API)
+# ===================================================================
+
+# Autoriser le fallback de domaine lorsque le secteur est "Inconnu"
+# True: applique fallback (Technology/Healthcare/Financial Services)
+# False: conserve "Inconnu" et utilise des seuils non-optimisés si nécessaire
+DOMAIN_FALLBACK_ENABLED = True
+
+# Autoriser le fallback de cap_range lorsque la capitalisation est "Unknown"
+# True: essaie Large/Mid/Mega selon les paramètres disponibles
+# False: conserve "Unknown"
+CAP_FALLBACK_ENABLED = True
+
 
 # ===================================================================
 # CACHE UTILITIES (PICKLE)
