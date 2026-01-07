@@ -7,10 +7,12 @@
 import os
 import sys
 import json
+import gc
 from datetime import datetime, timedelta
 from pathlib import Path
 from dotenv import load_dotenv
-from functools import wraps
+from functools import wraps, lru_cache
+from threading import Lock
 
 from flask import Flask, request, jsonify, send_file, render_template
 from flask_cors import CORS
@@ -34,9 +36,13 @@ try:
         analyse_signaux_populaires,
         download_stock_data,
         backtest_signals,
-        load_symbols_from_txt
+        load_symbols_from_txt,
+        get_trading_signal,
+        get_cap_range_for_symbol,
+        extract_best_parameters
     )
     from config import SIGNALS_DIR, DATA_CACHE_DIR
+    import yfinance as yf
 except ImportError as e:
     print(f"⚠️ Import error: {e}")
     sys.exit(1)
@@ -50,6 +56,21 @@ CORS(app)  # Enable CORS for all routes
 
 app.config['JSON_SORT_KEYS'] = False
 app.config['JSONIFY_PRETTYPRINT_REGULAR'] = True
+
+# Limite de requêtes simultanées pour éviter surcharge mémoire
+analysis_lock = Lock()
+MAX_CONCURRENT_ANALYSES = 2
+current_analyses = 0
+
+# Cache pour info yfinance (secteur, etc.) - TTL 1 heure
+@lru_cache(maxsize=100)
+def get_ticker_info_cached(symbol: str):
+    """Cache des infos yfinance pour éviter requêtes répétées"""
+    try:
+        return yf.Ticker(symbol).info
+    except Exception as e:
+        print(f"⚠️ Erreur récupération info {symbol}: {e}")
+        return {}
 
 # Security headers
 @app.after_request
@@ -97,13 +118,31 @@ def index():
 
 @app.route('/health', methods=['GET'])
 def health_check():
-    """Health check endpoint pour monitoring"""
-    return jsonify({
-        'status': 'healthy',
-        'timestamp': datetime.utcnow().isoformat(),
-        'version': '1.0.0',
-        'environment': os.getenv('FLASK_ENV', 'development')
-    }), 200
+    """Health check endpoint pour monitoring avec info mémoire"""
+    try:
+        import psutil
+        process = psutil.Process()
+        mem_info = process.memory_info()
+        
+        return jsonify({
+            'status': 'healthy',
+            'timestamp': datetime.utcnow().isoformat(),
+            'version': '1.0.0',
+            'memory': {
+                'rss_mb': round(mem_info.rss / 1024 / 1024, 2),
+                'vms_mb': round(mem_info.vms / 1024 / 1024, 2)
+            },
+            'concurrent_analyses': current_analyses,
+            'max_concurrent': MAX_CONCURRENT_ANALYSES
+        }), 200
+    except ImportError:
+        # psutil non installé, retourner version simple
+        return jsonify({
+            'status': 'healthy',
+            'timestamp': datetime.utcnow().isoformat(),
+            'version': '1.0.0',
+            'environment': os.getenv('FLASK_ENV', 'development')
+        }), 200
 
 @app.route('/status', methods=['GET'])
 def status():
@@ -232,6 +271,13 @@ def analyze_symbol():
     Analyse un symbole - VERSION SIMPLIFIÉE comme le desktop UI
     Ne filtre PAS par fiabilité, retourne TOUS les signaux
     """
+    global current_analyses
+    
+    # Initialiser variables pour nettoyage
+    stock_data_dict = None
+    prices = None
+    volumes = None
+    
     try:
         data = request.get_json()
         symbol = data.get('symbol', '').upper()
@@ -240,13 +286,20 @@ def analyze_symbol():
         if not symbol:
             return jsonify({'error': 'symbol required'}), 400
         
-        print(f"📊 Analyse simple de {symbol} (période: {period})...")
+        # Limiter les analyses simultanées pour éviter surcharge RAM
+        with analysis_lock:
+            if current_analyses >= MAX_CONCURRENT_ANALYSES:
+                return jsonify({
+                    'error': 'Too many concurrent analyses. Please retry in a moment.',
+                    'symbol': symbol,
+                    'status': 'rate_limited'
+                }), 429
+            current_analyses += 1
         
         try:
-            # Télécharger les données (comme le desktop UI)
-            from qsi import download_stock_data, get_trading_signal, get_cap_range_for_symbol, extract_best_parameters
-            import yfinance as yf
+            print(f"📊 Analyse simple de {symbol} (période: {period})...")
             
+            # Télécharger les données (comme le desktop UI)
             stock_data_dict = download_stock_data([symbol], period)
             
             if not stock_data_dict or symbol not in stock_data_dict:
@@ -260,9 +313,9 @@ def analyze_symbol():
             prices = stock_data['Close']
             volumes = stock_data['Volume']
             
-            # Récupérer le secteur (comme le desktop UI)
+            # Récupérer le secteur (comme le desktop UI) - AVEC CACHE
             try:
-                info = yf.Ticker(symbol).info
+                info = get_ticker_info_cached(symbol)
                 domaine = info.get("sector", "Inconnu")
             except Exception:
                 domaine = "Inconnu"
@@ -361,8 +414,25 @@ def analyze_symbol():
                 'symbol': symbol,
                 'status': 'error'
             }), 500
+        finally:
+            # Nettoyage mémoire après chaque analyse
+            with analysis_lock:
+                current_analyses -= 1
+            # Libérer mémoire des DataFrames (seulement si créés)
+            try:
+                if stock_data_dict is not None:
+                    del stock_data_dict
+                if prices is not None:
+                    del prices
+                if volumes is not None:
+                    del volumes
+            except:
+                pass
+            gc.collect()
         
     except Exception as e:
+        with analysis_lock:
+            current_analyses -= 1
         return jsonify({'error': str(e)}), 500
 
 @app.route('/api/backtest', methods=['POST'])

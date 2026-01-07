@@ -8,3 +8,4 @@ ta==0.11.0
 yfinance==0.2.36
 requests==2.31.0
 python-dotenv==1.0.1
+psutil==5.9.8
