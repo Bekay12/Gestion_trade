@@ -6,6 +6,7 @@ from PyQt5.QtWidgets import (
 )
 from PyQt5.QtWidgets import QAbstractItemView
 from PyQt5.QtCore import QThread, pyqtSignal, Qt
+from PyQt5.QtGui import QColor
 import io
 from matplotlib.backends.backend_qt5agg import FigureCanvasQTAgg as FigureCanvas
 from matplotlib.figure import Figure
@@ -161,28 +162,36 @@ class DownloadThread(QThread):
             self.error.emit(str(e))
 
 class LogCapture:
-    """Captures stdout/stderr and writes both to QTextEdit and to original stdout/stderr."""
+    """Captures stdout/stderr and writes both to QTextEdit and to original stdout/stderr.
+    Thread-safe implementation using direct append (QTextEdit is thread-safe for append)."""
     def __init__(self, text_edit):
         self.text_edit = text_edit
         self.original_stdout = sys.__stdout__
         self.original_stderr = sys.__stderr__
-        self.buffer = ""
     
     def write(self, message):
         """Write message to QTextEdit and original stdout."""
-        if message and message.strip():
-            self.buffer += message
-            # Append to QTextEdit
-            self.text_edit.append(message.rstrip())
-            # Also print to original stdout (terminal)
-            self.original_stdout.write(message)
-            self.original_stdout.flush()
+        try:
+            if message and message.strip():
+                # Append to QTextEdit (thread-safe)
+                self.text_edit.append(message.rstrip())
+                # Also print to original stdout (terminal)
+                self.original_stdout.write(message)
+                self.original_stdout.flush()
+        except Exception:
+            # Fail silently to avoid breaking print calls
+            try:
+                self.original_stdout.write(message)
+                self.original_stdout.flush()
+            except Exception:
+                pass
     
     def flush(self):
         """Flush the buffer."""
-        if self.buffer:
+        try:
             self.original_stdout.flush()
-        self.buffer = ""
+        except Exception:
+            pass
     
     def isatty(self):
         """Required for some code that checks if stdout is a TTY."""
@@ -226,7 +235,12 @@ class MainWindow(QMainWindow):
         # Tab 3: Charts (per-symbol graphs and metrics)
         self.charts_container = QWidget()
         self.charts_layout = QVBoxLayout(self.charts_container)
-        self.charts_layout.addWidget(QLabel("📊 Graphiques et analyse détaillée par symbole"))
+        self.charts_scroll = QScrollArea()
+        self.charts_scroll.setWidgetResizable(True)
+        self.charts_scroll_widget = QWidget()
+        self.charts_scroll_layout = QVBoxLayout(self.charts_scroll_widget)
+        self.charts_scroll.setWidget(self.charts_scroll_widget)
+        self.charts_layout.addWidget(self.charts_scroll)
         self.tabs.addTab(self.charts_container, "Graphiques")
 
         # Tab 4: Comparisons (multi-symbol visualizations)
@@ -245,9 +259,14 @@ class MainWindow(QMainWindow):
         self.logs_layout.addWidget(self.logs_text)
         self.tabs.addTab(self.logs_container, "Logs")
         
-        # Setup log capture - DÉSACTIVÉ car cause "Unhandled Python exception"
-        # Une meilleure approche serait d'utiliser logging module avec handlers personnalisés
-        # Pour l'instant, les logs s'affichent seulement dans le terminal
+        # Setup log capture to redirect stdout/stderr to logs_text AND terminal
+        try:
+            self.log_capture = LogCapture(self.logs_text)
+            sys.stdout = self.log_capture
+            sys.stderr = self.log_capture
+            print("✅ Log capture activé - les messages s'affichent ici et dans le terminal")
+        except Exception as e:
+            print(f"⚠️ Erreur initialisation LogCapture: {e}")
 
         # Build analyze tab UI
         self.setup_ui()
@@ -456,7 +475,7 @@ class MainWindow(QMainWindow):
         self.merged_table.setMinimumHeight(600)
         self.merged_table.setSizePolicy(QSizePolicy.Expanding, QSizePolicy.Expanding)
         merged_columns = [
-        'Symbole','Signal','Score','Prix','Tendance','RSI','Volume moyen','Domaine','DomaineOriginal','Cap Range',
+        'Symbole','Signal','Score','Prix','Tendance','RSI','Volume moyen','Domaine','Cap Range','Score/Seuil',
         'Fiabilite (%)','Nb Trades','Gagnants',
         # COLONNES FINANCIÈRES
         'Rev. Growth (%)','EBITDA Yield (%)','FCF Yield (%)','D/E Ratio','Market Cap (B$)',
@@ -1556,8 +1575,53 @@ class MainWindow(QMainWindow):
                 self.merged_table.setItem(row, 6, item)
 
                 self.merged_table.setItem(row, 7, QTableWidgetItem(str(signal.get('Domaine', ''))))
+
                 self.merged_table.setItem(row, 8, QTableWidgetItem(str(signal.get('CapRange', ''))))
 
+                
+                # Score/Seuil ratio (dynamique selon domaine_cap et signe du score)
+                score_val = safe_float(signal.get('Score', 0.0))
+                domaine = str(signal.get('Domaine', ''))
+                cap_range = str(signal.get('CapRange', ''))
+                
+                # Récupérer les seuils optimisés pour domaine_cap
+                seuil_achat = 4.2  # Défaut
+                seuil_vente = 4.2  # Défaut
+                try:
+                    best_params_all = getattr(self, 'best_parameters', {})
+                    param_key = None
+                    # Chercher d'abord domaine_cap
+                    if cap_range and cap_range != "Unknown":
+                        test_key = f"{domaine}_{cap_range}"
+                        if test_key in best_params_all:
+                            param_key = test_key
+                    # Sinon fallback sur domaine seul
+                    if not param_key and domaine in best_params_all:
+                        param_key = domaine
+                    
+                    if param_key and param_key in best_params_all:
+                        params = best_params_all[param_key]
+                        if len(params) > 2 and params[2]:
+                            globals_th = params[2]
+                            if isinstance(globals_th, (tuple, list)) and len(globals_th) >= 2:
+                                seuil_achat = float(globals_th[0])
+                                seuil_vente = float(globals_th[1])
+                except Exception:
+                    pass
+                
+                # Calculer le ratio selon le signe du score
+                if score_val > 0:
+                    ratio = score_val / seuil_achat if seuil_achat != 0 else 0.0
+                elif score_val < 0:
+                    ratio = score_val / seuil_vente if seuil_vente != 0 else 0.0
+                else:
+                    ratio = 0.0
+                
+                item = QTableWidgetItem(f"{ratio:.2f}")
+                item.setData(Qt.EditRole, ratio)
+                self.merged_table.setItem(row, 9, item)
+                
+                
                 # Fiabilite and NbTrades (from signal or backtest)
                 fiab = signal.get('Fiabilite')
                 nb_trades = signal.get('NbTrades')
@@ -1583,71 +1647,71 @@ class MainWindow(QMainWindow):
                 item = QTableWidgetItem(fiab_text)
                 if fiab_val is not None:
                     item.setData(Qt.EditRole, fiab_val)
-                self.merged_table.setItem(row, 9, item)
+                self.merged_table.setItem(row, 10, item)
 
                 # NbTrades
                 nb_int = safe_int(nb_trades, 0)
                 item = QTableWidgetItem(str(nb_int))
                 item.setData(Qt.EditRole, nb_int)
-                self.merged_table.setItem(row, 10, item)
+                self.merged_table.setItem(row, 11, item)
 
                 # Gagnants
                 gagnants = int(bt.get('gagnants', 0)) if bt else 0
                 item = QTableWidgetItem(str(gagnants))
                 item.setData(Qt.EditRole, gagnants)
-                self.merged_table.setItem(row, 11, item)
+                self.merged_table.setItem(row, 12, item)
                 
                 # Colonnes Financières simples
                 # Colonne 12: Rev. Growth (%)
                 rev_growth = safe_float(signal.get('Rev. Growth (%)', 0.0))
                 item = QTableWidgetItem(f"{rev_growth:.2f}")
                 item.setData(Qt.EditRole, rev_growth)
-                self.merged_table.setItem(row, 12, item)
+                self.merged_table.setItem(row, 13, item)
 
                 # Colonne 12: EBITDA Yield (%)
                 ebitda = safe_float(signal.get('EBITDA Yield (%)', 0.0))
                 item = QTableWidgetItem(f"{ebitda:.2f}")
                 item.setData(Qt.EditRole, ebitda)
-                self.merged_table.setItem(row, 13, item)
+                self.merged_table.setItem(row, 14, item)
 
                 # Colonne 14: FCF Yield (%)
                 fcf = safe_float(signal.get('FCF Yield (%)', 0.0))
                 item = QTableWidgetItem(f"{fcf:.2f}")
                 item.setData(Qt.EditRole, fcf)
-                self.merged_table.setItem(row, 14, item)
+                self.merged_table.setItem(row, 15, item)
 
                 # Colonne 15: D/E Ratio
                 de_ratio = safe_float(signal.get('D/E Ratio', 0.0))
                 item = QTableWidgetItem(f"{de_ratio:.2f}")
                 item.setData(Qt.EditRole, de_ratio)
-                self.merged_table.setItem(row, 15, item)
+                self.merged_table.setItem(row, 16, item)
 
                 # Colonne 16: Market Cap (B$)
                 market_cap = safe_float(signal.get('Market Cap (B$)', 0.0))
                 item = QTableWidgetItem(f"{market_cap:.2f}")
                 item.setData(Qt.EditRole, market_cap)
-                self.merged_table.setItem(row, 16, item)
+                self.merged_table.setItem(row, 17, item)
 
                 # Derivatives (colonnes 17-20)
                 dprice = safe_float(signal.get('dPrice', 0.0))
                 item = QTableWidgetItem(f"{dprice:.3f}")
                 item.setData(Qt.EditRole, dprice)
-                self.merged_table.setItem(row, 17, item)
+                self.merged_table.setItem(row, 18, item)
 
                 dmacd = safe_float(signal.get('dMACD', 0.0))
                 item = QTableWidgetItem(f"{dmacd:.3f}")
                 item.setData(Qt.EditRole, dmacd)
-                self.merged_table.setItem(row, 18, item)
+                self.merged_table.setItem(row, 19, item)
 
                 drsi = safe_float(signal.get('dRSI', 0.0))
                 item = QTableWidgetItem(f"{drsi:.3f}")
                 item.setData(Qt.EditRole, drsi)
-                self.merged_table.setItem(row, 19, item)
+                self.merged_table.setItem(row, 20, item)
 
                 dvol = safe_float(signal.get('dVolRel', 0.0))
                 item = QTableWidgetItem(f"{dvol:.3f}")
                 item.setData(Qt.EditRole, dvol)
-                self.merged_table.setItem(row, 20, item)
+                self.merged_table.setItem(row, 21, item)
 
                 # Backtest metrics (if available)
                 # Colonnes 21-22 pour Gain total et Gain moyen
@@ -1658,15 +1722,18 @@ class MainWindow(QMainWindow):
 
                 item = QTableWidgetItem(f"{gain_total:.2f}")
                 item.setData(Qt.EditRole, gain_total)
-                self.merged_table.setItem(row, 21, item)
+                self.merged_table.setItem(row, 22, item)
 
                 item = QTableWidgetItem(f"{gain_moy:.2f}")
                 item.setData(Qt.EditRole, gain_moy)
-                self.merged_table.setItem(row, 22, item)
+                self.merged_table.setItem(row, 23, item)
 
-                # Consensus (text column at index 23)
+                # Consensus (text column at index 24)
                 consensus = signal.get('Consensus', 'N/A')
-                self.merged_table.setItem(row, 23, QTableWidgetItem(str(consensus)))
+                # Debug: vérifier si le Consensus existe vraiment
+                if row == 0:  # Afficher seulement pour la première ligne
+                    print(f"🔍 DEBUG Consensus - Symbol: {signal.get('Symbole')}, Consensus value: '{consensus}'")
+                self.merged_table.setItem(row, 24, QTableWidgetItem(str(consensus)))
 
                 # item = QTableWidgetItem(f"{drawdown:.2f}")
                 # item.setData(Qt.EditRole, drawdown)
@@ -1675,7 +1742,12 @@ class MainWindow(QMainWindow):
             except Exception:
                 continue
         
-        # Mettre à jour l'onglet Comparaisons après remplissage de la table (optionnel, peut être désactivé si problématique)
+        # Mettre à jour les onglets Graphiques et Comparaisons après remplissage de la table
+        try:
+            self.populate_charts_tab()
+        except Exception as e:
+            print(f"⚠️ Erreur lors de la mise à jour de l'onglet Graphiques: {e}")
+        
         try:
             self.populate_comparisons_tab()
         except Exception as e:
@@ -1907,22 +1979,20 @@ class MainWindow(QMainWindow):
             
             for row in range(self.merged_table.rowCount()):
                 try:
-                    # Colonne 7: Domaine, Colonne 8: DomaineOriginal
+                    # Colonne 7: Domaine
                     domaine_item = self.merged_table.item(row, 7)
-                    domaine_orig_item = self.merged_table.item(row, 8)
-                    domaine = (domaine_orig_item.text() if domaine_orig_item and domaine_orig_item.text().strip() 
-                              else domaine_item.text() if domaine_item else 'Inconnu')
+                    domaine = domaine_item.text() if domaine_item and domaine_item.text().strip() else 'Inconnu'
                     
-                    # Colonne 10: Nb Trades
-                    trades_item = self.merged_table.item(row, 10)
+                    # Colonne 11: Nb Trades
+                    trades_item = self.merged_table.item(row, 11)
                     nb_trades = int(trades_item.data(Qt.EditRole)) if trades_item and trades_item.data(Qt.EditRole) is not None else 0
                     
-                    # Colonne 11: Gagnants
-                    gagnants_item = self.merged_table.item(row, 11)
+                    # Colonne 12: Gagnants
+                    gagnants_item = self.merged_table.item(row, 12)
                     gagnants = int(gagnants_item.data(Qt.EditRole)) if gagnants_item and gagnants_item.data(Qt.EditRole) is not None else 0
                     
-                    # Colonne 21: Gain total ($)
-                    gain_item = self.merged_table.item(row, 21)
+                    # Colonne 22: Gain total ($)
+                    gain_item = self.merged_table.item(row, 22)
                     gain = float(gain_item.data(Qt.EditRole)) if gain_item and gain_item.data(Qt.EditRole) is not None else 0.0
                     
                     if domaine not in domain_stats:
@@ -1963,24 +2033,23 @@ class MainWindow(QMainWindow):
             traceback.print_exc()
             return {'global': {}, 'by_domain': {}}
     
-    def populate_comparisons_tab(self):
-        """Génère les graphiques de comparaison par domaine dans l'onglet Comparaisons (sans tableau)."""
+    def populate_charts_tab(self):
+        """Génère les graphiques de comparaison par domaine dans l'onglet Graphiques."""
         try:
-            # Nettoyer l'onglet précédent
-            while self.comparisons_layout.count() > 0:
-                widget = self.comparisons_layout.takeAt(0).widget()
+            # Nettoyer l'onglet Graphiques
+            while self.charts_scroll_layout.count() > 0:
+                widget = self.charts_scroll_layout.takeAt(0).widget()
                 if widget:
                     widget.deleteLater()
             
             stats = self.compute_domain_stats()
             if not stats['by_domain']:
-                self.comparisons_layout.addWidget(QLabel("Aucun résultat à comparer. Analysez d'abord des symboles."))
+                self.charts_scroll_layout.addWidget(QLabel("Aucun résultat à afficher. Analysez d'abord des symboles."))
                 return
             
             # Titre + résumé global compact (sur une seule ligne)
             title = QLabel("📊 Analyse par domaine")
             title.setStyleSheet("font-weight: bold; font-size: 12px;")
-            self.comparisons_layout.addWidget(title)
             
             global_info = stats['global']
             summary_text = (
@@ -1988,7 +2057,6 @@ class MainWindow(QMainWindow):
             )
             summary_label = QLabel(summary_text)
             summary_label.setStyleSheet("background-color: #f0f0f0; padding: 6px; border-radius: 4px; font-size: 10px;")
-            self.comparisons_layout.addWidget(summary_label)
             
             # Graphiques matplotlib (sans tableau textuel)
             from matplotlib.figure import Figure
@@ -2000,7 +2068,19 @@ class MainWindow(QMainWindow):
             trades_list = [stats['by_domain'][d]['trades'] for d in domains]
             gain_list = [stats['by_domain'][d]['gain'] for d in domains]
             
-            # Créer figure avec 3 subplots
+            # Compter le nombre de symboles par domaine
+            symbols_per_domain = {}
+            for row in range(self.merged_table.rowCount()):
+                try:
+                    domaine_item = self.merged_table.item(row, 7)
+                    domaine = domaine_item.text() if domaine_item else 'Inconnu'
+                    symbols_per_domain[domaine] = symbols_per_domain.get(domaine, 0) + 1
+                except Exception:
+                    continue
+            
+            symbols_list = [symbols_per_domain.get(d, 0) for d in domains]
+            
+            # Créer figure avec 4 subplots
             fig = Figure(figsize=(14, 9), dpi=100)
             
             # Subplot 1: Bar chart taux de réussite
@@ -2035,23 +2115,715 @@ class MainWindow(QMainWindow):
             for i, v in enumerate(gain_list):
                 ax3.text(i, v + (5 if v > 0 else -10), f'${v:.0f}', ha='center', fontsize=9)
             
-            # Subplot 4: Pie chart distribution trades
+            # Subplot 4: Pie chart distribution symboles par domaine
             ax4 = fig.add_subplot(2, 2, 4)
-            if sum(trades_list) > 0:
-                ax4.pie(trades_list, labels=domains, autopct='%1.1f%%', startangle=90)
-                ax4.set_title('Distribution des trades', fontweight='bold')
+            if sum(symbols_list) > 0:
+                ax4.pie(symbols_list, labels=domains, autopct='%1.1f%%', startangle=90)
+                ax4.set_title('Distribution des symboles par domaine', fontweight='bold')
             
             fig.tight_layout()
             canvas = FigureCanvas(fig)
-            self.comparisons_layout.addWidget(canvas)
             
-            # Ajouter stretch pour éviter que les éléments restent en haut
+            # Ajouter à l'onglet Graphiques
+            self.charts_scroll_layout.addWidget(title)
+            self.charts_scroll_layout.addWidget(summary_label)
+            self.charts_scroll_layout.addWidget(canvas)
+            self.charts_scroll_layout.addStretch()
+            
+        except Exception as e:
+            print(f"❌ Erreur populate_charts_tab: {e}")
+            import traceback
+            traceback.print_exc()
+    
+    def populate_comparisons_tab(self):
+        """Onglet Comparaisons: permet de sélectionner jusqu'à 15 symboles et les comparer."""
+        try:
+            # Nettoyer l'onglet Comparaisons
+            while self.comparisons_layout.count() > 0:
+                widget = self.comparisons_layout.takeAt(0).widget()
+                if widget:
+                    widget.deleteLater()
+            
+            # Titre
+            title = QLabel("📊 Comparaison personnalisée de symboles (max 15)")
+            title.setStyleSheet("font-weight: bold; font-size: 12px;")
+            self.comparisons_layout.addWidget(title)
+            
+            # Récupérer tous les symboles disponibles
+            all_symbols = []
+            for row in range(self.merged_table.rowCount()):
+                try:
+                    sym = self.merged_table.item(row, 0).text()
+                    if sym:
+                        all_symbols.append(sym)
+                except Exception:
+                    continue
+            
+            if not all_symbols:
+                self.comparisons_layout.addWidget(QLabel("Aucun symbole disponible pour la comparaison."))
+                return
+            
+            # Conteneur de sélection avec scroll
+            selection_container = QWidget()
+            selection_layout = QVBoxLayout(selection_container)
+            
+            # Label pour sélection
+            select_label = QLabel("✓ Sélectionnez jusqu'à 15 symboles:")
+            select_label.setStyleSheet("font-weight: bold; font-size: 10px;")
+            selection_layout.addWidget(select_label)
+            
+            # Sélecteur de date pour comparaison historique
+            date_container = QWidget()
+            date_layout = QHBoxLayout(date_container)
+            date_label = QLabel("📅 Date de référence (optionnel):")
+            date_label.setStyleSheet("font-size: 10px;")
+            
+            from PyQt5.QtWidgets import QDateEdit
+            from PyQt5.QtCore import QDate
+            self.comparison_date_edit = QDateEdit()
+            self.comparison_date_edit.setCalendarPopup(True)
+            self.comparison_date_edit.setDate(QDate.currentDate())
+            self.comparison_date_edit.setMaximumDate(QDate.currentDate())
+            self.comparison_date_edit.setMinimumDate(QDate(2020, 1, 1))
+            self.comparison_date_edit.setDisplayFormat("dd/MM/yyyy")
+            
+            self.use_historical_check = QCheckBox("Comparer avec données historiques")
+            self.use_historical_check.setToolTip("Analyser les symboles à la date sélectionnée et voir l'évolution réelle depuis")
+            
+            date_layout.addWidget(date_label)
+            date_layout.addWidget(self.comparison_date_edit)
+            date_layout.addWidget(self.use_historical_check)
+            date_layout.addStretch()
+            selection_layout.addWidget(date_container)
+            
+            # Scroll area pour les checkboxes
+            scroll = QScrollArea()
+            scroll.setWidgetResizable(True)
+            scroll.setMaximumHeight(120)
+            checkbox_container = QWidget()
+            checkbox_layout = QHBoxLayout(checkbox_container)
+            
+            # Créer les checkboxes
+            checkboxes = {}
+            for sym in sorted(all_symbols):
+                cb = QCheckBox(sym)
+                checkboxes[sym] = cb
+                checkbox_layout.addWidget(cb)
+            
+            scroll.setWidget(checkbox_container)
+            selection_layout.addWidget(scroll)
+            
+            # Boutons d'action
+            button_layout = QHBoxLayout()
+            compare_btn = QPushButton("Comparer les symboles sélectionnés")
+            compare_btn.setStyleSheet("background-color: #4CAF50; color: white; font-weight: bold;")
+            reset_btn = QPushButton("Réinitialiser")
+            reset_btn.setStyleSheet("background-color: #f44336; color: white;")
+            
+            button_layout.addWidget(compare_btn)
+            button_layout.addWidget(reset_btn)
+            selection_layout.addLayout(button_layout)
+            
+            self.comparisons_layout.addWidget(selection_container)
+            
+            # Zone de résultats de comparaison (initialement vide)
+            results_scroll = QScrollArea()
+            results_scroll.setWidgetResizable(True)
+            self.comparison_results = QWidget()
+            self.comparison_results_layout = QVBoxLayout(self.comparison_results)
+            results_scroll.setWidget(self.comparison_results)
+            
+            self.comparisons_layout.addWidget(results_scroll)
             self.comparisons_layout.addStretch()
+            
+            # Connexions des boutons
+            def on_compare():
+                selected = [sym for sym, cb in checkboxes.items() if cb.isChecked()]
+                if not selected:
+                    QMessageBox.warning(self, "Erreur", "Sélectionnez au moins 1 symbole pour comparer")
+                    return
+                if len(selected) > 15:
+                    QMessageBox.warning(self, "Erreur", "Maximum 15 symboles à la fois")
+                    return
+                
+                # Nettoyer les résultats précédents
+                while self.comparison_results_layout.count() > 0:
+                    w = self.comparison_results_layout.takeAt(0).widget()
+                    if w:
+                        w.deleteLater()
+                
+                # Check if historical comparison requested
+                use_historical = self.use_historical_check.isChecked()
+                if use_historical:
+                    selected_date = self.comparison_date_edit.date()
+                    historical_date_str = selected_date.toString("yyyy-MM-dd")
+                    self._generate_historical_comparison_table(selected, historical_date_str)
+                else:
+                    # Générer le tableau comparatif
+                    self._generate_comparison_table(selected)
+            
+            def on_reset():
+                for cb in checkboxes.values():
+                    cb.setChecked(False)
+                while self.comparison_results_layout.count() > 0:
+                    w = self.comparison_results_layout.takeAt(0).widget()
+                    if w:
+                        w.deleteLater()
+            
+            compare_btn.clicked.connect(on_compare)
+            reset_btn.clicked.connect(on_reset)
+            
         except Exception as e:
             print(f"❌ Erreur populate_comparisons_tab: {e}")
             import traceback
             traceback.print_exc()
-            self.comparisons_layout.addWidget(QLabel(f"Erreur lors du rendu des graphiques: {e}"))
+    
+    def _generate_comparison_table(self, symbols_to_compare):
+        """Génère un tableau comparatif pour les symboles sélectionnés avec classement par pertinence."""
+        try:
+            # Récupérer les données pour chaque symbole
+            symbols_data = {}
+            for row in range(self.merged_table.rowCount()):
+                try:
+                    sym = self.merged_table.item(row, 0).text()
+                    if sym in symbols_to_compare:
+                        score = float(self.merged_table.item(row, 2).text()) if self.merged_table.item(row, 2) else 0.0
+                        prix = float(self.merged_table.item(row, 3).text()) if self.merged_table.item(row, 3) else 0.0
+                        rsi = float(self.merged_table.item(row, 5).text()) if self.merged_table.item(row, 5) else 0.0
+                        domaine = self.merged_table.item(row, 7).text() if self.merged_table.item(row, 7) else 'N/A'
+                        score_seuil = float(self.merged_table.item(row, 9).text()) if self.merged_table.item(row, 9) else 0.0
+                        fiab_text = self.merged_table.item(row, 10).text() if self.merged_table.item(row, 10) else 'N/A'
+                        fiab = float(fiab_text.replace('%', '')) if fiab_text != 'N/A' else 0.0
+                        trades = int(self.merged_table.item(row, 11).text()) if self.merged_table.item(row, 11) else 0
+                        gagnants = int(self.merged_table.item(row, 12).text()) if self.merged_table.item(row, 12) else 0
+                        gain = float(self.merged_table.item(row, 22).text()) if self.merged_table.item(row, 22) else 0.0
+                        consensus = self.merged_table.item(row, 24).text() if self.merged_table.item(row, 24) else 'N/A'
+                        
+                        symbols_data[sym] = {
+                            'Score': score,
+                            'Prix': prix,
+                            'RSI': rsi,
+                            'Domaine': domaine,
+                            'Score/Seuil': score_seuil,
+                            'Fiabilité (%)': fiab,
+                            'Nb Trades': trades,
+                            'Gagnants': gagnants,
+                            'Gain ($)': gain,
+                            'Consensus': consensus
+                        }
+                except Exception:
+                    continue
+            
+            # Calculer un score de pertinence pour chaque symbole
+            pertinence_scores = {}
+            for sym, data in symbols_data.items():
+                # Score de pertinence = combinaison pondérée des métriques
+                # Facteurs: Score/Seuil (30%), Fiabilité (30%), Gain (20%), RSI (10%), Consensus (10%)
+                score_factor = min(data['Score/Seuil'], 2.0) * 30  # Max 60 points
+                fiab_factor = data['Fiabilité (%)'] * 0.3  # Max 30 points
+                gain_factor = min(max(data['Gain ($)'] / 100, 0), 2) * 10  # Max 20 points
+                rsi_factor = abs(50 - data['RSI']) * 0.2  # Proche de 50 = meilleur
+                consensus_factor = 5 if data['Consensus'] != 'N/A' else 0
+                
+                pertinence = score_factor + fiab_factor + gain_factor + rsi_factor + consensus_factor
+                pertinence_scores[sym] = pertinence
+            
+            # Classer par pertinence (décroissant)
+            sorted_symbols = sorted(symbols_data.keys(), key=lambda x: pertinence_scores[x], reverse=True)
+            
+            # Créer un tableau QTableWidget pour afficher la comparaison
+            table = QTableWidget()
+            columns = ['Rang', 'Symbole', 'Domaine', 'Score', 'Score/Seuil', 'Fiabilité (%)', 'Nb Trades', 
+                      'Gagnants', 'RSI', 'Prix', 'Gain ($)', 'Consensus', 'Pertinence']
+            table.setColumnCount(len(columns))
+            table.setHorizontalHeaderLabels(columns)
+            table.horizontalHeader().setSectionResizeMode(QHeaderView.ResizeToContents)
+            
+            # Remplir le tableau
+            for rank, sym in enumerate(sorted_symbols, 1):
+                data = symbols_data[sym]
+                pertinence = pertinence_scores[sym]
+                
+                row = table.rowCount()
+                table.insertRow(row)
+                
+                # Rang
+                item = QTableWidgetItem(str(rank))
+                item.setBackground(Qt.green if rank == 1 else Qt.lightGray if rank == 2 else Qt.white)
+                table.setItem(row, 0, item)
+                
+                # Symbole
+                table.setItem(row, 1, QTableWidgetItem(sym))
+                
+                # Domaine
+                table.setItem(row, 2, QTableWidgetItem(data['Domaine']))
+                
+                # Score
+                item = QTableWidgetItem(f"{data['Score']:.2f}")
+                item.setData(Qt.EditRole, data['Score'])
+                table.setItem(row, 3, item)
+                
+                # Score/Seuil
+                item = QTableWidgetItem(f"{data['Score/Seuil']:.2f}")
+                item.setData(Qt.EditRole, data['Score/Seuil'])
+                table.setItem(row, 4, item)
+                
+                # Fiabilité
+                item = QTableWidgetItem(f"{data['Fiabilité (%)']:.1f}%")
+                item.setData(Qt.EditRole, data['Fiabilité (%)'])
+                table.setItem(row, 5, item)
+                
+                # Nb Trades
+                item = QTableWidgetItem(str(data['Nb Trades']))
+                item.setData(Qt.EditRole, data['Nb Trades'])
+                table.setItem(row, 6, item)
+                
+                # Gagnants
+                item = QTableWidgetItem(str(data['Gagnants']))
+                item.setData(Qt.EditRole, data['Gagnants'])
+                table.setItem(row, 7, item)
+                
+                # RSI
+                item = QTableWidgetItem(f"{data['RSI']:.1f}")
+                item.setData(Qt.EditRole, data['RSI'])
+                table.setItem(row, 8, item)
+                
+                # Prix
+                item = QTableWidgetItem(f"${data['Prix']:.2f}")
+                item.setData(Qt.EditRole, data['Prix'])
+                table.setItem(row, 9, item)
+                
+                # Gain
+                color = Qt.green if data['Gain ($)'] > 0 else Qt.red if data['Gain ($)'] < 0 else Qt.white
+                item = QTableWidgetItem(f"${data['Gain ($)']:.2f}")
+                item.setData(Qt.EditRole, data['Gain ($)'])
+                item.setBackground(color)
+                table.setItem(row, 10, item)
+                
+                # Consensus
+                table.setItem(row, 11, QTableWidgetItem(data['Consensus']))
+                
+                # Pertinence
+                item = QTableWidgetItem(f"{pertinence:.1f}")
+                item.setData(Qt.EditRole, pertinence)
+                item.setBackground(Qt.yellow)
+                table.setItem(row, 12, item)
+            
+            table.setSortingEnabled(True)
+            table.setMinimumHeight(300)
+            
+            # Ajouter un résumé
+            summary = QLabel(f"📊 Comparaison de {len(sorted_symbols)} symbole(s) | 🥇 Meilleur: {sorted_symbols[0]} (Pertinence: {pertinence_scores[sorted_symbols[0]]:.1f})")
+            summary.setStyleSheet("background-color: #e3f2fd; padding: 6px; border-radius: 4px; font-weight: bold;")
+            
+            self.comparison_results_layout.addWidget(summary)
+            self.comparison_results_layout.addWidget(table)
+            
+        except Exception as e:
+            print(f"❌ Erreur _generate_comparison_table: {e}")
+            import traceback
+            traceback.print_exc()
+            error_label = QLabel(f"Erreur: {e}")
+            self.comparison_results_layout.addWidget(error_label)
+    
+    def _generate_historical_comparison_table(self, symbols_to_compare, historical_date):
+        """
+        Génère un tableau de comparaison historique avec analyse complète.
+        Télécharge intelligemment 18 mois de données pour le backtest annuel.
+        Évite les retéléchargements en utilisant un cache intelligent.
+        """
+        try:
+            from datetime import datetime, timedelta
+            import pandas as pd
+            import yfinance as yf
+            from pathlib import Path
+            
+            # Créer un répertoire pour le cache historique
+            cache_dir = Path("data_cache/historical")
+            cache_dir.mkdir(parents=True, exist_ok=True)
+            
+            # Afficher le chargement
+            loading_label = QLabel(f"⏳ Téléchargement intelligent des données (18 mois) pour {historical_date}...")
+            loading_label.setStyleSheet("font-size: 11px; color: blue; padding: 10px;")
+            self.comparison_results_layout.addWidget(loading_label)
+            QApplication.processEvents()
+            
+            # Convertir la date
+            target_date = datetime.strptime(historical_date, "%Y-%m-%d")
+            today = datetime.now()
+            
+            # Vérifier que c'est une date passée
+            if target_date >= today:
+                QMessageBox.warning(self, "Erreur", "Veuillez sélectionner une date passée")
+                loading_label.deleteLater()
+                return
+            
+            # Période à télécharger : 18 mois avant la date cible
+            # (12 mois de backtest + 6 mois pour les indicateurs)
+            dl_start_date = target_date - timedelta(days=550)  # ~18 mois
+            dl_end_date = target_date + timedelta(days=1)  # Inclure la date cible
+            
+            # Stocker les données historiques et actuelles
+            historical_data = {}
+            actual_performance = {}
+            
+            # Fonction interne pour gérer le cache intelligent
+            def get_or_download_data(symbol, start, end):
+                """Récupère du cache ou télécharge avec gestion intelligente"""
+                cache_file = cache_dir / f"{symbol}_hist.pkl"
+                
+                # Vérifier si le cache existe et est suffisamment complet
+                if cache_file.exists():
+                    try:
+                        cached_df = pd.read_pickle(cache_file)
+                        cached_meta = cache_dir / f"{symbol}_hist_meta.txt"
+                        
+                        # Vérifier les metadata (période couverte)
+                        if cached_meta.exists():
+                            with open(cached_meta, 'r') as f:
+                                meta = f.read().strip()
+                                cached_start, cached_end = meta.split('|')
+                                cached_start = datetime.strptime(cached_start, "%Y-%m-%d")
+                                cached_end = datetime.strptime(cached_end, "%Y-%m-%d")
+                                
+                                # Si le cache couvre la période requise
+                                if cached_start <= start and cached_end >= end:
+                                    print(f"✓ Cache valide pour {symbol}")
+                                    return cached_df
+                    except Exception as e:
+                        print(f"⚠️ Erreur lecture cache {symbol}: {e}")
+                
+                # Télécharger les données manquantes
+                print(f"📥 Téléchargement {symbol} ({start.strftime('%Y-%m-%d')} à {end.strftime('%Y-%m-%d')})")
+                try:
+                    df = yf.download(
+                        symbol, 
+                        start=start.strftime("%Y-%m-%d"), 
+                        end=end.strftime("%Y-%m-%d"), 
+                        progress=False,
+                        timeout=30
+                    )
+                    
+                    if not df.empty:
+                        # Sauvegarder en cache avec metadata
+                        df.to_pickle(cache_file)
+                        with open(cache_dir / f"{symbol}_hist_meta.txt", 'w') as f:
+                            f.write(f"{start.strftime('%Y-%m-%d')}|{end.strftime('%Y-%m-%d')}")
+                        print(f"💾 Cache sauvegardé pour {symbol}")
+                        return df
+                except Exception as e:
+                    print(f"❌ Erreur téléchargement {symbol}: {e}")
+                    return None
+                
+                return None
+            
+            # Télécharger les données pour tous les symboles
+            for idx, symbol in enumerate(symbols_to_compare):
+                try:
+                    # Mettre à jour le label de progression
+                    loading_label.setText(
+                        f"⏳ Traitement {symbol} ({idx+1}/{len(symbols_to_compare)}) - "
+                        f"Téléchargement intelligent..."
+                    )
+                    QApplication.processEvents()
+                    
+                    # Récupérer/télécharger les données
+                    df = get_or_download_data(symbol, dl_start_date, dl_end_date)
+                    
+                    if df is None or df.empty:
+                        print(f"⚠️ Pas de données pour {symbol}")
+                        continue
+                    
+                    # Normaliser l'index
+                    if df.index.name is None or df.index.name != 'Date':
+                        df = df.reset_index()
+                        if 'Date' in df.columns:
+                            df['Date'] = pd.to_datetime(df['Date'])
+                            df.set_index('Date', inplace=True)
+                    
+                    df.index = df.index.tz_localize(None) if df.index.tz is not None else df.index
+                    
+                    # Trouver le prix à la date cible (ou le plus proche)
+                    closest_date = df.index[df.index <= target_date].max() if any(df.index <= target_date) else None
+                    
+                    if closest_date is None:
+                        print(f"⚠️ Pas de données pour {symbol} avant {historical_date}")
+                        continue
+                    
+                    # Données à la date historique et aujourd'hui
+                    historical_price = df.loc[closest_date]['Close']
+                    current_price = df.iloc[-1]['Close']
+                    
+                    # Calculer la performance réelle (%)
+                    performance_pct = ((current_price - historical_price) / historical_price) * 100
+                    
+                    # Historique jusqu'à la date cible
+                    historical_idx = df.index.get_loc(closest_date)
+                    hist_df = df.iloc[:historical_idx+1].copy()
+                    
+                    # === CALCUL DES INDICATEURS À LA DATE HISTORIQUE ===
+                    
+                    # 1. RSI (14 jours)
+                    hist_rsi = self._calculate_rsi(hist_df['Close'], period=14)
+                    
+                    # 2. MACD
+                    hist_macd = self._calculate_macd(hist_df['Close'])
+                    
+                    # 3. Bandes de Bollinger (20 jours)
+                    hist_bb = self._calculate_bollinger_bands(hist_df['Close'], period=20)
+                    
+                    # 4. Volume Relatif (20 jours)
+                    if len(hist_df) >= 20:
+                        avg_vol = hist_df['Volume'].rolling(window=20).mean().iloc[-1]
+                        current_vol = hist_df['Volume'].iloc[-1]
+                        vol_rel = (current_vol / avg_vol) if avg_vol > 0 else 1.0
+                    else:
+                        vol_rel = 1.0
+                    
+                    # 5. Tendance de prix (30 jours)
+                    if len(hist_df) >= 30:
+                        price_trend = hist_df['Close'].iloc[-30:].pct_change().mean() * 100
+                    else:
+                        price_trend = 0.0
+                    
+                    # 6. Volatilité (20 jours)
+                    if len(hist_df) >= 20:
+                        volatility = hist_df['Close'].pct_change().rolling(window=20).std().iloc[-1] * 100
+                    else:
+                        volatility = 0.0
+                    
+                    # === CALCUL DU SCORE DE PERTINENCE HISTORIQUE ===
+                    
+                    # Score basé sur les indicateurs
+                    rsi_score = 0
+                    if hist_rsi < 30:
+                        rsi_score = 25  # Survendu (bon signal d'achat)
+                    elif hist_rsi > 70:
+                        rsi_score = 0   # Suracheté (mauvais)
+                    else:
+                        rsi_score = 15  # Neutre
+                    
+                    # Score MACD
+                    macd_score = 15 if hist_macd > 0 else 0
+                    
+                    # Score Bollinger Bands
+                    bb_score = 10 if hist_bb else 0
+                    
+                    # Score Volume
+                    vol_score = 10 if vol_rel > 1.2 else 5
+                    
+                    # Score Tendance
+                    trend_score = 15 if price_trend > 0 else 5
+                    
+                    # Score Volatilité (haute volatilité = plus d'opportunité)
+                    vol_std_score = 10 if volatility > 2.0 else 5
+                    
+                    # Score basé sur performance réelle (validation)
+                    actual_score = min(25, max(0, performance_pct / 10))  # Max 25 points
+                    
+                    # Total
+                    pertinence_score = (rsi_score + macd_score + bb_score + 
+                                       vol_score + trend_score + vol_std_score + actual_score)
+                    
+                    historical_data[symbol] = {
+                        'Date': closest_date.strftime("%Y-%m-%d"),
+                        'Prix Historique': float(historical_price),
+                        'Prix Actuel': float(current_price),
+                        'Performance (%)': float(performance_pct),
+                        'RSI': float(hist_rsi),
+                        'MACD': float(hist_macd),
+                        'Volume Rel': float(vol_rel),
+                        'Tendance (%)': float(price_trend),
+                        'Volatilité (%)': float(volatility),
+                        'Pertinence': float(pertinence_score)
+                    }
+                    
+                    actual_performance[symbol] = performance_pct
+                    
+                except Exception as e:
+                    print(f"❌ Erreur pour {symbol}: {e}")
+                    import traceback
+                    traceback.print_exc()
+                    continue
+            
+            # Supprimer le label de chargement
+            loading_label.deleteLater()
+            
+            if not historical_data:
+                error_label = QLabel("❌ Aucune donnée historique disponible pour les symboles sélectionnés")
+                error_label.setStyleSheet("color: red; padding: 10px;")
+                self.comparison_results_layout.addWidget(error_label)
+                return
+            
+            # Trier par performance réelle (meilleure performance = meilleur)
+            sorted_symbols = sorted(historical_data.keys(), key=lambda x: actual_performance[x], reverse=True)
+            
+            # Créer le tableau
+            table = QTableWidget()
+            table.setColumnCount(11)
+            table.setRowCount(len(sorted_symbols))
+            table.setHorizontalHeaderLabels([
+                'Rang', 'Symbole', 'Date', 'Prix Historique', 'Prix Actuel',
+                'Performance (%)', 'RSI', 'MACD', 'Vol. Rel', 'Volatilité (%)', 'Avis'
+            ])
+            
+            for row, symbol in enumerate(sorted_symbols):
+                data = historical_data[symbol]
+                
+                # Rang
+                item = QTableWidgetItem(str(row + 1))
+                if row == 0:
+                    item.setBackground(QColor(144, 238, 144))  # Vert pour 1er
+                elif row == 1:
+                    item.setBackground(QColor(211, 211, 211))  # Gris pour 2ème
+                table.setItem(row, 0, item)
+                
+                # Symbole
+                table.setItem(row, 1, QTableWidgetItem(symbol))
+                
+                # Date d'analyse
+                table.setItem(row, 2, QTableWidgetItem(data['Date']))
+                
+                # Prix historique
+                item = QTableWidgetItem(f"${data['Prix Historique']:.2f}")
+                item.setData(Qt.EditRole, data['Prix Historique'])
+                table.setItem(row, 3, item)
+                
+                # Prix actuel
+                item = QTableWidgetItem(f"${data['Prix Actuel']:.2f}")
+                item.setData(Qt.EditRole, data['Prix Actuel'])
+                table.setItem(row, 4, item)
+                
+                # Performance
+                perf = data['Performance (%)']
+                item = QTableWidgetItem(f"{perf:+.1f}%")
+                item.setData(Qt.EditRole, perf)
+                if perf > 0:
+                    item.setForeground(QColor(0, 128, 0))  # Vert
+                else:
+                    item.setForeground(QColor(255, 0, 0))  # Rouge
+                table.setItem(row, 5, item)
+                
+                # RSI
+                rsi = data['RSI']
+                item = QTableWidgetItem(f"{rsi:.1f}")
+                item.setData(Qt.EditRole, rsi)
+                if rsi < 30 or rsi > 70:
+                    item.setForeground(QColor(255, 140, 0))  # Orange (extrême)
+                table.setItem(row, 6, item)
+                
+                # MACD
+                macd = data['MACD']
+                item = QTableWidgetItem(f"{macd:+.4f}")
+                item.setData(Qt.EditRole, macd)
+                table.setItem(row, 7, item)
+                
+                # Volume Relatif
+                vol = data['Volume Rel']
+                item = QTableWidgetItem(f"{vol:.2f}x")
+                item.setData(Qt.EditRole, vol)
+                table.setItem(row, 8, item)
+                
+                # Volatilité
+                vol_std = data['Volatilité (%)']
+                item = QTableWidgetItem(f"{vol_std:.2f}%")
+                item.setData(Qt.EditRole, vol_std)
+                table.setItem(row, 9, item)
+                
+                # Avis (justification)
+                avis = self._generate_historical_verdict(data)
+                table.setItem(row, 10, QTableWidgetItem(avis))
+            
+            table.setSortingEnabled(True)
+            table.setMinimumHeight(350)
+            table.resizeColumnsToContents()
+            
+            # Résumé et statistiques
+            best_symbol = sorted_symbols[0]
+            best_perf = actual_performance[best_symbol]
+            worst_symbol = sorted_symbols[-1]
+            worst_perf = actual_performance[worst_symbol]
+            avg_perf = sum(actual_performance.values()) / len(actual_performance)
+            winners = sum(1 for p in actual_performance.values() if p > 0)
+            
+            summary = QLabel(
+                f"📈 Historique ({historical_date}) | "
+                f"🥇 {best_symbol} ({best_perf:+.1f}%) | "
+                f"📊 Moyenne: {avg_perf:+.1f}% | "
+                f"✓ {winners}/{len(actual_performance)} gagnants"
+            )
+            summary.setStyleSheet("background-color: #fff9c4; padding: 8px; border-radius: 4px; font-weight: bold;")
+            
+            info_label = QLabel(
+                f"💡 Analyse complète : 18 mois téléchargés intelligemment (12 mois backtest + 6 mois indicateurs). "
+                f"Le cache est utilisé pour éviter les retéléchargements. "
+                f"Les symboles sont classés par performance réelle depuis {historical_date}."
+            )
+            info_label.setWordWrap(True)
+            info_label.setStyleSheet("background-color: #e1f5fe; padding: 6px; border-radius: 4px; font-size: 9px;")
+            
+            self.comparison_results_layout.addWidget(summary)
+            self.comparison_results_layout.addWidget(info_label)
+            self.comparison_results_layout.addWidget(table)
+            
+        except Exception as e:
+            print(f"❌ Erreur _generate_historical_comparison_table: {e}")
+            import traceback
+            traceback.print_exc()
+            error_label = QLabel(f"Erreur: {e}")
+            self.comparison_results_layout.addWidget(error_label)
+    
+    def _calculate_rsi(self, prices, period=14):
+        """Calcule le RSI (Relative Strength Index)"""
+        delta = prices.diff()
+        gain = delta.where(delta > 0, 0).rolling(window=period).mean()
+        loss = -delta.where(delta < 0, 0).rolling(window=period).mean()
+        rs = gain / loss
+        rsi = 100 - (100 / (1 + rs))
+        return float(rsi.iloc[-1]) if not rsi.empty else 50.0
+    
+    def _calculate_macd(self, prices, fast=12, slow=26):
+        """Calcule le MACD (Moving Average Convergence Divergence)"""
+        ema_fast = prices.ewm(span=fast).mean()
+        ema_slow = prices.ewm(span=slow).mean()
+        macd = ema_fast - ema_slow
+        return float(macd.iloc[-1]) if not macd.empty else 0.0
+    
+    def _calculate_bollinger_bands(self, prices, period=20, num_std=2):
+        """Calcule les Bandes de Bollinger et retourne si le prix est en extrême"""
+        sma = prices.rolling(window=period).mean()
+        std = prices.rolling(window=period).std()
+        upper_band = sma + (std * num_std)
+        lower_band = sma - (std * num_std)
+        current_price = prices.iloc[-1]
+        # Retourne True si le prix touche un extrême
+        return current_price >= upper_band.iloc[-1] or current_price <= lower_band.iloc[-1]
+    
+    def _generate_historical_verdict(self, data):
+        """Génère un avis pointu basé sur les indicateurs"""
+        avis_parts = []
+        
+        rsi = data['RSI']
+        if rsi < 30:
+            avis_parts.append("↓ Survendu")
+        elif rsi > 70:
+            avis_parts.append("↑ Suracheté")
+        
+        if data['MACD'] > 0:
+            avis_parts.append("▲ MACD+")
+        else:
+            avis_parts.append("▼ MACD-")
+        
+        if data['Volume Rel'] > 1.5:
+            avis_parts.append("📈 Vol▲")
+        
+        perf = data['Performance (%)']
+        if perf > 20:
+            avis_parts.append("🚀 +20%")
+        elif perf < -10:
+            avis_parts.append("📉 -10%")
+        
+        return " | ".join(avis_parts) if avis_parts else "Neutre"
 
 
 if __name__ == "__main__":
