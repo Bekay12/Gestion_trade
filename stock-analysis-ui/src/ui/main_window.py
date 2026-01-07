@@ -161,28 +161,36 @@ class DownloadThread(QThread):
             self.error.emit(str(e))
 
 class LogCapture:
-    """Captures stdout/stderr and writes both to QTextEdit and to original stdout/stderr."""
+    """Captures stdout/stderr and writes both to QTextEdit and to original stdout/stderr.
+    Thread-safe implementation using direct append (QTextEdit is thread-safe for append)."""
     def __init__(self, text_edit):
         self.text_edit = text_edit
         self.original_stdout = sys.__stdout__
         self.original_stderr = sys.__stderr__
-        self.buffer = ""
     
     def write(self, message):
         """Write message to QTextEdit and original stdout."""
-        if message and message.strip():
-            self.buffer += message
-            # Append to QTextEdit
-            self.text_edit.append(message.rstrip())
-            # Also print to original stdout (terminal)
-            self.original_stdout.write(message)
-            self.original_stdout.flush()
+        try:
+            if message and message.strip():
+                # Append to QTextEdit (thread-safe)
+                self.text_edit.append(message.rstrip())
+                # Also print to original stdout (terminal)
+                self.original_stdout.write(message)
+                self.original_stdout.flush()
+        except Exception:
+            # Fail silently to avoid breaking print calls
+            try:
+                self.original_stdout.write(message)
+                self.original_stdout.flush()
+            except Exception:
+                pass
     
     def flush(self):
         """Flush the buffer."""
-        if self.buffer:
+        try:
             self.original_stdout.flush()
-        self.buffer = ""
+        except Exception:
+            pass
     
     def isatty(self):
         """Required for some code that checks if stdout is a TTY."""
@@ -226,7 +234,12 @@ class MainWindow(QMainWindow):
         # Tab 3: Charts (per-symbol graphs and metrics)
         self.charts_container = QWidget()
         self.charts_layout = QVBoxLayout(self.charts_container)
-        self.charts_layout.addWidget(QLabel("📊 Graphiques et analyse détaillée par symbole"))
+        self.charts_scroll = QScrollArea()
+        self.charts_scroll.setWidgetResizable(True)
+        self.charts_scroll_widget = QWidget()
+        self.charts_scroll_layout = QVBoxLayout(self.charts_scroll_widget)
+        self.charts_scroll.setWidget(self.charts_scroll_widget)
+        self.charts_layout.addWidget(self.charts_scroll)
         self.tabs.addTab(self.charts_container, "Graphiques")
 
         # Tab 4: Comparisons (multi-symbol visualizations)
@@ -245,9 +258,14 @@ class MainWindow(QMainWindow):
         self.logs_layout.addWidget(self.logs_text)
         self.tabs.addTab(self.logs_container, "Logs")
         
-        # Setup log capture - DÉSACTIVÉ car cause "Unhandled Python exception"
-        # Une meilleure approche serait d'utiliser logging module avec handlers personnalisés
-        # Pour l'instant, les logs s'affichent seulement dans le terminal
+        # Setup log capture to redirect stdout/stderr to logs_text AND terminal
+        try:
+            self.log_capture = LogCapture(self.logs_text)
+            sys.stdout = self.log_capture
+            sys.stderr = self.log_capture
+            print("✅ Log capture activé - les messages s'affichent ici et dans le terminal")
+        except Exception as e:
+            print(f"⚠️ Erreur initialisation LogCapture: {e}")
 
         # Build analyze tab UI
         self.setup_ui()
@@ -456,7 +474,7 @@ class MainWindow(QMainWindow):
         self.merged_table.setMinimumHeight(600)
         self.merged_table.setSizePolicy(QSizePolicy.Expanding, QSizePolicy.Expanding)
         merged_columns = [
-        'Symbole','Signal','Score','Prix','Tendance','RSI','Volume moyen','Domaine','Score/Seuil','Cap Range',
+        'Symbole','Signal','Score','Prix','Tendance','RSI','Volume moyen','Domaine','Cap Range','Score/Seuil',
         'Fiabilite (%)','Nb Trades','Gagnants',
         # COLONNES FINANCIÈRES
         'Rev. Growth (%)','EBITDA Yield (%)','FCF Yield (%)','D/E Ratio','Market Cap (B$)',
@@ -1556,17 +1574,53 @@ class MainWindow(QMainWindow):
                 self.merged_table.setItem(row, 6, item)
 
                 self.merged_table.setItem(row, 7, QTableWidgetItem(str(signal.get('Domaine', ''))))
+
+                self.merged_table.setItem(row, 8, QTableWidgetItem(str(signal.get('CapRange', ''))))
+
                 
-                # Score/Seuil ratio (seuil standard = 4.2)
+                # Score/Seuil ratio (dynamique selon domaine_cap et signe du score)
                 score_val = safe_float(signal.get('Score', 0.0))
-                seuil = 4.2  # Seuil standard
-                ratio = score_val / seuil if seuil > 0 else 0.0
+                domaine = str(signal.get('Domaine', ''))
+                cap_range = str(signal.get('CapRange', ''))
+                
+                # Récupérer les seuils optimisés pour domaine_cap
+                seuil_achat = 4.2  # Défaut
+                seuil_vente = 4.2  # Défaut
+                try:
+                    best_params_all = getattr(self, 'best_parameters', {})
+                    param_key = None
+                    # Chercher d'abord domaine_cap
+                    if cap_range and cap_range != "Unknown":
+                        test_key = f"{domaine}_{cap_range}"
+                        if test_key in best_params_all:
+                            param_key = test_key
+                    # Sinon fallback sur domaine seul
+                    if not param_key and domaine in best_params_all:
+                        param_key = domaine
+                    
+                    if param_key and param_key in best_params_all:
+                        params = best_params_all[param_key]
+                        if len(params) > 2 and params[2]:
+                            globals_th = params[2]
+                            if isinstance(globals_th, (tuple, list)) and len(globals_th) >= 2:
+                                seuil_achat = float(globals_th[0])
+                                seuil_vente = float(globals_th[1])
+                except Exception:
+                    pass
+                
+                # Calculer le ratio selon le signe du score
+                if score_val > 0:
+                    ratio = score_val / seuil_achat if seuil_achat != 0 else 0.0
+                elif score_val < 0:
+                    ratio = score_val / seuil_vente if seuil_vente != 0 else 0.0
+                else:
+                    ratio = 0.0
+                
                 item = QTableWidgetItem(f"{ratio:.2f}")
                 item.setData(Qt.EditRole, ratio)
-                self.merged_table.setItem(row, 8, item)
+                self.merged_table.setItem(row, 9, item)
                 
-                self.merged_table.setItem(row, 9, QTableWidgetItem(str(signal.get('CapRange', ''))))
-
+                
                 # Fiabilite and NbTrades (from signal or backtest)
                 fiab = signal.get('Fiabilite')
                 nb_trades = signal.get('NbTrades')
@@ -1974,23 +2028,22 @@ class MainWindow(QMainWindow):
             return {'global': {}, 'by_domain': {}}
     
     def populate_comparisons_tab(self):
-        """Génère les graphiques de comparaison par domaine dans l'onglet Comparaisons (sans tableau)."""
+        """Génère les graphiques de comparaison par domaine dans l'onglet Graphiques uniquement."""
         try:
-            # Nettoyer l'onglet précédent
-            while self.comparisons_layout.count() > 0:
-                widget = self.comparisons_layout.takeAt(0).widget()
+            # Nettoyer l'onglet Graphiques
+            while self.charts_scroll_layout.count() > 0:
+                widget = self.charts_scroll_layout.takeAt(0).widget()
                 if widget:
                     widget.deleteLater()
             
             stats = self.compute_domain_stats()
             if not stats['by_domain']:
-                self.comparisons_layout.addWidget(QLabel("Aucun résultat à comparer. Analysez d'abord des symboles."))
+                self.charts_scroll_layout.addWidget(QLabel("Aucun résultat à afficher. Analysez d'abord des symboles."))
                 return
             
             # Titre + résumé global compact (sur une seule ligne)
             title = QLabel("📊 Analyse par domaine")
             title.setStyleSheet("font-weight: bold; font-size: 12px;")
-            self.comparisons_layout.addWidget(title)
             
             global_info = stats['global']
             summary_text = (
@@ -1998,7 +2051,6 @@ class MainWindow(QMainWindow):
             )
             summary_label = QLabel(summary_text)
             summary_label.setStyleSheet("background-color: #f0f0f0; padding: 6px; border-radius: 4px; font-size: 10px;")
-            self.comparisons_layout.addWidget(summary_label)
             
             # Graphiques matplotlib (sans tableau textuel)
             from matplotlib.figure import Figure
@@ -2010,7 +2062,19 @@ class MainWindow(QMainWindow):
             trades_list = [stats['by_domain'][d]['trades'] for d in domains]
             gain_list = [stats['by_domain'][d]['gain'] for d in domains]
             
-            # Créer figure avec 3 subplots
+            # Compter le nombre de symboles par domaine
+            symbols_per_domain = {}
+            for row in range(self.merged_table.rowCount()):
+                try:
+                    domaine_item = self.merged_table.item(row, 7)
+                    domaine = domaine_item.text() if domaine_item else 'Inconnu'
+                    symbols_per_domain[domaine] = symbols_per_domain.get(domaine, 0) + 1
+                except Exception:
+                    continue
+            
+            symbols_list = [symbols_per_domain.get(d, 0) for d in domains]
+            
+            # Créer figure avec 4 subplots
             fig = Figure(figsize=(14, 9), dpi=100)
             
             # Subplot 1: Bar chart taux de réussite
@@ -2045,23 +2109,108 @@ class MainWindow(QMainWindow):
             for i, v in enumerate(gain_list):
                 ax3.text(i, v + (5 if v > 0 else -10), f'${v:.0f}', ha='center', fontsize=9)
             
-            # Subplot 4: Pie chart distribution trades
+            # Subplot 4: Pie chart distribution symboles par domaine
             ax4 = fig.add_subplot(2, 2, 4)
-            if sum(trades_list) > 0:
-                ax4.pie(trades_list, labels=domains, autopct='%1.1f%%', startangle=90)
-                ax4.set_title('Distribution des trades', fontweight='bold')
+            if sum(symbols_list) > 0:
+                ax4.pie(symbols_list, labels=domains, autopct='%1.1f%%', startangle=90)
+                ax4.set_title('Distribution des symboles par domaine', fontweight='bold')
+            
+            fig.tight_layout()
+            canvas = FigureCanvas(fig)
+            
+            # Ajouter UNIQUEMENT à l'onglet Graphiques
+            self.charts_scroll_layout.addWidget(title)
+            self.charts_scroll_layout.addWidget(summary_label)
+            self.charts_scroll_layout.addWidget(canvas)
+            self.charts_scroll_layout.addStretch()
+            
+        except Exception as e:
+            print(f"❌ Erreur populate_comparisons_tab: {e}")
+            import traceback
+            traceback.print_exc()
+    
+    def _populate_symbols_comparison_table(self):
+        """Crée un tableau de comparaison des caractéristiques par symbole (heatmap)."""
+        try:
+            from matplotlib.figure import Figure
+            from matplotlib.backends.backend_qt5agg import FigureCanvasQTAgg as FigureCanvas
+            import numpy as np
+            
+            # Récupérer tous les symboles et leurs données
+            symbols_data = []
+            for row in range(self.merged_table.rowCount()):
+                try:
+                    sym = self.merged_table.item(row, 0).text() if self.merged_table.item(row, 0) else 'N/A'
+                    score = float(self.merged_table.item(row, 2).text()) if self.merged_table.item(row, 2) else 0.0
+                    prix = float(self.merged_table.item(row, 3).text()) if self.merged_table.item(row, 3) else 0.0
+                    rsi = float(self.merged_table.item(row, 5).text()) if self.merged_table.item(row, 5) else 0.0
+                    domaine = self.merged_table.item(row, 7).text() if self.merged_table.item(row, 7) else 'N/A'
+                    fiab_text = self.merged_table.item(row, 10).text() if self.merged_table.item(row, 10) else 'N/A'
+                    fiab = float(fiab_text.replace('%', '')) if fiab_text != 'N/A' else 0.0
+                    gain = float(self.merged_table.item(row, 22).text()) if self.merged_table.item(row, 22) else 0.0
+                    
+                    symbols_data.append({
+                        'Symbole': sym,
+                        'Score': score,
+                        'Prix': prix,
+                        'RSI': rsi,
+                        'Domaine': domaine,
+                        'Fiabilité': fiab,
+                        'Gain': gain
+                    })
+                except Exception:
+                    continue
+            
+            if not symbols_data:
+                self.comparisons_layout.addWidget(QLabel("Aucune donnée disponible pour la comparaison."))
+                return
+            
+            # Créer une heatmap de corrélation des métriques
+            fig = Figure(figsize=(12, 8), dpi=100)
+            
+            # Extraire les données pour la heatmap
+            metrics = ['Score', 'Prix', 'RSI', 'Fiabilité', 'Gain']
+            data_matrix = []
+            symbols_list = []
+            
+            for s_data in symbols_data:
+                symbols_list.append(s_data['Symbole'])
+                data_matrix.append([
+                    s_data['Score'],
+                    s_data['Prix'] / 100,  # Normaliser le prix
+                    s_data['RSI'],
+                    s_data['Fiabilité'],
+                    s_data['Gain']
+                ])
+            
+            data_array = np.array(data_matrix)
+            
+            # Heatmap
+            ax = fig.add_subplot(111)
+            im = ax.imshow(data_array, cmap='RdYlGn', aspect='auto')
+            
+            ax.set_xticks(np.arange(len(metrics)))
+            ax.set_yticks(np.arange(len(symbols_list)))
+            ax.set_xticklabels(metrics)
+            ax.set_yticklabels(symbols_list, fontsize=9)
+            
+            ax.set_title('Comparaison des caractéristiques par symbole (heatmap)', fontweight='bold', fontsize=12)
+            fig.colorbar(im, ax=ax)
+            
+            # Ajouter les valeurs dans les cellules
+            for i in range(len(symbols_list)):
+                for j in range(len(metrics)):
+                    text = ax.text(j, i, f'{data_array[i, j]:.1f}',
+                                  ha="center", va="center", color="black", fontsize=8)
             
             fig.tight_layout()
             canvas = FigureCanvas(fig)
             self.comparisons_layout.addWidget(canvas)
             
-            # Ajouter stretch pour éviter que les éléments restent en haut
-            self.comparisons_layout.addStretch()
         except Exception as e:
-            print(f"❌ Erreur populate_comparisons_tab: {e}")
+            print(f"⚠️ Erreur _populate_symbols_comparison_table: {e}")
             import traceback
             traceback.print_exc()
-            self.comparisons_layout.addWidget(QLabel(f"Erreur lors du rendu des graphiques: {e}"))
 
 
 if __name__ == "__main__":
