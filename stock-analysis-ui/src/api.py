@@ -273,6 +273,11 @@ def analyze_symbol():
     """
     global current_analyses
     
+    # Initialiser variables pour nettoyage
+    stock_data_dict = None
+    prices = None
+    volumes = None
+    
     try:
         data = request.get_json()
         symbol = data.get('symbol', '').upper()
@@ -413,8 +418,16 @@ def analyze_symbol():
             # Nettoyage mémoire après chaque analyse
             with analysis_lock:
                 current_analyses -= 1
-            # Libérer mémoire des DataFrames
-            del stock_data_dict, prices, volumes
+            # Libérer mémoire des DataFrames (seulement si créés)
+            try:
+                if stock_data_dict is not None:
+                    del stock_data_dict
+                if prices is not None:
+                    del prices
+                if volumes is not None:
+                    del volumes
+            except:
+                pass
             gc.collect()
         
     except Exception as e:
