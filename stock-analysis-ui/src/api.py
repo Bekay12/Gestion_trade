@@ -282,6 +282,9 @@ def analyze_symbol():
         data = request.get_json()
         symbol = data.get('symbol', '').upper()
         period = data.get('period', '1mo')
+        # Optional flags to control fallbacks
+        use_domain_fallback = bool(data.get('use_domain_fallback', True))
+        use_cap_fallback = bool(data.get('use_cap_fallback', True))
         
         if not symbol:
             return jsonify({'error': 'symbol required'}), 400
@@ -322,7 +325,7 @@ def analyze_symbol():
             
             # Cap range
             cap_range = get_cap_range_for_symbol(symbol)
-            if cap_range == "Unknown" or not cap_range:
+            if use_cap_fallback and (cap_range == "Unknown" or not cap_range):
                 best_params_all = extract_best_parameters()
                 for fallback_cap in ["Large", "Mid", "Mega"]:
                     test_key = f"{domaine}_{fallback_cap}"
@@ -332,7 +335,7 @@ def analyze_symbol():
             
             # Fallback domaine
             original_domaine = domaine
-            if domaine == "Inconnu":
+            if use_domain_fallback and domaine == "Inconnu":
                 best_params_all = extract_best_parameters()
                 for fallback_sector in ["Technology", "Healthcare", "Financial Services"]:
                     if fallback_sector in best_params_all:
@@ -377,6 +380,7 @@ def analyze_symbol():
                 'tendance': 'Haussière' if trend else 'Baissière',
                 'volume_moyen': float(volume_mean) if volume_mean is not None else 0.0,
                 'domaine': original_domaine,
+                'domaine_used': domaine,
                 'cap_range': cap_range,
                 'fiabilite': float(score) if score is not None else 0.0,
                 'score': float(score) if score is not None else 0.0
