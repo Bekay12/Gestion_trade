@@ -1,0 +1,7 @@
+Symbole,Signal,Score,Prix,Tendance,RSI,Domaine,CapRange,ParamKey,Volume moyen,Consensus,ConsensusMean,dPrice,dMACD,dRSI,dVolRel,Rev. Growth (%),EBITDA Yield (%),FCF Yield (%),D/E Ratio,Market Cap (B$),Fiabilite,detection_time
+MBLY,ACHAT,7.105,12.180000305175781,Hausse,60.31,Consumer Cyclical,Mid,Consumer Cyclical_Mid,5075150.0,Neutre,,2.06,-51.35,5.86,9.3,3.7,-3.27,6.96,0.51,9.14,50.0,2026-01-07 04:13:20
+OKLO,ACHAT,6.93,95.5999984741211,Hausse,53.49,Utilities,Large,Utilities_Large,11224613.33,Achat,2.0,2.16,-5.5,3.56,10.15,0.0,-0.94,-0.33,0.14,12.16,77.77777777777779,2026-01-07 04:13:20
+NVDA,ACHAT,4.2,187.24000549316406,Hausse,52.99,Technology,Mega,Technology_Mega,178898940.0,Achat,1.32812,-0.13,16.6,-0.67,7.44,62.5,2.51,1.16,9.1,4597.93,100.0,2026-01-07 04:13:20
+MBOT,ACHAT,4.32,2.130000114440918,Baisse,46.87,Healthcare,Small,Healthcare_Small,2426240.0,Neutre,,-0.39,6.37,-0.08,3.27,0.0,-22.38,-4.49,1.15,0.14,100.0,2026-01-07 04:13:20
+NXP,ACHAT,9.39,14.100000381469727,Baisse,42.66,Financial Services,Small,Financial Services_Small,190490.0,Neutre,,-0.01,2.07,0.95,-11.54,9.1,0.0,0.0,0.0,0.73,100.0,2026-01-07 04:13:20
+MSFT,ACHAT,7.9,478.510009765625,Baisse,43.92,Technology,Mega,Technology_Mega,23489783.33,Achat,1.2807,-0.47,2.46,-3.24,12.82,18.4,4.71,1.52,33.15,3515.44,100.0,2026-01-07 04:13:20

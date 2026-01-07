@@ -456,7 +456,7 @@ class MainWindow(QMainWindow):
         self.merged_table.setMinimumHeight(600)
         self.merged_table.setSizePolicy(QSizePolicy.Expanding, QSizePolicy.Expanding)
         merged_columns = [
-        'Symbole','Signal','Score','Prix','Tendance','RSI','Volume moyen','Domaine','DomaineOriginal','Cap Range',
+        'Symbole','Signal','Score','Prix','Tendance','RSI','Volume moyen','Domaine','Score/Seuil','Cap Range',
         'Fiabilite (%)','Nb Trades','Gagnants',
         # COLONNES FINANCIÈRES
         'Rev. Growth (%)','EBITDA Yield (%)','FCF Yield (%)','D/E Ratio','Market Cap (B$)',
@@ -1556,7 +1556,16 @@ class MainWindow(QMainWindow):
                 self.merged_table.setItem(row, 6, item)
 
                 self.merged_table.setItem(row, 7, QTableWidgetItem(str(signal.get('Domaine', ''))))
-                self.merged_table.setItem(row, 8, QTableWidgetItem(str(signal.get('CapRange', ''))))
+                
+                # Score/Seuil ratio (seuil standard = 4.2)
+                score_val = safe_float(signal.get('Score', 0.0))
+                seuil = 4.2  # Seuil standard
+                ratio = score_val / seuil if seuil > 0 else 0.0
+                item = QTableWidgetItem(f"{ratio:.2f}")
+                item.setData(Qt.EditRole, ratio)
+                self.merged_table.setItem(row, 8, item)
+                
+                self.merged_table.setItem(row, 9, QTableWidgetItem(str(signal.get('CapRange', ''))))
 
                 # Fiabilite and NbTrades (from signal or backtest)
                 fiab = signal.get('Fiabilite')
@@ -1583,71 +1592,71 @@ class MainWindow(QMainWindow):
                 item = QTableWidgetItem(fiab_text)
                 if fiab_val is not None:
                     item.setData(Qt.EditRole, fiab_val)
-                self.merged_table.setItem(row, 9, item)
+                self.merged_table.setItem(row, 10, item)
 
                 # NbTrades
                 nb_int = safe_int(nb_trades, 0)
                 item = QTableWidgetItem(str(nb_int))
                 item.setData(Qt.EditRole, nb_int)
-                self.merged_table.setItem(row, 10, item)
+                self.merged_table.setItem(row, 11, item)
 
                 # Gagnants
                 gagnants = int(bt.get('gagnants', 0)) if bt else 0
                 item = QTableWidgetItem(str(gagnants))
                 item.setData(Qt.EditRole, gagnants)
-                self.merged_table.setItem(row, 11, item)
+                self.merged_table.setItem(row, 12, item)
                 
                 # Colonnes Financières simples
                 # Colonne 12: Rev. Growth (%)
                 rev_growth = safe_float(signal.get('Rev. Growth (%)', 0.0))
                 item = QTableWidgetItem(f"{rev_growth:.2f}")
                 item.setData(Qt.EditRole, rev_growth)
-                self.merged_table.setItem(row, 12, item)
+                self.merged_table.setItem(row, 13, item)
 
                 # Colonne 12: EBITDA Yield (%)
                 ebitda = safe_float(signal.get('EBITDA Yield (%)', 0.0))
                 item = QTableWidgetItem(f"{ebitda:.2f}")
                 item.setData(Qt.EditRole, ebitda)
-                self.merged_table.setItem(row, 13, item)
+                self.merged_table.setItem(row, 14, item)
 
                 # Colonne 14: FCF Yield (%)
                 fcf = safe_float(signal.get('FCF Yield (%)', 0.0))
                 item = QTableWidgetItem(f"{fcf:.2f}")
                 item.setData(Qt.EditRole, fcf)
-                self.merged_table.setItem(row, 14, item)
+                self.merged_table.setItem(row, 15, item)
 
                 # Colonne 15: D/E Ratio
                 de_ratio = safe_float(signal.get('D/E Ratio', 0.0))
                 item = QTableWidgetItem(f"{de_ratio:.2f}")
                 item.setData(Qt.EditRole, de_ratio)
-                self.merged_table.setItem(row, 15, item)
+                self.merged_table.setItem(row, 16, item)
 
                 # Colonne 16: Market Cap (B$)
                 market_cap = safe_float(signal.get('Market Cap (B$)', 0.0))
                 item = QTableWidgetItem(f"{market_cap:.2f}")
                 item.setData(Qt.EditRole, market_cap)
-                self.merged_table.setItem(row, 16, item)
+                self.merged_table.setItem(row, 17, item)
 
                 # Derivatives (colonnes 17-20)
                 dprice = safe_float(signal.get('dPrice', 0.0))
                 item = QTableWidgetItem(f"{dprice:.3f}")
                 item.setData(Qt.EditRole, dprice)
-                self.merged_table.setItem(row, 17, item)
+                self.merged_table.setItem(row, 18, item)
 
                 dmacd = safe_float(signal.get('dMACD', 0.0))
                 item = QTableWidgetItem(f"{dmacd:.3f}")
                 item.setData(Qt.EditRole, dmacd)
-                self.merged_table.setItem(row, 18, item)
+                self.merged_table.setItem(row, 19, item)
 
                 drsi = safe_float(signal.get('dRSI', 0.0))
                 item = QTableWidgetItem(f"{drsi:.3f}")
                 item.setData(Qt.EditRole, drsi)
-                self.merged_table.setItem(row, 19, item)
+                self.merged_table.setItem(row, 20, item)
 
                 dvol = safe_float(signal.get('dVolRel', 0.0))
                 item = QTableWidgetItem(f"{dvol:.3f}")
                 item.setData(Qt.EditRole, dvol)
-                self.merged_table.setItem(row, 20, item)
+                self.merged_table.setItem(row, 21, item)
 
                 # Backtest metrics (if available)
                 # Colonnes 21-22 pour Gain total et Gain moyen
@@ -1658,15 +1667,18 @@ class MainWindow(QMainWindow):
 
                 item = QTableWidgetItem(f"{gain_total:.2f}")
                 item.setData(Qt.EditRole, gain_total)
-                self.merged_table.setItem(row, 21, item)
+                self.merged_table.setItem(row, 22, item)
 
                 item = QTableWidgetItem(f"{gain_moy:.2f}")
                 item.setData(Qt.EditRole, gain_moy)
-                self.merged_table.setItem(row, 22, item)
+                self.merged_table.setItem(row, 23, item)
 
-                # Consensus (text column at index 23)
+                # Consensus (text column at index 24)
                 consensus = signal.get('Consensus', 'N/A')
-                self.merged_table.setItem(row, 23, QTableWidgetItem(str(consensus)))
+                # Debug: vérifier si le Consensus existe vraiment
+                if row == 0:  # Afficher seulement pour la première ligne
+                    print(f"🔍 DEBUG Consensus - Symbol: {signal.get('Symbole')}, Consensus value: '{consensus}'")
+                self.merged_table.setItem(row, 24, QTableWidgetItem(str(consensus)))
 
                 # item = QTableWidgetItem(f"{drawdown:.2f}")
                 # item.setData(Qt.EditRole, drawdown)
@@ -1907,22 +1919,20 @@ class MainWindow(QMainWindow):
             
             for row in range(self.merged_table.rowCount()):
                 try:
-                    # Colonne 7: Domaine, Colonne 8: DomaineOriginal
+                    # Colonne 7: Domaine
                     domaine_item = self.merged_table.item(row, 7)
-                    domaine_orig_item = self.merged_table.item(row, 8)
-                    domaine = (domaine_orig_item.text() if domaine_orig_item and domaine_orig_item.text().strip() 
-                              else domaine_item.text() if domaine_item else 'Inconnu')
+                    domaine = domaine_item.text() if domaine_item and domaine_item.text().strip() else 'Inconnu'
                     
-                    # Colonne 10: Nb Trades
-                    trades_item = self.merged_table.item(row, 10)
+                    # Colonne 11: Nb Trades
+                    trades_item = self.merged_table.item(row, 11)
                     nb_trades = int(trades_item.data(Qt.EditRole)) if trades_item and trades_item.data(Qt.EditRole) is not None else 0
                     
-                    # Colonne 11: Gagnants
-                    gagnants_item = self.merged_table.item(row, 11)
+                    # Colonne 12: Gagnants
+                    gagnants_item = self.merged_table.item(row, 12)
                     gagnants = int(gagnants_item.data(Qt.EditRole)) if gagnants_item and gagnants_item.data(Qt.EditRole) is not None else 0
                     
-                    # Colonne 21: Gain total ($)
-                    gain_item = self.merged_table.item(row, 21)
+                    # Colonne 22: Gain total ($)
+                    gain_item = self.merged_table.item(row, 22)
                     gain = float(gain_item.data(Qt.EditRole)) if gain_item and gain_item.data(Qt.EditRole) is not None else 0.0
                     
                     if domaine not in domain_stats:
