@@ -246,10 +246,13 @@ class MainWindow(QMainWindow):
         self.tabs.addTab(self.logs_container, "Logs")
         
         # Setup log capture to redirect stdout/stderr to logs_text
-        # NOTE: Désactivé temporairement car causait "Unhandled Python exception"
-        # self.log_capture = LogCapture(self.logs_text)
-        # sys.stdout = self.log_capture
-        # sys.stderr = self.log_capture
+        # Réactivé avec gestion d'erreurs robuste
+        try:
+            self.log_capture = LogCapture(self.logs_text)
+            sys.stdout = self.log_capture
+            sys.stderr = self.log_capture
+        except Exception as e:
+            print(f"⚠️ Erreur initialisation LogCapture: {e}")
 
         # Build analyze tab UI
         self.setup_ui()
@@ -980,8 +983,8 @@ class MainWindow(QMainWindow):
                     'CapRange': cap_range,
                     'Volume moyen': volume_mean,
                     # Consensus (stable via cache/offline fallback)
-                    'Consensus': qsi.get_consensus(symbol).get('label', 'Neutre'),
-                    'ConsensusMean': qsi.get_consensus(symbol).get('mean', None),
+                    'Consensus': (qsi.get_consensus(symbol) or {}).get('label', 'Neutre'),
+                    'ConsensusMean': (qsi.get_consensus(symbol) or {}).get('mean', None),
                     'dPrice': round((derivatives.get('price_slope_rel') or 0.0) * 100, 2),
                     'dMACD': round((derivatives.get('macd_slope_rel') or 0.0) * 100, 2),
                     'dRSI': round((derivatives.get('rsi_slope_rel') or 0.0) * 100, 2),
@@ -1663,6 +1666,7 @@ class MainWindow(QMainWindow):
 
                 # Consensus (text column at index 23)
                 consensus = signal.get('Consensus', 'N/A')
+                print(f"🔍 DEBUG: Symbol={signal.get('Symbole', '?')}, Consensus={consensus}")
                 self.merged_table.setItem(row, 23, QTableWidgetItem(str(consensus)))
 
                 # item = QTableWidgetItem(f"{drawdown:.2f}")
