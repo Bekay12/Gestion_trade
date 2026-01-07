@@ -2,10 +2,11 @@ from PyQt5.QtWidgets import (
     QApplication, QMainWindow, QSpacerItem, QVBoxLayout, QHBoxLayout, QWidget,
     QPushButton, QLabel, QLineEdit, QInputDialog, QListWidget, QListWidgetItem,
     QMessageBox, QProgressDialog, QScrollArea, QSizePolicy, QTableWidget,
-    QTableWidgetItem, QComboBox, QHeaderView, QSpinBox, QCheckBox, QTabWidget
+    QTableWidgetItem, QComboBox, QHeaderView, QSpinBox, QCheckBox, QTabWidget, QTextEdit
 )
 from PyQt5.QtWidgets import QAbstractItemView
 from PyQt5.QtCore import QThread, pyqtSignal, Qt
+import io
 from matplotlib.backends.backend_qt5agg import FigureCanvasQTAgg as FigureCanvas
 from matplotlib.figure import Figure
 import sys
@@ -158,6 +159,35 @@ class DownloadThread(QThread):
 
         except Exception as e:
             self.error.emit(str(e))
+
+class LogCapture:
+    """Captures stdout/stderr and writes both to QTextEdit and to original stdout/stderr."""
+    def __init__(self, text_edit):
+        self.text_edit = text_edit
+        self.original_stdout = sys.__stdout__
+        self.original_stderr = sys.__stderr__
+        self.buffer = ""
+    
+    def write(self, message):
+        """Write message to QTextEdit and original stdout."""
+        if message and message.strip():
+            self.buffer += message
+            # Append to QTextEdit
+            self.text_edit.append(message.rstrip())
+            # Also print to original stdout (terminal)
+            self.original_stdout.write(message)
+            self.original_stdout.flush()
+    
+    def flush(self):
+        """Flush the buffer."""
+        if self.buffer:
+            self.original_stdout.flush()
+        self.buffer = ""
+    
+    def isatty(self):
+        """Required for some code that checks if stdout is a TTY."""
+        return False
+
 class MainWindow(QMainWindow):
     def __init__(self):
         super().__init__()
@@ -204,6 +234,21 @@ class MainWindow(QMainWindow):
         self.comparisons_layout = QVBoxLayout(self.comparisons_container)
         self.comparisons_layout.addWidget(QLabel("📈 Comparaisons entre symboles (heatmaps, scatter)"))
         self.tabs.addTab(self.comparisons_container, "Comparaisons")
+
+        # Tab 5: Logs (display stdout/stderr)
+        self.logs_container = QWidget()
+        self.logs_layout = QVBoxLayout(self.logs_container)
+        self.logs_text = QTextEdit()
+        self.logs_text.setReadOnly(True)
+        self.logs_text.setStyleSheet("font-family: monospace; font-size: 9pt;")
+        self.logs_layout.addWidget(QLabel("📝 Logs du système"))
+        self.logs_layout.addWidget(self.logs_text)
+        self.tabs.addTab(self.logs_container, "Logs")
+        
+        # Setup log capture to redirect stdout/stderr to logs_text
+        self.log_capture = LogCapture(self.logs_text)
+        sys.stdout = self.log_capture
+        sys.stderr = self.log_capture
 
         # Build analyze tab UI
         self.setup_ui()
@@ -404,8 +449,8 @@ class MainWindow(QMainWindow):
         
         # Single merged table combining signals + backtest metrics (will be shown in Results tab)
         self.merged_table = QTableWidget()
-        self.merged_table.setMinimumHeight(280)
-        self.merged_table.setSizePolicy(QSizePolicy.Expanding, QSizePolicy.Minimum)
+        self.merged_table.setMinimumHeight(600)
+        self.merged_table.setSizePolicy(QSizePolicy.Expanding, QSizePolicy.Expanding)
         merged_columns = [
         'Symbole','Signal','Score','Prix','Tendance','RSI','Volume moyen','Domaine','DomaineOriginal','Cap Range',
         'Fiabilite (%)','Nb Trades','Gagnants',
@@ -1615,7 +1660,7 @@ class MainWindow(QMainWindow):
                 item.setData(Qt.EditRole, gain_moy)
                 self.merged_table.setItem(row, 22, item)
 
-                # Consensus (text column)
+                # Consensus (text column at index 23)
                 consensus = signal.get('Consensus', 'N/A')
                 self.merged_table.setItem(row, 23, QTableWidgetItem(str(consensus)))
 
@@ -1625,6 +1670,12 @@ class MainWindow(QMainWindow):
 
             except Exception:
                 continue
+        
+        # Mettre à jour l'onglet Comparaisons après remplissage de la table (optionnel, peut être désactivé si problématique)
+        try:
+            self.populate_comparisons_tab()
+        except Exception as e:
+            print(f"⚠️ Erreur lors de la mise à jour de l'onglet Comparaisons: {e}")
     
     def sort_results(self, index):
         if not hasattr(self, 'current_results'):
@@ -1837,6 +1888,166 @@ class MainWindow(QMainWindow):
         gc.collect()
 
 
+
+
+    def compute_domain_stats(self):
+        """Agrège les résultats par domaine depuis la merged_table."""
+        try:
+            if not hasattr(self, 'merged_table') or self.merged_table.rowCount() == 0:
+                return {'global': {}, 'by_domain': {}}
+            
+            domain_stats = {}
+            total_trades = 0
+            total_gagnants = 0
+            total_gain = 0.0
+            
+            for row in range(self.merged_table.rowCount()):
+                try:
+                    # Colonne 7: Domaine, Colonne 8: DomaineOriginal
+                    domaine_item = self.merged_table.item(row, 7)
+                    domaine_orig_item = self.merged_table.item(row, 8)
+                    domaine = (domaine_orig_item.text() if domaine_orig_item and domaine_orig_item.text().strip() 
+                              else domaine_item.text() if domaine_item else 'Inconnu')
+                    
+                    # Colonne 10: Nb Trades
+                    trades_item = self.merged_table.item(row, 10)
+                    nb_trades = int(trades_item.data(Qt.EditRole)) if trades_item and trades_item.data(Qt.EditRole) is not None else 0
+                    
+                    # Colonne 11: Gagnants
+                    gagnants_item = self.merged_table.item(row, 11)
+                    gagnants = int(gagnants_item.data(Qt.EditRole)) if gagnants_item and gagnants_item.data(Qt.EditRole) is not None else 0
+                    
+                    # Colonne 21: Gain total ($)
+                    gain_item = self.merged_table.item(row, 21)
+                    gain = float(gain_item.data(Qt.EditRole)) if gain_item and gain_item.data(Qt.EditRole) is not None else 0.0
+                    
+                    if domaine not in domain_stats:
+                        domain_stats[domaine] = {'trades': 0, 'gagnants': 0, 'gain': 0.0}
+                    
+                    domain_stats[domaine]['trades'] += nb_trades
+                    domain_stats[domaine]['gagnants'] += gagnants
+                    domain_stats[domaine]['gain'] += gain
+                    
+                    total_trades += nb_trades
+                    total_gagnants += gagnants
+                    total_gain += gain
+                except Exception as e:
+                    print(f"⚠️ Erreur compute_domain_stats row {row}: {e}")
+                    continue
+            
+            # Calculer taux de réussite par domaine
+            for domaine in domain_stats:
+                trades = domain_stats[domaine]['trades']
+                gagnants = domain_stats[domaine]['gagnants']
+                taux = (gagnants / trades * 100) if trades > 0 else 0.0
+                domain_stats[domaine]['taux'] = taux
+            
+            total_taux = (total_gagnants / total_trades * 100) if total_trades > 0 else 0.0
+            
+            return {
+                'global': {
+                    'trades': total_trades,
+                    'gagnants': total_gagnants,
+                    'taux': total_taux,
+                    'gain': total_gain
+                },
+                'by_domain': domain_stats
+            }
+        except Exception as e:
+            print(f"❌ Erreur compute_domain_stats: {e}")
+            import traceback
+            traceback.print_exc()
+            return {'global': {}, 'by_domain': {}}
+    
+    def populate_comparisons_tab(self):
+        """Génère les graphiques de comparaison par domaine dans l'onglet Comparaisons (sans tableau)."""
+        try:
+            # Nettoyer l'onglet précédent
+            while self.comparisons_layout.count() > 0:
+                widget = self.comparisons_layout.takeAt(0).widget()
+                if widget:
+                    widget.deleteLater()
+            
+            stats = self.compute_domain_stats()
+            if not stats['by_domain']:
+                self.comparisons_layout.addWidget(QLabel("Aucun résultat à comparer. Analysez d'abord des symboles."))
+                return
+            
+            # Titre + résumé global compact (sur une seule ligne)
+            title = QLabel("📊 Analyse par domaine")
+            title.setStyleSheet("font-weight: bold; font-size: 12px;")
+            self.comparisons_layout.addWidget(title)
+            
+            global_info = stats['global']
+            summary_text = (
+                f"🌍 Résultat global: Taux={global_info['taux']:.1f}% | Trades={global_info['trades']} | Gain=${global_info['gain']:.2f}"
+            )
+            summary_label = QLabel(summary_text)
+            summary_label.setStyleSheet("background-color: #f0f0f0; padding: 6px; border-radius: 4px; font-size: 10px;")
+            self.comparisons_layout.addWidget(summary_label)
+            
+            # Graphiques matplotlib (sans tableau textuel)
+            from matplotlib.figure import Figure
+            from matplotlib.backends.backend_qt5agg import FigureCanvasQTAgg as FigureCanvas
+            
+            # Préparer les données pour les graphiques
+            domains = list(stats['by_domain'].keys())
+            taux_list = [stats['by_domain'][d]['taux'] for d in domains]
+            trades_list = [stats['by_domain'][d]['trades'] for d in domains]
+            gain_list = [stats['by_domain'][d]['gain'] for d in domains]
+            
+            # Créer figure avec 3 subplots
+            fig = Figure(figsize=(14, 9), dpi=100)
+            
+            # Subplot 1: Bar chart taux de réussite
+            ax1 = fig.add_subplot(2, 2, 1)
+            colors = ['green' if t >= 60 else 'orange' if t >= 40 else 'red' for t in taux_list]
+            ax1.bar(domains, taux_list, color=colors, alpha=0.7)
+            ax1.set_ylabel('Taux de réussite (%)', fontweight='bold')
+            ax1.set_title('Taux de réussite par domaine', fontweight='bold')
+            ax1.set_ylim(0, 100)
+            ax1.axhline(y=50, color='gray', linestyle='--', alpha=0.3)
+            ax1.tick_params(axis='x', rotation=45)
+            for i, v in enumerate(taux_list):
+                ax1.text(i, v + 2, f'{v:.1f}%', ha='center', fontsize=9)
+            
+            # Subplot 2: Bar chart nombre de trades
+            ax2 = fig.add_subplot(2, 2, 2)
+            ax2.bar(domains, trades_list, color='steelblue', alpha=0.7)
+            ax2.set_ylabel('Nombre de trades', fontweight='bold')
+            ax2.set_title('Distribution des trades par domaine', fontweight='bold')
+            ax2.tick_params(axis='x', rotation=45)
+            for i, v in enumerate(trades_list):
+                ax2.text(i, v + 0.1, str(int(v)), ha='center', fontsize=9)
+            
+            # Subplot 3: Bar chart gain
+            ax3 = fig.add_subplot(2, 2, 3)
+            colors_gain = ['green' if g > 0 else 'red' for g in gain_list]
+            ax3.bar(domains, gain_list, color=colors_gain, alpha=0.7)
+            ax3.set_ylabel('Gain total ($)', fontweight='bold')
+            ax3.set_title('Gain brut par domaine', fontweight='bold')
+            ax3.axhline(y=0, color='black', linewidth=0.8)
+            ax3.tick_params(axis='x', rotation=45)
+            for i, v in enumerate(gain_list):
+                ax3.text(i, v + (5 if v > 0 else -10), f'${v:.0f}', ha='center', fontsize=9)
+            
+            # Subplot 4: Pie chart distribution trades
+            ax4 = fig.add_subplot(2, 2, 4)
+            if sum(trades_list) > 0:
+                ax4.pie(trades_list, labels=domains, autopct='%1.1f%%', startangle=90)
+                ax4.set_title('Distribution des trades', fontweight='bold')
+            
+            fig.tight_layout()
+            canvas = FigureCanvas(fig)
+            self.comparisons_layout.addWidget(canvas)
+            
+            # Ajouter stretch pour éviter que les éléments restent en haut
+            self.comparisons_layout.addStretch()
+        except Exception as e:
+            print(f"❌ Erreur populate_comparisons_tab: {e}")
+            import traceback
+            traceback.print_exc()
+            self.comparisons_layout.addWidget(QLabel(f"Erreur lors du rendu des graphiques: {e}"))
 
 
 if __name__ == "__main__":
