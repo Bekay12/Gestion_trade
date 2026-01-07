@@ -34,13 +34,13 @@ TEMPLATE_DIR = os.path.join(os.path.dirname(__file__), 'templates')
 try:
     from qsi import (
         analyse_signaux_populaires,
-        download_stock_data,
         backtest_signals,
         load_symbols_from_txt,
         get_trading_signal,
         get_cap_range_for_symbol,
         extract_best_parameters
     )
+    from yfinance_helper import download_stock_data
     from config import SIGNALS_DIR, DATA_CACHE_DIR
     import yfinance as yf
 except ImportError as e:
