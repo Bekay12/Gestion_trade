@@ -2,7 +2,7 @@ from PyQt5.QtWidgets import (
     QApplication, QMainWindow, QSpacerItem, QVBoxLayout, QHBoxLayout, QWidget,
     QPushButton, QLabel, QLineEdit, QInputDialog, QListWidget, QListWidgetItem,
     QMessageBox, QProgressDialog, QScrollArea, QSizePolicy, QTableWidget,
-    QTableWidgetItem, QComboBox, QHeaderView, QSpinBox, QCheckBox
+    QTableWidgetItem, QComboBox, QHeaderView, QSpinBox, QCheckBox, QTabWidget
 )
 from PyQt5.QtWidgets import QAbstractItemView
 from PyQt5.QtCore import QThread, pyqtSignal, Qt
@@ -179,10 +179,33 @@ class MainWindow(QMainWindow):
         self.mes_symbols_data = self._load_symbols_preferred("mes_symbols.txt", "personal")
         self.optim_symbols_data = self._load_symbols_preferred("optimisation_symbols.txt", "optimization")
         
-        self.central_widget = QWidget()
-        self.setCentralWidget(self.central_widget)
-        self.layout = QVBoxLayout(self.central_widget)
-        
+        # Tabs-based UI: results-focused navigation
+        self.tabs = QTabWidget()
+        self.setCentralWidget(self.tabs)
+
+        # Tab 1: Analyze (input + quick summary)
+        self.analyze_container = QWidget()
+        self.layout = QVBoxLayout(self.analyze_container)
+        self.tabs.addTab(self.analyze_container, "Analyser")
+
+        # Tab 2: Results (detailed table of analysis results)
+        self.results_container = QWidget()
+        self.results_layout = QVBoxLayout(self.results_container)
+        self.tabs.addTab(self.results_container, "Résultats")
+
+        # Tab 3: Charts (per-symbol graphs and metrics)
+        self.charts_container = QWidget()
+        self.charts_layout = QVBoxLayout(self.charts_container)
+        self.charts_layout.addWidget(QLabel("📊 Graphiques et analyse détaillée par symbole"))
+        self.tabs.addTab(self.charts_container, "Graphiques")
+
+        # Tab 4: Comparisons (multi-symbol visualizations)
+        self.comparisons_container = QWidget()
+        self.comparisons_layout = QVBoxLayout(self.comparisons_container)
+        self.comparisons_layout.addWidget(QLabel("📈 Comparaisons entre symboles (heatmaps, scatter)"))
+        self.tabs.addTab(self.comparisons_container, "Comparaisons")
+
+        # Build analyze tab UI
         self.setup_ui()
 
         self.current_results = []
@@ -369,7 +392,7 @@ class MainWindow(QMainWindow):
         self.splitter = QSplitter(Qt.Vertical)
         self.splitter.addWidget(self.plots_scroll)
 
-        # Bottom container
+        # Bottom container for Analyze tab summary
         bottom_container = QWidget()
         bottom_layout = QVBoxLayout(bottom_container)
 
@@ -378,12 +401,13 @@ class MainWindow(QMainWindow):
         self.summary_text.setMinimumHeight(80)
         self.summary_text.setSizePolicy(QSizePolicy.Expanding, QSizePolicy.Expanding)
         bottom_layout.addWidget(self.summary_text)
-        # Single merged table combining signals + backtest metrics
+        
+        # Single merged table combining signals + backtest metrics (will be shown in Results tab)
         self.merged_table = QTableWidget()
         self.merged_table.setMinimumHeight(280)
         self.merged_table.setSizePolicy(QSizePolicy.Expanding, QSizePolicy.Minimum)
         merged_columns = [
-        'Symbole','Signal','Score','Prix','Tendance','RSI','Volume moyen','Domaine','Cap Range',
+        'Symbole','Signal','Score','Prix','Tendance','RSI','Volume moyen','Domaine','DomaineOriginal','Cap Range',
         'Fiabilite (%)','Nb Trades','Gagnants',
         # COLONNES FINANCIÈRES
         'Rev. Growth (%)','EBITDA Yield (%)','FCF Yield (%)','D/E Ratio','Market Cap (B$)',
@@ -394,15 +418,19 @@ class MainWindow(QMainWindow):
         # INFO
         'Consensus'
         ]
+        # Add table to Results tab, not Analyze tab
+        self.results_layout.addWidget(QLabel("📋 Résultats détaillés de l'analyse"))
+        self.results_layout.addWidget(self.merged_table)
 
         self.merged_table.setColumnCount(len(merged_columns))
         self.merged_table.setHorizontalHeaderLabels(merged_columns)
         self.merged_table.horizontalHeader().setSectionResizeMode(QHeaderView.ResizeToContents)
         # Allow sorting by clicking headers (we also provide numeric data via Qt.EditRole)
         self.merged_table.setSortingEnabled(True)
-        bottom_layout.addWidget(self.merged_table)
-
-        # Keep a reference to bottom container to toggle visibility later
+        
+        # Keep bottom_container for Analyze tab (only summary_text)
+        # NOTA: self.merged_table is now in Results tab, not in Analyze tab
+        bottom_layout.addWidget(self.summary_text)  # Only summary in Analyze tab
         self.bottom_container = bottom_container
 
         self.splitter.addWidget(bottom_container)
