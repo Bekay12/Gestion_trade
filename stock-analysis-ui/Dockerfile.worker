@@ -1,0 +1,26 @@
+# Worker Celery: exécute les tâches longues (download, analyse, backtest)
+FROM python:3.11-slim
+
+WORKDIR /app
+
+# Dépendances système
+RUN apt-get update && apt-get install -y \
+    gcc \
+    curl \
+    && rm -rf /var/lib/apt/lists/*
+
+# Copy requirements
+COPY requirements.txt .
+COPY requirements-worker.txt .
+
+# Install Python dependencies (inclut Celery, Redis)
+RUN pip install --no-cache-dir -r requirements.txt -r requirements-worker.txt
+
+# Copy source (tout sauf templates/static)
+COPY src/ src/
+
+# Setup signal handlers pour graceful shutdown
+STOPSIGNAL SIGTERM
+
+# Run Celery worker by default (peut être overridé par docker-compose)
+CMD ["celery", "-A", "src.tasks", "worker", "--loglevel=info", "--concurrency=2"]
