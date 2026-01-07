@@ -246,9 +246,10 @@ class MainWindow(QMainWindow):
         self.tabs.addTab(self.logs_container, "Logs")
         
         # Setup log capture to redirect stdout/stderr to logs_text
-        self.log_capture = LogCapture(self.logs_text)
-        sys.stdout = self.log_capture
-        sys.stderr = self.log_capture
+        # NOTE: Désactivé temporairement car causait "Unhandled Python exception"
+        # self.log_capture = LogCapture(self.logs_text)
+        # sys.stdout = self.log_capture
+        # sys.stderr = self.log_capture
 
         # Build analyze tab UI
         self.setup_ui()
