@@ -91,12 +91,12 @@ DEFAULT_RECALC_RELIABILITY_EVERY = 5
 # Autoriser le fallback de domaine lorsque le secteur est "Inconnu"
 # True: applique fallback (Technology/Healthcare/Financial Services)
 # False: conserve "Inconnu" et utilise des seuils non-optimisés si nécessaire
-DOMAIN_FALLBACK_ENABLED = True
+DOMAIN_FALLBACK_ENABLED = False
 
 # Autoriser le fallback de cap_range lorsque la capitalisation est "Unknown"
 # True: essaie Large/Mid/Mega selon les paramètres disponibles
 # False: conserve "Unknown"
-CAP_FALLBACK_ENABLED = True
+CAP_FALLBACK_ENABLED = False
 
 
 # ===================================================================
