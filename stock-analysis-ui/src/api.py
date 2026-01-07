@@ -34,9 +34,13 @@ try:
         analyse_signaux_populaires,
         download_stock_data,
         backtest_signals,
-        load_symbols_from_txt
+        load_symbols_from_txt,
+        get_trading_signal,
+        get_cap_range_for_symbol,
+        extract_best_parameters
     )
     from config import SIGNALS_DIR, DATA_CACHE_DIR
+    import yfinance as yf
 except ImportError as e:
     print(f"⚠️ Import error: {e}")
     sys.exit(1)
@@ -244,9 +248,6 @@ def analyze_symbol():
         
         try:
             # Télécharger les données (comme le desktop UI)
-            from qsi import download_stock_data, get_trading_signal, get_cap_range_for_symbol, extract_best_parameters
-            import yfinance as yf
-            
             stock_data_dict = download_stock_data([symbol], period)
             
             if not stock_data_dict or symbol not in stock_data_dict:
