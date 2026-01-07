@@ -245,19 +245,19 @@ class MainWindow(QMainWindow):
         self.logs_layout.addWidget(self.logs_text)
         self.tabs.addTab(self.logs_container, "Logs")
         
-        # Setup log capture to redirect stdout/stderr to logs_text
-        # Réactivé avec gestion d'erreurs robuste
-        try:
-            self.log_capture = LogCapture(self.logs_text)
-            sys.stdout = self.log_capture
-            sys.stderr = self.log_capture
-        except Exception as e:
-            print(f"⚠️ Erreur initialisation LogCapture: {e}")
+        # Setup log capture - DÉSACTIVÉ car cause "Unhandled Python exception"
+        # Une meilleure approche serait d'utiliser logging module avec handlers personnalisés
+        # Pour l'instant, les logs s'affichent seulement dans le terminal
 
         # Build analyze tab UI
         self.setup_ui()
 
         self.current_results = []
+    
+    def add_log(self, message: str):
+        """Ajouter un message à l'onglet Logs (sans redirection de stdout)."""
+        if hasattr(self, 'logs_text'):
+            self.logs_text.append(message)
 
     def _load_symbols_preferred(self, filename: str, list_type: str):
         """Charge depuis SQLite si possible, sinon depuis le fichier txt."""
@@ -1666,7 +1666,6 @@ class MainWindow(QMainWindow):
 
                 # Consensus (text column at index 23)
                 consensus = signal.get('Consensus', 'N/A')
-                print(f"🔍 DEBUG: Symbol={signal.get('Symbole', '?')}, Consensus={consensus}")
                 self.merged_table.setItem(row, 23, QTableWidgetItem(str(consensus)))
 
                 # item = QTableWidgetItem(f"{drawdown:.2f}")
