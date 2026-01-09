@@ -17,6 +17,8 @@ from datetime import datetime, timedelta
 from typing import List, Dict, Union
 from concurrent.futures import ThreadPoolExecutor
 import sys
+import os
+import sqlite3
 import yfinance as yf
 sys.path.append("C:\\Users\\berti\\Desktop\\Mes documents\\Gestion_trade\\stock-analysis-ui\\src\\trading_c_acceleration")
 from trading_c_acceleration.qsi_optimized import backtest_signals, extract_best_parameters, backtest_signals_with_events
@@ -288,8 +290,14 @@ def extract_best_parameters(db_path: str = None) -> Dict[str, Tuple[Tuple[float,
                 'th_de_ratio': _read_num('th15', 0.0),
             }
             
-            # Combine extras
-            all_extras = {**price_extras, **fundamentals_extras}
+            # Combine extras and attach timestamp for downstream labeling
+            timestamp = None
+            try:
+                timestamp = str(row['timestamp']) if (row['timestamp'] is not None) else None
+            except Exception:
+                timestamp = None
+
+            all_extras = {**price_extras, **fundamentals_extras, 'timestamp': timestamp}
             
             # Store result with all_extras as 5th element (coefficients, thresholds, globals_thresholds, gain_moy, all_extras)
             result[sector] = (coefficients, thresholds, globals_thresholds, gain_moy, all_extras)
@@ -1230,29 +1238,65 @@ def compute_financial_derivatives(symbol: str, lookback_quarters: int = 4) -> di
 # Les appels à classify_cap_range_from_market_cap() sont obsoletes; utiliser classify_cap_range() a la place
 
 def get_cap_range_for_symbol(symbol: str) -> str:
-    """Tente de récupérer le range de market cap via le cache financier.
-    Ne déclenche pas de téléchargement lourd; se contente du cache, sinon Unknown.
+    """Récupère le cap_range avec stratégie complète (3 niveaux de fallback):
+    
+    1️⃣ Cache pickle financier (accepte cache très ancien)
+    2️⃣ Base de données SQLite (symbols.db) - NEW
+    3️⃣ Fallback "Unknown"
+    
+    Stratégie: N'essaie PAS yfinance ici (trop lent pour batch). 
+    Le fallback vers cap_range génériques se fait dans le code d'analyse.
     """
+    # Étape 1️⃣: Essayer le cache pickle
     try:
         if get_pickle_cache is not None:
             d = get_pickle_cache(symbol, 'financial', ttl_hours=24*365)  # Accepte même cache très ancien
             if d is not None and isinstance(d, dict):
                 mc_b = float(d.get('market_cap_val', 0.0) or 0.0)
-                # Utiliser la fonction consolidée de symbol_manager si disponible
-                try:
-                    from symbol_manager import classify_cap_range
-                    return classify_cap_range(mc_b)
-                except Exception:
-                    # Fallback local
-                    if mc_b <= 0:
-                        return 'Unknown'
-                    if mc_b < 2.0:
-                        return 'Small'
-                    if mc_b < 10.0:
-                        return 'Mid'
-                    return 'Large'
+                if mc_b > 0:
+                    # Utiliser la fonction consolidée de symbol_manager si disponible
+                    try:
+                        from symbol_manager import classify_cap_range
+                        result = classify_cap_range(mc_b)
+                        if result and result != 'Unknown':
+                            return result
+                    except Exception:
+                        # Fallback local
+                        if mc_b < 2.0:
+                            return 'Small'
+                        if mc_b < 10.0:
+                            return 'Mid'
+                        if mc_b < 200.0:
+                            return 'Large'
+                        return 'Mega'
     except Exception:
         pass
+    
+    # Étape 2️⃣: Essayer la base de données SQLite (NEW)
+    try:
+        import sqlite3
+        db_path = 'symbols.db'
+        if os.path.exists(db_path):
+            conn = sqlite3.connect(db_path)
+            conn.row_factory = sqlite3.Row
+            cursor = conn.cursor()
+            cursor.execute("""
+                SELECT cap_range FROM symbols 
+                WHERE symbol = ? AND cap_range IS NOT NULL AND cap_range != 'Unknown'
+                LIMIT 1
+            """, (symbol,))
+            row = cursor.fetchone()
+            conn.close()
+            if row and row['cap_range']:
+                cap = str(row['cap_range']).strip()
+                if cap and cap != 'Unknown':
+                    print(f"📊 {symbol}: Cap_range récupéré de la DB: {cap}")
+                    return cap
+    except Exception as e:
+        print(f"⚠️ Erreur DB pour cap_range {symbol}: {e}")
+        pass
+    
+    # Étape 3️⃣: Fallback
     return 'Unknown'
 
 # ===================================================================
@@ -2339,7 +2383,7 @@ def analyse_signaux_populaires(
     period="12mo", afficher_graphiques=True,
     chunk_size=20, verbose=True,
     save_csv=True, plot_all=False,
-    max_workers=5
+    max_workers=5, taux_reussite_min=30
 ):
     """
     Analyse les signaux pour les actions populaires, affiche les résultats, effectue le backtest,
@@ -2348,6 +2392,7 @@ def analyse_signaux_populaires(
     
     Args:
         max_workers: Nombre de threads pour analyse parallèle (défaut: 4)
+        taux_reussite_min: Seuil minimum de fiabilité pour l'évaluation filtrée (défaut: 30)
     """
     import matplotlib.pyplot as plt
     from concurrent.futures import ThreadPoolExecutor, as_completed
@@ -2745,7 +2790,7 @@ def analyse_signaux_populaires(
     # todo: ajuster les conditions selon les besoins
     # todo: creer un parametre pour le taux de reussite minimal actuel=60
     # todo: en faire un parametre de la fonction analyse_signaux_populaires
-    taux_reussite_min = 30  # Valeur par défaut
+    # Utiliser le paramètre taux_reussite_min passé en argument
     filtres = [res for res in backtest_results if res['taux_reussite'] >= taux_reussite_min and res['gain_total'] > 0]
     nb_actions_filtrees = len(filtres)
     total_trades_filtre = sum(res['trades'] for res in filtres)

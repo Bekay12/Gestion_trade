@@ -57,13 +57,23 @@ class AnalysisThread(QThread):
 
             while not self._stop_requested:
                 # Run analysis without opening matplotlib GUIs; keep verbose to surface progress
+                # Get the reliability threshold from the main window spinbox if available
+                fiab_threshold = 30  # Default value
+                try:
+                    # Access the spinbox value from main window (passed via parent reference)
+                    if hasattr(self, 'parent') and hasattr(self.parent(), 'fiab_threshold_spin'):
+                        fiab_threshold = self.parent().fiab_threshold_spin.value()
+                except Exception:
+                    pass
+                
                 result = analyse_signaux_populaires(
                     self.symbols,
                     self.mes_symbols,
                     period=self.period,
                     afficher_graphiques=False,
                     plot_all=False,
-                    verbose=True
+                    verbose=True,
+                    taux_reussite_min=fiab_threshold
                 )
                 self.finished.emit(result)
                 break  # ou return
@@ -427,7 +437,20 @@ class MainWindow(QMainWindow):
         self.backtest_button.clicked.connect(self.analyse_and_backtest)
         top_controls.addWidget(self.backtest_button)
 
-        self.popular_signals_button = QPushButton("Analyser mouvements fiables (populaires)")
+        # Seuil minimum de fiabilité pour le backtest (à droite du bouton backtest)
+        top_controls.addWidget(QLabel("Seuil fiabilité:"))
+        self.fiab_threshold_spin = QSpinBox()
+        self.fiab_threshold_spin.setMinimum(0)
+        self.fiab_threshold_spin.setMaximum(100)
+        self.fiab_threshold_spin.setValue(30)
+        self.fiab_threshold_spin.setSuffix("%")
+        self.fiab_threshold_spin.setMaximumWidth(80)
+        self.fiab_threshold_spin.setToolTip("Seuil minimum de fiabilité pour filtrer les résultats du backtest")
+        top_controls.addWidget(self.fiab_threshold_spin)
+
+        top_controls.addSpacing(24)  # Petit espace pour l'esthétique
+
+        self.popular_signals_button = QPushButton("Analyse de mes symboles")
         self.popular_signals_button.clicked.connect(self.analyze_popular_signals)
         top_controls.addWidget(self.popular_signals_button)
 
@@ -475,14 +498,14 @@ class MainWindow(QMainWindow):
         self.merged_table.setMinimumHeight(600)
         self.merged_table.setSizePolicy(QSizePolicy.Expanding, QSizePolicy.Expanding)
         merged_columns = [
-        'Symbole','Signal','Score','Prix','Tendance','RSI','Volume moyen','Domaine','Cap Range','Score/Seuil',
-        'Fiabilite (%)','Nb Trades','Gagnants',
+        'Symbole','Signal','Score','Prix','Tendance','RSI','Volume\nmoyen','Domaine','Cap\nRange','Score/\nSeuil',
+        'Fiabilite\n(%)','Nb\nTrades','Gagnants',
         # COLONNES FINANCIÈRES
-        'Rev. Growth (%)','EBITDA Yield (%)','FCF Yield (%)','D/E Ratio','Market Cap (B$)',
+        'Rev.\nGrowth(%)','EBITDA\nYield(%)','FCF\nYield(%)','D/E\nRatio','Market\nCap(B$)',
         # COLONNES DERIVÉES
-        'dPrice','dMACD','dRSI','dVolRel',
+        'dPrice','dMACD','dRSI','dVol\nRel',
         # COLONNES BACKTEST
-        'Gain total ($)','Gain moyen ($)',
+        'Gain\ntotal($)','Gain\nmoyen($)',
         # INFO
         'Consensus'
         ]
@@ -493,6 +516,17 @@ class MainWindow(QMainWindow):
         self.merged_table.setColumnCount(len(merged_columns))
         self.merged_table.setHorizontalHeaderLabels(merged_columns)
         self.merged_table.horizontalHeader().setSectionResizeMode(QHeaderView.ResizeToContents)
+        # Réduire la hauteur des en-têtes pour 2 lignes maximum
+        self.merged_table.horizontalHeader().setMinimumHeight(40)
+        # Centrer les en-têtes horizontalement et verticalement
+        header_style = """
+            QHeaderView::section {
+                padding: 4px;
+                text-align: center;
+                background-color: #f0f0f0;
+            }
+        """
+        self.merged_table.horizontalHeader().setStyleSheet(header_style)
         # Allow sorting by clicking headers (we also provide numeric data via Qt.EditRole)
         self.merged_table.setSortingEnabled(True)
         
@@ -846,29 +880,35 @@ class MainWindow(QMainWindow):
             QMessageBox.critical(self, "Erreur", f"Impossible d'afficher l'aperçu du nettoyage: {e}")
 
     def analyze_popular_signals(self):
-        # Use selected items if any, otherwise fallback to full lists
-        selected_pop = [it.data(Qt.UserRole) if it.data(Qt.UserRole) is not None else it.text() for it in self.popular_list.selectedItems()]
-        popular_symbols = selected_pop if selected_pop else [self.popular_list.item(i).text() for i in range(self.popular_list.count())]
+        # Analyse + Backtest uniquement sur mes symboles
         selected_mes = [it.data(Qt.UserRole) if it.data(Qt.UserRole) is not None else it.text() for it in self.mes_list.selectedItems()]
         mes_symbols = selected_mes if selected_mes else [self.mes_list.item(i).text() for i in range(self.mes_list.count())]
+        
         period = self.period_input.text().strip()
         
         if not period:
             QMessageBox.warning(self, "Erreur", "Veuillez entrer une période d'analyse valide (ex: 12mo)")
             return
         
+        if not mes_symbols:
+            QMessageBox.warning(self, "Erreur", "Aucun symbole disponible dans 'Mes symboles'")
+            return
+        
+        # Disable buttons during analysis
         self.analyze_button.setEnabled(False)
+        self.backtest_button.setEnabled(False)
+        self.popular_signals_button.setEnabled(False)
         
         # Afficher la progression
-        self.progress = QProgressDialog("Analyse en cours...", "Annuler", 0, 0, self)
-        self.progress.setWindowTitle("Analyse")
+        self.progress = QProgressDialog("Analyse + Backtest de mes symboles en cours...", "Annuler", 0, 0, self)
+        self.progress.setWindowTitle("Analyse de mes symboles")
         self.progress.setWindowModality(Qt.WindowModal)
         self.progress.setMinimumDuration(0)
         self.progress.setAutoClose(False)
         self.progress.setMinimumWidth(400)
         
-        # Lancer l'analyse dans un thread
-        self.analysis_thread = AnalysisThread(popular_symbols, mes_symbols, period)
+        # Lancer l'analyse+backtest dans un thread (mes_symbols en premier arg, [] en deuxième)
+        self.analysis_thread = AnalysisThread(mes_symbols, [], period)
         self.analysis_thread.finished.connect(self.on_analysis_complete)
         self.analysis_thread.error.connect(self.on_analysis_error)
         self.analysis_thread.progress.connect(self.on_analysis_progress)
@@ -922,20 +962,65 @@ class MainWindow(QMainWindow):
                     else:
                         info = yf.Ticker(symbol).info
                         domaine = info.get("sector", "Inconnu")
-                    print(f"🔍 DEBUG {symbol}: secteur récupéré = {domaine}")
+                    
+                    # ✅ NEW: Normaliser le secteur pour cohérence avec la DB
+                    from sector_normalizer import normalize_sector
+                    domaine_raw = domaine
+                    domaine = normalize_sector(domaine)
+                    if domaine_raw != domaine:
+                        print(f"🔄 {symbol}: Secteur normalisé: '{domaine_raw}' -> '{domaine}'")
+                    else:
+                        print(f"🔍 DEBUG {symbol}: secteur = {domaine}")
                 except Exception as e:
                     domaine = "Inconnu"
                     print(f"⚠️ DEBUG {symbol}: erreur récupération secteur: {e}")
                 
-                # ✅ Appliquer fallback pour cap_range "Unknown" : essayer Large, Mid, Mega (configurable)
+                # ✅ NEW: Améliorer le fallback cap_range en 2 étapes
                 from config import CAP_FALLBACK_ENABLED
+                original_cap_range = cap_range
+                
                 if CAP_FALLBACK_ENABLED and (cap_range == "Unknown" or not cap_range):
                     best_params_all = qsi.extract_best_parameters()
-                    for fallback_cap in ["Large", "Mid", "Mega"]:
-                        test_key = f"{domaine}_{fallback_cap}"
-                        if test_key in best_params_all:
-                            cap_range = fallback_cap
-                            break
+                    
+                    # ✅ ÉTAPE 1: Essayer de trouver dans la DB les cap_ranges valides pour ce secteur
+                    print(f"🔍 {symbol}: Recherche cap_range pour {domaine}...")
+                    try:
+                        import sqlite3
+                        db_path = 'symbols.db'
+                        if os.path.exists(db_path):
+                            conn = sqlite3.connect(db_path)
+                            cursor = conn.cursor()
+                            cursor.execute("""
+                                SELECT DISTINCT cap_range FROM symbols 
+                                WHERE sector = ? AND cap_range IS NOT NULL AND cap_range != 'Unknown'
+                                LIMIT 10
+                            """, (domaine,))
+                            db_caps = [row[0] for row in cursor.fetchall()]
+                            conn.close()
+                            
+                            # Prioriser l'ordre logique: Small, Mid, Large, Mega
+                            cap_priority = ['Small', 'Mid', 'Large', 'Mega']
+                            for cap in cap_priority:
+                                if cap in db_caps:
+                                    test_key = f"{domaine}_{cap}"
+                                    if test_key in best_params_all:
+                                        cap_range = cap
+                                        print(f"✅ {symbol}: Cap_range trouvé en DB: {cap}")
+                                        break
+                    except Exception as e:
+                        print(f"⚠️ {symbol}: Erreur recherche DB cap_range: {e}")
+                    
+                    # ✅ ÉTAPE 2: Si toujours Unknown, essayer les fallbacks standards
+                    if cap_range == "Unknown" or not cap_range:
+                        for fallback_cap in ["Large", "Mid", "Small", "Mega"]:
+                            test_key = f"{domaine}_{fallback_cap}"
+                            if test_key in best_params_all:
+                                cap_range = fallback_cap
+                                print(f"✅ {symbol}: Cap_range fallback: {fallback_cap}")
+                                break
+                    
+                    if cap_range != original_cap_range:
+                        print(f"🔄 {symbol}: Cap_range ajusté: '{original_cap_range}' -> '{cap_range}'")
                 
                 # ✅ Appliquer fallback universel pour "Inconnu" (même logique que backtest) - configurable
                 original_domaine = domaine
@@ -1084,14 +1169,13 @@ class MainWindow(QMainWindow):
             fiab = r.get('Fiabilite', 'N/A')
             nb_trades = r.get('NbTrades', 0)
 
-            # Filtre sur nb trades
+            # Filtre sur nb trades - afficher TOUS les stocks inclus ceux avec 0 trades
             try:
-                # If nb_trades == 0 (no backtest), allow inclusion when include_none_val is True
-                if int(nb_trades) == 0:
+                # Toujours inclure les résultats, même avec 0 trades
+                # On affiche simplement l'indicateur 0 trades sans filtrer
+                if int(nb_trades) > 0 and int(nb_trades) < min_trades:
+                    # Si il y a des trades mais moins que le minimum, filtrer
                     if not include_none_val:
-                        continue
-                else:
-                    if int(nb_trades) < min_trades:
                         continue
             except Exception:
                 # If we can't parse nb_trades, only include when include_none_val is True
@@ -1509,9 +1593,26 @@ class MainWindow(QMainWindow):
 
         self.merged_table.setRowCount(0)
         raw_results = getattr(self, 'filtered_results', self.current_results)
-        # 🚫 Éviter les lignes vides: ne garder que les entrées avec un symbole non vide
-        results_to_display = [r for r in raw_results if str(r.get('Symbole', '')).strip()]
-        # 🔧 Garantir les champs backtest pour éviter des cellules vides si la map manque
+        
+        # Appliquer le filtre de fiabilité minimum si un seuil est défini
+        min_fiab_threshold = self.fiab_threshold_spin.value() if hasattr(self, 'fiab_threshold_spin') else 30
+        filtered_results = []
+        for r in raw_results:
+            fiab_val = r.get('Fiabilite', 'N/A')
+            if fiab_val == 'N/A':
+                # Toujours inclure si pas de données de fiabilité
+                filtered_results.append(r)
+            else:
+                try:
+                    fiab_num = float(fiab_val) if isinstance(fiab_val, (int, float, str)) else 0.0
+                    if fiab_num >= min_fiab_threshold:
+                        filtered_results.append(r)
+                except (ValueError, TypeError):
+                    # Inclure si conversion échoue
+                    filtered_results.append(r)
+        
+        results_to_display = [r for r in filtered_results if str(r.get('Symbole', '')).strip()]
+        # 🔧 Garantir les champs backtest et dérivées pour éviter des cellules vides
         for r in results_to_display:
             r.setdefault('Fiabilite', 'N/A')
             r.setdefault('NbTrades', 0)
@@ -1519,6 +1620,17 @@ class MainWindow(QMainWindow):
             r.setdefault('Gain_total', 0.0)
             r.setdefault('Gain_moyen', 0.0)
             r.setdefault('Drawdown_max', 0.0)
+            # Dérivées techniques
+            r.setdefault('dPrice', 0.0)
+            r.setdefault('dMACD', 0.0)
+            r.setdefault('dRSI', 0.0)
+            r.setdefault('dVolRel', 0.0)
+            # Données financières
+            r.setdefault('Rev. Growth (%)', 0.0)
+            r.setdefault('EBITDA Yield (%)', 0.0)
+            r.setdefault('FCF Yield (%)', 0.0)
+            r.setdefault('D/E Ratio', 0.0)
+            r.setdefault('Market Cap (B$)', 0.0)
         bt_map = getattr(self, 'backtest_map', {})
 
         # Helper de conversion robuste pour éviter qu'une valeur vide casse la ligne
@@ -1552,6 +1664,11 @@ class MainWindow(QMainWindow):
                 self.merged_table.setItem(row, 0, QTableWidgetItem(str(sym)))
                 self.merged_table.setItem(row, 1, QTableWidgetItem(str(signal.get('Signal', ''))))
 
+                if signal.get('Signal', '') == 'ACHAT':
+                    self.merged_table.item(row, 1).setForeground(QColor(0, 128, 0))  # Vert
+                elif signal.get('Signal', '') == 'VENTE':
+                    self.merged_table.item(row, 1).setForeground(QColor(255, 0, 0))  # Rouge
+
                 score = safe_float(signal.get('Score', 0.0))
                 item = QTableWidgetItem(f"{score:.2f}")
                 item.setData(Qt.EditRole, score)
@@ -1567,11 +1684,31 @@ class MainWindow(QMainWindow):
                 rsi = safe_float(signal.get('RSI', 0.0))
                 item = QTableWidgetItem(f"{rsi:.2f}")
                 item.setData(Qt.EditRole, rsi)
+                # RSI: < 30 = excellent (survente, opportunité achat), 30-40 = bon, 40-60 = neutre, 60-70 = attention, > 70 = mauvais (surachat)
+                if rsi < 30:
+                    item.setForeground(QColor(0, 128, 0))  # Vert foncé : excellent (survente)
+                elif rsi < 40:
+                    item.setForeground(QColor(34, 139, 34))  # Vert : bon
+                elif rsi <= 60:
+                    item.setForeground(QColor(255, 165, 0))  # Orange : zone neutre
+                elif rsi <= 70:
+                    item.setForeground(QColor(255, 100, 0))  # Orange foncé : attention (surachat imminent)
+                else:
+                    item.setForeground(QColor(255, 0, 0))  # Rouge : mauvais (surachat)
                 self.merged_table.setItem(row, 5, item)
 
                 vol = safe_float(signal.get('Volume moyen', 0.0))
                 item = QTableWidgetItem(f"{vol:,.0f}")
                 item.setData(Qt.EditRole, float(vol))
+                # Volume: plus de volume = meilleure liquidité
+                if vol > 5000000:
+                    item.setForeground(QColor(0, 128, 0))  # Vert foncé : excellent volume
+                elif vol > 1000000:
+                    item.setForeground(QColor(34, 139, 34))  # Vert : bon volume
+                elif vol > 100000:
+                    item.setForeground(QColor(255, 165, 0))  # Orange : volume moyen
+                else:
+                    item.setForeground(QColor(255, 0, 0))  # Rouge : faible liquidité
                 self.merged_table.setItem(row, 6, item)
 
                 self.merged_table.setItem(row, 7, QTableWidgetItem(str(signal.get('Domaine', ''))))
@@ -1619,6 +1756,15 @@ class MainWindow(QMainWindow):
                 
                 item = QTableWidgetItem(f"{ratio:.2f}")
                 item.setData(Qt.EditRole, ratio)
+                # Harmoniser : ratio > 1 = excellent (dépassé le seuil), 0.5-1 = moyen, <0.5 = mauvais
+                if ratio > 1.5:
+                    item.setForeground(QColor(0, 128, 0))  # Vert foncé : excellent
+                elif ratio > 1.0:
+                    item.setForeground(QColor(34, 139, 34))  # Vert : bon (dépasse le seuil)
+                elif ratio > 0.5:
+                    item.setForeground(QColor(255, 165, 0))  # Orange : moyen
+                else:
+                    item.setForeground(QColor(255, 0, 0))  # Rouge : mauvais
                 self.merged_table.setItem(row, 9, item)
                 
                 
@@ -1647,6 +1793,15 @@ class MainWindow(QMainWindow):
                 item = QTableWidgetItem(fiab_text)
                 if fiab_val is not None:
                     item.setData(Qt.EditRole, fiab_val)
+                    # Harmoniser : >75% excellent, 50-75% bon, 30-50% moyen, <30% mauvais
+                    if fiab_val >= 75:
+                        item.setForeground(QColor(0, 128, 0))  # Vert foncé : excellent
+                    elif fiab_val >= 50:
+                        item.setForeground(QColor(34, 139, 34))  # Vert : bon
+                    elif fiab_val >= 30:
+                        item.setForeground(QColor(255, 165, 0))  # Orange : moyen
+                    else:
+                        item.setForeground(QColor(255, 0, 0))  # Rouge : mauvais
                 self.merged_table.setItem(row, 10, item)
 
                 # NbTrades
@@ -1662,28 +1817,64 @@ class MainWindow(QMainWindow):
                 self.merged_table.setItem(row, 12, item)
                 
                 # Colonnes Financières simples
-                # Colonne 12: Rev. Growth (%)
+                # Colonne 13: Rev. Growth (%)
                 rev_growth = safe_float(signal.get('Rev. Growth (%)', 0.0))
                 item = QTableWidgetItem(f"{rev_growth:.2f}")
                 item.setData(Qt.EditRole, rev_growth)
+                # Harmoniser : croissance revenue positive = bon
+                if rev_growth > 20:
+                    item.setForeground(QColor(0, 128, 0))  # Vert foncé : excellent
+                elif rev_growth > 5:
+                    item.setForeground(QColor(34, 139, 34))  # Vert : bon
+                elif rev_growth > 0:
+                    item.setForeground(QColor(255, 165, 0))  # Orange : moyen
+                else:
+                    item.setForeground(QColor(255, 0, 0))  # Rouge : mauvais (négatif)
                 self.merged_table.setItem(row, 13, item)
 
-                # Colonne 12: EBITDA Yield (%)
+                # Colonne 14: EBITDA Yield (%) - avec couleurs
                 ebitda = safe_float(signal.get('EBITDA Yield (%)', 0.0))
                 item = QTableWidgetItem(f"{ebitda:.2f}")
                 item.setData(Qt.EditRole, ebitda)
+                # Harmoniser : EBITDA positif élevé = bon
+                if ebitda > 15:
+                    item.setForeground(QColor(0, 128, 0))  # Vert foncé : excellent
+                elif ebitda > 8:
+                    item.setForeground(QColor(34, 139, 34))  # Vert : bon
+                elif ebitda > 0:
+                    item.setForeground(QColor(255, 165, 0))  # Orange : moyen
+                else:
+                    item.setForeground(QColor(255, 0, 0))  # Rouge : mauvais (négatif)
                 self.merged_table.setItem(row, 14, item)
 
-                # Colonne 14: FCF Yield (%)
+                # Colonne 15: FCF Yield (%)
                 fcf = safe_float(signal.get('FCF Yield (%)', 0.0))
                 item = QTableWidgetItem(f"{fcf:.2f}")
                 item.setData(Qt.EditRole, fcf)
+                # Harmoniser : FCF positif = bon
+                if fcf > 10:
+                    item.setForeground(QColor(0, 128, 0))  # Vert foncé : excellent
+                elif fcf > 3:
+                    item.setForeground(QColor(34, 139, 34))  # Vert : bon
+                elif fcf > 0:
+                    item.setForeground(QColor(255, 165, 0))  # Orange : moyen
+                else:
+                    item.setForeground(QColor(255, 0, 0))  # Rouge : mauvais (négatif)
                 self.merged_table.setItem(row, 15, item)
 
-                # Colonne 15: D/E Ratio
+                # Colonne 16: D/E Ratio (bas = bon)
                 de_ratio = safe_float(signal.get('D/E Ratio', 0.0))
                 item = QTableWidgetItem(f"{de_ratio:.2f}")
                 item.setData(Qt.EditRole, de_ratio)
+                # Harmoniser : ratio bas = excellent (moins d'endettement), ratio haut = mauvais
+                if de_ratio < 0.5:
+                    item.setForeground(QColor(0, 128, 0))  # Vert foncé : excellent
+                elif de_ratio < 1.5:
+                    item.setForeground(QColor(34, 139, 34))  # Vert : bon
+                elif de_ratio < 2.5:
+                    item.setForeground(QColor(255, 165, 0))  # Orange : moyen
+                else:
+                    item.setForeground(QColor(255, 0, 0))  # Rouge : mauvais (trop endetté)
                 self.merged_table.setItem(row, 16, item)
 
                 # Colonne 16: Market Cap (B$)
@@ -1722,10 +1913,28 @@ class MainWindow(QMainWindow):
 
                 item = QTableWidgetItem(f"{gain_total:.2f}")
                 item.setData(Qt.EditRole, gain_total)
+                # Harmoniser : gain > 0 = bon
+                if gain_total > 200:
+                    item.setForeground(QColor(0, 128, 0))  # Vert foncé : excellent
+                elif gain_total > 50:
+                    item.setForeground(QColor(34, 139, 34))  # Vert : bon
+                elif gain_total > 0:
+                    item.setForeground(QColor(255, 165, 0))  # Orange : moyen
+                else:
+                    item.setForeground(QColor(255, 0, 0))  # Rouge : mauvais
                 self.merged_table.setItem(row, 22, item)
 
                 item = QTableWidgetItem(f"{gain_moy:.2f}")
                 item.setData(Qt.EditRole, gain_moy)
+                # Harmoniser : gain moyen > 0 = bon
+                if gain_moy > 20:
+                    item.setForeground(QColor(0, 128, 0))  # Vert foncé : excellent
+                elif gain_moy > 5:
+                    item.setForeground(QColor(34, 139, 34))  # Vert : bon
+                elif gain_moy > 0:
+                    item.setForeground(QColor(255, 165, 0))  # Orange : moyen
+                else:
+                    item.setForeground(QColor(255, 0, 0))  # Rouge : mauvais
                 self.merged_table.setItem(row, 23, item)
 
                 # Consensus (text column at index 24)
@@ -1733,7 +1942,18 @@ class MainWindow(QMainWindow):
                 # Debug: vérifier si le Consensus existe vraiment
                 if row == 0:  # Afficher seulement pour la première ligne
                     print(f"🔍 DEBUG Consensus - Symbol: {signal.get('Symbole')}, Consensus value: '{consensus}'")
-                self.merged_table.setItem(row, 24, QTableWidgetItem(str(consensus)))
+                item = QTableWidgetItem(str(consensus))
+                # Colorer selon consensus
+                consensus_lower = str(consensus).lower()
+                if 'strong buy' in consensus_lower or 'achat fort' in consensus_lower:
+                    item.setForeground(QColor(0, 128, 0))  # Vert foncé : excellent
+                elif 'buy' in consensus_lower or 'achat' in consensus_lower:
+                    item.setForeground(QColor(34, 139, 34))  # Vert : bon
+                elif 'hold' in consensus_lower or 'conserver' in consensus_lower or 'neutre' in consensus_lower:
+                    item.setForeground(QColor(255, 165, 0))  # Orange : neutre
+                elif 'sell' in consensus_lower or 'vente' in consensus_lower:
+                    item.setForeground(QColor(255, 0, 0))  # Rouge : mauvais
+                self.merged_table.setItem(row, 24, item)
 
                 # item = QTableWidgetItem(f"{drawdown:.2f}")
                 # item.setData(Qt.EditRole, drawdown)
@@ -2080,46 +2300,115 @@ class MainWindow(QMainWindow):
             
             symbols_list = [symbols_per_domain.get(d, 0) for d in domains]
             
-            # Créer figure avec 4 subplots
-            fig = Figure(figsize=(14, 9), dpi=100)
+            # Calculer la rentabilité annualisée en % par secteur
+            # Capital investi: 50€ par stock
+            period_str = self.period_input.text().strip() if hasattr(self, 'period_input') else "12mo"
+            
+            # Convertir la période en années
+            if 'y' in period_str:
+                years = float(period_str.replace('y', ''))
+            elif 'mo' in period_str:
+                months = float(period_str.replace('mo', ''))
+                years = months / 12.0
+            elif 'd' in period_str:
+                days = float(period_str.replace('d', ''))
+                years = days / 365.0
+            else:
+                years = 1.0  # Par défaut 1 an
+            
+            rentabilite_annuelle_pct_list = []
+            for d in domains:
+                trades = stats['by_domain'][d]['trades']
+                gain = stats['by_domain'][d]['gain']
+                nb_symbols = symbols_per_domain.get(d, 1)
+                
+                # Capital investi: 50€ par stock
+                capital_investi = nb_symbols * 50.0
+                
+                # Rendement total en %
+                rendement_total_pct = (gain / capital_investi) * 100 if capital_investi > 0 else 0.0
+                
+                # Annualiser le rendement
+                rendement_annuel_pct = rendement_total_pct / years if years > 0 else rendement_total_pct
+                
+                rentabilite_annuelle_pct_list.append(rendement_annuel_pct)
+            
+            # Créer figure avec moins de graphiques pour plus de clarté (2 lignes x 2 colonnes)
+            fig = Figure(figsize=(16, 10), dpi=90)
             
             # Subplot 1: Bar chart taux de réussite
             ax1 = fig.add_subplot(2, 2, 1)
             colors = ['green' if t >= 60 else 'orange' if t >= 40 else 'red' for t in taux_list]
-            ax1.bar(domains, taux_list, color=colors, alpha=0.7)
-            ax1.set_ylabel('Taux de réussite (%)', fontweight='bold')
-            ax1.set_title('Taux de réussite par domaine', fontweight='bold')
-            ax1.set_ylim(0, 100)
-            ax1.axhline(y=50, color='gray', linestyle='--', alpha=0.3)
-            ax1.tick_params(axis='x', rotation=45)
+            bars1 = ax1.bar(domains, taux_list, color=colors, alpha=0.75, edgecolor='black', linewidth=1.2)
+            ax1.set_ylabel('Taux de réussite (%)', fontweight='bold', fontsize=11)
+            ax1.set_title('Taux de réussite', fontweight='bold', fontsize=13, pad=10)
+            ax1.set_ylim(0, 105)
+            ax1.axhline(y=50, color='gray', linestyle='--', alpha=0.5, linewidth=1.5)
+            ax1.tick_params(axis='x', rotation=45, labelsize=9)
+            ax1.tick_params(axis='y', labelsize=9)
+            ax1.grid(axis='y', alpha=0.3, linestyle='--')
             for i, v in enumerate(taux_list):
-                ax1.text(i, v + 2, f'{v:.1f}%', ha='center', fontsize=9)
+                ax1.text(i, v + 3, f'{v:.1f}%', ha='center', fontsize=10, fontweight='bold')
             
-            # Subplot 2: Bar chart nombre de trades
+            # Subplot 2: Bar chart gain total
             ax2 = fig.add_subplot(2, 2, 2)
-            ax2.bar(domains, trades_list, color='steelblue', alpha=0.7)
-            ax2.set_ylabel('Nombre de trades', fontweight='bold')
-            ax2.set_title('Distribution des trades par domaine', fontweight='bold')
-            ax2.tick_params(axis='x', rotation=45)
-            for i, v in enumerate(trades_list):
-                ax2.text(i, v + 0.1, str(int(v)), ha='center', fontsize=9)
-            
-            # Subplot 3: Bar chart gain
-            ax3 = fig.add_subplot(2, 2, 3)
             colors_gain = ['green' if g > 0 else 'red' for g in gain_list]
-            ax3.bar(domains, gain_list, color=colors_gain, alpha=0.7)
-            ax3.set_ylabel('Gain total ($)', fontweight='bold')
-            ax3.set_title('Gain brut par domaine', fontweight='bold')
-            ax3.axhline(y=0, color='black', linewidth=0.8)
-            ax3.tick_params(axis='x', rotation=45)
+            bars2 = ax2.bar(domains, gain_list, color=colors_gain, alpha=0.75, edgecolor='black', linewidth=1.2)
+            ax2.set_ylabel('Gain total ($)', fontweight='bold', fontsize=11)
+            ax2.set_title('Gain brut total', fontweight='bold', fontsize=13, pad=10)
+            ax2.axhline(y=0, color='black', linewidth=1.5)
+            ax2.tick_params(axis='x', rotation=45, labelsize=9)
+            ax2.tick_params(axis='y', labelsize=9)
+            ax2.grid(axis='y', alpha=0.3, linestyle='--')
             for i, v in enumerate(gain_list):
-                ax3.text(i, v + (5 if v > 0 else -10), f'${v:.0f}', ha='center', fontsize=9)
+                offset = 20 if v > 0 else -40
+                ax2.text(i, v + offset, f'${v:.0f}', ha='center', fontsize=10, fontweight='bold')
             
-            # Subplot 4: Pie chart distribution symboles par domaine
+            # Subplot 3: Bar chart rentabilité annuelle en %
+            ax3 = fig.add_subplot(2, 2, 3)
+            colors_rentabilite = ['darkgreen' if r > 50 else 'green' if r > 10 else 'orange' if r > 0 else 'red' for r in rentabilite_annuelle_pct_list]
+            bars3 = ax3.bar(domains, rentabilite_annuelle_pct_list, color=colors_rentabilite, alpha=0.75, edgecolor='black', linewidth=1.2)
+            ax3.set_ylabel('Rentabilité annuelle (%)', fontweight='bold', fontsize=11)
+            ax3.set_title('Rentabilité annualisée', fontweight='bold', fontsize=13, pad=10)
+            ax3.axhline(y=0, color='black', linewidth=1.5)
+            ax3.axhline(y=10, color='green', linestyle='--', alpha=0.4, linewidth=1)
+            ax3.tick_params(axis='x', rotation=45, labelsize=9)
+            ax3.tick_params(axis='y', labelsize=9)
+            ax3.grid(axis='y', alpha=0.3, linestyle='--')
+            for i, v in enumerate(rentabilite_annuelle_pct_list):
+                offset = max(abs(v) * 0.1, 3) if v > 0 else -max(abs(v) * 0.1, 5)
+                ax3.text(i, v + offset, f'{v:.1f}%', ha='center', fontsize=10, fontweight='bold')
+            
+            # Subplot 4: Distribution trades + symboles combinée
             ax4 = fig.add_subplot(2, 2, 4)
-            if sum(symbols_list) > 0:
-                ax4.pie(symbols_list, labels=domains, autopct='%1.1f%%', startangle=90)
-                ax4.set_title('Distribution des symboles par domaine', fontweight='bold')
+            x_pos = range(len(domains))
+            width = 0.35
+            
+            # Normaliser pour affichage sur même échelle (éviter division par zéro)
+            max_trades = max(trades_list) if trades_list and max(trades_list) > 0 else 1
+            max_symbols = max(symbols_list) if symbols_list and max(symbols_list) > 0 else 1
+            trades_normalized = [t / max_trades * 100 if max_trades > 0 else 0 for t in trades_list]
+            symbols_normalized = [s / max_symbols * 100 if max_symbols > 0 else 0 for s in symbols_list]
+            
+            bars4a = ax4.bar([x - width/2 for x in x_pos], trades_normalized, width, 
+                            label='Trades', color='steelblue', alpha=0.75, edgecolor='black', linewidth=1)
+            bars4b = ax4.bar([x + width/2 for x in x_pos], symbols_normalized, width,
+                            label='Symboles', color='coral', alpha=0.75, edgecolor='black', linewidth=1)
+            
+            ax4.set_ylabel('Distribution (normalisée)', fontweight='bold', fontsize=11)
+            ax4.set_title('Trades et Symboles par secteur', fontweight='bold', fontsize=13, pad=10)
+            ax4.set_xticks(x_pos)
+            ax4.set_xticklabels(domains, rotation=45, ha='right', fontsize=9)
+            ax4.tick_params(axis='y', labelsize=9)
+            ax4.legend(loc='upper right', fontsize=10)
+            ax4.grid(axis='y', alpha=0.3, linestyle='--')
+            
+            # Ajouter les valeurs réelles au-dessus des barres
+            for i, (t, s) in enumerate(zip(trades_list, symbols_list)):
+                ax4.text(i - width/2, trades_normalized[i] + 3, str(int(t)), 
+                        ha='center', fontsize=8, fontweight='bold')
+                ax4.text(i + width/2, symbols_normalized[i] + 3, str(int(s)), 
+                        ha='center', fontsize=8, fontweight='bold')
             
             fig.tight_layout()
             canvas = FigureCanvas(fig)
@@ -2167,10 +2456,28 @@ class MainWindow(QMainWindow):
             selection_container = QWidget()
             selection_layout = QVBoxLayout(selection_container)
             
-            # Label pour sélection
+            # Label pour sélection avec boutons rapides
+            select_header_layout = QHBoxLayout()
             select_label = QLabel("✓ Sélectionnez jusqu'à 15 symboles:")
             select_label.setStyleSheet("font-weight: bold; font-size: 10px;")
-            selection_layout.addWidget(select_label)
+            select_header_layout.addWidget(select_label)
+            select_header_layout.addStretch()
+            
+            # ✅ Boutons de sélection rapide
+            select_all_btn = QPushButton("Tout sélectionner")
+            select_all_btn.setMaximumWidth(120)
+            select_all_btn.setStyleSheet("background-color: #2196F3; color: white; font-size: 9px; padding: 4px;")
+            
+            deselect_all_btn = QPushButton("Tout désélectionner")
+            deselect_all_btn.setMaximumWidth(130)
+            deselect_all_btn.setStyleSheet("background-color: #757575; color: white; font-size: 9px; padding: 4px;")
+            
+            select_header_layout.addWidget(select_all_btn)
+            select_header_layout.addWidget(deselect_all_btn)
+            
+            select_label_widget = QWidget()
+            select_label_widget.setLayout(select_header_layout)
+            selection_layout.addWidget(select_label_widget)
             
             # Sélecteur de date pour comparaison historique
             date_container = QWidget()
@@ -2212,6 +2519,18 @@ class MainWindow(QMainWindow):
             
             scroll.setWidget(checkbox_container)
             selection_layout.addWidget(scroll)
+            
+            # ✅ Connexions des boutons de sélection rapide
+            def on_select_all():
+                for cb in checkboxes.values():
+                    cb.setChecked(True)
+            
+            def on_deselect_all():
+                for cb in checkboxes.values():
+                    cb.setChecked(False)
+            
+            select_all_btn.clicked.connect(on_select_all)
+            deselect_all_btn.clicked.connect(on_deselect_all)
             
             # Boutons d'action
             button_layout = QHBoxLayout()
@@ -2296,6 +2615,9 @@ class MainWindow(QMainWindow):
                         fiab = float(fiab_text.replace('%', '')) if fiab_text != 'N/A' else 0.0
                         trades = int(self.merged_table.item(row, 11).text()) if self.merged_table.item(row, 11) else 0
                         gagnants = int(self.merged_table.item(row, 12).text()) if self.merged_table.item(row, 12) else 0
+                        # ✅ Ajouter EBITDA (colonne 14 dans merged_table)
+                        ebitda_text = self.merged_table.item(row, 14).text() if self.merged_table.item(row, 14) else '0'
+                        ebitda = float(ebitda_text) if ebitda_text else 0.0
                         gain = float(self.merged_table.item(row, 22).text()) if self.merged_table.item(row, 22) else 0.0
                         consensus = self.merged_table.item(row, 24).text() if self.merged_table.item(row, 24) else 'N/A'
                         
@@ -2308,6 +2630,7 @@ class MainWindow(QMainWindow):
                             'Fiabilité (%)': fiab,
                             'Nb Trades': trades,
                             'Gagnants': gagnants,
+                            'EBITDA Yield (%)': ebitda,  # ✅ Ajouté
                             'Gain ($)': gain,
                             'Consensus': consensus
                         }
@@ -2318,14 +2641,19 @@ class MainWindow(QMainWindow):
             pertinence_scores = {}
             for sym, data in symbols_data.items():
                 # Score de pertinence = combinaison pondérée des métriques
-                # Facteurs: Score/Seuil (30%), Fiabilité (30%), Gain (20%), RSI (10%), Consensus (10%)
-                score_factor = min(data['Score/Seuil'], 2.0) * 30  # Max 60 points
-                fiab_factor = data['Fiabilité (%)'] * 0.3  # Max 30 points
-                gain_factor = min(max(data['Gain ($)'] / 100, 0), 2) * 10  # Max 20 points
-                rsi_factor = abs(50 - data['RSI']) * 0.2  # Proche de 50 = meilleur
+                # Facteurs: Score/Seuil (25%), Fiabilité (25%), EBITDA (20%), Gain (15%), RSI (10%), Consensus (5%)
+                score_factor = min(data['Score/Seuil'], 2.0) * 25  # Max 50 points
+                fiab_factor = data['Fiabilité (%)'] * 0.25  # Max 25 points
+                
+                # ✅ EBITDA a une influence majeure (20%)
+                ebitda_val = data.get('EBITDA Yield (%)', 0.0)
+                ebitda_factor = min(max(ebitda_val / 10, 0), 2) * 10  # Max 20 points (positif surtout)
+                
+                gain_factor = min(max(data['Gain ($)'] / 100, 0), 1.5) * 10  # Max 15 points
+                rsi_factor = abs(50 - data['RSI']) * 0.1  # Proche de 50 = meilleur
                 consensus_factor = 5 if data['Consensus'] != 'N/A' else 0
                 
-                pertinence = score_factor + fiab_factor + gain_factor + rsi_factor + consensus_factor
+                pertinence = score_factor + fiab_factor + ebitda_factor + gain_factor + rsi_factor + consensus_factor
                 pertinence_scores[sym] = pertinence
             
             # Classer par pertinence (décroissant)
@@ -2334,7 +2662,7 @@ class MainWindow(QMainWindow):
             # Créer un tableau QTableWidget pour afficher la comparaison
             table = QTableWidget()
             columns = ['Rang', 'Symbole', 'Domaine', 'Score', 'Score/Seuil', 'Fiabilité (%)', 'Nb Trades', 
-                      'Gagnants', 'RSI', 'Prix', 'Gain ($)', 'Consensus', 'Pertinence']
+                      'Gagnants', 'RSI', 'Prix', 'EBITDA (%)', 'Gain ($)', 'Consensus', 'Pertinence']
             table.setColumnCount(len(columns))
             table.setHorizontalHeaderLabels(columns)
             table.horizontalHeader().setSectionResizeMode(QHeaderView.ResizeToContents)
@@ -2393,21 +2721,36 @@ class MainWindow(QMainWindow):
                 item.setData(Qt.EditRole, data['Prix'])
                 table.setItem(row, 9, item)
                 
+                # EBITDA ✅ Ajout avec couleurs
+                ebitda = data.get('EBITDA Yield (%)', 0.0)
+                item = QTableWidgetItem(f"{ebitda:.2f}")
+                item.setData(Qt.EditRole, ebitda)
+                # Appliquer les couleurs selon les seuils
+                if ebitda > 15:
+                    item.setForeground(QColor(0, 128, 0))  # Vert foncé
+                elif ebitda > 8:
+                    item.setForeground(QColor(34, 139, 34))  # Vert
+                elif ebitda > 0:
+                    item.setForeground(QColor(255, 165, 0))  # Orange
+                else:
+                    item.setForeground(QColor(255, 0, 0))  # Rouge
+                table.setItem(row, 10, item)
+                
                 # Gain
                 color = Qt.green if data['Gain ($)'] > 0 else Qt.red if data['Gain ($)'] < 0 else Qt.white
                 item = QTableWidgetItem(f"${data['Gain ($)']:.2f}")
                 item.setData(Qt.EditRole, data['Gain ($)'])
                 item.setBackground(color)
-                table.setItem(row, 10, item)
+                table.setItem(row, 11, item)
                 
                 # Consensus
-                table.setItem(row, 11, QTableWidgetItem(data['Consensus']))
+                table.setItem(row, 12, QTableWidgetItem(data['Consensus']))
                 
                 # Pertinence
                 item = QTableWidgetItem(f"{pertinence:.1f}")
                 item.setData(Qt.EditRole, pertinence)
                 item.setBackground(Qt.yellow)
-                table.setItem(row, 12, item)
+                table.setItem(row, 13, item)
             
             table.setSortingEnabled(True)
             table.setMinimumHeight(300)

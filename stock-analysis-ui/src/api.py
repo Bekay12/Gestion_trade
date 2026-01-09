@@ -316,22 +316,58 @@ def analyze_symbol():
             prices = stock_data['Close']
             volumes = stock_data['Volume']
             
-            # Récupérer le secteur (comme le desktop UI) - AVEC CACHE
+            # Récupérer le secteur (comme le desktop UI) - AVEC CACHE + NORMALISATION
             try:
                 info = get_ticker_info_cached(symbol)
                 domaine = info.get("sector", "Inconnu")
-            except Exception:
+                
+                # ✅ NEW: Normaliser le secteur
+                from sector_normalizer import normalize_sector
+                domaine_raw = domaine
+                domaine = normalize_sector(domaine)
+                if domaine_raw != domaine:
+                    print(f"🔄 {symbol}: Secteur normalisé: '{domaine_raw}' -> '{domaine}'")
+            except Exception as e:
                 domaine = "Inconnu"
+                print(f"⚠️ Erreur normalisation secteur {symbol}: {e}")
             
             # Cap range
             cap_range = get_cap_range_for_symbol(symbol)
             if use_cap_fallback and (cap_range == "Unknown" or not cap_range):
                 best_params_all = extract_best_parameters()
-                for fallback_cap in ["Large", "Mid", "Mega"]:
-                    test_key = f"{domaine}_{fallback_cap}"
-                    if test_key in best_params_all:
-                        cap_range = fallback_cap
-                        break
+                # ✅ AMÉLIORÉ: Chercher dans la DB d'abord
+                try:
+                    import sqlite3
+                    db_path = 'symbols.db'
+                    if os.path.exists(db_path):
+                        conn = sqlite3.connect(db_path)
+                        cursor = conn.cursor()
+                        cursor.execute("""
+                            SELECT DISTINCT cap_range FROM symbols 
+                            WHERE sector = ? AND cap_range IS NOT NULL AND cap_range != 'Unknown'
+                            LIMIT 10
+                        """, (domaine,))
+                        db_caps = [row[0] for row in cursor.fetchall()]
+                        conn.close()
+                        
+                        cap_priority = ['Small', 'Mid', 'Large', 'Mega']
+                        for cap in cap_priority:
+                            if cap in db_caps:
+                                test_key = f"{domaine}_{cap}"
+                                if test_key in best_params_all:
+                                    cap_range = cap
+                                    print(f"✅ {symbol}: Cap_range trouvé en DB: {cap}")
+                                    break
+                except Exception as e:
+                    print(f"⚠️ {symbol}: Erreur recherche DB cap_range: {e}")
+                
+                # Fallback standard
+                if cap_range == "Unknown" or not cap_range:
+                    for fallback_cap in ["Large", "Mid", "Small", "Mega"]:
+                        test_key = f"{domaine}_{fallback_cap}"
+                        if test_key in best_params_all:
+                            cap_range = fallback_cap
+                            break
             
             # Fallback domaine
             original_domaine = domaine

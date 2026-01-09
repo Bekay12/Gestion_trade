@@ -1,0 +1,8 @@
+Symbole,Signal,Score,Prix,Tendance,RSI,Domaine,CapRange,ParamKey,Volume moyen,Consensus,ConsensusMean,dPrice,dMACD,dRSI,dVolRel,Rev. Growth (%),EBITDA Yield (%),FCF Yield (%),D/E Ratio,Market Cap (B$),Fiabilite,detection_time
+LDI,ACHAT,5.137,3.185699939727783,Hausse,65.6,Financial Services,Small,Financial Services_Small,4406705.93,Neutre,3.5,2.11,32.95,1.95,-10.78,-7.8,0.0,0.0,1255.0,1.1,40.0,2026-01-16 20:10:05
+IBRX,ACHAT,7.444,5.295000076293945,Hausse,89.67,Healthcare,Mid,Healthcare_Mid,21011634.27,Achat,1.2,7.31,13.66,6.26,11.42,425.1,-6.84,-5.92,0.0,3.89,100.0,2026-01-16 20:10:05
+CTMX,ACHAT,6.225,5.579999923706055,Hausse,73.07,Healthcare,Small,Healthcare_Small,2727239.37,Achat,1.5,1.82,3.44,1.5,6.72,-82.2,4.21,-5.86,5.21,0.95,100.0,2026-01-16 20:10:05
+ASTS,ACHAT,9.6,117.86000061035156,Hausse,68.88,Technology,Large,Technology_Large,16974913.03,Neutre,2.6,2.68,4.84,1.6,-0.71,1239.9,-0.82,-1.93,44.43,43.3,100.0,2026-01-16 20:10:05
+AGX,ACHAT,5.48,385.8500061035156,Hausse,65.15,Industrials,Mid,Industrials_Mid,354630.27,Neutre,,1.37,4.82,2.21,1.09,-2.3,3.17,3.88,0.63,5.35,100.0,2026-01-16 20:10:05
+CEG,VENTE,-3.415,301.9049987792969,Baisse,36.03,Utilities,Large,Utilities_Large,2663841.73,Achat,1.72222,-0.8,8.85,-0.48,0.89,0.3,5.31,2.8,61.51,109.38,55.55555555555556,2026-01-16 20:10:05
+TLN,VENTE,-3.415,372.4599914550781,Baisse,48.49,Utilities,Large,Utilities_Large,897815.73,Achat,1.4,1.02,1.35,2.56,4.56,38.7,2.85,4.21,204.76,17.02,83.33333333333334,2026-01-16 20:10:05
