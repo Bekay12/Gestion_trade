@@ -662,3 +662,63 @@
 2026-01-07 04:21:23,956 - INFO - \U0001f50d DEBUG BFAM: secteur récupéré = Consumer Cyclical
 2026-01-07 04:21:23,959 - INFO - \u26a0\ufe0f DEBUG BFAM: erreur récupération secteur: I/O operation on closed file.
 2026-01-07 04:21:23,960 - INFO - \u274c Erreur critique pour BFAM: I/O operation on closed file.
+2026-01-09 01:22:29,163 - ERROR - 
+1 Failed download:
+2026-01-09 01:22:29,164 - ERROR - ['IUR']: YFPricesMissingError('possibly delisted; no price data found  (period=12mo)')
+2026-01-09 01:22:29,295 - ERROR - 
+1 Failed download:
+2026-01-09 01:22:29,295 - ERROR - ['IUR']: YFPricesMissingError('possibly delisted; no price data found  (period=12mo)')
+2026-01-09 01:22:41,475 - ERROR - 
+1 Failed download:
+2026-01-09 01:22:41,475 - ERROR - ['KUR']: YFPricesMissingError('possibly delisted; no price data found  (period=12mo)')
+2026-01-09 01:22:41,625 - ERROR - 
+1 Failed download:
+2026-01-09 01:22:41,625 - ERROR - ['KUR']: YFPricesMissingError('possibly delisted; no price data found  (period=12mo)')
+2026-01-09 01:22:43,559 - ERROR - 
+1 Failed download:
+2026-01-09 01:22:43,559 - ERROR - ['KUR']: YFPricesMissingError('possibly delisted; no price data found  (period=12mo)')
+2026-01-09 01:22:43,729 - ERROR - 
+1 Failed download:
+2026-01-09 01:22:43,729 - ERROR - ['KUR']: YFPricesMissingError('possibly delisted; no price data found  (period=12mo)')
+2026-01-09 01:22:53,442 - ERROR - 
+1 Failed download:
+2026-01-09 01:22:53,442 - ERROR - ['KURI']: YFPricesMissingError('possibly delisted; no price data found  (period=12mo) (Yahoo error = "No data found, symbol may be delisted")')
+2026-01-09 01:22:54,363 - ERROR - 
+1 Failed download:
+2026-01-09 01:22:54,363 - ERROR - ['KURI']: YFPricesMissingError('possibly delisted; no price data found  (period=12mo) (Yahoo error = "No data found, symbol may be delisted")')
+2026-01-09 01:23:01,373 - ERROR - 
+1 Failed download:
+2026-01-09 01:23:01,374 - ERROR - ['LOIU']: YFPricesMissingError('possibly delisted; no price data found  (period=12mo) (Yahoo error = "No data found, symbol may be delisted")')
+2026-01-09 01:23:01,709 - ERROR - 
+1 Failed download:
+2026-01-09 01:23:01,709 - ERROR - ['LOIU']: YFPricesMissingError('possibly delisted; no price data found  (period=12mo) (Yahoo error = "No data found, symbol may be delisted")')
+2026-01-09 01:23:31,848 - ERROR - HTTP Error 404: 
+2026-01-09 01:23:32,573 - ERROR - HTTP Error 404: 
+2026-01-09 01:23:38,494 - ERROR - HTTP Error 404: 
+2026-01-09 01:23:39,296 - ERROR - HTTP Error 404: 
+2026-01-09 01:23:40,603 - ERROR - HTTP Error 404: 
+2026-01-09 01:23:41,336 - ERROR - HTTP Error 404: 
+2026-01-09 02:59:48,448 - ERROR - 
+1 Failed download:
+2026-01-09 02:59:48,448 - ERROR - ['ERJ']: YFPricesMissingError('possibly delisted; no price data found  (period=12mo) (Yahoo error = "No data found, symbol may be delisted")')
+2026-01-09 03:00:08,614 - ERROR - 
+1 Failed download:
+2026-01-09 03:00:08,614 - ERROR - ['SAND']: YFPricesMissingError('possibly delisted; no price data found  (period=12mo) (Yahoo error = "No data found, symbol may be delisted")')
+2026-01-09 03:00:17,425 - ERROR - 
+1 Failed download:
+2026-01-09 03:00:17,425 - ERROR - ['ERJ']: YFPricesMissingError('possibly delisted; no price data found  (period=12mo) (Yahoo error = "No data found, symbol may be delisted")')
+2026-01-09 03:00:18,918 - ERROR - 
+1 Failed download:
+2026-01-09 03:00:18,918 - ERROR - ['SAND']: YFPricesMissingError('possibly delisted; no price data found  (period=12mo) (Yahoo error = "No data found, symbol may be delisted")')
+2026-01-09 03:04:46,551 - ERROR - 
+1 Failed download:
+2026-01-09 03:04:46,551 - ERROR - ['ERJ']: YFPricesMissingError('possibly delisted; no price data found  (period=12mo) (Yahoo error = "No data found, symbol may be delisted")')
+2026-01-09 03:04:47,171 - ERROR - 
+1 Failed download:
+2026-01-09 03:04:47,171 - ERROR - ['ERJ']: YFPricesMissingError('possibly delisted; no price data found  (period=12mo) (Yahoo error = "No data found, symbol may be delisted")')
+2026-01-09 03:05:00,733 - ERROR - 
+1 Failed download:
+2026-01-09 03:05:00,733 - ERROR - ['SAND']: YFPricesMissingError('possibly delisted; no price data found  (period=12mo) (Yahoo error = "No data found, symbol may be delisted")')
+2026-01-09 03:05:01,537 - ERROR - 
+1 Failed download:
+2026-01-09 03:05:01,537 - ERROR - ['SAND']: YFPricesMissingError('possibly delisted; no price data found  (period=12mo) (Yahoo error = "No data found, symbol may be delisted")')

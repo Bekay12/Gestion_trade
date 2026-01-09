@@ -475,14 +475,14 @@ class MainWindow(QMainWindow):
         self.merged_table.setMinimumHeight(600)
         self.merged_table.setSizePolicy(QSizePolicy.Expanding, QSizePolicy.Expanding)
         merged_columns = [
-        'Symbole','Signal','Score','Prix','Tendance','RSI','Volume moyen','Domaine','Cap Range','Score/Seuil',
-        'Fiabilite (%)','Nb Trades','Gagnants',
+        'Symbole','Signal','Score','Prix','Tendance','RSI','Volume\nmoyen','Domaine','Cap\nRange','Score/\nSeuil',
+        'Fiabilite\n(%)','Nb\nTrades','Gagnants',
         # COLONNES FINANCIÈRES
-        'Rev. Growth (%)','EBITDA Yield (%)','FCF Yield (%)','D/E Ratio','Market Cap (B$)',
+        'Rev.\nGrowth(%)','EBITDA\nYield(%)','FCF\nYield(%)','D/E\nRatio','Market\nCap(B$)',
         # COLONNES DERIVÉES
-        'dPrice','dMACD','dRSI','dVolRel',
+        'dPrice','dMACD','dRSI','dVol\nRel',
         # COLONNES BACKTEST
-        'Gain total ($)','Gain moyen ($)',
+        'Gain\ntotal($)','Gain\nmoyen($)',
         # INFO
         'Consensus'
         ]
@@ -493,6 +493,17 @@ class MainWindow(QMainWindow):
         self.merged_table.setColumnCount(len(merged_columns))
         self.merged_table.setHorizontalHeaderLabels(merged_columns)
         self.merged_table.horizontalHeader().setSectionResizeMode(QHeaderView.ResizeToContents)
+        # Réduire la hauteur des en-têtes pour 2 lignes maximum
+        self.merged_table.horizontalHeader().setMinimumHeight(40)
+        # Centrer les en-têtes horizontalement et verticalement
+        header_style = """
+            QHeaderView::section {
+                padding: 4px;
+                text-align: center;
+                background-color: #f0f0f0;
+            }
+        """
+        self.merged_table.horizontalHeader().setStyleSheet(header_style)
         # Allow sorting by clicking headers (we also provide numeric data via Qt.EditRole)
         self.merged_table.setSortingEnabled(True)
         
@@ -1511,7 +1522,7 @@ class MainWindow(QMainWindow):
         raw_results = getattr(self, 'filtered_results', self.current_results)
         # 🚫 Éviter les lignes vides: ne garder que les entrées avec un symbole non vide
         results_to_display = [r for r in raw_results if str(r.get('Symbole', '')).strip()]
-        # 🔧 Garantir les champs backtest pour éviter des cellules vides si la map manque
+        # 🔧 Garantir les champs backtest et dérivées pour éviter des cellules vides
         for r in results_to_display:
             r.setdefault('Fiabilite', 'N/A')
             r.setdefault('NbTrades', 0)
@@ -1519,6 +1530,17 @@ class MainWindow(QMainWindow):
             r.setdefault('Gain_total', 0.0)
             r.setdefault('Gain_moyen', 0.0)
             r.setdefault('Drawdown_max', 0.0)
+            # Dérivées techniques
+            r.setdefault('dPrice', 0.0)
+            r.setdefault('dMACD', 0.0)
+            r.setdefault('dRSI', 0.0)
+            r.setdefault('dVolRel', 0.0)
+            # Données financières
+            r.setdefault('Rev. Growth (%)', 0.0)
+            r.setdefault('EBITDA Yield (%)', 0.0)
+            r.setdefault('FCF Yield (%)', 0.0)
+            r.setdefault('D/E Ratio', 0.0)
+            r.setdefault('Market Cap (B$)', 0.0)
         bt_map = getattr(self, 'backtest_map', {})
 
         # Helper de conversion robuste pour éviter qu'une valeur vide casse la ligne
@@ -1552,6 +1574,11 @@ class MainWindow(QMainWindow):
                 self.merged_table.setItem(row, 0, QTableWidgetItem(str(sym)))
                 self.merged_table.setItem(row, 1, QTableWidgetItem(str(signal.get('Signal', ''))))
 
+                if signal.get('Signal', '') == 'ACHAT':
+                    self.merged_table.item(row, 1).setForeground(QColor(0, 128, 0))  # Vert
+                elif signal.get('Signal', '') == 'VENTE':
+                    self.merged_table.item(row, 1).setForeground(QColor(255, 0, 0))  # Rouge
+
                 score = safe_float(signal.get('Score', 0.0))
                 item = QTableWidgetItem(f"{score:.2f}")
                 item.setData(Qt.EditRole, score)
@@ -1567,11 +1594,31 @@ class MainWindow(QMainWindow):
                 rsi = safe_float(signal.get('RSI', 0.0))
                 item = QTableWidgetItem(f"{rsi:.2f}")
                 item.setData(Qt.EditRole, rsi)
+                # RSI: < 30 = excellent (survente, opportunité achat), 30-40 = bon, 40-60 = neutre, 60-70 = attention, > 70 = mauvais (surachat)
+                if rsi < 30:
+                    item.setForeground(QColor(0, 128, 0))  # Vert foncé : excellent (survente)
+                elif rsi < 40:
+                    item.setForeground(QColor(34, 139, 34))  # Vert : bon
+                elif rsi <= 60:
+                    item.setForeground(QColor(255, 165, 0))  # Orange : zone neutre
+                elif rsi <= 70:
+                    item.setForeground(QColor(255, 100, 0))  # Orange foncé : attention (surachat imminent)
+                else:
+                    item.setForeground(QColor(255, 0, 0))  # Rouge : mauvais (surachat)
                 self.merged_table.setItem(row, 5, item)
 
                 vol = safe_float(signal.get('Volume moyen', 0.0))
                 item = QTableWidgetItem(f"{vol:,.0f}")
                 item.setData(Qt.EditRole, float(vol))
+                # Volume: plus de volume = meilleure liquidité
+                if vol > 5000000:
+                    item.setForeground(QColor(0, 128, 0))  # Vert foncé : excellent volume
+                elif vol > 1000000:
+                    item.setForeground(QColor(34, 139, 34))  # Vert : bon volume
+                elif vol > 100000:
+                    item.setForeground(QColor(255, 165, 0))  # Orange : volume moyen
+                else:
+                    item.setForeground(QColor(255, 0, 0))  # Rouge : faible liquidité
                 self.merged_table.setItem(row, 6, item)
 
                 self.merged_table.setItem(row, 7, QTableWidgetItem(str(signal.get('Domaine', ''))))
@@ -1619,6 +1666,15 @@ class MainWindow(QMainWindow):
                 
                 item = QTableWidgetItem(f"{ratio:.2f}")
                 item.setData(Qt.EditRole, ratio)
+                # Harmoniser : ratio > 1 = excellent (dépassé le seuil), 0.5-1 = moyen, <0.5 = mauvais
+                if ratio > 1.5:
+                    item.setForeground(QColor(0, 128, 0))  # Vert foncé : excellent
+                elif ratio > 1.0:
+                    item.setForeground(QColor(34, 139, 34))  # Vert : bon (dépasse le seuil)
+                elif ratio > 0.5:
+                    item.setForeground(QColor(255, 165, 0))  # Orange : moyen
+                else:
+                    item.setForeground(QColor(255, 0, 0))  # Rouge : mauvais
                 self.merged_table.setItem(row, 9, item)
                 
                 
@@ -1647,6 +1703,15 @@ class MainWindow(QMainWindow):
                 item = QTableWidgetItem(fiab_text)
                 if fiab_val is not None:
                     item.setData(Qt.EditRole, fiab_val)
+                    # Harmoniser : >75% excellent, 50-75% bon, 30-50% moyen, <30% mauvais
+                    if fiab_val >= 75:
+                        item.setForeground(QColor(0, 128, 0))  # Vert foncé : excellent
+                    elif fiab_val >= 50:
+                        item.setForeground(QColor(34, 139, 34))  # Vert : bon
+                    elif fiab_val >= 30:
+                        item.setForeground(QColor(255, 165, 0))  # Orange : moyen
+                    else:
+                        item.setForeground(QColor(255, 0, 0))  # Rouge : mauvais
                 self.merged_table.setItem(row, 10, item)
 
                 # NbTrades
@@ -1662,28 +1727,55 @@ class MainWindow(QMainWindow):
                 self.merged_table.setItem(row, 12, item)
                 
                 # Colonnes Financières simples
-                # Colonne 12: Rev. Growth (%)
+                # Colonne 13: Rev. Growth (%)
                 rev_growth = safe_float(signal.get('Rev. Growth (%)', 0.0))
                 item = QTableWidgetItem(f"{rev_growth:.2f}")
                 item.setData(Qt.EditRole, rev_growth)
+                # Harmoniser : croissance revenue positive = bon
+                if rev_growth > 20:
+                    item.setForeground(QColor(0, 128, 0))  # Vert foncé : excellent
+                elif rev_growth > 5:
+                    item.setForeground(QColor(34, 139, 34))  # Vert : bon
+                elif rev_growth > 0:
+                    item.setForeground(QColor(255, 165, 0))  # Orange : moyen
+                else:
+                    item.setForeground(QColor(255, 0, 0))  # Rouge : mauvais (négatif)
                 self.merged_table.setItem(row, 13, item)
 
-                # Colonne 12: EBITDA Yield (%)
+                # Colonne 14: EBITDA Yield (%)
                 ebitda = safe_float(signal.get('EBITDA Yield (%)', 0.0))
                 item = QTableWidgetItem(f"{ebitda:.2f}")
                 item.setData(Qt.EditRole, ebitda)
                 self.merged_table.setItem(row, 14, item)
 
-                # Colonne 14: FCF Yield (%)
+                # Colonne 15: FCF Yield (%)
                 fcf = safe_float(signal.get('FCF Yield (%)', 0.0))
                 item = QTableWidgetItem(f"{fcf:.2f}")
                 item.setData(Qt.EditRole, fcf)
+                # Harmoniser : FCF positif = bon
+                if fcf > 10:
+                    item.setForeground(QColor(0, 128, 0))  # Vert foncé : excellent
+                elif fcf > 3:
+                    item.setForeground(QColor(34, 139, 34))  # Vert : bon
+                elif fcf > 0:
+                    item.setForeground(QColor(255, 165, 0))  # Orange : moyen
+                else:
+                    item.setForeground(QColor(255, 0, 0))  # Rouge : mauvais (négatif)
                 self.merged_table.setItem(row, 15, item)
 
-                # Colonne 15: D/E Ratio
+                # Colonne 16: D/E Ratio (bas = bon)
                 de_ratio = safe_float(signal.get('D/E Ratio', 0.0))
                 item = QTableWidgetItem(f"{de_ratio:.2f}")
                 item.setData(Qt.EditRole, de_ratio)
+                # Harmoniser : ratio bas = excellent (moins d'endettement), ratio haut = mauvais
+                if de_ratio < 0.5:
+                    item.setForeground(QColor(0, 128, 0))  # Vert foncé : excellent
+                elif de_ratio < 1.5:
+                    item.setForeground(QColor(34, 139, 34))  # Vert : bon
+                elif de_ratio < 2.5:
+                    item.setForeground(QColor(255, 165, 0))  # Orange : moyen
+                else:
+                    item.setForeground(QColor(255, 0, 0))  # Rouge : mauvais (trop endetté)
                 self.merged_table.setItem(row, 16, item)
 
                 # Colonne 16: Market Cap (B$)
@@ -1722,10 +1814,28 @@ class MainWindow(QMainWindow):
 
                 item = QTableWidgetItem(f"{gain_total:.2f}")
                 item.setData(Qt.EditRole, gain_total)
+                # Harmoniser : gain > 0 = bon
+                if gain_total > 200:
+                    item.setForeground(QColor(0, 128, 0))  # Vert foncé : excellent
+                elif gain_total > 50:
+                    item.setForeground(QColor(34, 139, 34))  # Vert : bon
+                elif gain_total > 0:
+                    item.setForeground(QColor(255, 165, 0))  # Orange : moyen
+                else:
+                    item.setForeground(QColor(255, 0, 0))  # Rouge : mauvais
                 self.merged_table.setItem(row, 22, item)
 
                 item = QTableWidgetItem(f"{gain_moy:.2f}")
                 item.setData(Qt.EditRole, gain_moy)
+                # Harmoniser : gain moyen > 0 = bon
+                if gain_moy > 20:
+                    item.setForeground(QColor(0, 128, 0))  # Vert foncé : excellent
+                elif gain_moy > 5:
+                    item.setForeground(QColor(34, 139, 34))  # Vert : bon
+                elif gain_moy > 0:
+                    item.setForeground(QColor(255, 165, 0))  # Orange : moyen
+                else:
+                    item.setForeground(QColor(255, 0, 0))  # Rouge : mauvais
                 self.merged_table.setItem(row, 23, item)
 
                 # Consensus (text column at index 24)
@@ -1733,7 +1843,18 @@ class MainWindow(QMainWindow):
                 # Debug: vérifier si le Consensus existe vraiment
                 if row == 0:  # Afficher seulement pour la première ligne
                     print(f"🔍 DEBUG Consensus - Symbol: {signal.get('Symbole')}, Consensus value: '{consensus}'")
-                self.merged_table.setItem(row, 24, QTableWidgetItem(str(consensus)))
+                item = QTableWidgetItem(str(consensus))
+                # Colorer selon consensus
+                consensus_lower = str(consensus).lower()
+                if 'strong buy' in consensus_lower or 'achat fort' in consensus_lower:
+                    item.setForeground(QColor(0, 128, 0))  # Vert foncé : excellent
+                elif 'buy' in consensus_lower or 'achat' in consensus_lower:
+                    item.setForeground(QColor(34, 139, 34))  # Vert : bon
+                elif 'hold' in consensus_lower or 'conserver' in consensus_lower or 'neutre' in consensus_lower:
+                    item.setForeground(QColor(255, 165, 0))  # Orange : neutre
+                elif 'sell' in consensus_lower or 'vente' in consensus_lower:
+                    item.setForeground(QColor(255, 0, 0))  # Rouge : mauvais
+                self.merged_table.setItem(row, 24, item)
 
                 # item = QTableWidgetItem(f"{drawdown:.2f}")
                 # item.setData(Qt.EditRole, drawdown)
@@ -2080,46 +2201,115 @@ class MainWindow(QMainWindow):
             
             symbols_list = [symbols_per_domain.get(d, 0) for d in domains]
             
-            # Créer figure avec 4 subplots
-            fig = Figure(figsize=(14, 9), dpi=100)
+            # Calculer la rentabilité annualisée en % par secteur
+            # Capital investi: 50€ par stock
+            period_str = self.period_input.text().strip() if hasattr(self, 'period_input') else "12mo"
+            
+            # Convertir la période en années
+            if 'y' in period_str:
+                years = float(period_str.replace('y', ''))
+            elif 'mo' in period_str:
+                months = float(period_str.replace('mo', ''))
+                years = months / 12.0
+            elif 'd' in period_str:
+                days = float(period_str.replace('d', ''))
+                years = days / 365.0
+            else:
+                years = 1.0  # Par défaut 1 an
+            
+            rentabilite_annuelle_pct_list = []
+            for d in domains:
+                trades = stats['by_domain'][d]['trades']
+                gain = stats['by_domain'][d]['gain']
+                nb_symbols = symbols_per_domain.get(d, 1)
+                
+                # Capital investi: 50€ par stock
+                capital_investi = nb_symbols * 50.0
+                
+                # Rendement total en %
+                rendement_total_pct = (gain / capital_investi) * 100 if capital_investi > 0 else 0.0
+                
+                # Annualiser le rendement
+                rendement_annuel_pct = rendement_total_pct / years if years > 0 else rendement_total_pct
+                
+                rentabilite_annuelle_pct_list.append(rendement_annuel_pct)
+            
+            # Créer figure avec moins de graphiques pour plus de clarté (2 lignes x 2 colonnes)
+            fig = Figure(figsize=(16, 10), dpi=90)
             
             # Subplot 1: Bar chart taux de réussite
             ax1 = fig.add_subplot(2, 2, 1)
             colors = ['green' if t >= 60 else 'orange' if t >= 40 else 'red' for t in taux_list]
-            ax1.bar(domains, taux_list, color=colors, alpha=0.7)
-            ax1.set_ylabel('Taux de réussite (%)', fontweight='bold')
-            ax1.set_title('Taux de réussite par domaine', fontweight='bold')
-            ax1.set_ylim(0, 100)
-            ax1.axhline(y=50, color='gray', linestyle='--', alpha=0.3)
-            ax1.tick_params(axis='x', rotation=45)
+            bars1 = ax1.bar(domains, taux_list, color=colors, alpha=0.75, edgecolor='black', linewidth=1.2)
+            ax1.set_ylabel('Taux de réussite (%)', fontweight='bold', fontsize=11)
+            ax1.set_title('Taux de réussite', fontweight='bold', fontsize=13, pad=10)
+            ax1.set_ylim(0, 105)
+            ax1.axhline(y=50, color='gray', linestyle='--', alpha=0.5, linewidth=1.5)
+            ax1.tick_params(axis='x', rotation=45, labelsize=9)
+            ax1.tick_params(axis='y', labelsize=9)
+            ax1.grid(axis='y', alpha=0.3, linestyle='--')
             for i, v in enumerate(taux_list):
-                ax1.text(i, v + 2, f'{v:.1f}%', ha='center', fontsize=9)
+                ax1.text(i, v + 3, f'{v:.1f}%', ha='center', fontsize=10, fontweight='bold')
             
-            # Subplot 2: Bar chart nombre de trades
+            # Subplot 2: Bar chart gain total
             ax2 = fig.add_subplot(2, 2, 2)
-            ax2.bar(domains, trades_list, color='steelblue', alpha=0.7)
-            ax2.set_ylabel('Nombre de trades', fontweight='bold')
-            ax2.set_title('Distribution des trades par domaine', fontweight='bold')
-            ax2.tick_params(axis='x', rotation=45)
-            for i, v in enumerate(trades_list):
-                ax2.text(i, v + 0.1, str(int(v)), ha='center', fontsize=9)
-            
-            # Subplot 3: Bar chart gain
-            ax3 = fig.add_subplot(2, 2, 3)
             colors_gain = ['green' if g > 0 else 'red' for g in gain_list]
-            ax3.bar(domains, gain_list, color=colors_gain, alpha=0.7)
-            ax3.set_ylabel('Gain total ($)', fontweight='bold')
-            ax3.set_title('Gain brut par domaine', fontweight='bold')
-            ax3.axhline(y=0, color='black', linewidth=0.8)
-            ax3.tick_params(axis='x', rotation=45)
+            bars2 = ax2.bar(domains, gain_list, color=colors_gain, alpha=0.75, edgecolor='black', linewidth=1.2)
+            ax2.set_ylabel('Gain total ($)', fontweight='bold', fontsize=11)
+            ax2.set_title('Gain brut total', fontweight='bold', fontsize=13, pad=10)
+            ax2.axhline(y=0, color='black', linewidth=1.5)
+            ax2.tick_params(axis='x', rotation=45, labelsize=9)
+            ax2.tick_params(axis='y', labelsize=9)
+            ax2.grid(axis='y', alpha=0.3, linestyle='--')
             for i, v in enumerate(gain_list):
-                ax3.text(i, v + (5 if v > 0 else -10), f'${v:.0f}', ha='center', fontsize=9)
+                offset = 20 if v > 0 else -40
+                ax2.text(i, v + offset, f'${v:.0f}', ha='center', fontsize=10, fontweight='bold')
             
-            # Subplot 4: Pie chart distribution symboles par domaine
+            # Subplot 3: Bar chart rentabilité annuelle en %
+            ax3 = fig.add_subplot(2, 2, 3)
+            colors_rentabilite = ['darkgreen' if r > 50 else 'green' if r > 10 else 'orange' if r > 0 else 'red' for r in rentabilite_annuelle_pct_list]
+            bars3 = ax3.bar(domains, rentabilite_annuelle_pct_list, color=colors_rentabilite, alpha=0.75, edgecolor='black', linewidth=1.2)
+            ax3.set_ylabel('Rentabilité annuelle (%)', fontweight='bold', fontsize=11)
+            ax3.set_title('Rentabilité annualisée', fontweight='bold', fontsize=13, pad=10)
+            ax3.axhline(y=0, color='black', linewidth=1.5)
+            ax3.axhline(y=10, color='green', linestyle='--', alpha=0.4, linewidth=1)
+            ax3.tick_params(axis='x', rotation=45, labelsize=9)
+            ax3.tick_params(axis='y', labelsize=9)
+            ax3.grid(axis='y', alpha=0.3, linestyle='--')
+            for i, v in enumerate(rentabilite_annuelle_pct_list):
+                offset = max(abs(v) * 0.1, 3) if v > 0 else -max(abs(v) * 0.1, 5)
+                ax3.text(i, v + offset, f'{v:.1f}%', ha='center', fontsize=10, fontweight='bold')
+            
+            # Subplot 4: Distribution trades + symboles combinée
             ax4 = fig.add_subplot(2, 2, 4)
-            if sum(symbols_list) > 0:
-                ax4.pie(symbols_list, labels=domains, autopct='%1.1f%%', startangle=90)
-                ax4.set_title('Distribution des symboles par domaine', fontweight='bold')
+            x_pos = range(len(domains))
+            width = 0.35
+            
+            # Normaliser pour affichage sur même échelle (éviter division par zéro)
+            max_trades = max(trades_list) if trades_list and max(trades_list) > 0 else 1
+            max_symbols = max(symbols_list) if symbols_list and max(symbols_list) > 0 else 1
+            trades_normalized = [t / max_trades * 100 if max_trades > 0 else 0 for t in trades_list]
+            symbols_normalized = [s / max_symbols * 100 if max_symbols > 0 else 0 for s in symbols_list]
+            
+            bars4a = ax4.bar([x - width/2 for x in x_pos], trades_normalized, width, 
+                            label='Trades', color='steelblue', alpha=0.75, edgecolor='black', linewidth=1)
+            bars4b = ax4.bar([x + width/2 for x in x_pos], symbols_normalized, width,
+                            label='Symboles', color='coral', alpha=0.75, edgecolor='black', linewidth=1)
+            
+            ax4.set_ylabel('Distribution (normalisée)', fontweight='bold', fontsize=11)
+            ax4.set_title('Trades et Symboles par secteur', fontweight='bold', fontsize=13, pad=10)
+            ax4.set_xticks(x_pos)
+            ax4.set_xticklabels(domains, rotation=45, ha='right', fontsize=9)
+            ax4.tick_params(axis='y', labelsize=9)
+            ax4.legend(loc='upper right', fontsize=10)
+            ax4.grid(axis='y', alpha=0.3, linestyle='--')
+            
+            # Ajouter les valeurs réelles au-dessus des barres
+            for i, (t, s) in enumerate(zip(trades_list, symbols_list)):
+                ax4.text(i - width/2, trades_normalized[i] + 3, str(int(t)), 
+                        ha='center', fontsize=8, fontweight='bold')
+                ax4.text(i + width/2, symbols_normalized[i] + 3, str(int(s)), 
+                        ha='center', fontsize=8, fontweight='bold')
             
             fig.tight_layout()
             canvas = FigureCanvas(fig)
