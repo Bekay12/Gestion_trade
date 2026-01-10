@@ -786,12 +786,15 @@ def optimize_sector_coefficients_hybrid(
     db_path = OPTIMIZATION_DB_PATH
     best_params_per_sector = extract_best_parameters(db_path)
 
+    csv_timestamp = None
     if domain in best_params_per_sector:
-        csv_coeffs, csv_thresholds, csv_globals, csv_gain, _ = best_params_per_sector[domain]
+        csv_coeffs, csv_thresholds, csv_globals, csv_gain, csv_extras = best_params_per_sector[domain]
         # 🔧 Sécuriser en float (déjà des floats depuis SQLite, mais par sécurité)
         csv_coeffs = tuple(float(x) for x in csv_coeffs)
         csv_thresholds = tuple(float(x) for x in csv_thresholds)
         csv_globals = tuple(float(x) for x in csv_globals)
+        if isinstance(csv_extras, dict):
+            csv_timestamp = csv_extras.get('timestamp')
         print(f"📋 Paramètres historiques trouvés: coeffs={csv_coeffs}, seuils={csv_thresholds}, globaux={csv_globals}, gain={csv_gain:.2f}")
     else:
         csv_coeffs, csv_thresholds, csv_globals, csv_gain = None, initial_thresholds, (4.2, -0.5), -float('inf')
@@ -799,15 +802,17 @@ def optimize_sector_coefficients_hybrid(
     hist_avg_gain = None  # 🔧 Pour mesurer l'amélioration vs l'historique
     hist_total_trades = None
     hist_success_rate = None
+    hist_params_vector = None
+    hist_label = "Historical (re-eval)"
 
     # ♻️ Réévaluer les paramètres historiques sur les données ACTUELLES
-    historical_candidate = None
     if csv_coeffs is not None and len(csv_coeffs) >= 8 and len(csv_thresholds) >= 8 and len(csv_globals) == 2:
         try:
             hist_coeffs = tuple(csv_coeffs[:8])
             hist_feature_thresholds = tuple(csv_thresholds[:8])
             hist_seuil_achat = float(csv_globals[0])
             hist_seuil_vente = float(csv_globals[1])
+            hist_label = f"Historical ({csv_timestamp})" if csv_timestamp else "Historical (re-eval)"
             
             # 🔧 CORRIGÉ: Récupérer les extras depuis BEST_PARAM_EXTRAS (global)
             hist_extra_params = None
@@ -815,9 +820,6 @@ def optimize_sector_coefficients_hybrid(
             
             from qsi import BEST_PARAM_EXTRAS
 
-            # print(f"   🔍 DEBUG: Toutes les clés dans BEST_PARAM_EXTRAS: {list(BEST_PARAM_EXTRAS.keys())}")
-            # print(f"   🔍 DEBUG: Je cherche domain='{domain}'")
-            # print(f"   🔍 DEBUG: domain in dict? {domain in BEST_PARAM_EXTRAS}")
             if domain in BEST_PARAM_EXTRAS:
                 extras_dict = BEST_PARAM_EXTRAS[domain]
                 # Vérifier si des extras de price existent dans le dictionnaire
@@ -847,41 +849,55 @@ def optimize_sector_coefficients_hybrid(
                         'th_de_ratio': float(extras_dict.get('th_de_ratio', 0.0)),
                     }
 
+            # Respecter les flags du run courant : désactiver ou injecter des valeurs neutres
+            if not use_price_features:
+                hist_extra_params = None
+            elif hist_extra_params is None:
+                hist_extra_params = {
+                    'use_price_slope': 0,
+                    'use_price_acc': 0,
+                    'a_price_slope': 0.0,
+                    'a_price_acc': 0.0,
+                    'th_price_slope': 0.0,
+                    'th_price_acc': 0.0,
+                }
+
+            if not use_fundamentals_features:
+                hist_fundamentals_extras = None
+            elif hist_fundamentals_extras is None:
+                hist_fundamentals_extras = {
+                    'use_fundamentals': 0,
+                    'a_rev_growth': 0.0,
+                    'a_eps_growth': 0.0,
+                    'a_roe': 0.0,
+                    'a_fcf_yield': 0.0,
+                    'a_de_ratio': 0.0,
+                    'th_rev_growth': 0.0,
+                    'th_eps_growth': 0.0,
+                    'th_roe': 0.0,
+                    'th_fcf_yield': 0.0,
+                    'th_de_ratio': 0.0,
+                }
+
             total_gain = 0.0
             total_trades = 0
             total_success = 0
             for symbol, data in stock_data.items():
-                # 🔧 Vérifier si les features sont RÉELLEMENT activées (pas juste présentes)
-                price_features_active = hist_extra_params is not None and (
-                    hist_extra_params.get('use_price_slope', 0) or hist_extra_params.get('use_price_acc', 0)
-                )
-                fund_features_active = hist_fundamentals_extras is not None and (
-                    hist_fundamentals_extras.get('use_fundamentals', 0)
-                )
-                
-                if price_features_active or fund_features_active:
-                    result, _ = backtest_signals_with_events(
-                        data['Close'], data['Volume'], domain,
-                        domain_coeffs={domain: hist_coeffs},
-                        domain_thresholds={domain: hist_feature_thresholds},
+                try:
+                    result = backtest_signals_c_extended(
+                        data['Close'], data['Volume'],
+                        coeffs=hist_coeffs,
                         seuil_achat=hist_seuil_achat, seuil_vente=hist_seuil_vente,
                         montant=montant, transaction_cost=transaction_cost,
-                        extra_params=hist_extra_params,
+                        price_extras=hist_extra_params,
                         fundamentals_extras=hist_fundamentals_extras,
                         symbol_name=symbol
                     )
-                else:
-                    # Features désactivées → backtest classique C accéléré
-                    result = backtest_signals(
-                        data['Close'], data['Volume'], domain,
-                        domain_coeffs={domain: hist_coeffs},
-                        domain_thresholds={domain: hist_feature_thresholds},
-                        seuil_achat=hist_seuil_achat, seuil_vente=hist_seuil_vente,
-                        montant=montant, transaction_cost=transaction_cost
-                    )
-                total_gain += result.get('gain_total', 0)
-                total_trades += result.get('trades', 0)
-                total_success += result.get('gagnants', 0)
+                    total_gain += result.get('gain_total', 0)
+                    total_trades += result.get('trades', 0)
+                    total_success += result.get('gagnants', 0)
+                except Exception as e:
+                    print(f"   ⚠️  Backtest historique échoué pour {symbol}: {e}")
 
             hist_avg_gain = total_gain / len(stock_data) if stock_data else 0.0
             hist_success_rate = (total_success / total_trades * 100) if total_trades > 0 else 0.0
@@ -890,7 +906,6 @@ def optimize_sector_coefficients_hybrid(
             # 🚦 Gardes: ignorer les historiques sans trades
             if total_trades == 0:
                 print(f"   ⚠️  Historique ignoré (0 trade)")
-                historical_candidate = None
             else:
                 # ✨ Appliquer la nouvelle structure réduite : 8 coeffs + 4 seuils optimisés + 2 globaux
                 # Recomposer les 8 seuils attendus par le backtest avec les valeurs gelées
@@ -912,44 +927,54 @@ def optimize_sector_coefficients_hybrid(
                 # Paramètres de base pour comparaison finale : 14 (8 coeffs + 4 seuils + 2 globaux)
                 hist_params = list(hist_coeffs[:8] + (hist_thr_rsi, hist_thr_vol, hist_thr_adx, hist_thr_score, hist_seuil_achat, hist_seuil_vente))
                 
-                # 🔧 Étendre les paramètres historiques si des features sont activées
-                # IMPORTANT: Utiliser les vraies valeurs historiques depuis BEST_PARAM_EXTRAS, pas des 0 !
+                # 🔧 Étendre les paramètres historiques selon les features autorisées dans ce run
                 if use_price_features:
-                    # Récupérer les valeurs historiques ou utiliser des valeurs par défaut si absentes
-                    if hist_extra_params:
-                        hist_params += [
-                            float(hist_extra_params.get('use_price_slope', 0)),
-                            float(hist_extra_params.get('use_price_acc', 0)),
-                            float(hist_extra_params.get('a_price_slope', 0.5)),
-                            float(hist_extra_params.get('a_price_acc', 0.5)),
-                            float(hist_extra_params.get('th_price_slope', 0.0)),
-                            float(hist_extra_params.get('th_price_acc', 0.0))
-                        ]
-                    else:
-                        # Pas de paramètres historiques → features désactivées
-                        hist_params += [0.0, 0.0, 0.5, 0.5, 0.0, 0.0]
+                    pe = hist_extra_params or {
+                        'use_price_slope': 0.0,
+                        'use_price_acc': 0.0,
+                        'a_price_slope': 0.0,
+                        'a_price_acc': 0.0,
+                        'th_price_slope': 0.0,
+                        'th_price_acc': 0.0,
+                    }
+                    hist_params += [
+                        float(pe.get('use_price_slope', 0.0)),
+                        float(pe.get('use_price_acc', 0.0)),
+                        float(pe.get('a_price_slope', 0.0)),
+                        float(pe.get('a_price_acc', 0.0)),
+                        float(pe.get('th_price_slope', 0.0)),
+                        float(pe.get('th_price_acc', 0.0))
+                    ]
                 
                 if use_fundamentals_features:
-                    # Récupérer les valeurs historiques ou utiliser des valeurs par défaut si absentes
-                    if hist_fundamentals_extras:
-                        hist_params += [
-                            float(hist_fundamentals_extras.get('use_fundamentals', 0)),
-                            float(hist_fundamentals_extras.get('a_rev_growth', 0.5)),
-                            float(hist_fundamentals_extras.get('a_eps_growth', 0.5)),
-                            float(hist_fundamentals_extras.get('a_roe', 0.5)),
-                            float(hist_fundamentals_extras.get('a_fcf_yield', 0.5)),
-                            float(hist_fundamentals_extras.get('a_de_ratio', 0.5)),
-                            float(hist_fundamentals_extras.get('th_rev_growth', 0.0)),
-                            float(hist_fundamentals_extras.get('th_eps_growth', 0.0)),
-                            float(hist_fundamentals_extras.get('th_roe', 0.0)),
-                            float(hist_fundamentals_extras.get('th_fcf_yield', 0.0)),
-                            float(hist_fundamentals_extras.get('th_de_ratio', 0.0))
-                        ]
-                    else:
-                        # Pas de paramètres historiques → features désactivées
-                        hist_params += [0.0, 0.5, 0.5, 0.5, 0.5, 0.5, 0.0, 0.0, 0.0, 0.0, 0.0]
-                
-                historical_candidate = ('Historical (re-eval)', tuple(hist_params), hist_avg_gain)
+                    fe = hist_fundamentals_extras or {
+                        'use_fundamentals': 0.0,
+                        'a_rev_growth': 0.0,
+                        'a_eps_growth': 0.0,
+                        'a_roe': 0.0,
+                        'a_fcf_yield': 0.0,
+                        'a_de_ratio': 0.0,
+                        'th_rev_growth': 0.0,
+                        'th_eps_growth': 0.0,
+                        'th_roe': 0.0,
+                        'th_fcf_yield': 0.0,
+                        'th_de_ratio': 0.0,
+                    }
+                    hist_params += [
+                        float(fe.get('use_fundamentals', 0.0)),
+                        float(fe.get('a_rev_growth', 0.0)),
+                        float(fe.get('a_eps_growth', 0.0)),
+                        float(fe.get('a_roe', 0.0)),
+                        float(fe.get('a_fcf_yield', 0.0)),
+                        float(fe.get('a_de_ratio', 0.0)),
+                        float(fe.get('th_rev_growth', 0.0)),
+                        float(fe.get('th_eps_growth', 0.0)),
+                        float(fe.get('th_roe', 0.0)),
+                        float(fe.get('th_fcf_yield', 0.0)),
+                        float(fe.get('th_de_ratio', 0.0))
+                    ]
+
+                hist_params_vector = tuple(hist_params)
 
                 print(f"♻️ Paramètres historiques réévalués sur données actuelles: gain_moy={hist_avg_gain:.2f}, trades={total_trades}, success={hist_success_rate:.2f}%")
                 if use_price_features or use_fundamentals_features:
@@ -963,6 +988,17 @@ def optimize_sector_coefficients_hybrid(
 
     # 🔧 MODIFIÉ: Initialisation de l'optimiseur avec précision
     optimizer = HybridOptimizer(stock_data, domain, montant, transaction_cost, precision, use_price_features, use_fundamentals_features)
+
+    # 🔄 Normaliser le score historique via le même objective que l'optimiseur
+    historical_candidate = None
+    if hist_params_vector is not None:
+        try:
+            rounded_hist_vector = optimizer.round_params(np.array(hist_params_vector))
+            hist_score = optimizer.evaluate_config(rounded_hist_vector)
+            historical_candidate = (hist_label, tuple(rounded_hist_vector), hist_score)
+            print(f"   ✅ Score historique (objective aligné): {hist_score:.2f} | gain_moy={hist_avg_gain:.2f} | trades={hist_total_trades}")
+        except Exception as e:
+            print(f"⚠️ Normalisation du score historique impossible: {e}")
 
     # 🔧 NOUVEAU: Ajuster le budget en fonction de la précision
     # Avec une plus grande précision, l'espace de recherche AUGMENTE
@@ -1031,7 +1067,18 @@ def optimize_sector_coefficients_hybrid(
         if refined_score > best_score:
             best_params = refined_params
             best_score = refined_score
+            best_method = f"{best_method}+local"
             print(f"✨ Affinement réussi: nouveau score {best_score:.4f}")
+
+        # 🔁 Tester aussi l'affinement local sur le candidat historique (s'il existe)
+        if historical_candidate:
+            hist_label, hist_params_vec, hist_score = historical_candidate
+            hist_refined_params, hist_refined_score = optimizer.local_search_refinement(hist_params_vec)
+            if hist_refined_score > best_score:
+                best_params = hist_refined_params
+                best_score = hist_refined_score
+                best_method = f"{hist_label}+local"
+                print(f"✨ Historique affiné bat l'optimiseur: nouveau score {best_score:.4f}")
 
     # 🔧 MODIFIÉ: Extraction conforme à la nouvelle structure (8 coeffs + 4 seuils optimisés + 2 globaux)
     best_coeffs = tuple(float(x) for x in best_params[:8])
@@ -1079,7 +1126,7 @@ def optimize_sector_coefficients_hybrid(
     # Fundamentals extras if present in vector (nouvelle position: après prix ou base)
     fundamentals_extras = None
     fundamentals_index_offset = price_index_offset + 6 if use_price_features else 14
-    if use_fundamentals_features and len(best_params) >= (fundamentals_index_offset + 10):
+    if use_fundamentals_features and len(best_params) >= (fundamentals_index_offset + 11):
         use_fund = int(round(np.clip(best_params[fundamentals_index_offset], 0.0, 1.0)))
         a_rev = float(np.clip(round(best_params[fundamentals_index_offset + 1], precision), 0.0, 3.0))
         a_eps = float(np.clip(round(best_params[fundamentals_index_offset + 2], precision), 0.0, 3.0))
@@ -1090,6 +1137,7 @@ def optimize_sector_coefficients_hybrid(
         th_eps = float(np.clip(round(best_params[fundamentals_index_offset + 7], precision), -30.0, 30.0))
         th_roe = float(np.clip(round(best_params[fundamentals_index_offset + 8], precision), -30.0, 30.0))
         th_fcf = float(np.clip(round(best_params[fundamentals_index_offset + 9], precision), -10.0, 10.0))
+        th_de = float(np.clip(round(best_params[fundamentals_index_offset + 10], precision), -10.0, 10.0))
         fundamentals_extras = {
             'use_fundamentals': use_fund,
             'a_rev_growth': a_rev,
@@ -1101,7 +1149,7 @@ def optimize_sector_coefficients_hybrid(
             'th_eps_growth': th_eps,
             'th_roe': th_roe,
             'th_fcf_yield': th_fcf,
-            'th_de_ratio': 0.0,  # Reserved
+            'th_de_ratio': th_de,
         }
 
     # Calcul des statistiques finales
@@ -1505,7 +1553,7 @@ if __name__ == "__main__":
     print(f"      - Seuils gelés: MACD=0, EMA=0, Ichimoku=0, Bollinger=0.5")
 
     # Adapter le budget selon la précision
-    budget_base = 1500#1000
+    budget_base = 3500#1000
     if precision == 1:
         budget_evaluations = int(budget_base * 0.5)
     elif precision == 2:

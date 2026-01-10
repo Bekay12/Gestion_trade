@@ -288,8 +288,14 @@ def extract_best_parameters(db_path: str = None) -> Dict[str, Tuple[Tuple[float,
                 'th_de_ratio': _read_num('th15', 0.0),
             }
             
-            # Combine extras
-            all_extras = {**price_extras, **fundamentals_extras}
+            # Combine extras and attach timestamp for downstream labeling
+            timestamp = None
+            try:
+                timestamp = str(row['timestamp']) if (row['timestamp'] is not None) else None
+            except Exception:
+                timestamp = None
+
+            all_extras = {**price_extras, **fundamentals_extras, 'timestamp': timestamp}
             
             # Store result with all_extras as 5th element (coefficients, thresholds, globals_thresholds, gain_moy, all_extras)
             result[sector] = (coefficients, thresholds, globals_thresholds, gain_moy, all_extras)
@@ -2339,7 +2345,7 @@ def analyse_signaux_populaires(
     period="12mo", afficher_graphiques=True,
     chunk_size=20, verbose=True,
     save_csv=True, plot_all=False,
-    max_workers=5
+    max_workers=5, taux_reussite_min=30
 ):
     """
     Analyse les signaux pour les actions populaires, affiche les résultats, effectue le backtest,
@@ -2348,6 +2354,7 @@ def analyse_signaux_populaires(
     
     Args:
         max_workers: Nombre de threads pour analyse parallèle (défaut: 4)
+        taux_reussite_min: Seuil minimum de fiabilité pour l'évaluation filtrée (défaut: 30)
     """
     import matplotlib.pyplot as plt
     from concurrent.futures import ThreadPoolExecutor, as_completed
@@ -2745,7 +2752,7 @@ def analyse_signaux_populaires(
     # todo: ajuster les conditions selon les besoins
     # todo: creer un parametre pour le taux de reussite minimal actuel=60
     # todo: en faire un parametre de la fonction analyse_signaux_populaires
-    taux_reussite_min = 30  # Valeur par défaut
+    # Utiliser le paramètre taux_reussite_min passé en argument
     filtres = [res for res in backtest_results if res['taux_reussite'] >= taux_reussite_min and res['gain_total'] > 0]
     nb_actions_filtrees = len(filtres)
     total_trades_filtre = sum(res['trades'] for res in filtres)

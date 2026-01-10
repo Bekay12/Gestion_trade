@@ -57,13 +57,23 @@ class AnalysisThread(QThread):
 
             while not self._stop_requested:
                 # Run analysis without opening matplotlib GUIs; keep verbose to surface progress
+                # Get the reliability threshold from the main window spinbox if available
+                fiab_threshold = 30  # Default value
+                try:
+                    # Access the spinbox value from main window (passed via parent reference)
+                    if hasattr(self, 'parent') and hasattr(self.parent(), 'fiab_threshold_spin'):
+                        fiab_threshold = self.parent().fiab_threshold_spin.value()
+                except Exception:
+                    pass
+                
                 result = analyse_signaux_populaires(
                     self.symbols,
                     self.mes_symbols,
                     period=self.period,
                     afficher_graphiques=False,
                     plot_all=False,
-                    verbose=True
+                    verbose=True,
+                    taux_reussite_min=fiab_threshold
                 )
                 self.finished.emit(result)
                 break  # ou return
@@ -427,7 +437,20 @@ class MainWindow(QMainWindow):
         self.backtest_button.clicked.connect(self.analyse_and_backtest)
         top_controls.addWidget(self.backtest_button)
 
-        self.popular_signals_button = QPushButton("Analyser mouvements fiables (populaires)")
+        # Seuil minimum de fiabilité pour le backtest (à droite du bouton backtest)
+        top_controls.addWidget(QLabel("Seuil fiabilité:"))
+        self.fiab_threshold_spin = QSpinBox()
+        self.fiab_threshold_spin.setMinimum(0)
+        self.fiab_threshold_spin.setMaximum(100)
+        self.fiab_threshold_spin.setValue(30)
+        self.fiab_threshold_spin.setSuffix("%")
+        self.fiab_threshold_spin.setMaximumWidth(80)
+        self.fiab_threshold_spin.setToolTip("Seuil minimum de fiabilité pour filtrer les résultats du backtest")
+        top_controls.addWidget(self.fiab_threshold_spin)
+
+        top_controls.addSpacing(24)  # Petit espace pour l'esthétique
+
+        self.popular_signals_button = QPushButton("Analyse de mes symboles")
         self.popular_signals_button.clicked.connect(self.analyze_popular_signals)
         top_controls.addWidget(self.popular_signals_button)
 
@@ -857,29 +880,35 @@ class MainWindow(QMainWindow):
             QMessageBox.critical(self, "Erreur", f"Impossible d'afficher l'aperçu du nettoyage: {e}")
 
     def analyze_popular_signals(self):
-        # Use selected items if any, otherwise fallback to full lists
-        selected_pop = [it.data(Qt.UserRole) if it.data(Qt.UserRole) is not None else it.text() for it in self.popular_list.selectedItems()]
-        popular_symbols = selected_pop if selected_pop else [self.popular_list.item(i).text() for i in range(self.popular_list.count())]
+        # Analyse + Backtest uniquement sur mes symboles
         selected_mes = [it.data(Qt.UserRole) if it.data(Qt.UserRole) is not None else it.text() for it in self.mes_list.selectedItems()]
         mes_symbols = selected_mes if selected_mes else [self.mes_list.item(i).text() for i in range(self.mes_list.count())]
+        
         period = self.period_input.text().strip()
         
         if not period:
             QMessageBox.warning(self, "Erreur", "Veuillez entrer une période d'analyse valide (ex: 12mo)")
             return
         
+        if not mes_symbols:
+            QMessageBox.warning(self, "Erreur", "Aucun symbole disponible dans 'Mes symboles'")
+            return
+        
+        # Disable buttons during analysis
         self.analyze_button.setEnabled(False)
+        self.backtest_button.setEnabled(False)
+        self.popular_signals_button.setEnabled(False)
         
         # Afficher la progression
-        self.progress = QProgressDialog("Analyse en cours...", "Annuler", 0, 0, self)
-        self.progress.setWindowTitle("Analyse")
+        self.progress = QProgressDialog("Analyse + Backtest de mes symboles en cours...", "Annuler", 0, 0, self)
+        self.progress.setWindowTitle("Analyse de mes symboles")
         self.progress.setWindowModality(Qt.WindowModal)
         self.progress.setMinimumDuration(0)
         self.progress.setAutoClose(False)
         self.progress.setMinimumWidth(400)
         
-        # Lancer l'analyse dans un thread
-        self.analysis_thread = AnalysisThread(popular_symbols, mes_symbols, period)
+        # Lancer l'analyse+backtest dans un thread (mes_symbols en premier arg, [] en deuxième)
+        self.analysis_thread = AnalysisThread(mes_symbols, [], period)
         self.analysis_thread.finished.connect(self.on_analysis_complete)
         self.analysis_thread.error.connect(self.on_analysis_error)
         self.analysis_thread.progress.connect(self.on_analysis_progress)
@@ -1520,8 +1549,25 @@ class MainWindow(QMainWindow):
 
         self.merged_table.setRowCount(0)
         raw_results = getattr(self, 'filtered_results', self.current_results)
-        # 🚫 Éviter les lignes vides: ne garder que les entrées avec un symbole non vide
-        results_to_display = [r for r in raw_results if str(r.get('Symbole', '')).strip()]
+        
+        # Appliquer le filtre de fiabilité minimum si un seuil est défini
+        min_fiab_threshold = self.fiab_threshold_spin.value() if hasattr(self, 'fiab_threshold_spin') else 30
+        filtered_results = []
+        for r in raw_results:
+            fiab_val = r.get('Fiabilite', 'N/A')
+            if fiab_val == 'N/A':
+                # Toujours inclure si pas de données de fiabilité
+                filtered_results.append(r)
+            else:
+                try:
+                    fiab_num = float(fiab_val) if isinstance(fiab_val, (int, float, str)) else 0.0
+                    if fiab_num >= min_fiab_threshold:
+                        filtered_results.append(r)
+                except (ValueError, TypeError):
+                    # Inclure si conversion échoue
+                    filtered_results.append(r)
+        
+        results_to_display = [r for r in filtered_results if str(r.get('Symbole', '')).strip()]
         # 🔧 Garantir les champs backtest et dérivées pour éviter des cellules vides
         for r in results_to_display:
             r.setdefault('Fiabilite', 'N/A')

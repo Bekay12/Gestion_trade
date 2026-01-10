@@ -722,3 +722,25 @@
 2026-01-09 03:05:01,537 - ERROR - 
 1 Failed download:
 2026-01-09 03:05:01,537 - ERROR - ['SAND']: YFPricesMissingError('possibly delisted; no price data found  (period=12mo) (Yahoo error = "No data found, symbol may be delisted")')
+2026-01-09 03:43:39,669 - ERROR - 
+1 Failed download:
+2026-01-09 03:43:39,671 - ERROR - ['AGS']: YFPricesMissingError('possibly delisted; no price data found  (period=12mo) (Yahoo error = "No data found, symbol may be delisted")')
+2026-01-09 03:43:43,106 - ERROR - 
+1 Failed download:
+2026-01-09 03:43:43,107 - ERROR - ['AGS']: YFPricesMissingError('possibly delisted; no price data found  (period=12mo) (Yahoo error = "No data found, symbol may be delisted")')
+2026-01-09 03:43:52,032 - ERROR - HTTP Error 401: 
+2026-01-10 01:49:34,590 - ERROR - 
+1 Failed download:
+2026-01-10 01:49:34,591 - ERROR - ['SAND']: YFPricesMissingError('possibly delisted; no price data found  (period=1y) (Yahoo error = "No data found, symbol may be delisted")')
+2026-01-10 01:49:35,229 - ERROR - 
+1 Failed download:
+2026-01-10 01:49:35,229 - ERROR - ['SAND']: YFPricesMissingError('possibly delisted; no price data found  (period=1y) (Yahoo error = "No data found, symbol may be delisted")')
+2026-01-10 09:20:44,339 - ERROR - 
+1 Failed download:
+2026-01-10 09:20:44,355 - ERROR - ['2385.HK']: Timeout('Failed to perform, curl: (28) Connection timed out after 10015 milliseconds. See https://curl.se/libcurl/c/libcurl-errors.html first for more details.')
+2026-01-10 13:48:15,224 - ERROR - 
+1 Failed download:
+2026-01-10 13:48:15,226 - ERROR - ['SAND']: YFPricesMissingError('possibly delisted; no price data found  (period=1y) (Yahoo error = "No data found, symbol may be delisted")')
+2026-01-10 13:48:15,828 - ERROR - 
+1 Failed download:
+2026-01-10 13:48:15,828 - ERROR - ['SAND']: YFPricesMissingError('possibly delisted; no price data found  (period=1y) (Yahoo error = "No data found, symbol may be delisted")')
