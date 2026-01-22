@@ -1,0 +1,7 @@
+Symbole,Signal,Score,Prix,Tendance,RSI,Domaine,CapRange,ParamKey,Volume moyen,Consensus,ConsensusMean,dPrice,dMACD,dRSI,dVolRel,Rev. Growth (%),EBITDA Yield (%),FCF Yield (%),D/E Ratio,Market Cap (B$),Fiabilite,detection_time
+DFTK.SG,ACHAT,3.641,1.649999976158142,Hausse,85.08,ℹ️Inconnu!!,Unknown,ℹ️Inconnu!!,371.67,Neutre,,4.78,31.28,9.66,8.33,0.0,0.0,0.0,0.0,0.0,50.0,2026-01-15 23:26:29
+JELD,ACHAT,4.616,3.180000066757202,Hausse,62.67,Industrials,Small,Industrials_Small,1316540.6,Neutre,3.0,2.76,71.05,4.29,5.67,-13.4,5.46,24.43,1202.55,0.27,42.857142857142854,2026-01-15 23:26:29
+IBRX,ACHAT,7.444,3.950000047683716,Hausse,83.71,Healthcare,Mid,Healthcare_Mid,16573896.0,Achat,1.2,5.66,15.32,5.82,11.63,425.1,-6.84,-5.92,0.0,3.89,100.0,2026-01-15 23:26:29
+RILY,ACHAT,6.337,9.5,Hausse,76.38,Financial Services,Small,Financial Services_Small,2832944.27,Neutre,,4.62,11.26,2.11,9.83,60.7,0.0,0.0,0.0,0.29,100.0,2026-01-15 23:26:29
+SGML,VENTE,-7.425,14.25,Hausse,55.16,Basic Materials,Small,Basic Materials,4474057.0,Achat,2.0,-0.03,-2.53,-2.2,4.26,36.6,-0.19,-0.81,198.65,1.59,50.0,2026-01-15 23:26:29
+CMCL,VENTE,-5.475,26.93000030517578,Baisse,46.79,Basic Materials,Small,Basic Materials,348753.47,Achat,2.0,0.89,17.32,0.41,8.13,52.9,16.59,6.81,8.61,0.52,57.14285714285714,2026-01-15 23:26:29

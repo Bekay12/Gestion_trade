@@ -17,6 +17,8 @@ from datetime import datetime, timedelta
 from typing import List, Dict, Union
 from concurrent.futures import ThreadPoolExecutor
 import sys
+import os
+import sqlite3
 import yfinance as yf
 sys.path.append("C:\\Users\\berti\\Desktop\\Mes documents\\Gestion_trade\\stock-analysis-ui\\src\\trading_c_acceleration")
 from trading_c_acceleration.qsi_optimized import backtest_signals, extract_best_parameters, backtest_signals_with_events
@@ -1236,29 +1238,65 @@ def compute_financial_derivatives(symbol: str, lookback_quarters: int = 4) -> di
 # Les appels à classify_cap_range_from_market_cap() sont obsoletes; utiliser classify_cap_range() a la place
 
 def get_cap_range_for_symbol(symbol: str) -> str:
-    """Tente de récupérer le range de market cap via le cache financier.
-    Ne déclenche pas de téléchargement lourd; se contente du cache, sinon Unknown.
+    """Récupère le cap_range avec stratégie complète (3 niveaux de fallback):
+    
+    1️⃣ Cache pickle financier (accepte cache très ancien)
+    2️⃣ Base de données SQLite (symbols.db) - NEW
+    3️⃣ Fallback "Unknown"
+    
+    Stratégie: N'essaie PAS yfinance ici (trop lent pour batch). 
+    Le fallback vers cap_range génériques se fait dans le code d'analyse.
     """
+    # Étape 1️⃣: Essayer le cache pickle
     try:
         if get_pickle_cache is not None:
             d = get_pickle_cache(symbol, 'financial', ttl_hours=24*365)  # Accepte même cache très ancien
             if d is not None and isinstance(d, dict):
                 mc_b = float(d.get('market_cap_val', 0.0) or 0.0)
-                # Utiliser la fonction consolidée de symbol_manager si disponible
-                try:
-                    from symbol_manager import classify_cap_range
-                    return classify_cap_range(mc_b)
-                except Exception:
-                    # Fallback local
-                    if mc_b <= 0:
-                        return 'Unknown'
-                    if mc_b < 2.0:
-                        return 'Small'
-                    if mc_b < 10.0:
-                        return 'Mid'
-                    return 'Large'
+                if mc_b > 0:
+                    # Utiliser la fonction consolidée de symbol_manager si disponible
+                    try:
+                        from symbol_manager import classify_cap_range
+                        result = classify_cap_range(mc_b)
+                        if result and result != 'Unknown':
+                            return result
+                    except Exception:
+                        # Fallback local
+                        if mc_b < 2.0:
+                            return 'Small'
+                        if mc_b < 10.0:
+                            return 'Mid'
+                        if mc_b < 200.0:
+                            return 'Large'
+                        return 'Mega'
     except Exception:
         pass
+    
+    # Étape 2️⃣: Essayer la base de données SQLite (NEW)
+    try:
+        import sqlite3
+        db_path = 'symbols.db'
+        if os.path.exists(db_path):
+            conn = sqlite3.connect(db_path)
+            conn.row_factory = sqlite3.Row
+            cursor = conn.cursor()
+            cursor.execute("""
+                SELECT cap_range FROM symbols 
+                WHERE symbol = ? AND cap_range IS NOT NULL AND cap_range != 'Unknown'
+                LIMIT 1
+            """, (symbol,))
+            row = cursor.fetchone()
+            conn.close()
+            if row and row['cap_range']:
+                cap = str(row['cap_range']).strip()
+                if cap and cap != 'Unknown':
+                    print(f"📊 {symbol}: Cap_range récupéré de la DB: {cap}")
+                    return cap
+    except Exception as e:
+        print(f"⚠️ Erreur DB pour cap_range {symbol}: {e}")
+        pass
+    
+    # Étape 3️⃣: Fallback
     return 'Unknown'
 
 # ===================================================================
