@@ -50,14 +50,43 @@ def init_symbols_table():
     cursor.execute('CREATE INDEX IF NOT EXISTS idx_symbol_lists_type ON symbol_lists(list_type)')
     
     # Migration: Migrer les anciennes données list_type vers symbol_lists si nécessaire
+    # ✅ CORRIGÉ: Après la migration, on supprime la colonne legacy list_type de la table
+    # symbols pour ne plus re-migrer à chaque init (ce qui annulait les suppressions de l'utilisateur).
     cursor.execute("PRAGMA table_info(symbols)")
     columns = [col[1] for col in cursor.fetchall()]
     if 'list_type' in columns:
-        # Migrer les données existantes
+        # Migrer les données existantes une dernière fois
         cursor.execute('''
             INSERT OR IGNORE INTO symbol_lists (symbol, list_type)
             SELECT symbol, list_type FROM symbols WHERE list_type IS NOT NULL
         ''')
+        # Supprimer la colonne legacy en recréant la table sans elle
+        # (SQLite < 3.35 ne supporte pas ALTER TABLE DROP COLUMN)
+        cursor.execute('''
+            CREATE TABLE IF NOT EXISTS symbols_new (
+                id INTEGER PRIMARY KEY AUTOINCREMENT,
+                symbol TEXT UNIQUE NOT NULL,
+                sector TEXT,
+                market_cap_range TEXT,
+                market_cap_value REAL,
+                added_date TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+                last_checked TIMESTAMP,
+                is_active BOOLEAN DEFAULT 1
+            )
+        ''')
+        cursor.execute('''
+            INSERT OR IGNORE INTO symbols_new (id, symbol, sector, market_cap_range, market_cap_value, added_date, last_checked, is_active)
+            SELECT id, symbol, sector, market_cap_range, market_cap_value, added_date, last_checked, is_active
+            FROM symbols
+        ''')
+        cursor.execute('DROP TABLE symbols')
+        cursor.execute('ALTER TABLE symbols_new RENAME TO symbols')
+        # Re-créer les index sur la nouvelle table
+        cursor.execute('CREATE INDEX IF NOT EXISTS idx_symbol ON symbols(symbol)')
+        cursor.execute('CREATE INDEX IF NOT EXISTS idx_sector ON symbols(sector)')
+        cursor.execute('CREATE INDEX IF NOT EXISTS idx_market_cap_range ON symbols(market_cap_range)')
+        cursor.execute('CREATE INDEX IF NOT EXISTS idx_is_active ON symbols(is_active)')
+        print("✅ Migration list_type terminée: colonne legacy supprimée de la table symbols")
     
     # Table pour cacher les groupes nettoyés (complétion + limitation)
     cursor.execute('''
@@ -83,7 +112,15 @@ def sync_txt_to_sqlite(txt_file: str, list_type: str = 'popular', force_refresh:
         list_type: Type de liste ('popular', 'mes_symbols', etc.)
         force_refresh: Si True, force la récupération des métadonnées même si elles existent
     """
+    # ✅ CORRIGÉ: Résoudre le chemin relatif vers le répertoire de ce module (src/)
+    # pour rester cohérent avec save_symbols_to_txt et load_symbols_from_txt
     path = Path(txt_file)
+    if not path.is_absolute():
+        module_dir = Path(__file__).parent
+        candidate = module_dir / txt_file
+        if candidate.exists():
+            path = candidate
+        # sinon on garde le chemin tel quel (CWD fallback)
     if not path.exists():
         return 0
     
@@ -99,17 +136,18 @@ def sync_txt_to_sqlite(txt_file: str, list_type: str = 'popular', force_refresh:
     
     for symbol in symbols:
         try:
-            # Vérifier si le symbole existe déjà avec des métadonnées valides
+            # Vérifier si le symbole existe déjà dans la DB (avec OU sans métadonnées)
             if not force_refresh:
                 cursor.execute('''
                     SELECT sector, market_cap_range, market_cap_value 
                     FROM symbols 
-                    WHERE symbol = ? AND sector IS NOT NULL AND sector != 'Unknown'
+                    WHERE symbol = ?
                 ''', (symbol,))
                 existing = cursor.fetchone()
                 
                 if existing:
-                    # Le symbole existe avec des métadonnées valides, juste ajouter à la liste
+                    # ✅ Le symbole existe déjà en DB — ne PAS re-fetcher même si sector='Unknown'
+                    # (ETFs, futures, cryptos n'ont pas de secteur — c'est normal)
                     cursor.execute('UPDATE symbols SET is_active = 1 WHERE symbol = ?', (symbol,))
                     cursor.execute('''
                         INSERT OR IGNORE INTO symbol_lists (symbol, list_type)
@@ -150,6 +188,21 @@ def sync_txt_to_sqlite(txt_file: str, list_type: str = 'popular', force_refresh:
                 added += 1
             except Exception:
                 pass
+    
+    # ✅ CORRIGÉ: Supprimer de la liste SQLite les symboles qui ne sont plus dans le fichier txt
+    # (sinon les symboles supprimés par l'utilisateur reviennent au redémarrage)
+    if symbols:
+        try:
+            placeholders = ','.join('?' * len(symbols))
+            cursor.execute(f'''
+                DELETE FROM symbol_lists 
+                WHERE list_type = ? AND symbol NOT IN ({placeholders})
+            ''', [list_type] + symbols)
+            removed_count = cursor.rowcount
+            if removed_count > 0:
+                print(f"   🗑️  {removed_count} symboles retirés de la liste '{list_type}' dans SQLite")
+        except Exception as e:
+            print(f"   ⚠️ Erreur suppression symboles obsolètes: {e}")
     
     conn.commit()
     conn.close()

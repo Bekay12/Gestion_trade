@@ -38,26 +38,29 @@ SECTOR_NORMALIZATION_MAP = {
     'Internet Software and Services': 'Technology',
     'IT Services': 'Technology',
     
-    # Industrial
-    'Industrials': 'Industrial',
-    'Industrial': 'Industrial',
-    'Machinery': 'Industrial',
-    'Building Products': 'Industrial',
-    'Aerospace & Defense': 'Industrial',
-    'Aerospace and Defense': 'Industrial',
-    'Defense': 'Industrial',
-    'Transportation': 'Industrial',
-    'Marine Shipping': 'Industrial',
+    # Industrials — garder le nom DB exact "Industrials"
+    'Industrials': 'Industrials',
+    'Industrial': 'Industrials',
+    'Machinery': 'Industrials',
+    'Building Products': 'Industrials',
+    'Aerospace & Defense': 'Industrials',
+    'Aerospace and Defense': 'Industrials',
+    'Defense': 'Industrials',
+    'Transportation': 'Industrials',
+    'Marine Shipping': 'Industrials',
     
-    # Consumer
-    'Consumer Discretionary': 'Consumer',
-    'Consumer Staples': 'Consumer',
-    'Retail': 'Consumer',
-    'Apparel': 'Consumer',
-    'Restaurants': 'Consumer',
-    'Consumer Cyclical': 'Consumer',
-    'Consumer Non-Cyclical': 'Consumer',
-    'Household & Personal Products': 'Consumer',
+    # Consumer Cyclical (discrétionnaire) — NE PAS mélanger avec Defensive
+    'Consumer Cyclical': 'Consumer Cyclical',
+    'Consumer Discretionary': 'Consumer Cyclical',
+    'Retail': 'Consumer Cyclical',
+    'Apparel': 'Consumer Cyclical',
+    'Restaurants': 'Consumer Cyclical',
+    'Consumer Non-Cyclical': 'Consumer Defensive',  # Non-cyclical = defensive
+    
+    # Consumer Defensive (staples) — profil très différent de Cyclical
+    'Consumer Defensive': 'Consumer Defensive',
+    'Consumer Staples': 'Consumer Defensive',
+    'Household & Personal Products': 'Consumer Defensive',
     
     # Energy
     'Energy': 'Energy',
@@ -67,21 +70,22 @@ SECTOR_NORMALIZATION_MAP = {
     'Electric Utilities': 'Utilities',
     'Water Utilities': 'Utilities',
     
-    # Materials
-    'Materials': 'Materials',
-    'Metals & Mining': 'Materials',
-    'Metals and Mining': 'Materials',
-    'Chemicals': 'Materials',
-    'Paper & Forest Products': 'Materials',
-    'Paper and Forest Products': 'Materials',
-    'Diversified Metals & Mining': 'Materials',
+    # Materials — garder le nom DB exact "Basic Materials"
+    'Basic Materials': 'Basic Materials',
+    'Materials': 'Basic Materials',
+    'Metals & Mining': 'Basic Materials',
+    'Metals and Mining': 'Basic Materials',
+    'Chemicals': 'Basic Materials',
+    'Paper & Forest Products': 'Basic Materials',
+    'Paper and Forest Products': 'Basic Materials',
+    'Diversified Metals & Mining': 'Basic Materials',
     
-    # Communication Services
-    'Communication Services': 'Communication',
-    'Telecommunications': 'Communication',
-    'Media & Entertainment': 'Communication',
-    'Media and Entertainment': 'Communication',
-    'Publishing': 'Communication',
+    # Communication Services — garder le nom DB exact
+    'Communication Services': 'Communication Services',
+    'Telecommunications': 'Communication Services',
+    'Media & Entertainment': 'Communication Services',
+    'Media and Entertainment': 'Communication Services',
+    'Publishing': 'Communication Services',
     
     # Other / Unknown
     'Unknown': 'Unknown',

@@ -60,7 +60,7 @@ def _download_with_retry(symbol: str, period: str = "1mo"):
     for attempt in range(3):
         try:
             print(f"[DL] {symbol} attempt {attempt + 1}/3")
-            data = yf.download(symbol, period=period, session=session, progress=False)
+            data = yf.download(symbol, period=period, session=session, progress=False, multi_level_index=False)
             if data is not None and not data.empty:
                 _save_to_cache(symbol, data)
                 return {symbol: data}
