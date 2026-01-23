@@ -1081,6 +1081,7 @@ def compute_financial_derivatives(symbol: str, lookback_quarters: int = 4) -> di
         # Données relatives (pour éviter biais grandes capitalisations)
         'ebitda_yield_pct': 0.0,   # EBITDA / EV (ou MC) * 100
         'fcf_yield_pct': 0.0,      # FCF / MarketCap * 100
+        'roe_val': 0.0,            # Return on Equity %
         'sector': 'Inconnu'
     }
     
@@ -1091,7 +1092,22 @@ def compute_financial_derivatives(symbol: str, lookback_quarters: int = 4) -> di
     if get_pickle_cache is not None:
         cached = get_pickle_cache(symbol, 'financial', ttl_hours=168)
         if cached is not None and isinstance(cached, dict):
-            return cached
+            # ✅ Vérifier si cache contient des VRAIES valeurs ROE (pas juste des 0)
+            # Forcer recalcul si valeurs nulles (cache ancien avant implémentation ROE)
+            has_real_roe = cached.get('roe_val', 0) != 0 or cached.get('roe', 0) != 0
+            has_real_peg = cached.get('roe_val', 0) != 0
+            
+            if has_real_roe:
+                # Cache contient des vraies valeurs - ajouter clés OLD manquantes
+                cached.setdefault('revenue_growth', cached.get('rev_growth_val', 0.0))
+                cached.setdefault('earnings_growth', cached.get('earnings_growth_val', 0.0))
+                cached.setdefault('fcf_yield', cached.get('fcf_yield_pct', 0.0))
+                cached.setdefault('roe', cached.get('roe_val', 0.0))
+                print(f"✅ Cache ROE valide pour {symbol}: ROE={cached.get('roe_val', 0):.2f}%")
+                return cached
+            else:
+                print(f"⚠️ Cache ROE incomplet pour {symbol}, recalcul...")
+            # Sinon, continuer au calcul (cache ancien avec valeurs nulles)
 
     def classify_cap_range(market_cap_b: float) -> str:
         try:
@@ -1122,6 +1138,8 @@ def compute_financial_derivatives(symbol: str, lookback_quarters: int = 4) -> di
         except Exception:
             d.setdefault('ebitda_yield_pct', 0.0)
             d.setdefault('fcf_yield_pct', 0.0)
+        # ⚠️ NE PAS ajouter de defaults pour ROE ici - sinon cache ancien sera considéré valide
+        # Les valeurs seront ajoutées lors du calcul avec yfinance
         return d
     
     # En mode offline, utiliser uniquement le cache
@@ -1140,25 +1158,29 @@ def compute_financial_derivatives(symbol: str, lookback_quarters: int = 4) -> di
         return derivatives  # Retourner valeurs par défaut si pas de cache
     
     # Vérifier le cache (7 jours de validité)
-    if cache_file.exists():
-        try:
-            age_hours = (datetime.now() - datetime.fromtimestamp(
-                cache_file.stat().st_mtime)).total_seconds() / 3600
-            if age_hours <= 168:  # 7 jours
-                d = pd.read_pickle(cache_file)
-                d = _ensure_relative_metrics(d)
-                try:
-                    pd.to_pickle(d, cache_file)
-                except Exception:
-                    pass
-                return d
-        except Exception:
-            pass
+    # ⚠️ DÉSACTIVÉ - on utilise déjà get_pickle_cache() plus haut qui vérifie ROE
+    # Si on arrive ici, c'est que le cache est incomplet, donc on doit recalculer
+    # if cache_file.exists():
+    #     try:
+    #         age_hours = (datetime.now() - datetime.fromtimestamp(
+    #             cache_file.stat().st_mtime)).total_seconds() / 3600
+    #         if age_hours <= 168:  # 7 jours
+    #             d = pd.read_pickle(cache_file)
+    #             d = _ensure_relative_metrics(d)
+    #             try:
+    #                 pd.to_pickle(d, cache_file)
+    #             except Exception:
+    #                 pass
+    #             return d
+    #     except Exception:
+    #         pass
 
     try:
         import yfinance as yf  # Import paresseux
+        print(f"🔍 Calcul financier pour {symbol}...")
         ticker = yf.Ticker(symbol)
         info = ticker.info
+        print(f"✅ Info yfinance récupérées pour {symbol}")
         
         # ⚡ Récupérer DIRECTEMENT de .info (1 seul appel API, très rapide)
         
@@ -1166,6 +1188,11 @@ def compute_financial_derivatives(symbol: str, lookback_quarters: int = 4) -> di
         revenue_growth = info.get('revenueGrowth')
         if revenue_growth:
             derivatives['rev_growth_val'] = float(revenue_growth) * 100
+        
+        # ✅ NOUVEAU: Earnings Growth - croissance des bénéfices annuels
+        earnings_growth = info.get('earningsGrowth')
+        if earnings_growth:
+            derivatives['earnings_growth_val'] = float(earnings_growth) * 100
         
         # EBITDA
         ebitda = info.get('ebitda')
@@ -1209,6 +1236,25 @@ def compute_financial_derivatives(symbol: str, lookback_quarters: int = 4) -> di
         else:
             derivatives['fcf_yield_pct'] = 0.0
         
+        # ROE (Return on Equity) en pourcentage
+        roe = info.get('returnOnEquity')
+        if roe:
+            roe_pct = float(roe) * 100
+            derivatives['roe_val'] = roe_pct
+            derivatives['roe'] = roe_pct  # ✅ Pour compatibilité avec scoring
+            print(f"✅ {symbol}: ROE extrait = {roe_pct:.2f}% (depuis returnOnEquity={roe})")
+        else:
+            derivatives['roe_val'] = 0.0
+            derivatives['roe'] = 0.0
+            print(f"⚠️ {symbol}: Pas de ROE dans yfinance info")
+        
+        # PEG REMOVED - Métrique trop incohérente (56% de valeurs manquantes)
+        
+        # Ajouter aussi les clés OLD pour compatibilité avec ancien code
+        # qui attendait 'revenue_growth' au lieu de 'rev_growth_val'
+        derivatives['revenue_growth'] = derivatives.get('rev_growth_val', 0.0)
+        derivatives['fcf_yield'] = derivatives.get('fcf_yield_pct', 0.0)
+        
         # Sector
         sector = info.get('sector', 'Inconnu')
         derivatives['sector'] = sector
@@ -1216,11 +1262,17 @@ def compute_financial_derivatives(symbol: str, lookback_quarters: int = 4) -> di
         # Sauvegarder dans le cache
         try:
             pd.to_pickle(derivatives, cache_file)
+            # Aussi sauvegarder via save_pickle_cache pour assurer compatibilité
+            if save_pickle_cache is not None:
+                save_pickle_cache(pd.Series(derivatives), symbol, cache_type='financial')
         except Exception:
             pass
 
-    except Exception:
+    except Exception as e:
         # En cas d'erreur, essayer de récupérer depuis le cache obsolète
+        print(f"❌ Erreur lors du calcul financier pour {symbol}: {e}")
+        import traceback
+        traceback.print_exc()
         if cache_file.exists():
             try:
                 d = pd.read_pickle(cache_file)
@@ -1240,35 +1292,68 @@ def compute_financial_derivatives(symbol: str, lookback_quarters: int = 4) -> di
 def get_cap_range_for_symbol(symbol: str) -> str:
     """Récupère le cap_range avec stratégie complète (3 niveaux de fallback):
     
-    1️⃣ Cache pickle financier (accepte cache très ancien)
+    1️⃣ Cache pickle FRAIS (7 jours) - données juste calculées
     2️⃣ Base de données SQLite (symbols.db) - NEW
     3️⃣ Fallback "Unknown"
     
-    Stratégie: N'essaie PAS yfinance ici (trop lent pour batch). 
-    Le fallback vers cap_range génériques se fait dans le code d'analyse.
+    Stratégie: Cherche d'abord données fraîches, puis données anciennes, puis BD.
+    N'essaie PAS yfinance ici (trop lent pour batch).
     """
-    # Étape 1️⃣: Essayer le cache pickle
+    # Étape 1️⃣: Essayer le cache pickle FRAIS (7 jours = données juste calculées)
     try:
         if get_pickle_cache is not None:
-            d = get_pickle_cache(symbol, 'financial', ttl_hours=24*365)  # Accepte même cache très ancien
-            if d is not None and isinstance(d, dict):
-                mc_b = float(d.get('market_cap_val', 0.0) or 0.0)
-                if mc_b > 0:
-                    # Utiliser la fonction consolidée de symbol_manager si disponible
-                    try:
-                        from symbol_manager import classify_cap_range
-                        result = classify_cap_range(mc_b)
-                        if result and result != 'Unknown':
-                            return result
-                    except Exception:
-                        # Fallback local
-                        if mc_b < 2.0:
-                            return 'Small'
-                        if mc_b < 10.0:
-                            return 'Mid'
-                        if mc_b < 200.0:
-                            return 'Large'
-                        return 'Mega'
+            d = get_pickle_cache(symbol, 'financial', ttl_hours=168)  # 7 jours SEULEMENT = données fraîches
+            if d is not None:
+                # ✅ Convertir Series en dict si nécessaire
+                if hasattr(d, 'to_dict'):
+                    d = d.to_dict()
+                elif not isinstance(d, dict):
+                    d = dict(d) if d else {}
+                
+                if isinstance(d, dict):
+                    mc_b = float(d.get('market_cap_val', 0.0) or 0.0)
+                    if mc_b > 0:
+                        # ✅ Utiliser la fonction consolidée de symbol_manager si disponible
+                        try:
+                            from symbol_manager import classify_cap_range
+                            result = classify_cap_range(mc_b)
+                            if result and result != 'Unknown':
+                                print(f"📊 {symbol}: Cap_range={result} (cache frais: ${mc_b:.2f}B)")
+                                return result
+                        except Exception:
+                            # Fallback local si symbol_manager indisponible
+                            if mc_b < 2.0:
+                                return 'Small'
+                            if mc_b < 10.0:
+                                return 'Mid'
+                            if mc_b < 200.0:
+                                return 'Large'
+                            return 'Mega'
+    except Exception:
+        pass
+    
+    # 🔄 NOUVEAU: Si cache frais ne marche pas, essayer très ancien cache (fallback)
+    try:
+        if get_pickle_cache is not None:
+            d = get_pickle_cache(symbol, 'financial', ttl_hours=24*365)  # Très ancien cache en dernier recours
+            if d is not None:
+                # ✅ Convertir Series en dict si nécessaire
+                if hasattr(d, 'to_dict'):
+                    d = d.to_dict()
+                elif not isinstance(d, dict):
+                    d = dict(d) if d else {}
+                
+                if isinstance(d, dict):
+                    mc_b = float(d.get('market_cap_val', 0.0) or 0.0)
+                    if mc_b > 0:
+                        try:
+                            from symbol_manager import classify_cap_range
+                            result = classify_cap_range(mc_b)
+                            if result and result != 'Unknown':
+                                print(f"⚠️ {symbol}: Cap_range={result} (cache ancien: ${mc_b:.2f}B)")
+                                return result
+                        except Exception:
+                            pass
     except Exception:
         pass
     
@@ -2091,18 +2176,37 @@ def analyse_et_affiche(symbols, period="12mo"):
     plt.show()
 
 def save_symbols_to_txt(symbols: List[str], filename: str):
-    """Sauvegarde la liste de symboles dans un fichier texte"""
-    with open(filename, 'w', encoding='utf-8') as f:
+    """Sauvegarde la liste de symboles dans un fichier texte
+    
+    Utilise le chemin absolu dans le répertoire src/ pour éviter les
+    problèmes de chemin relatif selon où l'application est lancée.
+    """
+    from pathlib import Path
+    
+    # Utiliser le chemin absolu du répertoire src/
+    script_dir = Path(__file__).parent
+    file_path = script_dir / filename
+    
+    # S'assurer que le répertoire existe
+    file_path.parent.mkdir(parents=True, exist_ok=True)
+    
+    # Sauvegarder
+    with open(file_path, 'w', encoding='utf-8') as f:
         for symbol in symbols:
             f.write(symbol + '\n')
+    
+    print(f"✅ Sauvegarde: {len(symbols)} symboles dans {file_path}")
 
 def load_symbols_from_txt(filename: str, use_sqlite: bool = True) -> List[str]:
     """
-    Charge la liste de symboles depuis SQLite (préféré) ou fichier texte (fallback).
+    Charge la liste de symboles depuis SQLite (source de vérité) ou fichier texte (fallback).
+    
+    ✅ NOUVEAU: Synchronise TOUJOURS le fichier txt vers SQLite d'abord pour éviter 
+    les décalages entre fichier et BD.
     
     Args:
         filename: Nom du fichier txt (utilisé pour déterminer le type de liste)
-        use_sqlite: Si True, essayer de charger depuis SQLite d'abord
+        use_sqlite: Si True, charger depuis SQLite (la source de vérité)
     
     Returns:
         Liste des symboles
@@ -2113,6 +2217,24 @@ def load_symbols_from_txt(filename: str, use_sqlite: bool = True) -> List[str]:
         list_type = 'personal'
     elif 'watchlist' in filename.lower():
         list_type = 'watchlist'
+    elif 'optimisation' in filename.lower() or 'optimization' in filename.lower():
+        list_type = 'optimization'
+    
+    # ✅ IMPORTANT: Synchroniser le fichier txt vers SQLite AVANT de charger
+    # Cela assure que SQLite a toujours les données les plus récentes
+    if use_sqlite:
+        try:
+            script_dir = Path(__file__).parent
+            file_path = script_dir / filename
+            
+            if file_path.exists():
+                try:
+                    sync_txt_to_sqlite(str(file_path), list_type)
+                    print(f"🔄 SQLite synchronisé depuis {filename}")
+                except Exception as e:
+                    print(f"⚠️ Erreur sync SQLite: {e}")
+        except Exception:
+            pass
     
     # Essayer de charger depuis SQLite
     if use_sqlite:
@@ -2148,10 +2270,12 @@ def load_symbols_from_txt(filename: str, use_sqlite: bool = True) -> List[str]:
                 return []
 
         symbols = [line.strip() for line in file_path.read_text(encoding='utf-8').splitlines() if line.strip()]
+        print(f"✅ {len(symbols)} symboles chargés depuis fichier {filename}")
         
         # Synchroniser vers SQLite pour la prochaine fois
         try:
             sync_txt_to_sqlite(str(file_path), list_type)
+            print(f"🔄 SQLite synchronisé depuis {filename}")
         except Exception as e:
             print(f"⚠️ Synchronisation SQLite échouée: {e}")
         

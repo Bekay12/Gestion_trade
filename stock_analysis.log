@@ -744,3 +744,32 @@
 2026-01-10 13:48:15,828 - ERROR - 
 1 Failed download:
 2026-01-10 13:48:15,828 - ERROR - ['SAND']: YFPricesMissingError('possibly delisted; no price data found  (period=1y) (Yahoo error = "No data found, symbol may be delisted")')
+2026-01-22 22:52:17,310 - ERROR - 
+1 Failed download:
+2026-01-22 22:52:17,311 - ERROR - ['SAND']: YFPricesMissingError('possibly delisted; no price data found  (period=1y) (Yahoo error = "No data found, symbol may be delisted")')
+2026-01-22 22:52:18,062 - ERROR - 
+1 Failed download:
+2026-01-22 22:52:18,063 - ERROR - ['SAND']: YFPricesMissingError('possibly delisted; no price data found  (period=1y) (Yahoo error = "No data found, symbol may be delisted")')
+2026-01-23 00:43:22,119 - ERROR - 
+2 Failed downloads:
+2026-01-23 00:43:22,128 - ERROR - ['1211.HK']: Timeout('Failed to perform, curl: (28) Operation timed out after 20010 milliseconds with 3081 bytes received. See https://curl.se/libcurl/c/libcurl-errors.html first for more details.')
+2026-01-23 00:43:22,128 - ERROR - ['2020.HK']: Timeout('Failed to perform, curl: (28) Operation timed out after 20017 milliseconds with 3074 bytes received. See https://curl.se/libcurl/c/libcurl-errors.html first for more details.')
+2026-01-23 00:58:39,753 - ERROR - 
+1 Failed download:
+2026-01-23 00:58:39,755 - ERROR - ['2385.HK']: Timeout('Failed to perform, curl: (28) Connection timed out after 10006 milliseconds. See https://curl.se/libcurl/c/libcurl-errors.html first for more details.')
+2026-01-23 00:58:49,801 - ERROR - 
+1 Failed download:
+2026-01-23 00:58:49,802 - ERROR - ['CAG']: Timeout('Failed to perform, curl: (28) Connection timed out after 10010 milliseconds. See https://curl.se/libcurl/c/libcurl-errors.html first for more details.')
+2026-01-23 00:58:59,837 - ERROR - 
+1 Failed download:
+2026-01-23 00:58:59,838 - ERROR - ['CPB']: Timeout('Failed to perform, curl: (28) Operation timed out after 10010 milliseconds with 7122 bytes received. See https://curl.se/libcurl/c/libcurl-errors.html first for more details.')
+2026-01-23 00:59:09,868 - ERROR - 
+1 Failed download:
+2026-01-23 00:59:09,868 - ERROR - ['LW']: Timeout('Failed to perform, curl: (28) Operation timed out after 10011 milliseconds with 1784 bytes received. See https://curl.se/libcurl/c/libcurl-errors.html first for more details.')
+2026-01-23 00:59:19,901 - ERROR - 
+1 Failed download:
+2026-01-23 00:59:19,901 - ERROR - ['TAP']: Timeout('Failed to perform, curl: (28) Connection timed out after 10012 milliseconds. See https://curl.se/libcurl/c/libcurl-errors.html first for more details.')
+2026-01-23 00:59:39,929 - ERROR - 
+2 Failed downloads:
+2026-01-23 00:59:39,929 - ERROR - ['LW']: ConnectionError('Failed to perform, curl: (56) Recv failure: Connection was reset. See https://curl.se/libcurl/c/libcurl-errors.html first for more details.')
+2026-01-23 00:59:39,929 - ERROR - ['CAG']: Timeout('Failed to perform, curl: (28) Connection timed out after 20012 milliseconds. See https://curl.se/libcurl/c/libcurl-errors.html first for more details.')

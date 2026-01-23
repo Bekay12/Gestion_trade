@@ -294,12 +294,16 @@ class MainWindow(QMainWindow):
         if SYMBOL_MANAGER_AVAILABLE:
             try:
                 symbols = get_symbols_by_list_type(list_type, active_only=True)
-            except Exception:
+                print(f"✅ {list_type}: {len(symbols)} symboles chargés depuis SQLite")
+            except Exception as e:
+                print(f"⚠️ Erreur chargement SQLite pour {list_type}: {e}")
                 symbols = []
         if not symbols:
             try:
-                symbols = load_symbols_from_txt(filename, use_sqlite=False)
-            except Exception:
+                symbols = load_symbols_from_txt(filename, use_sqlite=True)
+                print(f"✅ {list_type}: {len(symbols)} symboles chargés depuis fichier/SQLite")
+            except Exception as e:
+                print(f"⚠️ Erreur chargement {filename}: {e}")
                 symbols = []
         # Dédupe en conservant l'ordre
         return list(dict.fromkeys([s for s in symbols if s]))
@@ -501,7 +505,7 @@ class MainWindow(QMainWindow):
         'Symbole','Signal','Score','Prix','Tendance','RSI','Volume\nmoyen','Domaine','Cap\nRange','Score/\nSeuil',
         'Fiabilite\n(%)','Nb\nTrades','Gagnants',
         # COLONNES FINANCIÈRES
-        'Rev.\nGrowth(%)','EBITDA\nYield(%)','FCF\nYield(%)','D/E\nRatio','Market\nCap(B$)',
+        'Rev.\nGrowth(%)','EBITDA\nYield(%)','FCF\nYield(%)','D/E\nRatio','Market\nCap(B$)','ROE\n(%)',
         # COLONNES DERIVÉES
         'dPrice','dMACD','dRSI','dVol\nRel',
         # COLONNES BACKTEST
@@ -827,7 +831,8 @@ class MainWindow(QMainWindow):
                 QMessageBox.information(self, "Aperçu nettoyage", "Aucune donnée d'optimisation trouvée.")
                 return
 
-            cleaned = clean_sector_cap_groups(sector_cap_ranges, ttl_days=100, min_symbols=4, max_symbols=12)
+            # Nouvelle logique : FIXE (mes_symbols) + ALÉATOIRE (popular), min=6, max=15
+            cleaned = clean_sector_cap_groups(sector_cap_ranges, ttl_days=0, min_symbols=6, max_symbols=15, fixed_ratio=0.18)
 
             # Prioriser les symboles ajoutés manuellement : ils restent en tête et ne sont pas élagués en premier
             manual_order = [self.optim_list.item(i).text() for i in range(self.optim_list.count())]
@@ -847,6 +852,21 @@ class MainWindow(QMainWindow):
                         if s not in seen:
                             seen.add(s)
                             flat_cleaned.append(s)
+            
+            # Garantir minimum 300 symboles au total
+            MIN_TOTAL_SYMBOLS = 300
+            if len(flat_cleaned) < MIN_TOTAL_SYMBOLS:
+                needed = MIN_TOTAL_SYMBOLS - len(flat_cleaned)
+                try:
+                    from symbol_manager import get_all_popular_symbols
+                    import random
+                    all_popular = get_all_popular_symbols(max_count=1000, exclude_symbols=seen)
+                    random.shuffle(all_popular)  # Randomiser pour diversité
+                    additional = all_popular[:needed]
+                    flat_cleaned.extend(additional)
+                    print(f"   📊 Complément pour atteindre {MIN_TOTAL_SYMBOLS} symboles : +{len(additional)} depuis popular_symbols")
+                except Exception as e:
+                    print(f"   ⚠️ Impossible d'ajouter des symboles supplémentaires : {e}")
 
             # Mettre à jour la QList optimisation avec la version nettoyée
             self.optim_list.clear()
@@ -868,7 +888,9 @@ class MainWindow(QMainWindow):
             # Rafraîchir compteurs
             self._update_list_counts()
 
-            lines = ["=== Résumé des groupes nettoyés (optimisation) ==="]
+            lines = [f"=== Résumé des groupes nettoyés (optimisation) ==="]
+            lines.append(f"TOTAL : {len(flat_cleaned)} symboles (minimum garanti : 300)")
+            lines.append("")
             for sec in sorted(cleaned.keys()):
                 for cap in sorted(cleaned[sec].keys()):
                     syms = cleaned[sec][cap]
@@ -1098,7 +1120,8 @@ class MainWindow(QMainWindow):
                     'EBITDA Yield (%)': round(float((derivatives.get('ebitda_yield_pct') or 0.0)), 2),
                     'FCF Yield (%)': round(float((derivatives.get('fcf_yield_pct') or 0.0)), 2),
                     'D/E Ratio': round(float((derivatives.get('debt_to_equity') or 0.0)), 2),
-                    'Market Cap (B$)': round(float((derivatives.get('market_cap_val') or 0.0)), 2)
+                    'Market Cap (B$)': round(float((derivatives.get('market_cap_val') or 0.0)), 2),
+                    'ROE (%)': round(float((derivatives.get('roe_val') or 0.0)), 2)
                 }
 
                 self.current_results.append(row_info)
@@ -1124,7 +1147,8 @@ class MainWindow(QMainWindow):
                         'EBITDA Yield (%)': 0.0,
                         'FCF Yield (%)': 0.0,
                         'D/E Ratio': 0.0,
-                        'Market Cap (B$)': 0.0
+                        'Market Cap (B$)': 0.0,
+                        'ROE (%)': 0.0
                     }
                     self.current_results.append(row_info)
                 except Exception:
@@ -1330,6 +1354,7 @@ class MainWindow(QMainWindow):
             r.setdefault('FCF Yield (%)', 0.0)
             r.setdefault('D/E Ratio', 0.0)
             r.setdefault('Market Cap (B$)', 0.0)
+            r.setdefault('ROE (%)', 0.0)
         
         # 🔧 Charger les meilleurs paramètres une seule fois
         try:
@@ -1883,29 +1908,44 @@ class MainWindow(QMainWindow):
                 item.setData(Qt.EditRole, market_cap)
                 self.merged_table.setItem(row, 17, item)
 
-                # Derivatives (colonnes 17-20)
+                # Colonne 17: ROE (%)
+                roe = safe_float(signal.get('ROE (%)', 0.0))
+                item = QTableWidgetItem(f"{roe:.2f}")
+                item.setData(Qt.EditRole, roe)
+                # Colorer basé sur ROE : vert si > 15%, orange si 10-15%, rouge si < 10%
+                if roe > 15:
+                    item.setForeground(QColor(0, 128, 0))  # Vert : excellent
+                elif roe > 10:
+                    item.setForeground(QColor(255, 165, 0))  # Orange : bon
+                elif roe > 5:
+                    item.setForeground(QColor(255, 140, 0))  # Orange clair : acceptable
+                else:
+                    item.setForeground(QColor(255, 0, 0))  # Rouge : faible
+                self.merged_table.setItem(row, 18, item)
+
+                # Derivatives (colonnes 19-22)
                 dprice = safe_float(signal.get('dPrice', 0.0))
                 item = QTableWidgetItem(f"{dprice:.3f}")
                 item.setData(Qt.EditRole, dprice)
-                self.merged_table.setItem(row, 18, item)
+                self.merged_table.setItem(row, 19, item)
 
                 dmacd = safe_float(signal.get('dMACD', 0.0))
                 item = QTableWidgetItem(f"{dmacd:.3f}")
                 item.setData(Qt.EditRole, dmacd)
-                self.merged_table.setItem(row, 19, item)
+                self.merged_table.setItem(row, 20, item)
 
                 drsi = safe_float(signal.get('dRSI', 0.0))
                 item = QTableWidgetItem(f"{drsi:.3f}")
                 item.setData(Qt.EditRole, drsi)
-                self.merged_table.setItem(row, 20, item)
+                self.merged_table.setItem(row, 21, item)
 
                 dvol = safe_float(signal.get('dVolRel', 0.0))
                 item = QTableWidgetItem(f"{dvol:.3f}")
                 item.setData(Qt.EditRole, dvol)
-                self.merged_table.setItem(row, 21, item)
+                self.merged_table.setItem(row, 22, item)
 
                 # Backtest metrics (if available)
-                # Colonnes 21-22 pour Gain total et Gain moyen
+                # Colonnes 23-24 pour Gain total et Gain moyen
                 trades = int(bt.get('trades', 0)) if bt else 0
                 taux = float(bt.get('taux_reussite', 0.0)) if bt else 0.0
                 gain_total = float(bt.get('gain_total', 0.0)) if bt else 0.0
@@ -1922,7 +1962,7 @@ class MainWindow(QMainWindow):
                     item.setForeground(QColor(255, 165, 0))  # Orange : moyen
                 else:
                     item.setForeground(QColor(255, 0, 0))  # Rouge : mauvais
-                self.merged_table.setItem(row, 22, item)
+                self.merged_table.setItem(row, 23, item)
 
                 item = QTableWidgetItem(f"{gain_moy:.2f}")
                 item.setData(Qt.EditRole, gain_moy)
@@ -1935,9 +1975,9 @@ class MainWindow(QMainWindow):
                     item.setForeground(QColor(255, 165, 0))  # Orange : moyen
                 else:
                     item.setForeground(QColor(255, 0, 0))  # Rouge : mauvais
-                self.merged_table.setItem(row, 23, item)
+                self.merged_table.setItem(row, 24, item)
 
-                # Consensus (text column at index 24)
+                # Consensus (text column at index 26)
                 consensus = signal.get('Consensus', 'N/A')
                 # Debug: vérifier si le Consensus existe vraiment
                 if row == 0:  # Afficher seulement pour la première ligne
@@ -1953,7 +1993,7 @@ class MainWindow(QMainWindow):
                     item.setForeground(QColor(255, 165, 0))  # Orange : neutre
                 elif 'sell' in consensus_lower or 'vente' in consensus_lower:
                     item.setForeground(QColor(255, 0, 0))  # Rouge : mauvais
-                self.merged_table.setItem(row, 24, item)
+                self.merged_table.setItem(row, 26, item)
 
                 # item = QTableWidgetItem(f"{drawdown:.2f}")
                 # item.setData(Qt.EditRole, drawdown)
@@ -1994,8 +2034,10 @@ class MainWindow(QMainWindow):
             13: ('gross_margin_val', False),# Gross Margin croissant
             14: ('market_cap_val', True),   # Market Cap décroissant
             15: ('market_cap_val', False),  # Market Cap croissant
-            16: ('fcf_val', True),         # FCF décroissant
-            17: ('debt_to_equity_val', False) # D/E Ratio croissant
+            16: ('roe_val', True),         # ROE décroissant
+            17: ('roe_val', False),        # ROE croissant
+            18: ('fcf_val', True),         # FCF décroissant
+            19: ('debt_to_equity_val', False) # D/E Ratio croissant
         }
         
         if index in sort_options:
@@ -2211,8 +2253,8 @@ class MainWindow(QMainWindow):
                     gagnants_item = self.merged_table.item(row, 12)
                     gagnants = int(gagnants_item.data(Qt.EditRole)) if gagnants_item and gagnants_item.data(Qt.EditRole) is not None else 0
                     
-                    # Colonne 22: Gain total ($)
-                    gain_item = self.merged_table.item(row, 22)
+                    # Colonne 24: Gain total ($) ✅ FIX: était 22 (dRSI), maintenant 24 (Gain total)
+                    gain_item = self.merged_table.item(row, 24)
                     gain = float(gain_item.data(Qt.EditRole)) if gain_item and gain_item.data(Qt.EditRole) is not None else 0.0
                     
                     if domaine not in domain_stats:
