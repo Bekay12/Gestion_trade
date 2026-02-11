@@ -8,7 +8,10 @@ from datetime import datetime, timedelta
 import random
 import sys
 from pathlib import Path
-sys.path.append("C:\\Users\\berti\\Desktop\\Mes documents\\Gestion_trade\\stock-analysis-ui\\src\\trading_c_acceleration")
+from pathlib import Path
+_trading_accel_path = Path(__file__).parent / "trading_c_acceleration"
+if _trading_accel_path.exists():
+    sys.path.insert(0, str(_trading_accel_path.parent))
 from qsi import download_stock_data, load_symbols_from_txt, extract_best_parameters
 from trading_c_acceleration.qsi_optimized import backtest_signals, backtest_signals_with_events, backtest_signals_c_extended
 from pathlib import Path

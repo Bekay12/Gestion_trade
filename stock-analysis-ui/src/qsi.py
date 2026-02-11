@@ -4,6 +4,11 @@
 
 # Import paresseux pour accélérer le chargement (yfinance ~1.9s)
 # import yfinance as yf  # Chargé à la demande dans download_stock_data
+
+# Set non-interactive backend if no GUI app has already configured one
+import matplotlib
+if matplotlib.get_backend().lower() in ('agg', ''):
+    matplotlib.use('Agg')
 import matplotlib.pyplot as plt
 import pandas as pd
 import numpy as np
@@ -20,7 +25,11 @@ import sys
 import os
 import sqlite3
 import yfinance as yf
-sys.path.append("C:\\Users\\berti\\Desktop\\Mes documents\\Gestion_trade\\stock-analysis-ui\\src\\trading_c_acceleration")
+# Use Path for cross-platform compatibility
+from pathlib import Path
+_trading_accel_path = Path(__file__).parent / "trading_c_acceleration"
+if _trading_accel_path.exists():
+    sys.path.insert(0, str(_trading_accel_path.parent))
 from trading_c_acceleration.qsi_optimized import backtest_signals, extract_best_parameters, backtest_signals_with_events
 
 # Import config et cache utilities
@@ -1237,31 +1246,128 @@ def compute_financial_derivatives(symbol: str, lookback_quarters: int = 4) -> di
 # Note: classify_cap_range() est maintenant dans symbol_manager.py
 # Les appels à classify_cap_range_from_market_cap() sont obsoletes; utiliser classify_cap_range() a la place
 
+# ✅ Cache mémoire pour éviter les requêtes DB répétées
+_SYMBOL_INFO_CACHE = {}
+
+def get_symbol_info_from_db(symbol: str) -> dict:
+    """Récupère sector, market_cap_range et market_cap_value depuis stock_analysis.db.
+    
+    Retourne un dict avec 'sector', 'cap_range', 'market_cap_b' ou des valeurs par défaut.
+    Utilise un cache mémoire pour éviter les requêtes DB répétées.
+    """
+    if symbol in _SYMBOL_INFO_CACHE:
+        return _SYMBOL_INFO_CACHE[symbol]
+    
+    result = {'sector': None, 'cap_range': 'Unknown', 'market_cap_b': 0.0}
+    try:
+        import sqlite3
+        from config import DB_PATH
+        if os.path.exists(DB_PATH):
+            conn = sqlite3.connect(DB_PATH)
+            conn.row_factory = sqlite3.Row
+            cursor = conn.cursor()
+            cursor.execute("""
+                SELECT sector, market_cap_range, market_cap_value 
+                FROM symbols 
+                WHERE symbol = ? AND is_active = 1
+                LIMIT 1
+            """, (symbol,))
+            row = cursor.fetchone()
+            conn.close()
+            if row:
+                result['sector'] = row['sector'] if row['sector'] else None
+                result['cap_range'] = row['market_cap_range'] if row['market_cap_range'] else 'Unknown'
+                result['market_cap_b'] = float(row['market_cap_value']) if row['market_cap_value'] else 0.0
+    except Exception:
+        pass
+    
+    _SYMBOL_INFO_CACHE[symbol] = result
+    return result
+
+
+def update_symbol_info_in_db(symbol: str, sector: str = None, cap_range: str = None, market_cap_b: float = None):
+    """Met à jour sector/cap_range/market_cap dans stock_analysis.db après récupération yfinance.
+    
+    Aussi actualise le cache mémoire.
+    """
+    try:
+        import sqlite3
+        from config import DB_PATH
+        if not os.path.exists(DB_PATH):
+            return
+        
+        conn = sqlite3.connect(DB_PATH)
+        cursor = conn.cursor()
+        
+        # Vérifier si le symbole existe
+        cursor.execute("SELECT id FROM symbols WHERE symbol = ?", (symbol,))
+        existing = cursor.fetchone()
+        
+        if existing:
+            # Mettre à jour les champs non-null
+            updates = []
+            params = []
+            if sector:
+                updates.append("sector = ?")
+                params.append(sector)
+            if cap_range and cap_range != 'Unknown':
+                updates.append("market_cap_range = ?")
+                params.append(cap_range)
+            if market_cap_b and market_cap_b > 0:
+                updates.append("market_cap_value = ?")
+                params.append(market_cap_b)
+            if updates:
+                updates.append("last_checked = datetime('now')")
+                params.append(symbol)
+                cursor.execute(f"UPDATE symbols SET {', '.join(updates)} WHERE symbol = ?", params)
+        else:
+            # Insérer nouveau symbole
+            cursor.execute("""
+                INSERT INTO symbols (symbol, sector, market_cap_range, market_cap_value, list_type, is_active)
+                VALUES (?, ?, ?, ?, 'popular', 1)
+            """, (symbol, sector, cap_range, market_cap_b or 0.0))
+        
+        conn.commit()
+        conn.close()
+        
+        # Mettre à jour le cache mémoire
+        _SYMBOL_INFO_CACHE[symbol] = {
+            'sector': sector or _SYMBOL_INFO_CACHE.get(symbol, {}).get('sector'),
+            'cap_range': cap_range or _SYMBOL_INFO_CACHE.get(symbol, {}).get('cap_range', 'Unknown'),
+            'market_cap_b': market_cap_b or _SYMBOL_INFO_CACHE.get(symbol, {}).get('market_cap_b', 0.0)
+        }
+    except Exception:
+        pass
+
+
 def get_cap_range_for_symbol(symbol: str) -> str:
     """Récupère le cap_range avec stratégie complète (3 niveaux de fallback):
     
-    1️⃣ Cache pickle financier (accepte cache très ancien)
-    2️⃣ Base de données SQLite (symbols.db) - NEW
+    1️⃣ Cache mémoire / stock_analysis.db (rapide)
+    2️⃣ Cache pickle financier (accepte cache très ancien)
     3️⃣ Fallback "Unknown"
     
     Stratégie: N'essaie PAS yfinance ici (trop lent pour batch). 
     Le fallback vers cap_range génériques se fait dans le code d'analyse.
     """
-    # Étape 1️⃣: Essayer le cache pickle
+    # Étape 1️⃣: stock_analysis.db (cache mémoire inclus)
+    db_info = get_symbol_info_from_db(symbol)
+    if db_info['cap_range'] and db_info['cap_range'] != 'Unknown':
+        return db_info['cap_range']
+    
+    # Étape 2️⃣: Essayer le cache pickle
     try:
         if get_pickle_cache is not None:
-            d = get_pickle_cache(symbol, 'financial', ttl_hours=24*365)  # Accepte même cache très ancien
+            d = get_pickle_cache(symbol, 'financial', ttl_hours=24*365)
             if d is not None and isinstance(d, dict):
                 mc_b = float(d.get('market_cap_val', 0.0) or 0.0)
                 if mc_b > 0:
-                    # Utiliser la fonction consolidée de symbol_manager si disponible
                     try:
                         from symbol_manager import classify_cap_range
                         result = classify_cap_range(mc_b)
                         if result and result != 'Unknown':
                             return result
                     except Exception:
-                        # Fallback local
                         if mc_b < 2.0:
                             return 'Small'
                         if mc_b < 10.0:
@@ -1270,30 +1376,6 @@ def get_cap_range_for_symbol(symbol: str) -> str:
                             return 'Large'
                         return 'Mega'
     except Exception:
-        pass
-    
-    # Étape 2️⃣: Essayer la base de données SQLite (NEW)
-    try:
-        import sqlite3
-        db_path = 'symbols.db'
-        if os.path.exists(db_path):
-            conn = sqlite3.connect(db_path)
-            conn.row_factory = sqlite3.Row
-            cursor = conn.cursor()
-            cursor.execute("""
-                SELECT cap_range FROM symbols 
-                WHERE symbol = ? AND cap_range IS NOT NULL AND cap_range != 'Unknown'
-                LIMIT 1
-            """, (symbol,))
-            row = cursor.fetchone()
-            conn.close()
-            if row and row['cap_range']:
-                cap = str(row['cap_range']).strip()
-                if cap and cap != 'Unknown':
-                    print(f"📊 {symbol}: Cap_range récupéré de la DB: {cap}")
-                    return cap
-    except Exception as e:
-        print(f"⚠️ Erreur DB pour cap_range {symbol}: {e}")
         pass
     
     # Étape 3️⃣: Fallback
@@ -1603,7 +1685,7 @@ def get_cached_data(symbol: str, period: str, max_age_hours: int = CACHE_MAX_AGE
     try:
         import yfinance as yf  # Import paresseux
         # print(f"🌐 Téléchargement {symbol}...")
-        data = yf.download(symbol, period=period, progress=False)
+        data = yf.download(symbol, period=period, progress=False, multi_level_index=False)
         
         if not data.empty:
             data.to_pickle(cache_file)
@@ -1699,6 +1781,7 @@ def download_stock_data(symbols: List[str], period: str) -> Dict[str, Dict[str, 
     
     # ÉTAPE 7: TÉLÉCHARGEMENT OPTIMISÉ
     valid_data = {}
+    failure_reasons = {}
 
     # Toujours essayer d'utiliser le cache frais (< CACHE_MAX_AGE_HOURS);
     # get_cached_data télécharge automatiquement si le cache est trop vieux.
@@ -1738,7 +1821,8 @@ def download_stock_data(symbols: List[str], period: str) -> Dict[str, Dict[str, 
                     group_by='ticker',
                     progress=False,
                     threads=True,
-                    timeout=20
+                    timeout=20,
+                    multi_level_index=False
                 )
                 
                 # Extraction des données du batch
@@ -2421,21 +2505,31 @@ def analyse_signaux_populaires(
             if len(prices) < 50:
                 return None
 
-            # Récupération du secteur
-            try:
-                if OFFLINE_MODE:
-                    if get_pickle_cache is not None:
-                        fin_cache = get_pickle_cache(symbol, 'financial', ttl_hours=24*365)
-                        domaine = fin_cache.get('sector', 'ℹ️Inconnu!!') if fin_cache else "ℹ️Inconnu!!"
+            # Récupération du secteur et cap_range depuis la DB d'abord (rapide)
+            db_info = get_symbol_info_from_db(symbol)
+            domaine = db_info['sector'] if db_info['sector'] else None
+            cap_range = db_info['cap_range']
+            
+            # Si la DB n'a pas le secteur, fallback yfinance ou cache
+            if not domaine:
+                try:
+                    if OFFLINE_MODE:
+                        if get_pickle_cache is not None:
+                            fin_cache = get_pickle_cache(symbol, 'financial', ttl_hours=24*365)
+                            domaine = fin_cache.get('sector', 'Inconnu') if fin_cache else "Inconnu"
+                        else:
+                            domaine = "Inconnu"
                     else:
-                        domaine = "ℹ️Inconnu!!"
-                else:
-                    info = yf.Ticker(symbol).info
-                    domaine = info.get("sector", "ℹ️Inconnu!!")
-            except Exception:
-                domaine = "ℹ️Inconnu!!"
-
-            cap_range = get_cap_range_for_symbol(symbol)
+                        info = yf.Ticker(symbol).info
+                        domaine = info.get("sector", "Inconnu")
+                        # Sauvegarder en DB pour les prochaines fois
+                        mc_raw = info.get('marketCap')
+                        mc_b = float(mc_raw) / 1e9 if mc_raw else 0.0
+                        if mc_b > 0 and (cap_range == 'Unknown' or not cap_range):
+                            cap_range = classify_cap_range(mc_b)
+                        update_symbol_info_in_db(symbol, sector=domaine, cap_range=cap_range, market_cap_b=mc_b)
+                except Exception:
+                    domaine = "Inconnu"
             
             # Recherche de la clé de paramètres optimisés
             selected_key = None
@@ -2468,6 +2562,17 @@ def analyse_signaux_populaires(
                 seuil_achat=seuil_achat_opt, seuil_vente=seuil_vente_opt,
                 price_extras=extras_to_use  # 🔧 Passer les extras pour utiliser les features (price + fundamentals)
             )
+            
+            # ✅ Dériver cap_range depuis market_cap si encore Unknown
+            if (cap_range == 'Unknown' or not cap_range) and derivatives.get('market_cap_val'):
+                mc_b = float(derivatives['market_cap_val'])
+                if mc_b > 0:
+                    cap_range = classify_cap_range(mc_b)
+                    if cap_range and cap_range != 'Unknown':
+                        # Recalculer la clé de paramètres avec le cap_range dérivé
+                        comp_key = f"{domaine}_{cap_range}"
+                        if comp_key in best_params:
+                            selected_key = comp_key
             
             # 🔍 Debug: afficher le résultat pour comprendre le filtrage
             if verbose and signal == "NEUTRE":
@@ -2620,20 +2725,8 @@ def analyse_signaux_populaires(
             prices = stock_data['Close']
             volumes = stock_data['Volume']
 
-            # Ajout : récupération du domaine pour le backtest
-            try:
-                if OFFLINE_MODE:
-                    if get_pickle_cache is not None:
-                        fin_cache = get_pickle_cache(s['Symbole'], 'financial', ttl_hours=24*365)
-                        domaine = fin_cache.get('sector', 'Inconnu') if fin_cache else s.get('Domaine', 'Inconnu')
-                    else:
-                        domaine = s.get('Domaine', 'Inconnu')
-                else:
-                    info = yf.Ticker(s['Symbole']).info
-                    domaine = info.get("sector", "Inconnu")
-            except Exception:
-                # Fallback: utiliser le domaine du signal
-                domaine = s.get('Domaine', 'Inconnu')
+            # ✅ Utiliser le domaine déjà récupéré par process_symbol (évite un appel yfinance)
+            domaine = s.get('Domaine', 'Inconnu')
 
             if not isinstance(prices, (pd.Series, pd.DataFrame)) or len(prices) < 2:
                 if verbose:

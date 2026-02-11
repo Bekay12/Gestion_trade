@@ -5,9 +5,16 @@ from PyQt5.QtWidgets import (
     QTableWidgetItem, QComboBox, QHeaderView, QSpinBox, QCheckBox, QTabWidget, QTextEdit
 )
 from PyQt5.QtWidgets import QAbstractItemView
-from PyQt5.QtCore import QThread, pyqtSignal, Qt
+from PyQt5.QtCore import QThread, pyqtSignal, pyqtSlot, QObject, Qt, QTimer, QMetaObject, Q_ARG
 from PyQt5.QtGui import QColor
+import faulthandler
+import signal
 import io
+
+# Force matplotlib to use the Qt5Agg backend BEFORE any other matplotlib import
+# This prevents conflicts on Linux where matplotlib might pick TkAgg or another backend
+import matplotlib
+matplotlib.use('Qt5Agg')
 from matplotlib.backends.backend_qt5agg import FigureCanvasQTAgg as FigureCanvas
 from matplotlib.figure import Figure
 import sys
@@ -15,7 +22,7 @@ import os
 import math
 import yfinance as yf
 
-# Ensure project `src` root is on sys.path
+# Ensure project `src` root is on sys.path 
 PROJECT_SRC = os.path.abspath(os.path.join(os.path.dirname(__file__), '..'))
 if PROJECT_SRC not in sys.path:
     sys.path.insert(0, PROJECT_SRC)
@@ -124,13 +131,33 @@ class DownloadThread(QThread):
                         try:
                             prices = stock_data['Close']
                             volumes = stock_data['Volume']
-                            # domain info best-effort
+                            # ✅ Récupérer secteur + cap_range depuis la DB (rapide)
+                            db_info = qsi.get_symbol_info_from_db(symbol)
+                            domaine = db_info['sector'] if db_info['sector'] else None
+                            cap_range = db_info['cap_range']
+                            
+                            if not domaine:
+                                try:
+                                    import yfinance as yf
+                                    info = yf.Ticker(symbol).info
+                                    domaine = info.get('sector', 'Inconnu')
+                                    mc_raw = info.get('marketCap')
+                                    mc_b = float(mc_raw) / 1e9 if mc_raw else 0.0
+                                    if mc_b > 0 and (cap_range == 'Unknown' or not cap_range):
+                                        if mc_b < 2.0: cap_range = 'Small'
+                                        elif mc_b < 10.0: cap_range = 'Mid'
+                                        elif mc_b < 200.0: cap_range = 'Large'
+                                        else: cap_range = 'Mega'
+                                    qsi.update_symbol_info_in_db(symbol, sector=domaine, cap_range=cap_range, market_cap_b=mc_b)
+                                except Exception:
+                                    domaine = 'Inconnu'
+
+                            # Normaliser le secteur pour correspondre aux clés DB
                             try:
-                                import yfinance as yf
-                                info = yf.Ticker(symbol).info
-                                domaine = info.get('sector', 'Inconnu')
-                            except Exception:
-                                domaine = 'Inconnu'
+                                from sector_normalizer import normalize_sector
+                                domaine = normalize_sector(domaine)
+                            except ImportError:
+                                pass
 
                             # ✨ Extraire les paramètres optimisés depuis la SQLite
                             try:
@@ -138,7 +165,14 @@ class DownloadThread(QThread):
                             except Exception:
                                 best_params = {}
 
-                            coeffs, feature_thresholds, globals_thresholds, _, _ = best_params.get(domaine, (None, None, (4.2, -0.5), None, {}))
+                            # Chercher la clé optimale : secteur_cap ou secteur seul
+                            param_key = domaine
+                            if cap_range and cap_range != 'Unknown':
+                                comp_key = f"{domaine}_{cap_range}"
+                                if comp_key in best_params:
+                                    param_key = comp_key
+
+                            coeffs, feature_thresholds, globals_thresholds, _, _ = best_params.get(param_key, (None, None, (4.2, -0.5), None, {}))
                             domain_coeffs = {domaine: coeffs} if coeffs else None
                             
                             # ✨ V2.0: Utiliser les paramètres optimisés si disponibles
@@ -148,7 +182,8 @@ class DownloadThread(QThread):
                                 'domaine': domaine,
                                 'montant': 50,
                                 'domain_coeffs': domain_coeffs,
-                                'domain_thresholds': {domaine: feature_thresholds} if feature_thresholds else None
+                                'domain_thresholds': {domaine: feature_thresholds} if feature_thresholds else None,
+                                'cap_range': cap_range
                             }
                             
                             bt = backtest_signals(**backtest_kwargs)
@@ -171,38 +206,59 @@ class DownloadThread(QThread):
         except Exception as e:
             self.error.emit(str(e))
 
-class LogCapture:
+class LogCapture(QObject):
     """Captures stdout/stderr and writes both to QTextEdit and to original stdout/stderr.
-    Thread-safe implementation using direct append (QTextEdit is thread-safe for append)."""
+    Uses a thread-safe buffer + QTimer to flush on the GUI thread, avoiding
+    the 'Cannot queue arguments of type QTextCursor' crash on Linux."""
+    import threading as _threading
+
     def __init__(self, text_edit):
+        super().__init__()
         self.text_edit = text_edit
-        self.original_stdout = sys.__stdout__
-        self.original_stderr = sys.__stderr__
-    
+        self.original_stdout = sys.__stdout__ or sys.stdout
+        self.original_stderr = sys.__stderr__ or sys.stderr
+        # Thread-safe buffer for messages coming from background threads
+        self._lock = self._threading.Lock()
+        self._buffer: list = []
+        # QTimer runs on the GUI thread — safe to touch QTextEdit here
+        self._timer = QTimer(self)
+        self._timer.setInterval(100)  # flush every 100 ms
+        self._timer.timeout.connect(self._flush_buffer)
+        self._timer.start()
+
+    def _flush_buffer(self):
+        """Called by QTimer on the GUI thread — safe to touch QTextEdit."""
+        with self._lock:
+            messages = self._buffer[:]
+            self._buffer.clear()
+        for msg in messages:
+            self.text_edit.append(msg)
+
     def write(self, message):
-        """Write message to QTextEdit and original stdout."""
+        """Write message to QTextEdit buffer and original stdout."""
         try:
             if message and message.strip():
-                # Append to QTextEdit (thread-safe)
-                self.text_edit.append(message.rstrip())
-                # Also print to original stdout (terminal)
+                with self._lock:
+                    self._buffer.append(message.rstrip())
+            if self.original_stdout:
                 self.original_stdout.write(message)
                 self.original_stdout.flush()
         except Exception:
-            # Fail silently to avoid breaking print calls
             try:
-                self.original_stdout.write(message)
-                self.original_stdout.flush()
+                if self.original_stdout:
+                    self.original_stdout.write(message)
+                    self.original_stdout.flush()
             except Exception:
                 pass
-    
+
     def flush(self):
         """Flush the buffer."""
         try:
-            self.original_stdout.flush()
+            if self.original_stdout:
+                self.original_stdout.flush()
         except Exception:
             pass
-    
+
     def isatty(self):
         """Required for some code that checks if stdout is a TTY."""
         return False
@@ -949,21 +1005,41 @@ class MainWindow(QMainWindow):
                 volume_mean = float(volumes.mean()) if len(volumes) > 0 else 0.0
                 score = 0.0
                 derivatives = {}
-                cap_range = qsi.get_cap_range_for_symbol(symbol)
+                # ✅ Récupération secteur + cap_range depuis la DB d'abord (rapide)
+                db_info = qsi.get_symbol_info_from_db(symbol)
+                domaine = db_info['sector'] if db_info['sector'] else None
+                cap_range = db_info['cap_range']
                 
-                # Récupérer le secteur depuis le cache ou yfinance
-                try:
-                    if qsi.OFFLINE_MODE:
-                        if qsi.get_pickle_cache is not None:
-                            fin_cache = qsi.get_pickle_cache(symbol, 'financial', ttl_hours=24*365)
-                            domaine = fin_cache.get('sector', 'Inconnu') if fin_cache else "Inconnu"
+                # Si la DB n'a pas le secteur, fallback yfinance ou cache
+                if not domaine:
+                    try:
+                        if qsi.OFFLINE_MODE:
+                            if qsi.get_pickle_cache is not None:
+                                fin_cache = qsi.get_pickle_cache(symbol, 'financial', ttl_hours=24*365)
+                                domaine = fin_cache.get('sector', 'Inconnu') if fin_cache else "Inconnu"
+                            else:
+                                domaine = "Inconnu"
                         else:
-                            domaine = "Inconnu"
-                    else:
-                        info = yf.Ticker(symbol).info
-                        domaine = info.get("sector", "Inconnu")
-                    
-                    # ✅ NEW: Normaliser le secteur pour cohérence avec la DB
+                            info = yf.Ticker(symbol).info
+                            domaine = info.get("sector", "Inconnu")
+                            # Sauvegarder en DB pour la prochaine fois
+                            mc_raw = info.get('marketCap')
+                            mc_b = float(mc_raw) / 1e9 if mc_raw else 0.0
+                            if mc_b > 0 and (cap_range == 'Unknown' or not cap_range):
+                                try:
+                                    from symbol_manager import classify_cap_range
+                                    cap_range = classify_cap_range(mc_b)
+                                except ImportError:
+                                    if mc_b < 2.0: cap_range = 'Small'
+                                    elif mc_b < 10.0: cap_range = 'Mid'
+                                    elif mc_b < 200.0: cap_range = 'Large'
+                                    else: cap_range = 'Mega'
+                            qsi.update_symbol_info_in_db(symbol, sector=domaine, cap_range=cap_range, market_cap_b=mc_b)
+                    except Exception:
+                        domaine = "Inconnu"
+                
+                # Normaliser le secteur pour cohérence avec la DB
+                try:
                     from sector_normalizer import normalize_sector
                     domaine_raw = domaine
                     domaine = normalize_sector(domaine)
@@ -1068,6 +1144,25 @@ class MainWindow(QMainWindow):
                     if not derivatives.get('rev_growth_val') and not derivatives.get('market_cap_val'):
                         print(f"⚠️ {symbol}: Métriques financières manquantes dans derivatives")
                         print(f"   Clés disponibles: {list(derivatives.keys())}")
+                    
+                    # ✅ Dériver cap_range depuis market_cap si encore Unknown
+                    if (cap_range == 'Unknown' or not cap_range) and derivatives.get('market_cap_val'):
+                        mc_b = float(derivatives['market_cap_val'])
+                        if mc_b > 0:
+                            try:
+                                from symbol_manager import classify_cap_range
+                                cap_range = classify_cap_range(mc_b)
+                            except ImportError:
+                                if mc_b < 2.0:
+                                    cap_range = 'Small'
+                                elif mc_b < 10.0:
+                                    cap_range = 'Mid'
+                                elif mc_b < 200.0:
+                                    cap_range = 'Large'
+                                else:
+                                    cap_range = 'Mega'
+                            # Sauvegarder en DB pour les prochaines fois
+                            qsi.update_symbol_info_in_db(symbol, sector=domaine, cap_range=cap_range, market_cap_b=mc_b)
                 except Exception as e:
                     # Log l'erreur mais continue avec les valeurs par défaut
                     print(f"⚠️ Erreur get_trading_signal pour {symbol}: {e}")
@@ -1138,13 +1233,27 @@ class MainWindow(QMainWindow):
                 if sym in bt_map:
                     r['Fiabilite'] = bt_map[sym].get('taux_reussite', 'N/A')
                     r['NbTrades'] = bt_map[sym].get('trades', 0)
+                    r['Gagnants'] = bt_map[sym].get('gagnants', 0)
+                    r['Gain_total'] = bt_map[sym].get('gain_total', 0.0)
+                    r['Gain_moyen'] = bt_map[sym].get('gain_moyen', 0.0)
+                    r['Drawdown_max'] = bt_map[sym].get('drawdown_max', 0.0)
                 else:
                     r['Fiabilite'] = 'N/A'
                     r['NbTrades'] = 0
+                    r.setdefault('Gagnants', 0)
+                    r.setdefault('Gain_total', 0.0)
+                    r.setdefault('Gain_moyen', 0.0)
+                    r.setdefault('Drawdown_max', 0.0)
+            self.backtest_map = bt_map
         else:
             for r in self.current_results:
                 r['Fiabilite'] = 'N/A'
                 r['NbTrades'] = 0
+                r.setdefault('Gagnants', 0)
+                r.setdefault('Gain_total', 0.0)
+                r.setdefault('Gain_moyen', 0.0)
+                r.setdefault('Drawdown_max', 0.0)
+            self.backtest_map = {}
 
 
         # Apply fiabilité and nb trades filters
@@ -1321,6 +1430,22 @@ class MainWindow(QMainWindow):
         # 🔧 Initialiser les colonnes par défaut pour tous les signaux
         for r in self.current_results:
             r.setdefault('CapRange', qsi.get_cap_range_for_symbol(r.get('Symbole', '')))
+            # ✅ Dériver cap_range depuis Market Cap si encore Unknown
+            if (r.get('CapRange') == 'Unknown' or not r.get('CapRange')) and r.get('Market Cap (B$)'):
+                mc_b = float(r.get('Market Cap (B$)', 0))
+                if mc_b > 0:
+                    try:
+                        from symbol_manager import classify_cap_range
+                        r['CapRange'] = classify_cap_range(mc_b)
+                    except ImportError:
+                        if mc_b < 2.0:
+                            r['CapRange'] = 'Small'
+                        elif mc_b < 10.0:
+                            r['CapRange'] = 'Mid'
+                        elif mc_b < 200.0:
+                            r['CapRange'] = 'Large'
+                        else:
+                            r['CapRange'] = 'Mega'
             r.setdefault('dPrice', 0.0)
             r.setdefault('dMACD', 0.0)
             r.setdefault('dRSI', 0.0)
@@ -1389,6 +1514,23 @@ class MainWindow(QMainWindow):
                         r['FCF Yield (%)'] = round(derivatives.get('fcf_yield_pct', 0.0), 2)
                         r['D/E Ratio'] = round(derivatives.get('debt_to_equity', 0.0), 2)
                         r['Market Cap (B$)'] = round(derivatives.get('market_cap_val', 0.0), 2)
+                        
+                        # ✅ Dériver cap_range depuis market_cap si encore Unknown
+                        if (r.get('CapRange') == 'Unknown' or not r.get('CapRange')) and derivatives.get('market_cap_val'):
+                            mc_b = float(derivatives['market_cap_val'])
+                            if mc_b > 0:
+                                try:
+                                    from symbol_manager import classify_cap_range
+                                    r['CapRange'] = classify_cap_range(mc_b)
+                                except ImportError:
+                                    if mc_b < 2.0:
+                                        r['CapRange'] = 'Small'
+                                    elif mc_b < 10.0:
+                                        r['CapRange'] = 'Mid'
+                                    elif mc_b < 200.0:
+                                        r['CapRange'] = 'Large'
+                                    else:
+                                        r['CapRange'] = 'Mega'
                     except Exception:
                         # leave defaults
                         if need_derivatives:
@@ -1591,6 +1733,10 @@ class MainWindow(QMainWindow):
         if not hasattr(self, 'current_results'):
             return
 
+        # ✅ CRITIQUE: Désactiver le tri AVANT de remplir le tableau.
+        # Sinon Qt re-trie après chaque setItem(), ce qui déplace les lignes
+        # et les colonnes suivantes sont écrites sur la MAUVAISE ligne.
+        self.merged_table.setSortingEnabled(False)
         self.merged_table.setRowCount(0)
         raw_results = getattr(self, 'filtered_results', self.current_results)
         
@@ -1810,8 +1956,8 @@ class MainWindow(QMainWindow):
                 item.setData(Qt.EditRole, nb_int)
                 self.merged_table.setItem(row, 11, item)
 
-                # Gagnants
-                gagnants = int(bt.get('gagnants', 0)) if bt else 0
+                # Gagnants (from signal dict first, then bt_map fallback)
+                gagnants = safe_int(signal.get('Gagnants', bt.get('gagnants', 0) if bt else 0))
                 item = QTableWidgetItem(str(gagnants))
                 item.setData(Qt.EditRole, gagnants)
                 self.merged_table.setItem(row, 12, item)
@@ -1904,12 +2050,10 @@ class MainWindow(QMainWindow):
                 item.setData(Qt.EditRole, dvol)
                 self.merged_table.setItem(row, 21, item)
 
-                # Backtest metrics (if available)
-                # Colonnes 21-22 pour Gain total et Gain moyen
-                trades = int(bt.get('trades', 0)) if bt else 0
-                taux = float(bt.get('taux_reussite', 0.0)) if bt else 0.0
-                gain_total = float(bt.get('gain_total', 0.0)) if bt else 0.0
-                gain_moy = float(bt.get('gain_moyen', 0.0)) if bt else 0.0
+                # Backtest metrics (from signal dict first, then bt_map fallback)
+                # Colonnes 22-23 pour Gain total et Gain moyen
+                gain_total = safe_float(signal.get('Gain_total', bt.get('gain_total', 0.0) if bt else 0.0))
+                gain_moy = safe_float(signal.get('Gain_moyen', bt.get('gain_moyen', 0.0) if bt else 0.0))
 
                 item = QTableWidgetItem(f"{gain_total:.2f}")
                 item.setData(Qt.EditRole, gain_total)
@@ -1955,12 +2099,14 @@ class MainWindow(QMainWindow):
                     item.setForeground(QColor(255, 0, 0))  # Rouge : mauvais
                 self.merged_table.setItem(row, 24, item)
 
-                # item = QTableWidgetItem(f"{drawdown:.2f}")
-                # item.setData(Qt.EditRole, drawdown)
-                # self.merged_table.setItem(row, 19, item)
-
-            except Exception:
+            except Exception as e:
+                import traceback
+                print(f"⚠️ Erreur affichage ligne {row} ({signal.get('Symbole', '?')}): {e}")
+                traceback.print_exc()
                 continue
+        
+        # ✅ Réactiver le tri APRÈS avoir rempli toutes les lignes
+        self.merged_table.setSortingEnabled(True)
         
         # Mettre à jour les onglets Graphiques et Comparaisons après remplissage de la table
         try:
@@ -2410,7 +2556,10 @@ class MainWindow(QMainWindow):
                 ax4.text(i + width/2, symbols_normalized[i] + 3, str(int(s)), 
                         ha='center', fontsize=8, fontweight='bold')
             
-            fig.tight_layout()
+            try:
+                fig.tight_layout()
+            except Exception:
+                pass  # Ignorer si tight_layout échoue (graphe trop petit)
             canvas = FigureCanvas(fig)
             
             # Ajouter à l'onglet Graphiques
@@ -2844,7 +2993,8 @@ class MainWindow(QMainWindow):
                         start=start.strftime("%Y-%m-%d"), 
                         end=end.strftime("%Y-%m-%d"), 
                         progress=False,
-                        timeout=30
+                        timeout=30,
+                        multi_level_index=False
                     )
                     
                     if not df.empty:

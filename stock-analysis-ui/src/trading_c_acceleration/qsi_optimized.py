@@ -226,15 +226,7 @@ def extract_best_parameters(db_path: str = None) -> Dict[str, Tuple[Tuple[float,
             thresholds = tuple(float(row[f'th{i+1}']) for i in range(8))
             globals_thresholds = (float(row['seuil_achat']), float(row['seuil_vente']))
 
-            # Clé secteur seule (fallback)
-            result[sector] = (coefficients, thresholds, globals_thresholds, gain_moy)
-
-            # Clé composite secteur + cap_range
-            if cap_range and cap_range.lower() != 'unknown':
-                composite_key = f"{sector}_{cap_range}"
-                result[composite_key] = (coefficients, thresholds, globals_thresholds, gain_moy)
-
-            # Always extract price-related extras; default to zeros if missing
+            # Extract price-related extras; default to zeros if missing
             def _read_num(col, default):
                 try:
                     return float(row[col]) if (col in colnames and row[col] is not None) else default
@@ -274,7 +266,14 @@ def extract_best_parameters(db_path: str = None) -> Dict[str, Tuple[Tuple[float,
             all_extras = {**price_extras, **fundamentals_extras}
             
             BEST_PARAM_EXTRAS[sector] = all_extras
+
+            # Clé secteur seule (fallback) — 5-tuple comme qsi.py
+            result[sector] = (coefficients, thresholds, globals_thresholds, gain_moy, all_extras)
+
+            # Clé composite secteur + cap_range
             if cap_range and cap_range.lower() != 'unknown':
+                composite_key = f"{sector}_{cap_range}"
+                result[composite_key] = (coefficients, thresholds, globals_thresholds, gain_moy, all_extras)
                 BEST_PARAM_EXTRAS[composite_key] = all_extras
 
         return result

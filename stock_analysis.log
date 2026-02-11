@@ -744,3 +744,215 @@
 2026-01-10 13:48:15,828 - ERROR - 
 1 Failed download:
 2026-01-10 13:48:15,828 - ERROR - ['SAND']: YFPricesMissingError('possibly delisted; no price data found  (period=1y) (Yahoo error = "No data found, symbol may be delisted")')
+2026-02-08 14:19:07,452 - ERROR - Failed to get ticker '0027.HK' reason: Expecting value: line 1 column 1 (char 0)
+2026-02-08 14:19:08,240 - ERROR - 
+1 Failed download:
+2026-02-08 14:19:08,240 - ERROR - ['0027.HK']: JSONDecodeError('Expecting value: line 1 column 1 (char 0)')
+2026-02-08 14:19:08,957 - ERROR - Failed to get ticker '0027.HK' reason: Expecting value: line 1 column 1 (char 0)
+2026-02-08 14:19:09,838 - ERROR - 
+1 Failed download:
+2026-02-08 14:19:09,838 - ERROR - ['0027.HK']: JSONDecodeError('Expecting value: line 1 column 1 (char 0)')
+2026-02-08 14:21:43,342 - ERROR - Failed to get ticker '0011.HK' reason: Expecting value: line 1 column 1 (char 0)
+2026-02-08 14:21:44,169 - ERROR - 
+1 Failed download:
+2026-02-08 14:21:44,169 - ERROR - ['0011.HK']: JSONDecodeError('Expecting value: line 1 column 1 (char 0)')
+2026-02-08 14:21:44,980 - ERROR - Failed to get ticker '0011.HK' reason: Expecting value: line 1 column 1 (char 0)
+2026-02-08 14:21:45,903 - ERROR - 
+1 Failed download:
+2026-02-08 14:21:45,903 - ERROR - ['0011.HK']: JSONDecodeError('Expecting value: line 1 column 1 (char 0)')
+2026-02-08 14:21:56,737 - ERROR - Failed to get ticker 'AAPL' reason: Expecting value: line 1 column 1 (char 0)
+2026-02-08 14:21:57,545 - ERROR - 
+1 Failed download:
+2026-02-08 14:21:57,545 - ERROR - ['AAPL']: JSONDecodeError('Expecting value: line 1 column 1 (char 0)')
+2026-02-08 14:22:03,701 - ERROR - Failed to get ticker 'AAPL' reason: Expecting value: line 1 column 1 (char 0)
+2026-02-08 14:22:04,532 - ERROR - 
+1 Failed download:
+2026-02-08 14:22:04,532 - ERROR - ['AAPL']: JSONDecodeError('Expecting value: line 1 column 1 (char 0)')
+2026-02-08 14:46:54,214 - ERROR - Failed to get ticker '3988.HK' reason: Expecting value: line 1 column 1 (char 0)
+2026-02-08 14:46:54,979 - ERROR - 
+1 Failed download:
+2026-02-08 14:46:54,980 - ERROR - ['3988.HK']: JSONDecodeError('Expecting value: line 1 column 1 (char 0)')
+2026-02-08 14:46:55,749 - ERROR - Failed to get ticker '3988.HK' reason: Expecting value: line 1 column 1 (char 0)
+2026-02-08 14:46:56,481 - ERROR - 
+1 Failed download:
+2026-02-08 14:46:56,481 - ERROR - ['3988.HK']: JSONDecodeError('Expecting value: line 1 column 1 (char 0)')
+2026-02-08 14:47:25,110 - ERROR - Failed to get ticker 'MSTR' reason: Expecting value: line 1 column 1 (char 0)
+2026-02-08 14:47:25,902 - ERROR - 
+1 Failed download:
+2026-02-08 14:47:25,903 - ERROR - ['MSTR']: JSONDecodeError('Expecting value: line 1 column 1 (char 0)')
+2026-02-08 14:47:26,681 - ERROR - Failed to get ticker 'MSTR' reason: Expecting value: line 1 column 1 (char 0)
+2026-02-08 14:47:27,439 - ERROR - 
+1 Failed download:
+2026-02-08 14:47:27,440 - ERROR - ['MSTR']: JSONDecodeError('Expecting value: line 1 column 1 (char 0)')
+2026-02-11 11:43:58,487 - ERROR - Failed to get ticker '0011.HK' reason: Expecting value: line 1 column 1 (char 0)
+2026-02-11 11:44:00,418 - ERROR - 
+1 Failed download:
+2026-02-11 11:44:00,418 - ERROR - ['0011.HK']: JSONDecodeError('Expecting value: line 1 column 1 (char 0)')
+2026-02-11 11:44:02,239 - ERROR - Failed to get ticker '0011.HK' reason: Expecting value: line 1 column 1 (char 0)
+2026-02-11 11:44:03,929 - ERROR - 
+1 Failed download:
+2026-02-11 11:44:03,929 - ERROR - ['0011.HK']: JSONDecodeError('Expecting value: line 1 column 1 (char 0)')
+2026-02-11 11:44:20,067 - ERROR - Failed to get ticker 'AAPL' reason: Expecting value: line 1 column 1 (char 0)
+2026-02-11 11:44:21,429 - ERROR - 
+1 Failed download:
+2026-02-11 11:44:21,429 - ERROR - ['AAPL']: JSONDecodeError('Expecting value: line 1 column 1 (char 0)')
+2026-02-11 11:44:22,837 - ERROR - Failed to get ticker 'AAPL' reason: Expecting value: line 1 column 1 (char 0)
+2026-02-11 11:44:24,286 - ERROR - 
+1 Failed download:
+2026-02-11 11:44:24,286 - ERROR - ['AAPL']: JSONDecodeError('Expecting value: line 1 column 1 (char 0)')
+2026-02-11 12:08:36,061 - ERROR - Failed to get ticker 'ABBV' reason: Expecting value: line 1 column 1 (char 0)
+2026-02-11 12:08:37,627 - ERROR - 
+1 Failed download:
+2026-02-11 12:08:37,627 - ERROR - ['ABBV']: JSONDecodeError('Expecting value: line 1 column 1 (char 0)')
+2026-02-11 12:08:39,113 - ERROR - Failed to get ticker 'ABBV' reason: Expecting value: line 1 column 1 (char 0)
+2026-02-11 12:08:44,074 - ERROR - 
+1 Failed download:
+2026-02-11 12:08:44,074 - ERROR - ['ABBV']: JSONDecodeError('Expecting value: line 1 column 1 (char 0)')
+2026-02-11 12:13:16,887 - ERROR - Failed to get ticker 'ABNB' reason: Expecting value: line 1 column 1 (char 0)
+2026-02-11 12:13:18,422 - ERROR - 
+1 Failed download:
+2026-02-11 12:13:18,422 - ERROR - ['ABNB']: JSONDecodeError('Expecting value: line 1 column 1 (char 0)')
+2026-02-11 12:13:19,186 - ERROR - Failed to get ticker 'ABNB' reason: Expecting value: line 1 column 1 (char 0)
+2026-02-11 12:13:19,993 - ERROR - 
+1 Failed download:
+2026-02-11 12:13:19,993 - ERROR - ['ABNB']: JSONDecodeError('Expecting value: line 1 column 1 (char 0)')
+2026-02-11 12:18:46,444 - ERROR - Failed to get ticker '1810.HK' reason: Expecting value: line 1 column 1 (char 0)
+2026-02-11 12:18:50,065 - ERROR - 
+1 Failed download:
+2026-02-11 12:18:50,065 - ERROR - ['1810.HK']: JSONDecodeError('Expecting value: line 1 column 1 (char 0)')
+2026-02-11 12:18:50,803 - ERROR - Failed to get ticker '1810.HK' reason: Expecting value: line 1 column 1 (char 0)
+2026-02-11 12:18:51,569 - ERROR - 
+1 Failed download:
+2026-02-11 12:18:51,569 - ERROR - ['1810.HK']: JSONDecodeError('Expecting value: line 1 column 1 (char 0)')
+2026-02-11 12:18:51,570 - ERROR - Failed to get ticker '1810.HK' reason: Expecting value: line 1 column 1 (char 0)
+2026-02-11 12:18:52,342 - ERROR - 
+1 Failed download:
+2026-02-11 12:18:52,343 - ERROR - ['1810.HK']: JSONDecodeError('Expecting value: line 1 column 1 (char 0)')
+2026-02-11 12:20:13,518 - ERROR - Failed to get ticker '1211.HK' reason: Expecting value: line 1 column 1 (char 0)
+2026-02-11 12:20:15,391 - ERROR - 
+1 Failed download:
+2026-02-11 12:20:15,391 - ERROR - ['1211.HK']: JSONDecodeError('Expecting value: line 1 column 1 (char 0)')
+2026-02-11 12:20:15,392 - ERROR - Failed to get ticker '1211.HK' reason: Expecting value: line 1 column 1 (char 0)
+2026-02-11 12:20:17,146 - ERROR - 
+1 Failed download:
+2026-02-11 12:20:17,146 - ERROR - ['1211.HK']: JSONDecodeError('Expecting value: line 1 column 1 (char 0)')
+2026-02-11 12:20:17,146 - ERROR - Failed to get ticker '1211.HK' reason: Expecting value: line 1 column 1 (char 0)
+2026-02-11 12:20:18,409 - ERROR - 
+1 Failed download:
+2026-02-11 12:20:18,409 - ERROR - ['1211.HK']: JSONDecodeError('Expecting value: line 1 column 1 (char 0)')
+2026-02-11 12:21:28,869 - ERROR - Failed to get ticker '2382.HK' reason: Expecting value: line 1 column 1 (char 0)
+2026-02-11 12:21:31,218 - ERROR - 
+1 Failed download:
+2026-02-11 12:21:31,218 - ERROR - ['2382.HK']: JSONDecodeError('Expecting value: line 1 column 1 (char 0)')
+2026-02-11 12:21:31,219 - ERROR - Failed to get ticker '2382.HK' reason: Expecting value: line 1 column 1 (char 0)
+2026-02-11 12:21:34,043 - ERROR - 
+1 Failed download:
+2026-02-11 12:21:34,044 - ERROR - ['2382.HK']: JSONDecodeError('Expecting value: line 1 column 1 (char 0)')
+2026-02-11 12:21:34,044 - ERROR - Failed to get ticker '2382.HK' reason: Expecting value: line 1 column 1 (char 0)
+2026-02-11 12:21:34,828 - ERROR - 
+1 Failed download:
+2026-02-11 12:21:34,828 - ERROR - ['2382.HK']: JSONDecodeError('Expecting value: line 1 column 1 (char 0)')
+2026-02-11 12:24:17,769 - ERROR - Failed to get ticker '2386.HK' reason: Expecting value: line 1 column 1 (char 0)
+2026-02-11 12:24:19,328 - ERROR - 
+1 Failed download:
+2026-02-11 12:24:19,328 - ERROR - ['2386.HK']: JSONDecodeError('Expecting value: line 1 column 1 (char 0)')
+2026-02-11 12:24:19,328 - ERROR - Failed to get ticker '2386.HK' reason: Expecting value: line 1 column 1 (char 0)
+2026-02-11 12:24:20,693 - ERROR - 
+1 Failed download:
+2026-02-11 12:24:20,693 - ERROR - ['2386.HK']: JSONDecodeError('Expecting value: line 1 column 1 (char 0)')
+2026-02-11 12:24:20,693 - ERROR - Failed to get ticker '2386.HK' reason: Expecting value: line 1 column 1 (char 0)
+2026-02-11 12:24:21,646 - ERROR - 
+1 Failed download:
+2026-02-11 12:24:21,646 - ERROR - ['2386.HK']: JSONDecodeError('Expecting value: line 1 column 1 (char 0)')
+2026-02-11 12:37:58,078 - ERROR - Failed to get ticker '0011.HK' reason: Expecting value: line 1 column 1 (char 0)
+2026-02-11 12:38:00,311 - ERROR - 
+1 Failed download:
+2026-02-11 12:38:00,311 - ERROR - ['0011.HK']: JSONDecodeError('Expecting value: line 1 column 1 (char 0)')
+2026-02-11 12:38:00,312 - ERROR - Failed to get ticker '0011.HK' reason: Expecting value: line 1 column 1 (char 0)
+2026-02-11 12:38:04,038 - ERROR - 
+1 Failed download:
+2026-02-11 12:38:04,039 - ERROR - ['0011.HK']: JSONDecodeError('Expecting value: line 1 column 1 (char 0)')
+2026-02-11 12:38:04,039 - ERROR - Failed to get ticker '0011.HK' reason: Expecting value: line 1 column 1 (char 0)
+2026-02-11 12:38:06,819 - ERROR - 
+1 Failed download:
+2026-02-11 12:38:06,819 - ERROR - ['0011.HK']: JSONDecodeError('Expecting value: line 1 column 1 (char 0)')
+2026-02-11 12:38:49,065 - ERROR - Failed to get ticker '0011.HK' reason: Expecting value: line 1 column 1 (char 0)
+2026-02-11 12:38:50,076 - ERROR - 
+1 Failed download:
+2026-02-11 12:38:50,076 - ERROR - ['0011.HK']: JSONDecodeError('Expecting value: line 1 column 1 (char 0)')
+2026-02-11 12:38:50,077 - ERROR - Failed to get ticker '0011.HK' reason: Expecting value: line 1 column 1 (char 0)
+2026-02-11 12:38:51,022 - ERROR - 
+1 Failed download:
+2026-02-11 12:38:51,022 - ERROR - ['0011.HK']: JSONDecodeError('Expecting value: line 1 column 1 (char 0)')
+2026-02-11 12:38:51,023 - ERROR - Failed to get ticker '0011.HK' reason: Expecting value: line 1 column 1 (char 0)
+2026-02-11 12:38:52,198 - ERROR - 
+1 Failed download:
+2026-02-11 12:38:52,198 - ERROR - ['0011.HK']: JSONDecodeError('Expecting value: line 1 column 1 (char 0)')
+2026-02-11 12:41:51,679 - ERROR - Failed to get ticker 'AMAT' reason: Expecting value: line 1 column 1 (char 0)
+2026-02-11 12:41:52,827 - ERROR - 
+1 Failed download:
+2026-02-11 12:41:52,827 - ERROR - ['AMAT']: JSONDecodeError('Expecting value: line 1 column 1 (char 0)')
+2026-02-11 12:41:52,828 - ERROR - Failed to get ticker 'AMAT' reason: Expecting value: line 1 column 1 (char 0)
+2026-02-11 12:41:55,022 - ERROR - 
+1 Failed download:
+2026-02-11 12:41:55,022 - ERROR - ['AMAT']: JSONDecodeError('Expecting value: line 1 column 1 (char 0)')
+2026-02-11 12:41:55,023 - ERROR - Failed to get ticker 'AMAT' reason: Expecting value: line 1 column 1 (char 0)
+2026-02-11 12:41:59,260 - ERROR - 
+1 Failed download:
+2026-02-11 12:41:59,260 - ERROR - ['AMAT']: JSONDecodeError('Expecting value: line 1 column 1 (char 0)')
+2026-02-11 12:47:47,245 - ERROR - Failed to get ticker '0038.HK' reason: Expecting value: line 1 column 1 (char 0)
+2026-02-11 12:47:48,562 - ERROR - 
+1 Failed download:
+2026-02-11 12:47:48,562 - ERROR - ['0038.HK']: JSONDecodeError('Expecting value: line 1 column 1 (char 0)')
+2026-02-11 12:47:49,370 - ERROR - Failed to get ticker '0038.HK' reason: Expecting value: line 1 column 1 (char 0)
+2026-02-11 12:47:50,111 - ERROR - 
+1 Failed download:
+2026-02-11 12:47:50,111 - ERROR - ['0038.HK']: JSONDecodeError('Expecting value: line 1 column 1 (char 0)')
+2026-02-11 12:52:43,969 - ERROR - Failed to get ticker '3690.HK' reason: Expecting value: line 1 column 1 (char 0)
+2026-02-11 12:52:45,698 - ERROR - 
+1 Failed download:
+2026-02-11 12:52:45,698 - ERROR - ['3690.HK']: JSONDecodeError('Expecting value: line 1 column 1 (char 0)')
+2026-02-11 12:52:48,549 - ERROR - Failed to get ticker '3690.HK' reason: Expecting value: line 1 column 1 (char 0)
+2026-02-11 12:52:49,473 - ERROR - 
+1 Failed download:
+2026-02-11 12:52:49,473 - ERROR - ['3690.HK']: JSONDecodeError('Expecting value: line 1 column 1 (char 0)')
+2026-02-11 13:00:33,008 - WARNING - ⚠️ Secteur non reconnu: 'Consumer Defensive', utilisation du fallback: 'Unknown'
+2026-02-11 13:12:02,992 - WARNING - ⚠️ Secteur non reconnu: 'Consumer Defensive', utilisation du fallback: 'Unknown'
+2026-02-11 13:13:37,394 - WARNING - ⚠️ Secteur non reconnu: 'Consumer Defensive', utilisation du fallback: 'Unknown'
+2026-02-11 14:16:20,991 - ERROR - HTTP Error 404: {"quoteSummary":{"result":null,"error":{"code":"Not Found","description":"Quote not found for symbol: DFTK"}}}
+2026-02-11 14:16:21,638 - ERROR - $DFTK: possibly delisted; no price data found  (period=12mo) (Yahoo error = "No data found, symbol may be delisted")
+2026-02-11 14:16:21,642 - ERROR - 
+1 Failed download:
+2026-02-11 14:16:21,642 - ERROR - ['DFTK']: possibly delisted; no price data found  (period=12mo) (Yahoo error = "No data found, symbol may be delisted")
+2026-02-11 14:16:23,083 - ERROR - $GXI: possibly delisted; no price data found  (period=12mo)
+2026-02-11 14:16:23,089 - ERROR - 
+1 Failed download:
+2026-02-11 14:16:23,089 - ERROR - ['GXI']: possibly delisted; no price data found  (period=12mo)
+2026-02-11 14:16:25,428 - ERROR - $GXI: possibly delisted; no price data found  (period=12mo)
+2026-02-11 14:16:25,912 - ERROR - HTTP Error 404: {"quoteSummary":{"result":null,"error":{"code":"Not Found","description":"Quote not found for symbol: DFTK"}}}
+2026-02-11 14:16:26,736 - ERROR - $DFTK: possibly delisted; no price data found  (period=12mo) (Yahoo error = "No data found, symbol may be delisted")
+2026-02-11 14:16:26,740 - ERROR - 
+2 Failed downloads:
+2026-02-11 14:16:26,741 - ERROR - ['GXI']: possibly delisted; no price data found  (period=12mo)
+2026-02-11 14:16:26,741 - ERROR - ['DFTK']: possibly delisted; no price data found  (period=12mo) (Yahoo error = "No data found, symbol may be delisted")
+2026-02-11 14:16:46,916 - ERROR - $DFTK: possibly delisted; no price data found  (period=12mo) (Yahoo error = "No data found, symbol may be delisted")
+2026-02-11 14:16:46,919 - ERROR - 
+1 Failed download:
+2026-02-11 14:16:46,919 - ERROR - ['DFTK']: possibly delisted; no price data found  (period=12mo) (Yahoo error = "No data found, symbol may be delisted")
+2026-02-11 14:16:47,085 - ERROR - $GXI: possibly delisted; no price data found  (period=12mo)
+2026-02-11 14:16:47,094 - ERROR - 
+1 Failed download:
+2026-02-11 14:16:47,094 - ERROR - ['GXI']: possibly delisted; no price data found  (period=12mo)
+2026-02-11 14:16:47,278 - ERROR - $GXI: possibly delisted; no price data found  (period=12mo)
+2026-02-11 14:16:47,599 - ERROR - $DFTK: possibly delisted; no price data found  (period=12mo) (Yahoo error = "No data found, symbol may be delisted")
+2026-02-11 14:16:47,605 - ERROR - 
+2 Failed downloads:
+2026-02-11 14:16:47,606 - ERROR - ['GXI']: possibly delisted; no price data found  (period=12mo)
+2026-02-11 14:16:47,606 - ERROR - ['DFTK']: possibly delisted; no price data found  (period=12mo) (Yahoo error = "No data found, symbol may be delisted")
+2026-02-11 14:17:29,436 - ERROR - HTTP Error 404: {"quoteSummary":{"result":null,"error":{"code":"Not Found","description":"Quote not found for symbol: DFTK"}}}
+2026-02-11 14:18:09,656 - ERROR - HTTP Error 404: {"quoteSummary":{"result":null,"error":{"code":"Not Found","description":"Quote not found for symbol: GOGL.OL"}}}
+2026-02-11 14:18:10,560 - ERROR - HTTP Error 404: {"quoteSummary":{"result":null,"error":{"code":"Not Found","description":"Quote not found for symbol: GOGL.OL"}}}
+2026-02-11 14:18:21,984 - ERROR - HTTP Error 404: {"quoteSummary":{"result":null,"error":{"code":"Not Found","description":"Quote not found for symbol: PFC.L"}}}
+2026-02-11 14:18:23,021 - ERROR - HTTP Error 404: {"quoteSummary":{"result":null,"error":{"code":"Not Found","description":"Quote not found for symbol: PFC.L"}}}
+2026-02-11 14:18:24,917 - ERROR - HTTP Error 404: {"quoteSummary":{"result":null,"error":{"code":"Not Found","description":"Quote not found for symbol: PLL"}}}
+2026-02-11 14:18:25,730 - ERROR - HTTP Error 404: {"quoteSummary":{"result":null,"error":{"code":"Not Found","description":"Quote not found for symbol: PLL"}}}
