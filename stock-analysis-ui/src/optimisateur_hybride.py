@@ -760,6 +760,20 @@ def optimize_sector_coefficients_hybrid(
         print(f"🚨 Aucune donnée téléchargée pour le secteur {domain}")
         return None, 0.0, 0.0, initial_thresholds, None
 
+    # 🔄 Pré-chargement des fondamentaux (évite les appels yfinance pendant l'optimisation)
+    if use_fundamentals_features:
+        try:
+            from fundamentals_cache import get_fundamental_metrics
+            print(f"📊 Pré-chargement des fondamentaux pour {len(sector_symbols)} symboles...")
+            for sym in sector_symbols:
+                try:
+                    get_fundamental_metrics(sym, use_cache=True)
+                except Exception as e:
+                    print(f"  ⚠️ {sym}: {e}")
+            print(f"✅ Fondamentaux pré-chargés")
+        except Exception as e:
+            print(f"⚠️ Erreur pré-chargement fondamentaux: {e}")
+
     # Pré-calcul léger des features pour chauffer les opérations pandas
     def precalculate_features(sd: Dict[str, Dict[str, pd.Series]]):
         try:
@@ -1239,15 +1253,16 @@ def optimize_sector_coefficients_hybrid(
     # 🔧 Sauvegarder si le nouveau score surpasse le score historique RÉÉVALUÉ sur données actuelles
     # Comparaison avec hist_avg_gain (réévalué), pas avec le gain de la base de données
     save_epsilon = 0.01
-    should_save = (hist_avg_gain is None) or (best_score > hist_avg_gain + save_epsilon)
-    if total_trades == 0:
-        # Ne rien sauvegarder si la config ne déclenche aucun trade
-        should_save = False
+    score_is_better = (hist_avg_gain is None) or (best_score > hist_avg_gain + save_epsilon)
+    no_trades = (total_trades == 0)
+    should_save = score_is_better and not no_trades
     
     if should_save:
         save_optimization_results(domain, best_coeffs, best_score, success_rate, total_trades, all_thresholds, cap_range, extra_params=extra_params, fundamentals_extras=fundamentals_extras)
         hist_str = f"{hist_avg_gain:.2f}" if hist_avg_gain is not None else "N/A"
         print(f"💾 Sauvegarde: nouveau score {best_score:.2f} > historique réévalué {hist_str}")
+    elif no_trades:
+        print(f"ℹ️ Pas de sauvegarde: aucun trade généré (score {best_score:.2f} mais 0 trades)")
     else:
         print(f"ℹ️ Pas de sauvegarde: nouveau {best_score:.2f} ≤ historique réévalué {hist_avg_gain:.2f} (epsilon={save_epsilon})")
 
@@ -1556,7 +1571,7 @@ if __name__ == "__main__":
     print(f"      - Seuils gelés: MACD=0, EMA=0, Ichimoku=0, Bollinger=0.5")
 
     # Adapter le budget selon la précision
-    budget_base = 3500#1000
+    budget_base = 3500 #1000
     if precision == 1:
         budget_evaluations = int(budget_base * 0.5)
     elif precision == 2:

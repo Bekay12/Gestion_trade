@@ -382,7 +382,7 @@ def backtest_signals_c_extended(prices: Union[pd.Series, pd.DataFrame], volumes:
         if fundamentals_extras and fundamentals_extras.get('use_fundamentals', 0) and symbol_name:
             try:
                 from fundamentals_cache import get_fundamental_metrics
-                fund_metrics = get_fundamental_metrics(symbol_name, use_cache=True)
+                fund_metrics = get_fundamental_metrics(symbol_name, use_cache=True, allow_stale=True)
                 if fund_metrics:
                     extended_tuple.extend([
                         float(fund_metrics.get('revenueGrowth', 0.0) or 0.0) * 100,
@@ -558,7 +558,7 @@ def backtest_signals_with_events(prices, volumes, domaine, montant=50, transacti
         use_fund = int(fundamentals_extras.get('use_fundamentals', 0)) if fundamentals_extras else 0
         if use_fund and symbol_name:
             from fundamentals_cache import get_fundamental_metrics
-            fund_metrics = get_fundamental_metrics(symbol_name, use_cache=True)
+            fund_metrics = get_fundamental_metrics(symbol_name, use_cache=True, allow_stale=True)
     except Exception:
         fund_metrics = None
 
