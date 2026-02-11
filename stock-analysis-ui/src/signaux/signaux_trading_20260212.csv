@@ -1,0 +1,8 @@
+Symbole,Signal,Score,Prix,Tendance,RSI,Domaine,CapRange,ParamKey,Volume moyen,Consensus,ConsensusMean,dPrice,dMACD,dRSI,dVolRel,Rev. Growth (%),EBITDA Yield (%),FCF Yield (%),D/E Ratio,Market Cap (B$),Fiabilite,detection_time
+EZPW,ACHAT,10.6,24.8700008392334,Hausse,70.23,Financial Services,Small,Financial Services_Small,990445.7,Achat,1.83333,2.31,11.57,2.89,9.75,19.3,11.05,1.12,71.62,1.53,57.14285714285714,2026-02-12 00:20:14
+KLIC,ACHAT,2.995,74.87000274658203,Hausse,80.51,Technology,Mid,Technology_Mid,861024.13,Neutre,2.66667,4.18,8.75,4.26,4.29,20.2,0.99,2.99,4.48,3.92,100.0,2026-02-12 00:20:14
+RRBI,ACHAT,4.73,89.0,Hausse,71.79,Financial Services,Small,Financial Services_Small,43799.03,Achat,1.5,0.24,6.18,-0.66,-23.89,13.8,0.0,0.0,0.0,0.59,35.294117647058826,2026-02-12 00:20:14
+SNEX,ACHAT,6.85,127.5,Hausse,74.41,Financial Services,Mid,Financial Services_Mid,355811.27,Achat,1.0,1.76,5.75,1.56,-0.77,39.6,0.0,0.0,806.23,6.69,75.0,2026-02-12 00:20:14
+CLS,ACHAT,6.683,295.67999267578125,Baisse,48.01,Technology,Large,Technology_Large,3143528.63,Achat,1.44444,0.88,-4.45,1.52,-7.96,43.6,3.62,1.85,35.04,34.11,50.0,2026-02-12 00:20:14
+MCD,VENTE,-4.22,323.2099914550781,Hausse,62.0,Consumer Cyclical,Mega,Consumer Cyclical_Mega,3168215.23,Achat,2.16216,0.27,9.03,0.5,-2.79,3.0,5.0,1.91,0.0,230.64,50.0,2026-02-12 00:20:14
+CSGP,VENTE,-3.885,47.869998931884766,Baisse,24.54,Real Estate,Large,Real Estate_Large,7138386.43,Achat,1.89474,-2.55,11.04,-4.97,-7.86,20.4,0.76,0.56,13.13,20.29,80.0,2026-02-12 00:20:14

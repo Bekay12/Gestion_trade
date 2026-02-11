@@ -44,7 +44,7 @@ def _ensure_fundamentals_table():
         print(f"⚠️ Error ensuring fundamentals table: {e}")
         return False
 
-def get_fundamental_metrics(symbol: str, lookback_quarters: int = 4, use_cache: bool = True) -> Dict[str, Optional[float]]:
+def get_fundamental_metrics(symbol: str, lookback_quarters: int = 4, use_cache: bool = True, allow_stale: bool = False) -> Dict[str, Optional[float]]:
     """
     Extract fundamental metrics for a symbol via yfinance with local SQLite caching.
     
@@ -52,6 +52,7 @@ def get_fundamental_metrics(symbol: str, lookback_quarters: int = 4, use_cache: 
         symbol: Stock ticker (e.g., 'AAPL')
         lookback_quarters: Number of quarters for growth calculations (default: 4 = YoY)
         use_cache: If True, use cached values within TTL; if False, always fetch fresh
+        allow_stale: If True, return expired cache data without fetching (useful during optimization)
     
     Returns:
         Dict with keys: rev_growth, eps_growth, gross_margin, fcf_yield, de_ratio, roe, ocf_yield, net_margin
@@ -72,11 +73,23 @@ def get_fundamental_metrics(symbol: str, lookback_quarters: int = 4, use_cache: 
     # Ensure table exists
     _ensure_fundamentals_table()
     
-    # Check cache
+    # Check cache (fresh)
     if use_cache:
         cached = _get_cached_metrics(symbol)
         if cached:
             return cached
+    
+    # If allow_stale, return expired cache data without network fetch
+    if allow_stale:
+        stale = _get_cached_metrics(symbol, ignore_ttl=True)
+        if stale:
+            return stale
+        # No cache at all — return empty metrics (no network call)
+        return {
+            'rev_growth': None, 'eps_growth': None, 'gross_margin': None,
+            'fcf_yield': None, 'de_ratio': None, 'roe': None,
+            'ocf_yield': None, 'net_margin': None,
+        }
     
     # Fetch fresh from yfinance
     metrics = _fetch_metrics_from_yfinance(symbol, lookback_quarters)
@@ -87,19 +100,26 @@ def get_fundamental_metrics(symbol: str, lookback_quarters: int = 4, use_cache: 
     
     return metrics
 
-def _get_cached_metrics(symbol: str) -> Optional[Dict[str, Optional[float]]]:
-    """Check cache for symbol; return if within TTL, else None."""
+def _get_cached_metrics(symbol: str, ignore_ttl: bool = False) -> Optional[Dict[str, Optional[float]]]:
+    """Check cache for symbol; return if within TTL (or any age if ignore_ttl), else None."""
     try:
         conn = sqlite3.connect(DB_PATH)
         conn.row_factory = sqlite3.Row
         cursor = conn.cursor()
         
-        ttl_cutoff = datetime.now() - timedelta(hours=FUNDAMENTALS_CACHE_TTL_HOURS)
-        cursor.execute('''
-            SELECT rev_growth, eps_growth, gross_margin, fcf_yield, de_ratio, roe, ocf_yield, net_margin
-            FROM fundamental_metrics
-            WHERE symbol = ? AND fetched_at > ?
-        ''', (symbol.upper(), ttl_cutoff.isoformat()))
+        if ignore_ttl:
+            cursor.execute('''
+                SELECT rev_growth, eps_growth, gross_margin, fcf_yield, de_ratio, roe, ocf_yield, net_margin
+                FROM fundamental_metrics
+                WHERE symbol = ?
+            ''', (symbol.upper(),))
+        else:
+            ttl_cutoff = datetime.now() - timedelta(hours=FUNDAMENTALS_CACHE_TTL_HOURS)
+            cursor.execute('''
+                SELECT rev_growth, eps_growth, gross_margin, fcf_yield, de_ratio, roe, ocf_yield, net_margin
+                FROM fundamental_metrics
+                WHERE symbol = ? AND fetched_at > ?
+            ''', (symbol.upper(), ttl_cutoff.isoformat()))
         
         row = cursor.fetchone()
         conn.close()

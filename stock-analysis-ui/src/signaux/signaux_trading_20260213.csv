@@ -1,0 +1,8 @@
+Symbole,Signal,Score,Prix,Tendance,RSI,Domaine,CapRange,ParamKey,Volume moyen,Consensus,ConsensusMean,dPrice,dMACD,dRSI,dVolRel,Rev. Growth (%),EBITDA Yield (%),FCF Yield (%),D/E Ratio,Market Cap (B$),Fiabilite,detection_time
+MBOT,ACHAT,4.945,2.0899999141693115,Hausse,54.36,Healthcare,Small,Healthcare_Small,1974093.33,Achat,1.0,2.68,-19.05,6.34,25.89,0.0,-23.92,-4.57,1.15,0.14,50.0,2026-02-13 15:06:57
+NXP,ACHAT,7.68,14.5,Hausse,73.44,Financial Services,Small,Financial Services_Small,208606.67,Neutre,,0.39,16.14,4.53,-7.24,9.1,0.0,0.0,0.0,0.75,42.857142857142854,2026-02-13 15:06:57
+ENR.DE,ACHAT,3.552,158.3000030517578,Hausse,64.32,Industrials,Large,Industrials_Large,2291025.23,Achat,1.8,1.3,2.55,-0.09,-11.68,8.2,2.47,2.75,33.02,135.4,100.0,2026-02-13 15:06:57
+NVDA,ACHAT,6.77,186.94000244140625,Hausse,51.45,Technology,Mega,Technology_Mega,169779793.33,Achat,1.34921,1.15,23.78,4.23,-4.16,62.5,2.49,1.16,9.1,4590.38,50.0,2026-02-13 15:06:57
+SEMR,ACHAT,4.0,11.819999694824219,Baisse,60.24,Technology,Small,Technology_Small,2593993.33,Neutre,,-0.06,-22.51,-2.08,-13.8,15.1,0.14,3.47,4.67,1.79,50.0,2026-02-13 15:06:57
+IMNM,ACHAT,6.69,22.440000534057617,Baisse,46.7,Healthcare,Mid,Healthcare_Mid,1867986.67,Achat,1.15385,-2.35,-22.9,-5.44,-8.92,0.0,-10.14,-4.64,1.52,2.75,100.0,2026-02-13 15:06:57
+ALAB,ACHAT,3.139,126.58000183105469,Baisse,39.12,Technology,Large,Technology_Large,5673833.33,Achat,1.73913,-0.85,-4.81,0.5,11.29,103.9,0.37,0.37,2.46,30.89,60.0,2026-02-13 15:06:57
