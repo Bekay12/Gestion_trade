@@ -2175,8 +2175,14 @@ def analyse_et_affiche(symbols, period="12mo"):
     plt.show()
 
 def save_symbols_to_txt(symbols: List[str], filename: str):
-    """Sauvegarde la liste de symboles dans un fichier texte"""
-    with open(filename, 'w', encoding='utf-8') as f:
+    """Sauvegarde la liste de symboles dans un fichier texte.
+    
+    ✅ CORRIGÉ: Écrit toujours dans le même répertoire que ce module (src/)
+    pour rester cohérent avec load_symbols_from_txt qui lit depuis Path(__file__).parent.
+    """
+    # Résoudre le chemin relatif au répertoire de ce module (src/)
+    file_path = Path(__file__).parent / filename
+    with open(file_path, 'w', encoding='utf-8') as f:
         for symbol in symbols:
             f.write(symbol + '\n')
 
