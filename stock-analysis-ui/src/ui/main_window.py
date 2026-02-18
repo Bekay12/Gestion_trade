@@ -388,38 +388,65 @@ class MainWindow(QMainWindow):
 
         lists_container.addItem(QSpacerItem(48, 20, QSizePolicy.MinimumExpanding, QSizePolicy.Minimum))
 
-        # Liste optimisation (prioritaire pour le nettoyage)
-        optim_sorted = sorted(self.optim_symbols_data)
-        optim_layout = QHBoxLayout()
-        optim_listcol = QVBoxLayout()
-        self.optim_label = QLabel()
-        self.optim_label.setAlignment(Qt.AlignCenter)
-        self.optim_label.setWordWrap(True)
-        optim_layout.addWidget(self.optim_label)
-        self.optim_list = QListWidget()
-        self.optim_list.setMaximumHeight(70)
-        for s in optim_sorted:
-            if s:
-                item = QListWidgetItem(s)
-                item.setData(Qt.UserRole, s)
-                self.optim_list.addItem(item)
-        self.optim_list.setSelectionMode(QAbstractItemView.ExtendedSelection)
-        optim_listcol.addWidget(self.optim_list)
-        optim_layout.addLayout(optim_listcol)
-
-        optim_btns = QVBoxLayout()
-        optim_btns.setSpacing(2)
-        self.optim_add_btn = QPushButton("Ajouter")
-        self.optim_del_btn = QPushButton("Supprimer")
-        self.optim_show_btn = QPushButton("Afficher")
-        self.optim_clean_btn = QPushButton("Aperçu nettoyage")
-        optim_btns.addWidget(self.optim_add_btn)
-        optim_btns.addWidget(self.optim_del_btn)
-        optim_btns.addWidget(self.optim_show_btn)
-        optim_btns.addWidget(self.optim_clean_btn)
-        optim_layout.addLayout(optim_btns)
-
-        lists_container.addLayout(optim_layout)
+        # ========== NOUVELLES LISTES OPTIMISATION ==========
+        # Liste 1 : 30 symboles ALÉATOIRES
+        random_layout = QHBoxLayout()
+        random_listcol = QVBoxLayout()
+        self.random_label = QLabel()
+        self.random_label.setAlignment(Qt.AlignCenter)
+        self.random_label.setWordWrap(True)
+        random_layout.addWidget(self.random_label)
+        self.random_list = QListWidget()
+        self.random_list.setMaximumHeight(70)
+        self.random_list.setSelectionMode(QAbstractItemView.ExtendedSelection)
+        random_listcol.addWidget(self.random_list)
+        random_layout.addLayout(random_listcol)
+        
+        random_btns = QVBoxLayout()
+        random_btns.setSpacing(2)
+        self.random_refresh_btn = QPushButton("🔄 Nouveau")
+        self.random_refresh_btn.clicked.connect(self.refresh_random_symbols)
+        self.random_show_btn = QPushButton("Afficher")
+        random_btns.addWidget(self.random_refresh_btn)
+        random_btns.addWidget(self.random_show_btn)
+        random_layout.addLayout(random_btns)
+        
+        lists_container.addLayout(random_layout)
+        
+        lists_container.addItem(QSpacerItem(48, 5, QSizePolicy.MinimumExpanding, QSizePolicy.Minimum))
+        
+        # Liste 2 : 30 derniers SYMBOLES AJOUTÉS
+        recent_layout = QHBoxLayout()
+        recent_listcol = QVBoxLayout()
+        self.recent_label = QLabel()
+        self.recent_label.setAlignment(Qt.AlignCenter)
+        self.recent_label.setWordWrap(True)
+        recent_layout.addWidget(self.recent_label)
+        self.recent_list = QListWidget()
+        self.recent_list.setMaximumHeight(70)
+        self.recent_list.setSelectionMode(QAbstractItemView.ExtendedSelection)
+        recent_listcol.addWidget(self.recent_list)
+        recent_layout.addLayout(recent_listcol)
+        
+        recent_btns = QVBoxLayout()
+        recent_btns.setSpacing(2)
+        self.recent_show_btn = QPushButton("Afficher")
+        recent_btns.addWidget(self.recent_show_btn)
+        recent_layout.addLayout(recent_btns)
+        
+        lists_container.addLayout(recent_layout)
+        
+        lists_container.addItem(QSpacerItem(48, 20, QSizePolicy.MinimumExpanding, QSizePolicy.Minimum))
+        
+        # Bouton OPTIMISATION HYBRIDE (ouvre la fenêtre dédiée)
+        optim_button_layout = QVBoxLayout()
+        self.optimization_window_btn = QPushButton("🚀 OPTIMISATION HYBRIDE")
+        self.optimization_window_btn.setStyleSheet(
+            "background-color: #FF9800; color: white; font-weight: bold; padding: 12px; font-size: 13px;"
+        )
+        self.optimization_window_btn.clicked.connect(self.open_optimization_window)
+        optim_button_layout.addWidget(self.optimization_window_btn)
+        lists_container.addLayout(optim_button_layout)
         self.layout.addLayout(lists_container)
 
         top_controls = QHBoxLayout()
@@ -560,11 +587,16 @@ class MainWindow(QMainWindow):
         self.mes_add_btn.clicked.connect(lambda: self.add_symbol(self.mes_list, "mes_symbols.txt"))
         self.mes_del_btn.clicked.connect(lambda: self.remove_selected(self.mes_list, "mes_symbols.txt"))
         self.mes_show_btn.clicked.connect(lambda: self.show_selected(self.mes_list))
-        self.optim_add_btn.clicked.connect(lambda: self.add_symbol(self.optim_list, "optimisation_symbols.txt"))
-        self.optim_del_btn.clicked.connect(lambda: self.remove_selected(self.optim_list, "optimisation_symbols.txt"))
-        self.optim_show_btn.clicked.connect(lambda: self.show_selected(self.optim_list))
-        self.optim_clean_btn.clicked.connect(self.preview_cleaned_optimization)
+        
+        # Callbacks pour les nouvelles listes
+        self.random_show_btn.clicked.connect(lambda: self.show_selected(self.random_list))
+        self.recent_show_btn.clicked.connect(lambda: self.show_selected(self.recent_list))
+        
         self._update_list_counts()
+        
+        # Charger les listes aléatoires et récentes au démarrage
+        self.refresh_random_symbols()
+        self.load_recent_symbols()
     
     def validate_ticker(self, symbol):
         """Validation rapide mais moins fiable"""
@@ -941,7 +973,15 @@ class MainWindow(QMainWindow):
         for i in reversed(range(self.plots_layout.count())):
             w = self.plots_layout.itemAt(i).widget()
             if w:
+                if hasattr(w, 'figure'):
+                    w.figure.clear()
+                    try:
+                        w.close()
+                    except Exception:
+                        pass
                 w.setParent(None)
+        import gc
+        gc.collect()
 
     def on_download_complete(self, result):
         # Called when the DownloadThread finishes
@@ -1320,7 +1360,7 @@ class MainWindow(QMainWindow):
         self.current_results = result.get('signals', [])
         
         # 🔧 Stocker les résultats du backtest dans une map pour accès rapide
-        backtest_results = result.get('backtest_results', [])
+        backtest_results = result.get('backtest_results', []) if isinstance(result, dict) else []
         self.backtest_map = {b['Symbole']: b for b in backtest_results} if backtest_results else {}
         
         # 🔧 Ajouter les données de backtest aux signaux
@@ -1656,6 +1696,8 @@ class MainWindow(QMainWindow):
             r.setdefault('FCF Yield (%)', 0.0)
             r.setdefault('D/E Ratio', 0.0)
             r.setdefault('Market Cap (B$)', 0.0)
+            r.setdefault('ROE (%)', 0.0)
+        
         bt_map = getattr(self, 'backtest_map', {})
 
         # Helper de conversion robuste pour éviter qu'une valeur vide casse la ligne
@@ -2177,7 +2219,7 @@ class MainWindow(QMainWindow):
             for dom, stats in sorted(domain_stats.items(), key=lambda x: -x[1]['trades']):
                 trades = stats['trades']
                 gagnants = stats['gagnants']
-                taux = (gagnants / trades * 100) if trades else 0.0
+                taux = (gagnants / trades * 100) if trades > 0 else 0.0
                 gain_dom = stats['gain']
                 lines.append(f" - {dom}: Trades={trades} | Gagnants={gagnants} | Taux={taux:.1f}% | Gain brut={gain_dom:.2f} $")
 
@@ -2626,8 +2668,8 @@ class MainWindow(QMainWindow):
             def on_reset():
                 for cb in checkboxes.values():
                     cb.setChecked(False)
-                while self.comparison_results_layout.count() > 0:
-                    w = self.comparison_results_layout.takeAt(0).widget()
+                while self.comparisons_layout.count() > 0:
+                    w = self.comparisons_layout.takeAt(0).widget()
                     if w:
                         w.deleteLater()
             
@@ -2719,7 +2761,10 @@ class MainWindow(QMainWindow):
                 
                 # Rang
                 item = QTableWidgetItem(str(rank))
-                item.setBackground(Qt.green if rank == 1 else Qt.lightGray if rank == 2 else Qt.white)
+                if rank == 1:
+                    item.setBackground(QColor(144, 238, 144))  # Vert pour 1er
+                elif rank == 2:
+                    item.setBackground(QColor(211, 211, 211))  # Gris pour 2ème
                 table.setItem(row, 0, item)
                 
                 # Symbole
@@ -2802,7 +2847,7 @@ class MainWindow(QMainWindow):
             summary.setStyleSheet("background-color: #e3f2fd; padding: 6px; border-radius: 4px; font-weight: bold;")
             
             self.comparison_results_layout.addWidget(summary)
-            self.comparison_results_layout.addWidget(table)
+            self.comparisons_layout.addWidget(table)
             
         except Exception as e:
             print(f"❌ Erreur _generate_comparison_table: {e}")
@@ -3148,15 +3193,15 @@ class MainWindow(QMainWindow):
             info_label.setStyleSheet("background-color: #e1f5fe; padding: 6px; border-radius: 4px; font-size: 9px;")
             
             self.comparison_results_layout.addWidget(summary)
-            self.comparison_results_layout.addWidget(info_label)
-            self.comparison_results_layout.addWidget(table)
+            self.comparisons_layout.addWidget(info_label)
+            self.comparisons_layout.addWidget(table)
             
         except Exception as e:
             print(f"❌ Erreur _generate_historical_comparison_table: {e}")
             import traceback
             traceback.print_exc()
             error_label = QLabel(f"Erreur: {e}")
-            self.comparison_results_layout.addWidget(error_label)
+            self.comparisons_layout.addWidget(error_label)
     
     def _calculate_rsi(self, prices, period=14):
         """Calcule le RSI (Relative Strength Index)"""
@@ -3210,11 +3255,73 @@ class MainWindow(QMainWindow):
         
         return " | ".join(avis_parts) if avis_parts else "Neutre"
 
+    def refresh_random_symbols(self):
+        """Charger 30 symboles ALÉATOIRES depuis popular_symbols."""
+        try:
+            import random
+            all_symbols = self.popular_symbols_data
+            if not all_symbols:
+                QMessageBox.warning(self, "Erreur", "Aucun symbole populaire disponible")
+                return
+            
+            random_30 = random.sample(all_symbols, min(30, len(all_symbols)))
+            
+            self.random_list.clear()
+            for sym in random_30:
+                item = QListWidgetItem(sym)
+                item.setData(Qt.UserRole, sym)
+                self.random_list.addItem(item)
+            
+            self.random_label.setText(f"🎲 Aléatoires\n({len(random_30)} symboles)")
+        except Exception as e:
+            QMessageBox.warning(self, "Erreur", f"Impossible de charger les symboles aléatoires: {e}")
+    
+    def load_recent_symbols(self):
+        """Charger 30 derniers SYMBOLES AJOUTÉS (union de mes_symbols et popular_symbols)."""
+        try:
+            # Les "derniers" sont définis comme l'union des 2 listes (on priorise l'ordre d'insertion)
+            # Pour simplifier, on prend mes_symbols en premier (plus récents = plus import ants)
+            recent = []
+            seen = set()
+            
+            # D'abord mes_symbols (supposés plus récents = nouveaux dans portfolio)
+            for sym in self.mes_symbols_data:
+                if sym not in seen:
+                    recent.append(sym)
+                    seen.add(sym)
+            
+            # Puis les symboles populaires pas encore dans mes_symbols
+            for sym in reversed(self.popular_symbols_data):  # Reverser pour obtenir les "derniers" en premier
+                if sym not in seen and len(recent) < 30:
+                    recent.append(sym)
+                    seen.add(sym)
+            
+            recent = recent[:30]  # Limiter à 30
+            
+            self.recent_list.clear()
+            for sym in recent:
+                item = QListWidgetItem(sym)
+                item.setData(Qt.UserRole, sym)
+                self.recent_list.addItem(item)
+            
+            self.recent_label.setText(f"🔥 Récents\n({len(recent)} symboles)")
+        except Exception as e:
+            QMessageBox.warning(self, "Erreur", f"Impossible de charger les symboles récents: {e}")
+    
+    def open_optimization_window(self):
+        """Ouvrir la fenêtre dédiée à l'optimisation hybride."""
+        try:
+            from optimization_window import OptimizationWindow
+            self.optim_window = OptimizationWindow(parent=self)
+            self.optim_window.show()
+        except Exception as e:
+            QMessageBox.critical(self, "Erreur", f"Impossible d'ouvrir la fenêtre d'optimisation: {e}")
 
+
+# Ensure the application only launches when run directly
 if __name__ == "__main__":
     app = QApplication(sys.argv)
     window = MainWindow()
-    #analyse_signaux_populaires(popular_symbols, mes_symbols, period=period, plot_all=True)
     window.setWindowTitle("Stock Analysis Tool")
     window.show()
     sys.exit(app.exec_())

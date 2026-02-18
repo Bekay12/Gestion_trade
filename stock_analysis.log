@@ -773,3 +773,21 @@
 2 Failed downloads:
 2026-01-23 00:59:39,929 - ERROR - ['LW']: ConnectionError('Failed to perform, curl: (56) Recv failure: Connection was reset. See https://curl.se/libcurl/c/libcurl-errors.html first for more details.')
 2026-01-23 00:59:39,929 - ERROR - ['CAG']: Timeout('Failed to perform, curl: (28) Connection timed out after 20012 milliseconds. See https://curl.se/libcurl/c/libcurl-errors.html first for more details.')
+2026-01-23 04:48:02,740 - ERROR - 
+1 Failed download:
+2026-01-23 04:48:02,750 - ERROR - ['ERJ']: YFPricesMissingError('possibly delisted; no price data found  (period=1y) (Yahoo error = "No data found, symbol may be delisted")')
+2026-01-23 04:48:04,108 - ERROR - 
+1 Failed download:
+2026-01-23 04:48:04,109 - ERROR - ['ERJ']: YFPricesMissingError('possibly delisted; no price data found  (period=1y) (Yahoo error = "No data found, symbol may be delisted")')
+2026-01-23 07:20:05,825 - ERROR - 
+1 Failed download:
+2026-01-23 07:20:05,828 - ERROR - ['COMP-USD']: YFPricesMissingError('possibly delisted; no price data found  (period=1y)')
+2026-01-23 07:20:06,461 - ERROR - 
+1 Failed download:
+2026-01-23 07:20:06,461 - ERROR - ['COMP-USD']: YFPricesMissingError('possibly delisted; no price data found  (period=1y)')
+2026-01-23 07:53:48,468 - ERROR - 
+1 Failed download:
+2026-01-23 07:53:48,530 - ERROR - ['AGS']: YFPricesMissingError('possibly delisted; no price data found  (period=1y) (Yahoo error = "No data found, symbol may be delisted")')
+2026-01-23 07:53:49,637 - ERROR - 
+1 Failed download:
+2026-01-23 07:53:49,637 - ERROR - ['AGS']: YFPricesMissingError('possibly delisted; no price data found  (period=1y) (Yahoo error = "No data found, symbol may be delisted")')
