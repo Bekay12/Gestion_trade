@@ -302,6 +302,10 @@ class HybridOptimizer:
         self.initial_thresholds = None
         self.meilleur_score = -float('inf')  # 🔧 Meilleur score trouvé (global)
         self.meilleur_trades = 0  # 🔧 Stocker le nombre de trades de la meilleure config
+        # 🔧 Pénalité par trade/symbole: à gain égal, moins de trades = meilleur score
+        # Ex: 0.02 * 6 trades/symbole = -0.12 sur le score. Assez pour départager,
+        # trop petit pour dominer un vrai meilleur gain.
+        self.trade_efficiency_penalty = 0.02
         
     def round_params(self, params):
         """🔧 NOUVEAU: Arrondir les paramètres à la précision définie"""
@@ -446,14 +450,20 @@ class HybridOptimizer:
                 self.best_cache[param_key] = penalized
                 return penalized
             
+            # 🔧 Pénalité d'efficacité: à gain égal, préférer moins de trades
+            # trades_per_symbol = moyenne de trades par symbole
+            n_symbols = len(self.stock_data)
+            trades_per_symbol = total_trades / n_symbols if n_symbols > 0 else 0
+            score = avg_gain - self.trade_efficiency_penalty * trades_per_symbol
+
             # 🔧 Tracker le nombre de trades de la meilleure config (global, pas par cache)
-            if avg_gain > self.meilleur_score:
-                self.meilleur_score = avg_gain
+            if score > self.meilleur_score:
+                self.meilleur_score = score
                 self.meilleur_trades = total_trades
 
             # Cache le résultat
-            self.best_cache[param_key] = avg_gain
-            return avg_gain
+            self.best_cache[param_key] = score
+            return score
 
         except Exception as e:
             print(f"⚠️ evaluate_config error: {e}")  # Debug: show exceptions
@@ -817,6 +827,7 @@ def optimize_sector_coefficients_hybrid(
         csv_coeffs, csv_thresholds, csv_globals, csv_gain = None, initial_thresholds, (4.2, -0.5), -float('inf')
 
     hist_avg_gain = None  # 🔧 Pour mesurer l'amélioration vs l'historique
+    hist_objective_score = None  # 🔧 Score historique avec pénalité trades (via evaluate_config)
     hist_total_trades = None
     hist_success_rate = None
     hist_params_vector = None
@@ -1012,6 +1023,7 @@ def optimize_sector_coefficients_hybrid(
         try:
             rounded_hist_vector = optimizer.round_params(np.array(hist_params_vector))
             hist_score = optimizer.evaluate_config(rounded_hist_vector)
+            hist_objective_score = hist_score  # 🔧 Conserver pour comparaison de sauvegarde
             historical_candidate = (hist_label, tuple(rounded_hist_vector), hist_score)
             print(f"   ✅ Score historique (objective aligné): {hist_score:.2f} | gain_moy={hist_avg_gain:.2f} | trades={hist_total_trades}")
         except Exception as e:
@@ -1251,20 +1263,21 @@ def optimize_sector_coefficients_hybrid(
     all_thresholds = best_feature_thresholds + (best_seuil_achat, best_seuil_vente)
     
     # 🔧 Sauvegarder si le nouveau score surpasse le score historique RÉÉVALUÉ sur données actuelles
-    # Comparaison avec hist_avg_gain (réévalué), pas avec le gain de la base de données
+    # Comparaison avec hist_objective_score (incluant pénalité trades) pour cohérence
     save_epsilon = 0.01
-    score_is_better = (hist_avg_gain is None) or (best_score > hist_avg_gain + save_epsilon)
+    hist_ref = hist_objective_score if hist_objective_score is not None else hist_avg_gain
+    score_is_better = (hist_ref is None) or (best_score > hist_ref + save_epsilon)
     no_trades = (total_trades == 0)
     should_save = score_is_better and not no_trades
     
     if should_save:
         save_optimization_results(domain, best_coeffs, best_score, success_rate, total_trades, all_thresholds, cap_range, extra_params=extra_params, fundamentals_extras=fundamentals_extras)
-        hist_str = f"{hist_avg_gain:.2f}" if hist_avg_gain is not None else "N/A"
-        print(f"💾 Sauvegarde: nouveau score {best_score:.2f} > historique réévalué {hist_str}")
+        hist_str = f"{hist_ref:.2f}" if hist_ref is not None else "N/A"
+        print(f"💾 Sauvegarde: nouveau score {best_score:.2f} > historique réévalué {hist_str} (trades: {total_trades})")
     elif no_trades:
         print(f"ℹ️ Pas de sauvegarde: aucun trade généré (score {best_score:.2f} mais 0 trades)")
     else:
-        print(f"ℹ️ Pas de sauvegarde: nouveau {best_score:.2f} ≤ historique réévalué {hist_avg_gain:.2f} (epsilon={save_epsilon})")
+        print(f"ℹ️ Pas de sauvegarde: nouveau {best_score:.2f} ≤ historique réévalué {hist_ref:.2f} (epsilon={save_epsilon})")
 
     summary = {
         'sector': domain,
