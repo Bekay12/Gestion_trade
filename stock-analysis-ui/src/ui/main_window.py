@@ -5,16 +5,9 @@ from PyQt5.QtWidgets import (
     QTableWidgetItem, QComboBox, QHeaderView, QSpinBox, QCheckBox, QTabWidget, QTextEdit
 )
 from PyQt5.QtWidgets import QAbstractItemView
-from PyQt5.QtCore import QThread, pyqtSignal, pyqtSlot, QObject, Qt, QTimer, QMetaObject, Q_ARG
+from PyQt5.QtCore import QThread, pyqtSignal, Qt
 from PyQt5.QtGui import QColor
-import faulthandler
-import signal
 import io
-
-# Force matplotlib to use the Qt5Agg backend BEFORE any other matplotlib import
-# This prevents conflicts on Linux where matplotlib might pick TkAgg or another backend
-import matplotlib
-matplotlib.use('Qt5Agg')
 from matplotlib.backends.backend_qt5agg import FigureCanvasQTAgg as FigureCanvas
 from matplotlib.figure import Figure
 import sys
@@ -22,7 +15,7 @@ import os
 import math
 import yfinance as yf
 
-# Ensure project `src` root is on sys.path 
+# Ensure project `src` root is on sys.path
 PROJECT_SRC = os.path.abspath(os.path.join(os.path.dirname(__file__), '..'))
 if PROJECT_SRC not in sys.path:
     sys.path.insert(0, PROJECT_SRC)
@@ -32,7 +25,7 @@ import qsi
 from trading_c_acceleration.qsi_optimized import extract_best_parameters
 
 try:
-    from symbol_manager import get_symbols_by_list_type
+    from symbol_manager import get_symbols_by_list_type, get_recent_symbols
     SYMBOL_MANAGER_AVAILABLE = True
 except ImportError:
     SYMBOL_MANAGER_AVAILABLE = False
@@ -42,12 +35,13 @@ class AnalysisThread(QThread):
     finished = pyqtSignal(dict)
     error = pyqtSignal(str)
     progress = pyqtSignal(str)
-    def __init__(self, symbols, mes_symbols, period="12mo"):
+    def __init__(self, symbols, mes_symbols, period="12mo", analysis_id=0):
         super().__init__()
         self.symbols = symbols
         self.mes_symbols = mes_symbols
         self.period = period
         self._stop_requested = False
+        self.analysis_id = analysis_id  # 🔧 Identifiant d'analyse
     def run(self):
         try:
             import builtins
@@ -82,10 +76,14 @@ class AnalysisThread(QThread):
                     verbose=True,
                     taux_reussite_min=fiab_threshold
                 )
-                self.finished.emit(result)
+                if not self._stop_requested:
+                    # 🔧 Ajouter l'identifiant d'analyse au résultat
+                    result['_analysis_id'] = self.analysis_id
+                    self.finished.emit(result)
                 break  # ou return
         except Exception as e:
-            self.error.emit(str(e))
+            if not self._stop_requested:
+                self.error.emit(str(e))
         finally:
             try:
                 builtins.print = original_print
@@ -101,11 +99,13 @@ class DownloadThread(QThread):
     error = pyqtSignal(str)
     progress = pyqtSignal(str)
 
-    def __init__(self, symbols, period="12mo", do_backtest=False):
+    def __init__(self, symbols, period="12mo", do_backtest=False, analysis_id=0):
         super().__init__()
         self.symbols = symbols
         self.period = period
         self.do_backtest = do_backtest
+        self._stop_requested = False
+        self.analysis_id = analysis_id  # 🔧 Identifiant d'analyse
 
     def run(self):
         try:
@@ -122,42 +122,31 @@ class DownloadThread(QThread):
             builtins.print = custom_print
 
             try:
+                if self._stop_requested:
+                    return
+                    
                 data = download_stock_data(self.symbols, self.period)
                 result = { 'data': data }
+
+                if self._stop_requested:
+                    return
 
                 if self.do_backtest and data:
                     backtests = []
                     for symbol, stock_data in data.items():
+                        if self._stop_requested:
+                            return
+                            
                         try:
                             prices = stock_data['Close']
                             volumes = stock_data['Volume']
-                            # ✅ Récupérer secteur + cap_range depuis la DB (rapide)
-                            db_info = qsi.get_symbol_info_from_db(symbol)
-                            domaine = db_info['sector'] if db_info['sector'] else None
-                            cap_range = db_info['cap_range']
-                            
-                            if not domaine:
-                                try:
-                                    import yfinance as yf
-                                    info = yf.Ticker(symbol).info
-                                    domaine = info.get('sector', 'Inconnu')
-                                    mc_raw = info.get('marketCap')
-                                    mc_b = float(mc_raw) / 1e9 if mc_raw else 0.0
-                                    if mc_b > 0 and (cap_range == 'Unknown' or not cap_range):
-                                        if mc_b < 2.0: cap_range = 'Small'
-                                        elif mc_b < 10.0: cap_range = 'Mid'
-                                        elif mc_b < 200.0: cap_range = 'Large'
-                                        else: cap_range = 'Mega'
-                                    qsi.update_symbol_info_in_db(symbol, sector=domaine, cap_range=cap_range, market_cap_b=mc_b)
-                                except Exception:
-                                    domaine = 'Inconnu'
-
-                            # Normaliser le secteur pour correspondre aux clés DB
+                            # domain info best-effort
                             try:
-                                from sector_normalizer import normalize_sector
-                                domaine = normalize_sector(domaine)
-                            except ImportError:
-                                pass
+                                import yfinance as yf
+                                info = yf.Ticker(symbol).info
+                                domaine = info.get('sector', 'Inconnu')
+                            except Exception:
+                                domaine = 'Inconnu'
 
                             # ✨ Extraire les paramètres optimisés depuis la SQLite
                             try:
@@ -165,14 +154,7 @@ class DownloadThread(QThread):
                             except Exception:
                                 best_params = {}
 
-                            # Chercher la clé optimale : secteur_cap ou secteur seul
-                            param_key = domaine
-                            if cap_range and cap_range != 'Unknown':
-                                comp_key = f"{domaine}_{cap_range}"
-                                if comp_key in best_params:
-                                    param_key = comp_key
-
-                            coeffs, feature_thresholds, globals_thresholds, _, _ = best_params.get(param_key, (None, None, (4.2, -0.5), None, {}))
+                            coeffs, feature_thresholds, globals_thresholds, _, _ = best_params.get(domaine, (None, None, (4.2, -0.5), None, {}))
                             domain_coeffs = {domaine: coeffs} if coeffs else None
                             
                             # ✨ V2.0: Utiliser les paramètres optimisés si disponibles
@@ -182,8 +164,7 @@ class DownloadThread(QThread):
                                 'domaine': domaine,
                                 'montant': 50,
                                 'domain_coeffs': domain_coeffs,
-                                'domain_thresholds': {domaine: feature_thresholds} if feature_thresholds else None,
-                                'cap_range': cap_range
+                                'domain_thresholds': {domaine: feature_thresholds} if feature_thresholds else None
                             }
                             
                             bt = backtest_signals(**backtest_kwargs)
@@ -199,66 +180,53 @@ class DownloadThread(QThread):
 
                     result['backtest_results'] = backtests
 
-                self.finished.emit(result)
+                if not self._stop_requested:
+                    # 🔧 Ajouter l'identifiant d'analyse au résultat
+                    result['_analysis_id'] = self.analysis_id
+                    self.finished.emit(result)
             finally:
                 builtins.print = original_print
 
         except Exception as e:
-            self.error.emit(str(e))
+            if not self._stop_requested:
+                self.error.emit(str(e))
 
-class LogCapture(QObject):
+    def stop(self):
+        """Stop the thread gracefully"""
+        self._stop_requested = True
+
+class LogCapture:
     """Captures stdout/stderr and writes both to QTextEdit and to original stdout/stderr.
-    Uses a thread-safe buffer + QTimer to flush on the GUI thread, avoiding
-    the 'Cannot queue arguments of type QTextCursor' crash on Linux."""
-    import threading as _threading
-
+    Thread-safe implementation using direct append (QTextEdit is thread-safe for append)."""
     def __init__(self, text_edit):
-        super().__init__()
         self.text_edit = text_edit
-        self.original_stdout = sys.__stdout__ or sys.stdout
-        self.original_stderr = sys.__stderr__ or sys.stderr
-        # Thread-safe buffer for messages coming from background threads
-        self._lock = self._threading.Lock()
-        self._buffer: list = []
-        # QTimer runs on the GUI thread — safe to touch QTextEdit here
-        self._timer = QTimer(self)
-        self._timer.setInterval(100)  # flush every 100 ms
-        self._timer.timeout.connect(self._flush_buffer)
-        self._timer.start()
-
-    def _flush_buffer(self):
-        """Called by QTimer on the GUI thread — safe to touch QTextEdit."""
-        with self._lock:
-            messages = self._buffer[:]
-            self._buffer.clear()
-        for msg in messages:
-            self.text_edit.append(msg)
-
+        self.original_stdout = sys.__stdout__
+        self.original_stderr = sys.__stderr__
+    
     def write(self, message):
-        """Write message to QTextEdit buffer and original stdout."""
+        """Write message to QTextEdit and original stdout."""
         try:
             if message and message.strip():
-                with self._lock:
-                    self._buffer.append(message.rstrip())
-            if self.original_stdout:
+                # Append to QTextEdit (thread-safe)
+                self.text_edit.append(message.rstrip())
+                # Also print to original stdout (terminal)
                 self.original_stdout.write(message)
                 self.original_stdout.flush()
         except Exception:
+            # Fail silently to avoid breaking print calls
             try:
-                if self.original_stdout:
-                    self.original_stdout.write(message)
-                    self.original_stdout.flush()
+                self.original_stdout.write(message)
+                self.original_stdout.flush()
             except Exception:
                 pass
-
+    
     def flush(self):
         """Flush the buffer."""
         try:
-            if self.original_stdout:
-                self.original_stdout.flush()
+            self.original_stdout.flush()
         except Exception:
             pass
-
+    
     def isatty(self):
         """Required for some code that checks if stdout is a TTY."""
         return False
@@ -338,6 +306,7 @@ class MainWindow(QMainWindow):
         self.setup_ui()
 
         self.current_results = []
+        self._analysis_id = 0  # 🔧 Identifiant unique pour chaque analyse
     
     def add_log(self, message: str):
         """Ajouter un message à l'onglet Logs (sans redirection de stdout)."""
@@ -350,12 +319,16 @@ class MainWindow(QMainWindow):
         if SYMBOL_MANAGER_AVAILABLE:
             try:
                 symbols = get_symbols_by_list_type(list_type, active_only=True)
-            except Exception:
+                print(f"✅ {list_type}: {len(symbols)} symboles chargés depuis SQLite")
+            except Exception as e:
+                print(f"⚠️ Erreur chargement SQLite pour {list_type}: {e}")
                 symbols = []
         if not symbols:
             try:
-                symbols = load_symbols_from_txt(filename, use_sqlite=False)
-            except Exception:
+                symbols = load_symbols_from_txt(filename, use_sqlite=True)
+                print(f"✅ {list_type}: {len(symbols)} symboles chargés depuis fichier/SQLite")
+            except Exception as e:
+                print(f"⚠️ Erreur chargement {filename}: {e}")
                 symbols = []
         # Dédupe en conservant l'ordre
         return list(dict.fromkeys([s for s in symbols if s]))
@@ -440,38 +413,71 @@ class MainWindow(QMainWindow):
 
         lists_container.addItem(QSpacerItem(48, 20, QSizePolicy.MinimumExpanding, QSizePolicy.Minimum))
 
-        # Liste optimisation (prioritaire pour le nettoyage)
-        optim_sorted = sorted(self.optim_symbols_data)
-        optim_layout = QHBoxLayout()
-        optim_listcol = QVBoxLayout()
-        self.optim_label = QLabel()
-        self.optim_label.setAlignment(Qt.AlignCenter)
-        self.optim_label.setWordWrap(True)
-        optim_layout.addWidget(self.optim_label)
-        self.optim_list = QListWidget()
-        self.optim_list.setMaximumHeight(70)
-        for s in optim_sorted:
-            if s:
-                item = QListWidgetItem(s)
-                item.setData(Qt.UserRole, s)
-                self.optim_list.addItem(item)
-        self.optim_list.setSelectionMode(QAbstractItemView.ExtendedSelection)
-        optim_listcol.addWidget(self.optim_list)
-        optim_layout.addLayout(optim_listcol)
-
-        optim_btns = QVBoxLayout()
-        optim_btns.setSpacing(2)
-        self.optim_add_btn = QPushButton("Ajouter")
-        self.optim_del_btn = QPushButton("Supprimer")
-        self.optim_show_btn = QPushButton("Afficher")
-        self.optim_clean_btn = QPushButton("Aperçu nettoyage")
-        optim_btns.addWidget(self.optim_add_btn)
-        optim_btns.addWidget(self.optim_del_btn)
-        optim_btns.addWidget(self.optim_show_btn)
-        optim_btns.addWidget(self.optim_clean_btn)
-        optim_layout.addLayout(optim_btns)
-
-        lists_container.addLayout(optim_layout)
+        # ========== NOUVELLES LISTES OPTIMISATION ==========
+        # Liste 1 : 30 symboles ALÉATOIRES
+        random_layout = QHBoxLayout()
+        random_listcol = QVBoxLayout()
+        self.random_label = QLabel()
+        self.random_label.setAlignment(Qt.AlignCenter)
+        self.random_label.setWordWrap(True)
+        random_layout.addWidget(self.random_label)
+        self.random_list = QListWidget()
+        self.random_list.setMaximumHeight(70)
+        self.random_list.setSelectionMode(QAbstractItemView.ExtendedSelection)
+        random_listcol.addWidget(self.random_list)
+        random_layout.addLayout(random_listcol)
+        
+        random_btns = QVBoxLayout()
+        random_btns.setSpacing(2)
+        self.random_refresh_btn = QPushButton("🔄 Nouveau")
+        self.random_refresh_btn.clicked.connect(self.refresh_random_symbols)
+        self.random_show_btn = QPushButton("Afficher")
+        self.random_all_btn = QPushButton("📋 Tout sélect.")
+        self.random_all_btn.clicked.connect(lambda: self._select_all_items(self.random_list))
+        random_btns.addWidget(self.random_refresh_btn)
+        random_btns.addWidget(self.random_show_btn)
+        random_btns.addWidget(self.random_all_btn)
+        random_layout.addLayout(random_btns)
+        
+        lists_container.addLayout(random_layout)
+        
+        lists_container.addItem(QSpacerItem(48, 5, QSizePolicy.MinimumExpanding, QSizePolicy.Minimum))
+        
+        # Liste 2 : 30 derniers SYMBOLES AJOUTÉS
+        recent_layout = QHBoxLayout()
+        recent_listcol = QVBoxLayout()
+        self.recent_label = QLabel()
+        self.recent_label.setAlignment(Qt.AlignCenter)
+        self.recent_label.setWordWrap(True)
+        recent_layout.addWidget(self.recent_label)
+        self.recent_list = QListWidget()
+        self.recent_list.setMaximumHeight(70)
+        self.recent_list.setSelectionMode(QAbstractItemView.ExtendedSelection)
+        recent_listcol.addWidget(self.recent_list)
+        recent_layout.addLayout(recent_listcol)
+        
+        recent_btns = QVBoxLayout()
+        recent_btns.setSpacing(2)
+        self.recent_show_btn = QPushButton("Afficher")
+        self.recent_all_btn = QPushButton("📋 Tout sélect.")
+        self.recent_all_btn.clicked.connect(lambda: self._select_all_items(self.recent_list))
+        recent_btns.addWidget(self.recent_show_btn)
+        recent_btns.addWidget(self.recent_all_btn)
+        recent_layout.addLayout(recent_btns)
+        
+        lists_container.addLayout(recent_layout)
+        
+        lists_container.addItem(QSpacerItem(48, 20, QSizePolicy.MinimumExpanding, QSizePolicy.Minimum))
+        
+        # Bouton OPTIMISATION HYBRIDE (ouvre la fenêtre dédiée)
+        optim_button_layout = QVBoxLayout()
+        self.optimization_window_btn = QPushButton("🚀 OPTIMISATION HYBRIDE")
+        self.optimization_window_btn.setStyleSheet(
+            "background-color: #FF9800; color: white; font-weight: bold; padding: 12px; font-size: 13px;"
+        )
+        self.optimization_window_btn.clicked.connect(self.open_optimization_window)
+        optim_button_layout.addWidget(self.optimization_window_btn)
+        lists_container.addLayout(optim_button_layout)
         self.layout.addLayout(lists_container)
 
         top_controls = QHBoxLayout()
@@ -522,6 +528,12 @@ class MainWindow(QMainWindow):
         self.offline_mode_btn.clicked.connect(self.toggle_offline_mode)
         self.offline_mode_btn.setStyleSheet("QPushButton { background-color: #4CAF50; color: white; font-weight: bold; }")
         top_controls.addWidget(self.offline_mode_btn)
+        
+        # 💾 Bouton pour sauvegarder les graphiques en PDF
+        self.save_pdf_btn = QPushButton("💾 Sauvegarder (PDF)")
+        self.save_pdf_btn.setToolTip("Sauvegarder tous les graphiques de l'analyse en PDF")
+        self.save_pdf_btn.clicked.connect(self.export_results_pdf)
+        top_controls.addWidget(self.save_pdf_btn)
 
         self.layout.addLayout(top_controls)
 
@@ -557,7 +569,7 @@ class MainWindow(QMainWindow):
         'Symbole','Signal','Score','Prix','Tendance','RSI','Volume\nmoyen','Domaine','Cap\nRange','Score/\nSeuil',
         'Fiabilite\n(%)','Nb\nTrades','Gagnants',
         # COLONNES FINANCIÈRES
-        'Rev.\nGrowth(%)','EBITDA\nYield(%)','FCF\nYield(%)','D/E\nRatio','Market\nCap(B$)',
+        'Rev.\nGrowth(%)','EBITDA\nYield(%)','FCF\nYield(%)','D/E\nRatio','Market\nCap(B$)','ROE\n(%)',
         # COLONNES DERIVÉES
         'dPrice','dMACD','dRSI','dVol\nRel',
         # COLONNES BACKTEST
@@ -566,7 +578,20 @@ class MainWindow(QMainWindow):
         'Consensus'
         ]
         # Add table to Results tab, not Analyze tab
+        # 🔧 Boutons d'export dans l'onglet Résultats
+        export_buttons_layout = QHBoxLayout()
+        export_buttons_layout.addStretch()
+        self.export_csv_btn = QPushButton("📥 Exporter (CSV)")
+        self.export_csv_btn.setToolTip("Exporter les résultats en fichier CSV")
+        self.export_csv_btn.clicked.connect(self.export_results_csv)
+        self.export_excel_btn = QPushButton("📊 Exporter (Excel)")
+        self.export_excel_btn.setToolTip("Exporter les résultats en fichier Excel")
+        self.export_excel_btn.clicked.connect(self.export_results_excel)
+        export_buttons_layout.addWidget(self.export_csv_btn)
+        export_buttons_layout.addWidget(self.export_excel_btn)
+        
         self.results_layout.addWidget(QLabel("📋 Résultats détaillés de l'analyse"))
+        self.results_layout.addLayout(export_buttons_layout)
         self.results_layout.addWidget(self.merged_table)
 
         self.merged_table.setColumnCount(len(merged_columns))
@@ -612,11 +637,16 @@ class MainWindow(QMainWindow):
         self.mes_add_btn.clicked.connect(lambda: self.add_symbol(self.mes_list, "mes_symbols.txt"))
         self.mes_del_btn.clicked.connect(lambda: self.remove_selected(self.mes_list, "mes_symbols.txt"))
         self.mes_show_btn.clicked.connect(lambda: self.show_selected(self.mes_list))
-        self.optim_add_btn.clicked.connect(lambda: self.add_symbol(self.optim_list, "optimisation_symbols.txt"))
-        self.optim_del_btn.clicked.connect(lambda: self.remove_selected(self.optim_list, "optimisation_symbols.txt"))
-        self.optim_show_btn.clicked.connect(lambda: self.show_selected(self.optim_list))
-        self.optim_clean_btn.clicked.connect(self.preview_cleaned_optimization)
+        
+        # Callbacks pour les nouvelles listes
+        self.random_show_btn.clicked.connect(lambda: self.show_selected(self.random_list))
+        self.recent_show_btn.clicked.connect(lambda: self.show_selected(self.recent_list))
+        
         self._update_list_counts()
+        
+        # Charger les listes aléatoires et récentes au démarrage
+        self.refresh_random_symbols()
+        self.load_recent_symbols()
     
     def validate_ticker(self, symbol):
         """Validation rapide mais moins fiable"""
@@ -883,7 +913,8 @@ class MainWindow(QMainWindow):
                 QMessageBox.information(self, "Aperçu nettoyage", "Aucune donnée d'optimisation trouvée.")
                 return
 
-            cleaned = clean_sector_cap_groups(sector_cap_ranges, ttl_days=100, min_symbols=4, max_symbols=12)
+            # Nouvelle logique : FIXE (mes_symbols) + ALÉATOIRE (popular), min=6, max=15
+            cleaned = clean_sector_cap_groups(sector_cap_ranges, ttl_days=0, min_symbols=6, max_symbols=15, fixed_ratio=0.18)
 
             # Prioriser les symboles ajoutés manuellement : ils restent en tête et ne sont pas élagués en premier
             manual_order = [self.optim_list.item(i).text() for i in range(self.optim_list.count())]
@@ -903,6 +934,21 @@ class MainWindow(QMainWindow):
                         if s not in seen:
                             seen.add(s)
                             flat_cleaned.append(s)
+            
+            # Garantir minimum 300 symboles au total
+            MIN_TOTAL_SYMBOLS = 300
+            if len(flat_cleaned) < MIN_TOTAL_SYMBOLS:
+                needed = MIN_TOTAL_SYMBOLS - len(flat_cleaned)
+                try:
+                    from symbol_manager import get_all_popular_symbols
+                    import random
+                    all_popular = get_all_popular_symbols(max_count=1000, exclude_symbols=seen)
+                    random.shuffle(all_popular)  # Randomiser pour diversité
+                    additional = all_popular[:needed]
+                    flat_cleaned.extend(additional)
+                    print(f"   📊 Complément pour atteindre {MIN_TOTAL_SYMBOLS} symboles : +{len(additional)} depuis popular_symbols")
+                except Exception as e:
+                    print(f"   ⚠️ Impossible d'ajouter des symboles supplémentaires : {e}")
 
             # Mettre à jour la QList optimisation avec la version nettoyée
             self.optim_list.clear()
@@ -924,7 +970,9 @@ class MainWindow(QMainWindow):
             # Rafraîchir compteurs
             self._update_list_counts()
 
-            lines = ["=== Résumé des groupes nettoyés (optimisation) ==="]
+            lines = [f"=== Résumé des groupes nettoyés (optimisation) ==="]
+            lines.append(f"TOTAL : {len(flat_cleaned)} symboles (minimum garanti : 300)")
+            lines.append("")
             for sec in sorted(cleaned.keys()):
                 for cap in sorted(cleaned[sec].keys()):
                     syms = cleaned[sec][cap]
@@ -950,6 +998,34 @@ class MainWindow(QMainWindow):
             QMessageBox.warning(self, "Erreur", "Aucun symbole disponible dans 'Mes symboles'")
             return
         
+        # 🔧 Incrémenter l'ID d'analyse et stopper les threads précédents
+        self._analysis_id += 1
+        current_id = self._analysis_id
+        print(f"\n🚀 Nouvelle analyse populaire lancée #ID={current_id}")
+        
+        # 🔧 Réinitialiser les données complètement
+        self.current_results = []
+        if hasattr(self, 'filtered_results'):
+            delattr(self, 'filtered_results')
+        if hasattr(self, 'backtest_map'):
+            delattr(self, 'backtest_map')
+        
+        # Stop any running analysis thread before starting a new one
+        if hasattr(self, 'analysis_thread') and self.analysis_thread is not None:
+            try:
+                # Disconnect signals to prevent old thread from updating UI
+                self.analysis_thread.finished.disconnect()
+                self.analysis_thread.error.disconnect()
+                self.analysis_thread.progress.disconnect()
+            except Exception:
+                pass
+            
+            # Stop the thread
+            if self.analysis_thread.isRunning():
+                self.analysis_thread.stop()
+                self.analysis_thread.wait(2000)  # Wait max 2 seconds
+                print(f"⚠️ Ancien analysis thread arrêté")
+        
         # Disable buttons during analysis
         self.analyze_button.setEnabled(False)
         self.backtest_button.setEnabled(False)
@@ -964,20 +1040,35 @@ class MainWindow(QMainWindow):
         self.progress.setMinimumWidth(400)
         
         # Lancer l'analyse+backtest dans un thread (mes_symbols en premier arg, [] en deuxième)
-        self.analysis_thread = AnalysisThread(mes_symbols, [], period)
+        self.analysis_thread = AnalysisThread(mes_symbols, [], period, analysis_id=current_id)
         self.analysis_thread.finished.connect(self.on_analysis_complete)
         self.analysis_thread.error.connect(self.on_analysis_error)
         self.analysis_thread.progress.connect(self.on_analysis_progress)
         self.analysis_thread.start()
+        print(f"📊 Analysis thread démarré avec ID={current_id}")
 
     def clear_plots(self):
         # remove all widgets from plots_layout
         for i in reversed(range(self.plots_layout.count())):
             w = self.plots_layout.itemAt(i).widget()
             if w:
+                if hasattr(w, 'figure'):
+                    w.figure.clear()
+                    try:
+                        w.close()
+                    except Exception:
+                        pass
                 w.setParent(None)
+        import gc
+        gc.collect()
 
     def on_download_complete(self, result):
+        # 🔧 Vérifier que ce résultat appartient à l'analyse actuelle
+        received_id = result.get('_analysis_id', 0) if isinstance(result, dict) else 0
+        if received_id != self._analysis_id:
+            print(f"⚠️ Résultat ignoré: ID={received_id}, ID actuel={self._analysis_id}")
+            return
+        
         # Called when the DownloadThread finishes
         # Re-enable buttons
         self.analyze_button.setEnabled(True)
@@ -986,6 +1077,10 @@ class MainWindow(QMainWindow):
 
         if self.progress:
             self.progress.close()
+        
+        # 🔧 Supprimer filtered_results si existant pour forcer l'utilisation de current_results
+        if hasattr(self, 'filtered_results'):
+            delattr(self, 'filtered_results')
 
         data = result.get('data', {}) if isinstance(result, dict) else {}
         backtests = result.get('backtest_results', []) if isinstance(result, dict) else []
@@ -1005,41 +1100,21 @@ class MainWindow(QMainWindow):
                 volume_mean = float(volumes.mean()) if len(volumes) > 0 else 0.0
                 score = 0.0
                 derivatives = {}
-                # ✅ Récupération secteur + cap_range depuis la DB d'abord (rapide)
-                db_info = qsi.get_symbol_info_from_db(symbol)
-                domaine = db_info['sector'] if db_info['sector'] else None
-                cap_range = db_info['cap_range']
+                cap_range = qsi.get_cap_range_for_symbol(symbol)
                 
-                # Si la DB n'a pas le secteur, fallback yfinance ou cache
-                if not domaine:
-                    try:
-                        if qsi.OFFLINE_MODE:
-                            if qsi.get_pickle_cache is not None:
-                                fin_cache = qsi.get_pickle_cache(symbol, 'financial', ttl_hours=24*365)
-                                domaine = fin_cache.get('sector', 'Inconnu') if fin_cache else "Inconnu"
-                            else:
-                                domaine = "Inconnu"
-                        else:
-                            info = yf.Ticker(symbol).info
-                            domaine = info.get("sector", "Inconnu")
-                            # Sauvegarder en DB pour la prochaine fois
-                            mc_raw = info.get('marketCap')
-                            mc_b = float(mc_raw) / 1e9 if mc_raw else 0.0
-                            if mc_b > 0 and (cap_range == 'Unknown' or not cap_range):
-                                try:
-                                    from symbol_manager import classify_cap_range
-                                    cap_range = classify_cap_range(mc_b)
-                                except ImportError:
-                                    if mc_b < 2.0: cap_range = 'Small'
-                                    elif mc_b < 10.0: cap_range = 'Mid'
-                                    elif mc_b < 200.0: cap_range = 'Large'
-                                    else: cap_range = 'Mega'
-                            qsi.update_symbol_info_in_db(symbol, sector=domaine, cap_range=cap_range, market_cap_b=mc_b)
-                    except Exception:
-                        domaine = "Inconnu"
-                
-                # Normaliser le secteur pour cohérence avec la DB
+                # Récupérer le secteur depuis le cache ou yfinance
                 try:
+                    if qsi.OFFLINE_MODE:
+                        if qsi.get_pickle_cache is not None:
+                            fin_cache = qsi.get_pickle_cache(symbol, 'financial', ttl_hours=24*365)
+                            domaine = fin_cache.get('sector', 'Inconnu') if fin_cache else "Inconnu"
+                        else:
+                            domaine = "Inconnu"
+                    else:
+                        info = yf.Ticker(symbol).info
+                        domaine = info.get("sector", "Inconnu")
+                    
+                    # ✅ NEW: Normaliser le secteur pour cohérence avec la DB
                     from sector_normalizer import normalize_sector
                     domaine_raw = domaine
                     domaine = normalize_sector(domaine)
@@ -1144,25 +1219,6 @@ class MainWindow(QMainWindow):
                     if not derivatives.get('rev_growth_val') and not derivatives.get('market_cap_val'):
                         print(f"⚠️ {symbol}: Métriques financières manquantes dans derivatives")
                         print(f"   Clés disponibles: {list(derivatives.keys())}")
-                    
-                    # ✅ Dériver cap_range depuis market_cap si encore Unknown
-                    if (cap_range == 'Unknown' or not cap_range) and derivatives.get('market_cap_val'):
-                        mc_b = float(derivatives['market_cap_val'])
-                        if mc_b > 0:
-                            try:
-                                from symbol_manager import classify_cap_range
-                                cap_range = classify_cap_range(mc_b)
-                            except ImportError:
-                                if mc_b < 2.0:
-                                    cap_range = 'Small'
-                                elif mc_b < 10.0:
-                                    cap_range = 'Mid'
-                                elif mc_b < 200.0:
-                                    cap_range = 'Large'
-                                else:
-                                    cap_range = 'Mega'
-                            # Sauvegarder en DB pour les prochaines fois
-                            qsi.update_symbol_info_in_db(symbol, sector=domaine, cap_range=cap_range, market_cap_b=mc_b)
                 except Exception as e:
                     # Log l'erreur mais continue avec les valeurs par défaut
                     print(f"⚠️ Erreur get_trading_signal pour {symbol}: {e}")
@@ -1193,7 +1249,8 @@ class MainWindow(QMainWindow):
                     'EBITDA Yield (%)': round(float((derivatives.get('ebitda_yield_pct') or 0.0)), 2),
                     'FCF Yield (%)': round(float((derivatives.get('fcf_yield_pct') or 0.0)), 2),
                     'D/E Ratio': round(float((derivatives.get('debt_to_equity') or 0.0)), 2),
-                    'Market Cap (B$)': round(float((derivatives.get('market_cap_val') or 0.0)), 2)
+                    'Market Cap (B$)': round(float((derivatives.get('market_cap_val') or 0.0)), 2),
+                    'ROE (%)': round(float((derivatives.get('roe_val') or 0.0)), 2)
                 }
 
                 self.current_results.append(row_info)
@@ -1219,7 +1276,8 @@ class MainWindow(QMainWindow):
                         'EBITDA Yield (%)': 0.0,
                         'FCF Yield (%)': 0.0,
                         'D/E Ratio': 0.0,
-                        'Market Cap (B$)': 0.0
+                        'Market Cap (B$)': 0.0,
+                        'ROE (%)': 0.0
                     }
                     self.current_results.append(row_info)
                 except Exception:
@@ -1233,27 +1291,13 @@ class MainWindow(QMainWindow):
                 if sym in bt_map:
                     r['Fiabilite'] = bt_map[sym].get('taux_reussite', 'N/A')
                     r['NbTrades'] = bt_map[sym].get('trades', 0)
-                    r['Gagnants'] = bt_map[sym].get('gagnants', 0)
-                    r['Gain_total'] = bt_map[sym].get('gain_total', 0.0)
-                    r['Gain_moyen'] = bt_map[sym].get('gain_moyen', 0.0)
-                    r['Drawdown_max'] = bt_map[sym].get('drawdown_max', 0.0)
                 else:
                     r['Fiabilite'] = 'N/A'
                     r['NbTrades'] = 0
-                    r.setdefault('Gagnants', 0)
-                    r.setdefault('Gain_total', 0.0)
-                    r.setdefault('Gain_moyen', 0.0)
-                    r.setdefault('Drawdown_max', 0.0)
-            self.backtest_map = bt_map
         else:
             for r in self.current_results:
                 r['Fiabilite'] = 'N/A'
                 r['NbTrades'] = 0
-                r.setdefault('Gagnants', 0)
-                r.setdefault('Gain_total', 0.0)
-                r.setdefault('Gain_moyen', 0.0)
-                r.setdefault('Drawdown_max', 0.0)
-            self.backtest_map = {}
 
 
         # Apply fiabilité and nb trades filters
@@ -1393,6 +1437,12 @@ class MainWindow(QMainWindow):
             QApplication.processEvents()
 
     def on_analysis_complete(self, result):
+        # 🔧 Vérifier que ce résultat appartient à l'analyse actuelle
+        received_id = result.get('_analysis_id', 0) if isinstance(result, dict) else 0
+        if received_id != self._analysis_id:
+            print(f"⚠️ Résultat ignoré: ID={received_id}, ID actuel={self._analysis_id}")
+            return
+        
         # Re-enable all buttons
         self.analyze_button.setEnabled(True)
         self.backtest_button.setEnabled(True)
@@ -1401,11 +1451,15 @@ class MainWindow(QMainWindow):
         if self.progress:
             self.progress.close()
         
+        # 🔧 Supprimer filtered_results si existant pour forcer l'utilisation de current_results
+        if hasattr(self, 'filtered_results'):
+            delattr(self, 'filtered_results')
+        
         # Stocker les résultats
         self.current_results = result.get('signals', [])
         
         # 🔧 Stocker les résultats du backtest dans une map pour accès rapide
-        backtest_results = result.get('backtest_results', [])
+        backtest_results = result.get('backtest_results', []) if isinstance(result, dict) else []
         self.backtest_map = {b['Symbole']: b for b in backtest_results} if backtest_results else {}
         
         # 🔧 Ajouter les données de backtest aux signaux
@@ -1430,22 +1484,6 @@ class MainWindow(QMainWindow):
         # 🔧 Initialiser les colonnes par défaut pour tous les signaux
         for r in self.current_results:
             r.setdefault('CapRange', qsi.get_cap_range_for_symbol(r.get('Symbole', '')))
-            # ✅ Dériver cap_range depuis Market Cap si encore Unknown
-            if (r.get('CapRange') == 'Unknown' or not r.get('CapRange')) and r.get('Market Cap (B$)'):
-                mc_b = float(r.get('Market Cap (B$)', 0))
-                if mc_b > 0:
-                    try:
-                        from symbol_manager import classify_cap_range
-                        r['CapRange'] = classify_cap_range(mc_b)
-                    except ImportError:
-                        if mc_b < 2.0:
-                            r['CapRange'] = 'Small'
-                        elif mc_b < 10.0:
-                            r['CapRange'] = 'Mid'
-                        elif mc_b < 200.0:
-                            r['CapRange'] = 'Large'
-                        else:
-                            r['CapRange'] = 'Mega'
             r.setdefault('dPrice', 0.0)
             r.setdefault('dMACD', 0.0)
             r.setdefault('dRSI', 0.0)
@@ -1455,6 +1493,7 @@ class MainWindow(QMainWindow):
             r.setdefault('FCF Yield (%)', 0.0)
             r.setdefault('D/E Ratio', 0.0)
             r.setdefault('Market Cap (B$)', 0.0)
+            r.setdefault('ROE (%)', 0.0)
         
         # 🔧 Charger les meilleurs paramètres une seule fois
         try:
@@ -1514,23 +1553,6 @@ class MainWindow(QMainWindow):
                         r['FCF Yield (%)'] = round(derivatives.get('fcf_yield_pct', 0.0), 2)
                         r['D/E Ratio'] = round(derivatives.get('debt_to_equity', 0.0), 2)
                         r['Market Cap (B$)'] = round(derivatives.get('market_cap_val', 0.0), 2)
-                        
-                        # ✅ Dériver cap_range depuis market_cap si encore Unknown
-                        if (r.get('CapRange') == 'Unknown' or not r.get('CapRange')) and derivatives.get('market_cap_val'):
-                            mc_b = float(derivatives['market_cap_val'])
-                            if mc_b > 0:
-                                try:
-                                    from symbol_manager import classify_cap_range
-                                    r['CapRange'] = classify_cap_range(mc_b)
-                                except ImportError:
-                                    if mc_b < 2.0:
-                                        r['CapRange'] = 'Small'
-                                    elif mc_b < 10.0:
-                                        r['CapRange'] = 'Mid'
-                                    elif mc_b < 200.0:
-                                        r['CapRange'] = 'Large'
-                                    else:
-                                        r['CapRange'] = 'Mega'
                     except Exception:
                         # leave defaults
                         if need_derivatives:
@@ -1660,6 +1682,34 @@ class MainWindow(QMainWindow):
             QMessageBox.warning(self, "Erreur", "Veuillez entrer une période d'analyse valide (ex: 12mo)")
             return
 
+        # 🔧 Incrémenter l'ID d'analyse et stopper les threads précédents
+        self._analysis_id += 1
+        current_id = self._analysis_id
+        print(f"\n🚀 Nouvelle analyse lancée #ID={current_id}")
+        
+        # 🔧 Réinitialiser les données complètement
+        self.current_results = []
+        if hasattr(self, 'filtered_results'):
+            delattr(self, 'filtered_results')
+        if hasattr(self, 'backtest_map'):
+            delattr(self, 'backtest_map')
+        
+        # Stop any running download thread before starting a new one
+        if hasattr(self, 'download_thread') and self.download_thread is not None:
+            try:
+                # Disconnect signals to prevent old thread from updating UI
+                self.download_thread.finished.disconnect()
+                self.download_thread.error.disconnect()
+                self.download_thread.progress.disconnect()
+            except Exception:
+                pass
+            
+            # Stop the thread
+            if self.download_thread.isRunning():
+                self.download_thread.stop()
+                self.download_thread.wait(2000)  # Wait max 2 seconds
+                print(f"⚠️ Ancien download thread arrêté")
+
         # Disable buttons during analysis
         self.analyze_button.setEnabled(False)
         self.backtest_button.setEnabled(False)
@@ -1674,11 +1724,12 @@ class MainWindow(QMainWindow):
         self.progress.setMinimumWidth(400)
 
         # Launch download thread (no backtest)
-        self.download_thread = DownloadThread(symbols, period, do_backtest=False)
+        self.download_thread = DownloadThread(symbols, period, do_backtest=False, analysis_id=current_id)
         self.download_thread.finished.connect(self.on_download_complete)
         self.download_thread.error.connect(self.on_analysis_error)
         self.download_thread.progress.connect(self.on_analysis_progress)
         self.download_thread.start()
+        print(f"📥 Download thread démarré avec ID={current_id}")
 
     def analyse_and_backtest(self):
         # For consistency with 'Analyser mouvements fiables', run the full
@@ -1701,6 +1752,34 @@ class MainWindow(QMainWindow):
             QMessageBox.warning(self, "Erreur", "Veuillez entrer une période d'analyse valide (ex: 12mo)")
             return
 
+        # 🔧 Incrémenter l'ID d'analyse et stopper les threads précédents
+        self._analysis_id += 1
+        current_id = self._analysis_id
+        print(f"\n🚀 Nouvelle analyse backtest lancée #ID={current_id}")
+        
+        # 🔧 Réinitialiser les données complètement
+        self.current_results = []
+        if hasattr(self, 'filtered_results'):
+            delattr(self, 'filtered_results')
+        if hasattr(self, 'backtest_map'):
+            delattr(self, 'backtest_map')
+        
+        # Stop any running analysis thread before starting a new one
+        if hasattr(self, 'analysis_thread') and self.analysis_thread is not None:
+            try:
+                # Disconnect signals to prevent old thread from updating UI
+                self.analysis_thread.finished.disconnect()
+                self.analysis_thread.error.disconnect()
+                self.analysis_thread.progress.disconnect()
+            except Exception:
+                pass
+            
+            # Stop the thread
+            if self.analysis_thread.isRunning():
+                self.analysis_thread.stop()
+                self.analysis_thread.wait(2000)  # Wait max 2 seconds
+                print(f"⚠️ Ancien analysis thread arrêté")
+
         # Disable buttons during analysis
         self.analyze_button.setEnabled(False)
         self.backtest_button.setEnabled(False)
@@ -1721,11 +1800,12 @@ class MainWindow(QMainWindow):
         selected_pop = symbols
         selected_mes = []
 
-        self.analysis_thread = AnalysisThread(selected_pop, selected_mes, period)
+        self.analysis_thread = AnalysisThread(selected_pop, selected_mes, period, analysis_id=current_id)
         self.analysis_thread.finished.connect(self.on_analysis_complete)
         self.analysis_thread.error.connect(self.on_analysis_error)
         self.analysis_thread.progress.connect(self.on_analysis_progress)
         self.analysis_thread.start()
+        print(f"📊 Analysis backtest thread démarré avec ID={current_id}")
 
     def update_results_table(self):
         """Fill the merged table (`self.merged_table`) with current results plus backtest metrics.
@@ -1733,12 +1813,9 @@ class MainWindow(QMainWindow):
         if not hasattr(self, 'current_results'):
             return
 
-        # ✅ CRITIQUE: Désactiver le tri AVANT de remplir le tableau.
-        # Sinon Qt re-trie après chaque setItem(), ce qui déplace les lignes
-        # et les colonnes suivantes sont écrites sur la MAUVAISE ligne.
-        self.merged_table.setSortingEnabled(False)
         self.merged_table.setRowCount(0)
-        raw_results = getattr(self, 'filtered_results', self.current_results)
+        # 🔧 Toujours utiliser current_results (filtered_results est supprimé à chaque nouvelle analyse)
+        raw_results = self.current_results
         
         # Appliquer le filtre de fiabilité minimum si un seuil est défini
         min_fiab_threshold = self.fiab_threshold_spin.value() if hasattr(self, 'fiab_threshold_spin') else 30
@@ -1777,6 +1854,8 @@ class MainWindow(QMainWindow):
             r.setdefault('FCF Yield (%)', 0.0)
             r.setdefault('D/E Ratio', 0.0)
             r.setdefault('Market Cap (B$)', 0.0)
+            r.setdefault('ROE (%)', 0.0)
+        
         bt_map = getattr(self, 'backtest_map', {})
 
         # Helper de conversion robuste pour éviter qu'une valeur vide casse la ligne
@@ -1869,7 +1948,7 @@ class MainWindow(QMainWindow):
                 
                 # Récupérer les seuils optimisés pour domaine_cap
                 seuil_achat = 4.2  # Défaut
-                seuil_vente = 4.2  # Défaut
+                seuil_vente = -0.5  # Défaut (négatif pour les seuils de vente)
                 try:
                     best_params_all = getattr(self, 'best_parameters', {})
                     param_key = None
@@ -1881,23 +1960,28 @@ class MainWindow(QMainWindow):
                     # Sinon fallback sur domaine seul
                     if not param_key and domaine in best_params_all:
                         param_key = domaine
-                    
+
                     if param_key and param_key in best_params_all:
                         params = best_params_all[param_key]
                         if len(params) > 2 and params[2]:
                             globals_th = params[2]
                             if isinstance(globals_th, (tuple, list)) and len(globals_th) >= 2:
-                                seuil_achat = float(globals_th[0])
-                                seuil_vente = float(globals_th[1])
-                except Exception:
+                                seuil_achat = float(globals_th[0]) if globals_th[0] else 4.2
+                                seuil_vente = float(globals_th[1]) if globals_th[1] else -0.5
+                except Exception as e:
+                    print(f"⚠️ Erreur lecture seuils pour {sym}: {e}")
                     pass
-                
+
                 # Calculer le ratio selon le signe du score
-                if score_val > 0:
-                    ratio = score_val / seuil_achat if seuil_achat != 0 else 0.0
-                elif score_val < 0:
-                    ratio = score_val / seuil_vente if seuil_vente != 0 else 0.0
-                else:
+                try:
+                    if score_val > 0:
+                        ratio = score_val / seuil_achat if seuil_achat and seuil_achat != 0 else 0.0
+                    elif score_val < 0:
+                        ratio = score_val / seuil_vente if seuil_vente and seuil_vente != 0 else 0.0
+                    else:
+                        ratio = 0.0
+                except Exception as e:
+                    print(f"⚠️ Erreur calcul ratio pour {sym}: {e}")
                     ratio = 0.0
                 
                 item = QTableWidgetItem(f"{ratio:.2f}")
@@ -1913,54 +1997,65 @@ class MainWindow(QMainWindow):
                     item.setForeground(QColor(255, 0, 0))  # Rouge : mauvais
                 self.merged_table.setItem(row, 9, item)
                 
-                
                 # Fiabilite and NbTrades (from signal or backtest)
-                fiab = signal.get('Fiabilite')
-                nb_trades = signal.get('NbTrades')
-                # if missing, check backtest map
-                bt = bt_map.get(sym, {})
-                if (fiab is None or fiab == 'N/A') and bt:
-                    fiab = bt.get('taux_reussite', 'N/A')
-                if (nb_trades is None or nb_trades == 0) and bt:
-                    nb_trades = bt.get('trades', 0)
+                try:
+                    fiab = signal.get('Fiabilite')
+                    nb_trades = signal.get('NbTrades')
+                    # if missing, check backtest map
+                    bt = bt_map.get(sym, {})
+                    if (fiab is None or fiab == 'N/A') and bt:
+                        fiab = bt.get('taux_reussite', 'N/A')
+                    if (nb_trades is None or nb_trades == 0) and bt:
+                        nb_trades = bt.get('trades', 0)
 
-                # Fiabilité display
-                if fiab is None or fiab == 'N/A':
-                    fiab_text = 'N/A'
-                    fiab_val = None
-                else:
-                    try:
-                        fiab_val = float(fiab)
-                        fiab_text = f"{fiab_val:.0f}%"
-                    except Exception:
-                        fiab_text = str(fiab)
+                    # Fiabilité display
+                    if fiab is None or fiab == 'N/A':
+                        fiab_text = 'N/A'
                         fiab_val = None
-
-                item = QTableWidgetItem(fiab_text)
-                if fiab_val is not None:
-                    item.setData(Qt.EditRole, fiab_val)
-                    # Harmoniser : >75% excellent, 50-75% bon, 30-50% moyen, <30% mauvais
-                    if fiab_val >= 75:
-                        item.setForeground(QColor(0, 128, 0))  # Vert foncé : excellent
-                    elif fiab_val >= 50:
-                        item.setForeground(QColor(34, 139, 34))  # Vert : bon
-                    elif fiab_val >= 30:
-                        item.setForeground(QColor(255, 165, 0))  # Orange : moyen
                     else:
-                        item.setForeground(QColor(255, 0, 0))  # Rouge : mauvais
-                self.merged_table.setItem(row, 10, item)
+                        try:
+                            fiab_val = float(fiab)
+                            fiab_text = f"{fiab_val:.0f}%"
+                        except Exception:
+                            fiab_text = str(fiab)
+                            fiab_val = None
+
+                    item = QTableWidgetItem(fiab_text)
+                    if fiab_val is not None:
+                        item.setData(Qt.EditRole, fiab_val)
+                        # Harmoniser : >75% excellent, 50-75% bon, 30-50% moyen, <30% mauvais
+                        if fiab_val >= 75:
+                            item.setForeground(QColor(0, 128, 0))  # Vert foncé : excellent
+                        elif fiab_val >= 50:
+                            item.setForeground(QColor(34, 139, 34))  # Vert : bon
+                        elif fiab_val >= 30:
+                            item.setForeground(QColor(255, 165, 0))  # Orange : moyen
+                        else:
+                            item.setForeground(QColor(255, 0, 0))  # Rouge : mauvais
+                    self.merged_table.setItem(row, 10, item)
+                except Exception as e:
+                    print(f"⚠️ Erreur colonne Fiabilité (10) pour {sym}: {e}")
+                    self.merged_table.setItem(row, 10, QTableWidgetItem("N/A"))
 
                 # NbTrades
-                nb_int = safe_int(nb_trades, 0)
-                item = QTableWidgetItem(str(nb_int))
-                item.setData(Qt.EditRole, nb_int)
-                self.merged_table.setItem(row, 11, item)
+                try:
+                    nb_int = safe_int(nb_trades, 0)
+                    item = QTableWidgetItem(str(nb_int))
+                    item.setData(Qt.EditRole, nb_int)
+                    self.merged_table.setItem(row, 11, item)
+                except Exception as e:
+                    print(f"⚠️ Erreur colonne NbTrades (11) pour {sym}: {e}")
+                    self.merged_table.setItem(row, 11, QTableWidgetItem("0"))
 
-                # Gagnants (from signal dict first, then bt_map fallback)
-                gagnants = safe_int(signal.get('Gagnants', bt.get('gagnants', 0) if bt else 0))
-                item = QTableWidgetItem(str(gagnants))
-                item.setData(Qt.EditRole, gagnants)
-                self.merged_table.setItem(row, 12, item)
+                # Gagnants
+                try:
+                    gagnants = int(bt.get('gagnants', 0)) if bt else 0
+                    item = QTableWidgetItem(str(gagnants))
+                    item.setData(Qt.EditRole, gagnants)
+                    self.merged_table.setItem(row, 12, item)
+                except Exception as e:
+                    print(f"⚠️ Erreur colonne Gagnants (12) pour {sym}: {e}")
+                    self.merged_table.setItem(row, 12, QTableWidgetItem("0"))
                 
                 # Colonnes Financières simples
                 # Colonne 13: Rev. Growth (%)
@@ -2029,59 +2124,81 @@ class MainWindow(QMainWindow):
                 item.setData(Qt.EditRole, market_cap)
                 self.merged_table.setItem(row, 17, item)
 
-                # Derivatives (colonnes 17-20)
+                # Colonne 17: ROE (%)
+                roe = safe_float(signal.get('ROE (%)', 0.0))
+                item = QTableWidgetItem(f"{roe:.2f}")
+                item.setData(Qt.EditRole, roe)
+                # Colorer basé sur ROE : vert si > 15%, orange si 10-15%, rouge si < 10%
+                if roe > 15:
+                    item.setForeground(QColor(0, 128, 0))  # Vert : excellent
+                elif roe > 10:
+                    item.setForeground(QColor(255, 165, 0))  # Orange : bon
+                elif roe > 5:
+                    item.setForeground(QColor(255, 140, 0))  # Orange clair : acceptable
+                else:
+                    item.setForeground(QColor(255, 0, 0))  # Rouge : faible
+                self.merged_table.setItem(row, 18, item)
+
+                # Derivatives (colonnes 19-22)
                 dprice = safe_float(signal.get('dPrice', 0.0))
                 item = QTableWidgetItem(f"{dprice:.3f}")
                 item.setData(Qt.EditRole, dprice)
-                self.merged_table.setItem(row, 18, item)
+                self.merged_table.setItem(row, 19, item)
 
                 dmacd = safe_float(signal.get('dMACD', 0.0))
                 item = QTableWidgetItem(f"{dmacd:.3f}")
                 item.setData(Qt.EditRole, dmacd)
-                self.merged_table.setItem(row, 19, item)
+                self.merged_table.setItem(row, 20, item)
 
                 drsi = safe_float(signal.get('dRSI', 0.0))
                 item = QTableWidgetItem(f"{drsi:.3f}")
                 item.setData(Qt.EditRole, drsi)
-                self.merged_table.setItem(row, 20, item)
+                self.merged_table.setItem(row, 21, item)
 
                 dvol = safe_float(signal.get('dVolRel', 0.0))
                 item = QTableWidgetItem(f"{dvol:.3f}")
                 item.setData(Qt.EditRole, dvol)
-                self.merged_table.setItem(row, 21, item)
-
-                # Backtest metrics (from signal dict first, then bt_map fallback)
-                # Colonnes 22-23 pour Gain total et Gain moyen
-                gain_total = safe_float(signal.get('Gain_total', bt.get('gain_total', 0.0) if bt else 0.0))
-                gain_moy = safe_float(signal.get('Gain_moyen', bt.get('gain_moyen', 0.0) if bt else 0.0))
-
-                item = QTableWidgetItem(f"{gain_total:.2f}")
-                item.setData(Qt.EditRole, gain_total)
-                # Harmoniser : gain > 0 = bon
-                if gain_total > 200:
-                    item.setForeground(QColor(0, 128, 0))  # Vert foncé : excellent
-                elif gain_total > 50:
-                    item.setForeground(QColor(34, 139, 34))  # Vert : bon
-                elif gain_total > 0:
-                    item.setForeground(QColor(255, 165, 0))  # Orange : moyen
-                else:
-                    item.setForeground(QColor(255, 0, 0))  # Rouge : mauvais
                 self.merged_table.setItem(row, 22, item)
 
-                item = QTableWidgetItem(f"{gain_moy:.2f}")
-                item.setData(Qt.EditRole, gain_moy)
-                # Harmoniser : gain moyen > 0 = bon
-                if gain_moy > 20:
-                    item.setForeground(QColor(0, 128, 0))  # Vert foncé : excellent
-                elif gain_moy > 5:
-                    item.setForeground(QColor(34, 139, 34))  # Vert : bon
-                elif gain_moy > 0:
-                    item.setForeground(QColor(255, 165, 0))  # Orange : moyen
-                else:
-                    item.setForeground(QColor(255, 0, 0))  # Rouge : mauvais
-                self.merged_table.setItem(row, 23, item)
+                # Backtest metrics (if available)
+                # Colonnes 23-24 pour Gain total et Gain moyen
+                try:
+                    trades = int(bt.get('trades', 0)) if bt else 0
+                    taux = float(bt.get('taux_reussite', 0.0)) if bt else 0.0
+                    gain_total = float(bt.get('gain_total', 0.0)) if bt else 0.0
+                    gain_moy = float(bt.get('gain_moyen', 0.0)) if bt else 0.0
 
-                # Consensus (text column at index 24)
+                    item = QTableWidgetItem(f"{gain_total:.2f}")
+                    item.setData(Qt.EditRole, gain_total)
+                    # Harmoniser : gain > 0 = bon
+                    if gain_total > 200:
+                        item.setForeground(QColor(0, 128, 0))  # Vert foncé : excellent
+                    elif gain_total > 50:
+                        item.setForeground(QColor(34, 139, 34))  # Vert : bon
+                    elif gain_total > 0:
+                        item.setForeground(QColor(255, 165, 0))  # Orange : moyen
+                    else:
+                        item.setForeground(QColor(255, 0, 0))  # Rouge : mauvais
+                    self.merged_table.setItem(row, 23, item)
+
+                    item = QTableWidgetItem(f"{gain_moy:.2f}")
+                    item.setData(Qt.EditRole, gain_moy)
+                    # Harmoniser : gain moyen > 0 = bon
+                    if gain_moy > 20:
+                        item.setForeground(QColor(0, 128, 0))  # Vert foncé : excellent
+                    elif gain_moy > 5:
+                        item.setForeground(QColor(34, 139, 34))  # Vert : bon
+                    elif gain_moy > 0:
+                        item.setForeground(QColor(255, 165, 0))  # Orange : moyen
+                    else:
+                        item.setForeground(QColor(255, 0, 0))  # Rouge : mauvais
+                    self.merged_table.setItem(row, 24, item)
+                except Exception as e:
+                    print(f"⚠️ Erreur colonnes Gain (23-24) pour {sym}: {e}")
+                    self.merged_table.setItem(row, 23, QTableWidgetItem("0.00"))
+                    self.merged_table.setItem(row, 24, QTableWidgetItem("0.00"))
+
+                # Consensus (text column at index 25)
                 consensus = signal.get('Consensus', 'N/A')
                 # Debug: vérifier si le Consensus existe vraiment
                 if row == 0:  # Afficher seulement pour la première ligne
@@ -2097,16 +2214,17 @@ class MainWindow(QMainWindow):
                     item.setForeground(QColor(255, 165, 0))  # Orange : neutre
                 elif 'sell' in consensus_lower or 'vente' in consensus_lower:
                     item.setForeground(QColor(255, 0, 0))  # Rouge : mauvais
-                self.merged_table.setItem(row, 24, item)
+                self.merged_table.setItem(row, 25, item)
+
+                # item = QTableWidgetItem(f"{drawdown:.2f}")
+                # item.setData(Qt.EditRole, drawdown)
+                # self.merged_table.setItem(row, 19, item)
 
             except Exception as e:
+                print(f"❌ Erreur remplissage table pour {signal.get('Symbole', '?')}: {e}")
                 import traceback
-                print(f"⚠️ Erreur affichage ligne {row} ({signal.get('Symbole', '?')}): {e}")
                 traceback.print_exc()
                 continue
-        
-        # ✅ Réactiver le tri APRÈS avoir rempli toutes les lignes
-        self.merged_table.setSortingEnabled(True)
         
         # Mettre à jour les onglets Graphiques et Comparaisons après remplissage de la table
         try:
@@ -2140,8 +2258,10 @@ class MainWindow(QMainWindow):
             13: ('gross_margin_val', False),# Gross Margin croissant
             14: ('market_cap_val', True),   # Market Cap décroissant
             15: ('market_cap_val', False),  # Market Cap croissant
-            16: ('fcf_val', True),         # FCF décroissant
-            17: ('debt_to_equity_val', False) # D/E Ratio croissant
+            16: ('roe_val', True),         # ROE décroissant
+            17: ('roe_val', False),        # ROE croissant
+            18: ('fcf_val', True),         # FCF décroissant
+            19: ('debt_to_equity_val', False) # D/E Ratio croissant
         }
         
         if index in sort_options:
@@ -2281,7 +2401,7 @@ class MainWindow(QMainWindow):
             for dom, stats in sorted(domain_stats.items(), key=lambda x: -x[1]['trades']):
                 trades = stats['trades']
                 gagnants = stats['gagnants']
-                taux = (gagnants / trades * 100) if trades else 0.0
+                taux = (gagnants / trades * 100) if trades > 0 else 0.0
                 gain_dom = stats['gain']
                 lines.append(f" - {dom}: Trades={trades} | Gagnants={gagnants} | Taux={taux:.1f}% | Gain brut={gain_dom:.2f} $")
 
@@ -2357,8 +2477,8 @@ class MainWindow(QMainWindow):
                     gagnants_item = self.merged_table.item(row, 12)
                     gagnants = int(gagnants_item.data(Qt.EditRole)) if gagnants_item and gagnants_item.data(Qt.EditRole) is not None else 0
                     
-                    # Colonne 22: Gain total ($)
-                    gain_item = self.merged_table.item(row, 22)
+                    # Colonne 24: Gain total ($) ✅ FIX: était 22 (dRSI), maintenant 24 (Gain total)
+                    gain_item = self.merged_table.item(row, 24)
                     gain = float(gain_item.data(Qt.EditRole)) if gain_item and gain_item.data(Qt.EditRole) is not None else 0.0
                     
                     if domaine not in domain_stats:
@@ -2556,10 +2676,7 @@ class MainWindow(QMainWindow):
                 ax4.text(i + width/2, symbols_normalized[i] + 3, str(int(s)), 
                         ha='center', fontsize=8, fontweight='bold')
             
-            try:
-                fig.tight_layout()
-            except Exception:
-                pass  # Ignorer si tight_layout échoue (graphe trop petit)
+            fig.tight_layout()
             canvas = FigureCanvas(fig)
             
             # Ajouter à l'onglet Graphiques
@@ -2733,8 +2850,8 @@ class MainWindow(QMainWindow):
             def on_reset():
                 for cb in checkboxes.values():
                     cb.setChecked(False)
-                while self.comparison_results_layout.count() > 0:
-                    w = self.comparison_results_layout.takeAt(0).widget()
+                while self.comparisons_layout.count() > 0:
+                    w = self.comparisons_layout.takeAt(0).widget()
                     if w:
                         w.deleteLater()
             
@@ -2826,7 +2943,10 @@ class MainWindow(QMainWindow):
                 
                 # Rang
                 item = QTableWidgetItem(str(rank))
-                item.setBackground(Qt.green if rank == 1 else Qt.lightGray if rank == 2 else Qt.white)
+                if rank == 1:
+                    item.setBackground(QColor(144, 238, 144))  # Vert pour 1er
+                elif rank == 2:
+                    item.setBackground(QColor(211, 211, 211))  # Gris pour 2ème
                 table.setItem(row, 0, item)
                 
                 # Symbole
@@ -2909,7 +3029,7 @@ class MainWindow(QMainWindow):
             summary.setStyleSheet("background-color: #e3f2fd; padding: 6px; border-radius: 4px; font-weight: bold;")
             
             self.comparison_results_layout.addWidget(summary)
-            self.comparison_results_layout.addWidget(table)
+            self.comparisons_layout.addWidget(table)
             
         except Exception as e:
             print(f"❌ Erreur _generate_comparison_table: {e}")
@@ -2993,8 +3113,7 @@ class MainWindow(QMainWindow):
                         start=start.strftime("%Y-%m-%d"), 
                         end=end.strftime("%Y-%m-%d"), 
                         progress=False,
-                        timeout=30,
-                        multi_level_index=False
+                        timeout=30
                     )
                     
                     if not df.empty:
@@ -3256,15 +3375,15 @@ class MainWindow(QMainWindow):
             info_label.setStyleSheet("background-color: #e1f5fe; padding: 6px; border-radius: 4px; font-size: 9px;")
             
             self.comparison_results_layout.addWidget(summary)
-            self.comparison_results_layout.addWidget(info_label)
-            self.comparison_results_layout.addWidget(table)
+            self.comparisons_layout.addWidget(info_label)
+            self.comparisons_layout.addWidget(table)
             
         except Exception as e:
             print(f"❌ Erreur _generate_historical_comparison_table: {e}")
             import traceback
             traceback.print_exc()
             error_label = QLabel(f"Erreur: {e}")
-            self.comparison_results_layout.addWidget(error_label)
+            self.comparisons_layout.addWidget(error_label)
     
     def _calculate_rsi(self, prices, period=14):
         """Calcule le RSI (Relative Strength Index)"""
@@ -3318,19 +3437,344 @@ class MainWindow(QMainWindow):
         
         return " | ".join(avis_parts) if avis_parts else "Neutre"
 
+    def refresh_random_symbols(self):
+        """Charger 30 symboles ALÉATOIRES depuis popular_symbols."""
+        try:
+            import random
+            all_symbols = self.popular_symbols_data
+            if not all_symbols:
+                QMessageBox.warning(self, "Erreur", "Aucun symbole populaire disponible")
+                return
+            
+            random_30 = random.sample(all_symbols, min(30, len(all_symbols)))
+            
+            self.random_list.clear()
+            for sym in random_30:
+                item = QListWidgetItem(sym)
+                item.setData(Qt.UserRole, sym)
+                self.random_list.addItem(item)
+            
+            self.random_label.setText(f"🎲 Aléatoires\n({len(random_30)} symboles)")
+        except Exception as e:
+            QMessageBox.warning(self, "Erreur", f"Impossible de charger les symboles aléatoires: {e}")
+    
+    def load_recent_symbols(self):
+        """Charger les 30 derniers SYMBOLES AJOUTÉS depuis la base de données."""
+        try:
+            if SYMBOL_MANAGER_AVAILABLE:
+                # Récupérer les 30 derniers symboles directement de la BDD, triés par date d'ajout
+                recent = get_recent_symbols(limit=30, active_only=True)
+            else:
+                # Fallback: si symbol_manager n'est pas disponible, utiliser les listes en fichier
+                recent = []
+                seen = set()
 
+                for sym in self.mes_symbols_data:
+                    if sym not in seen:
+                        recent.append(sym)
+                        seen.add(sym)
+
+                for sym in reversed(self.popular_symbols_data):
+                    if sym not in seen and len(recent) < 30:
+                        recent.append(sym)
+                        seen.add(sym)
+
+                recent = recent[:30]
+
+            self.recent_list.clear()
+            for sym in recent:
+                item = QListWidgetItem(sym)
+                item.setData(Qt.UserRole, sym)
+                self.recent_list.addItem(item)
+
+            self.recent_label.setText(f"🔥 Récents\n({len(recent)} symboles)")
+        except Exception as e:
+            QMessageBox.warning(self, "Erreur", f"Impossible de charger les symboles récents: {e}")
+    
+    def open_optimization_window(self):
+        """Ouvrir la fenêtre dédiée à l'optimisation hybride."""
+        try:
+            from optimization_window import OptimizationWindow
+            self.optim_window = OptimizationWindow(parent=self)
+            self.optim_window.show()
+        except Exception as e:
+            QMessageBox.critical(self, "Erreur", f"Impossible d'ouvrir la fenêtre d'optimisation: {e}")
+
+    def _select_all_items(self, list_widget):
+        """Sélectionner tous les éléments d'une QListWidget"""
+        list_widget.selectAll()
+
+    def _get_clean_columns_and_data(self):
+        """Filtrer les colonnes vides ou contenant uniquement des 0"""
+        if not self.current_results:
+            return [], []
+        
+        # Récupérer toutes les colonnes
+        all_columns = []
+        for col in range(self.merged_table.columnCount()):
+            header = self.merged_table.horizontalHeaderItem(col)
+            if header:
+                all_columns.append(header.text())
+        
+        if not all_columns:
+            all_columns = list(self.current_results[0].keys())
+        
+        # Identifier les colonnes à conserver
+        valid_columns = []
+        for col in all_columns:
+            has_valid_data = False
+            for result in self.current_results:
+                value = result.get(col, '')
+                # Vérifier si la colonne a des données non vides et pas 0
+                if value and value != '' and value != 0 and value != '0' and value != 'N/A':
+                    try:
+                        float_val = float(value) if isinstance(value, str) else value
+                        if float_val != 0:
+                            has_valid_data = True
+                            break
+                    except (ValueError, TypeError):
+                        if value not in ('', 'N/A', 0, '0'):
+                            has_valid_data = True
+                            break
+            
+            if has_valid_data:
+                valid_columns.append(col)
+        
+        print(f"📊 Colonnes filtrées: {len(all_columns)} → {len(valid_columns)} (suppression de {len(all_columns) - len(valid_columns)} colonnes vides/zéro)")
+        return valid_columns, self.current_results
+
+    def export_results_csv(self):
+        """Exporter les résultats actuels en fichier CSV avec auto-save dans Results"""
+        if not hasattr(self, 'current_results') or not self.current_results:
+            QMessageBox.warning(self, "Erreur", "Aucun résultat à exporter. Veuillez d'abord lancer une analyse.")
+            return
+        
+        import csv
+        from datetime import datetime
+        from pathlib import Path
+        
+        try:
+            # Nettoyer les colonnes vides/zéro
+            clean_columns, data = self._get_clean_columns_and_data()
+            
+            if not clean_columns:
+                QMessageBox.warning(self, "Erreur", "Aucune colonne avec données valides à exporter")
+                return
+            
+            # Créer le dossier Results avec chemins relatifs
+            results_dir = Path(__file__).parent.parent / "Results"
+            results_dir.mkdir(parents=True, exist_ok=True)
+            
+            # Générer le nom du fichier avec timestamp
+            filename = f"resultats_analyse_{datetime.now().strftime('%Y%m%d_%H%M%S')}.csv"
+            file_path = results_dir / filename
+            
+            with open(file_path, 'w', newline='', encoding='utf-8') as csvfile:
+                writer = csv.DictWriter(csvfile, fieldnames=clean_columns)
+                writer.writeheader()
+                
+                for result in data:
+                    # Créer une ligne en prenant les valeurs existantes
+                    row = {}
+                    for field in clean_columns:
+                        row[field] = result.get(field, '')
+                    writer.writerow(row)
+            
+            QMessageBox.information(self, "Succès", f"✅ Résultats exportés avec succès!\n\nDossier: Results\nFichier: {filename}\nColonnes: {len(clean_columns)}")
+            print(f"✅ Résultats exportés en CSV: {file_path}")
+        except Exception as e:
+            QMessageBox.critical(self, "Erreur", f"Erreur lors de l'export CSV:\n{e}")
+            print(f"❌ Erreur export CSV: {e}")
+            import traceback
+            traceback.print_exc()
+
+    def export_results_excel(self):
+        """Exporter les résultats actuels en fichier Excel avec auto-save dans Results"""
+        if not hasattr(self, 'current_results') or not self.current_results:
+            QMessageBox.warning(self, "Erreur", "Aucun résultat à exporter. Veuillez d'abord lancer une analyse.")
+            return
+        
+        from datetime import datetime
+        from pathlib import Path
+        
+        try:
+            # Vérifier si openpyxl est disponible
+            try:
+                import openpyxl
+                from openpyxl.styles import Font, PatternFill, Alignment, Border, Side
+            except ImportError:
+                QMessageBox.warning(
+                    self,
+                    "Bibliothèque manquante",
+                    "openpyxl n'est pas installé.\n\nVeuillez installer avec:\npip install openpyxl\n\nOu utiliser l'export CSV à la place."
+                )
+                return
+            
+            # Créer le dossier Results avec chemins relatifs
+            results_dir = Path(__file__).parent.parent / "Results"
+            results_dir.mkdir(parents=True, exist_ok=True)
+            
+            # Générer le nom du fichier avec timestamp
+            filename = f"resultats_analyse_{datetime.now().strftime('%Y%m%d_%H%M%S')}.xlsx"
+            file_path = results_dir / filename
+            
+            # Nettoyer les colonnes vides/zéro
+            columns, data = self._get_clean_columns_and_data()
+            
+            if not columns:
+                QMessageBox.warning(self, "Erreur", "Aucune colonne avec données valides à exporter")
+                return
+            
+            # Créer un classeur
+            workbook = openpyxl.Workbook()
+            worksheet = workbook.active
+            worksheet.title = "Résultats"
+            
+            # En-têtes
+            for col_idx, col_name in enumerate(columns, 1):
+                cell = worksheet.cell(row=1, column=col_idx)
+                cell.value = col_name
+                # Style d'en-tête
+                cell.font = Font(bold=True, color="FFFFFF")
+                cell.fill = PatternFill(start_color="4472C4", end_color="4472C4", fill_type="solid")
+                cell.alignment = Alignment(horizontal="center", vertical="center")
+            
+            # Données
+            for row_idx, result in enumerate(data, 2):
+                for col_idx, col_name in enumerate(columns, 1):
+                    value = result.get(col_name, '')
+                    cell = worksheet.cell(row=row_idx, column=col_idx)
+                    cell.value = value
+                    
+                    # Formatage selon le type
+                    if isinstance(value, (int, float)):
+                        cell.alignment = Alignment(horizontal="right")
+                    
+                    # Coloration selon la valeur pour certaines colonnes
+                    if col_name == "Signal":
+                        if value == "ACHAT":
+                            cell.font = Font(color="00B050")  # Vert
+                        elif value == "VENTE":
+                            cell.font = Font(color="FF0000")  # Rouge
+                    elif col_name in ["Fiabilite", "Rev. Growth (%)", "EBITDA Yield (%)"]:
+                        try:
+                            val = float(value) if value else 0
+                            if val > 0:
+                                cell.font = Font(color="00B050")  # Vert
+                            elif val < 0:
+                                cell.font = Font(color="FF0000")  # Rouge
+                        except:
+                            pass
+                    
+                    # Bordures légères
+                    thin_border = Border(
+                        left=Side(style='thin'),
+                        right=Side(style='thin'),
+                        top=Side(style='thin'),
+                        bottom=Side(style='thin')
+                    )
+                    cell.border = thin_border
+            
+            # Ajuster les largeurs de colonnes
+            for col_idx, col_name in enumerate(columns, 1):
+                max_length = max(
+                    len(str(col_name)),
+                    max(len(str(r.get(col_name, ''))) for r in data) if data else 0
+                )
+                adjusted_width = min(max_length + 2, 50)  # Max 50 pour lisibilité
+                worksheet.column_dimensions[openpyxl.utils.get_column_letter(col_idx)].width = adjusted_width
+            
+            # Geler la première ligne
+            worksheet.freeze_panes = "A2"
+            
+            # Sauvegarder
+            workbook.save(str(file_path))
+            
+            QMessageBox.information(self, "Succès", f"✅ Résultats exportés avec succès!\n\nDossier: Results\nFichier: {filename}\nColonnes: {len(columns)}")
+            print(f"✅ Résultats exportés en Excel: {file_path}")
+        except Exception as e:
+            QMessageBox.critical(self, "Erreur", f"Erreur lors de l'export Excel:\n{e}")
+            print(f"❌ Erreur export Excel: {e}")
+            import traceback
+            traceback.print_exc()
+
+    def export_results_pdf(self):
+        """Exporter tous les graphiques de l'analyse en PDF avec infos du tableau intégrées"""
+        try:
+            if not hasattr(self, 'current_results') or not self.current_results:
+                QMessageBox.warning(self, "Erreur", "Aucun résultat à exporter. Veuillez d'abord lancer une analyse.")
+                return
+            
+            # Construire les colonnes PDF directement depuis les clés des données
+            # (éviter _get_clean_columns_and_data qui utilise les headers UI avec \n)
+            all_data_keys = []
+            for result in self.current_results:
+                for key in result.keys():
+                    if key not in all_data_keys:
+                        all_data_keys.append(key)
+            
+            # Filtrer : garder uniquement les colonnes qui ont au moins 1 valeur non-vide
+            clean_columns = []
+            for col in all_data_keys:
+                for result in self.current_results:
+                    value = result.get(col, '')
+                    if value is not None and value != '' and value != 'N/A':
+                        try:
+                            if isinstance(value, (int, float)) and value != 0:
+                                clean_columns.append(col)
+                                break
+                            elif isinstance(value, str) and value not in ('0', '0.0', '0.00', ''):
+                                clean_columns.append(col)
+                                break
+                        except (ValueError, TypeError):
+                            clean_columns.append(col)
+                            break
+            
+            if not clean_columns:
+                QMessageBox.warning(self, "Erreur", "Aucune colonne avec données valides à exporter")
+                return
+            
+            print(f"📊 PDF Export: {len(all_data_keys)} clés données → {len(clean_columns)} colonnes retenues")
+            
+            # Importer le générateur de PDF
+            from pdf_generator import PDFReportGenerator
+            
+            # Créer le générateur et exporter
+            generator = PDFReportGenerator()
+            pdf_path = generator.export_pdf(self.plots_layout, self.current_results, clean_columns)
+            
+            if pdf_path:
+                # Extraire juste le nom du fichier pour le message
+                from pathlib import Path
+                filename = Path(pdf_path).name
+                QMessageBox.information(
+                    self, 
+                    "Succès", 
+                    f"✅ PDF créé avec succès!\n\n"
+                    f"Dossier: Results\nFichier: {filename}"
+                )
+            else:
+                QMessageBox.critical(self, "Erreur", "Impossible de créer le PDF")
+                
+        except Exception as e:
+            QMessageBox.critical(self, "Erreur", f"Erreur lors de la création du PDF:\n{e}")
+            print(f"❌ Erreur export PDF: {e}")
+            import traceback
+            traceback.print_exc()
+
+
+# Ensure the application only launches when run directly
 if __name__ == "__main__":
     app = QApplication(sys.argv)
     window = MainWindow()
-    #analyse_signaux_populaires(popular_symbols, mes_symbols, period=period, plot_all=True)
     window.setWindowTitle("Stock Analysis Tool")
     window.show()
     sys.exit(app.exec_())
 
     #TODO:
+    # - Ajouter un bouton pour exporter les resultats (CSV/Excel)
     # - Ajouter dates d'annonces / résultats dans les signaux (ex: earnings date)
     # - harmoniser l'affichage des plots (embedded + external)
     # - améliorer le threading / gestion des erreurs
     # - Ajouter le earning dates et tous les autres nouveaux criteres a l'analyse et au backtest
-    # - Ajouter un bouton pour exporter les resultats (CSV/Excel)
     # - Ajouter un bouton pour choisir si backup des resultats avant analyse ou pas
