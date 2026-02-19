@@ -34,7 +34,8 @@ try:
     from symbol_manager import (
         init_symbols_table, sync_txt_to_sqlite, get_symbols_by_list_type, get_all_sectors,
         get_all_cap_ranges, get_symbols_by_sector_and_cap, get_symbol_count,
-        get_cleaned_group_cache, save_cleaned_group_cache
+        get_cleaned_group_cache, save_cleaned_group_cache,
+        get_popular_symbols_by_sector, get_all_popular_symbols  # Pour logique hybride FIXE+ALÉATOIRE
     )
     SYMBOL_MANAGER_AVAILABLE = True
 except ImportError:
@@ -133,22 +134,18 @@ def classify_cap_range(symbol: str) -> str:
 # Nettoyage paresseux des groupes secteur × cap_range (complément + réduction)
 # ----------------------------
 def clean_sector_cap_groups(sector_cap_ranges: Dict[str, Dict[str, List[str]]],
-                            ttl_days: int = 100,
-                            min_symbols: int = 4,
-                            max_symbols: int = 12) -> Dict[str, Dict[str, List[str]]]:
-    """Nettoie et équilibre les groupes de symboles avec complément et réduction.
+                            ttl_days: int = 10,
+                            min_symbols: int = 6,
+                            max_symbols: int = 12,
+                            fixed_ratio: float = 0.6) -> Dict[str, Dict[str, List[str]]]:
+    """Nettoie et équilibre les groupes avec PARTIE FIXE (mes_symbols) + PARTIE ALÉATOIRE (popular).
 
-    Logique :
-    - Utilise get_cleaned_group_cache pour éviter de recalculer si disponible et non expiré (100 jours).
-    - Si groupe < 4 symboles : 
-      1. Complète en puisant dans les symboles populaires du même secteur
-      2. Si encore insuffisant, fusionne avec d'autres cap_range du même secteur
-      3. Si toujours insuffisant, fallback sur tous les populaires (fusion transsectorielle)
-    - Si groupe > 12 symboles : réduit à 12 (en gardant les meilleurs/premiers).
-    - Sauvegarde le résultat nettoyé via save_cleaned_group_cache.
+    Étapes :
+    1. Partie FIXE (mes_symbols) : 60% par défaut
+    2. Complément ALÉATOIRE (popular même secteur), puis fallback transsectoriel si besoin
+    3. Réduction aléatoire en gardant tous les symboles fixes
     """
-    from symbol_manager import get_popular_symbols_by_sector, get_all_popular_symbols
-    
+
     cleaned: Dict[str, Dict[str, List[str]]] = {}
     for sector, buckets in sector_cap_ranges.items():
         cleaned[sector] = {}
@@ -156,73 +153,77 @@ def clean_sector_cap_groups(sector_cap_ranges: Dict[str, Dict[str, List[str]]],
             if not syms:
                 cleaned[sector][cap] = []
                 continue
-            
-            # Essayer le cache en premier mais toujours revalider les bornes min/max
-            cached = None
+
+            # Cache désactivé (ttl_days=0) pour forcer la nouvelle logique à chaque appel
+
+            # ÉTAPE 1 : PARTIE FIXE - mes_symbols
+            personal_symbols: List[str] = []
             try:
-                cached = get_cleaned_group_cache(sector, cap, ttl_days)
-            except Exception:
-                cached = None
-            
-            # Nettoyer et valider la liste de base (cache si dispo, sinon syms bruts)
-            source_list = cached if cached is not None else syms
-            base = [s for s in source_list if isinstance(s, str) and s.strip()]
-            base = [s.strip().upper() for s in base]
-            base = list(dict.fromkeys(base))  # Déduplicate
-            
-            # COMPLÉMENT (3 étapes) : si trop petit, remplir intelligemment
+                personal_symbols = get_symbols_by_sector_and_cap(
+                    sector=sector,
+                    cap_range=cap,
+                    list_type='personal'
+                )
+                personal_symbols = [s.strip().upper() for s in personal_symbols if isinstance(s, str) and s.strip()]
+                personal_symbols = list(dict.fromkeys(personal_symbols))
+            except Exception as e:
+                print(f"      ⚠️ [{sector}][{cap}] Erreur get_symbols_by_sector_and_cap: {e}")
+
+            target_fixed_count = max(1, int(min_symbols * fixed_ratio))
+            fixed_core = personal_symbols[:target_fixed_count]
+
+            base = list(fixed_core)
+            exclude_set = set(base)
+            print(f"      🔒 [{sector}][{cap}] Partie FIXE: {len(fixed_core)} symboles de mes_symbols")
+
+            # ÉTAPE 2 : Complément ALÉATOIRE (popular)
             if len(base) < min_symbols:
                 needed = min_symbols - len(base)
-                exclude_set = set(base)
-                
-                # Étape 1 : Populaires du même secteur
                 try:
-                    popular_same_sector = get_popular_symbols_by_sector(sector, max_count=needed * 2, exclude_symbols=exclude_set)
+                    popular_same_sector = get_popular_symbols_by_sector(
+                        sector=sector,
+                        max_count=100,
+                        exclude_symbols=exclude_set
+                    )
+                    random.shuffle(popular_same_sector)
                     added = popular_same_sector[:needed]
                     base.extend(added)
                     exclude_set.update(added)
+                    print(f"      🎲 [{sector}][{cap}] Ajout ALÉATOIRE: {len(added)} symboles (même secteur)")
+                except Exception as e:
+                    print(f"      ⚠️ [{sector}][{cap}] Erreur popular_same_sector: {e}")
+
+                if len(base) < min_symbols:
                     needed = min_symbols - len(base)
-                except Exception:
-                    pass
-                
-                # Étape 2 : Fusion avec d'autres cap_range du même secteur si encore insuffisant
-                if needed > 0:
-                    for other_cap, other_syms in buckets.items():
-                        if other_cap == cap or needed <= 0:
-                            continue
-                        other_clean = [s.strip().upper() for s in other_syms if isinstance(s, str) and s.strip()]
-                        candidates = [s for s in other_clean if s not in exclude_set]
-                        added = candidates[:needed]
-                        base.extend(added)
-                        exclude_set.update(added)
-                        needed = min_symbols - len(base)
-                
-                # Étape 3 : Fallback sur TOUS les populaires (transsectoriel)
-                if needed > 0:
                     try:
-                        all_popular = get_all_popular_symbols(max_count=needed * 2, exclude_symbols=exclude_set)
+                        all_popular = get_all_popular_symbols(max_count=200, exclude_symbols=exclude_set)
+                        random.shuffle(all_popular)
                         added = all_popular[:needed]
                         base.extend(added)
                         exclude_set.update(added)
-                    except Exception:
-                        pass
-                
-                base = list(dict.fromkeys(base))  # Rédéduplicate final
-            
-            # RÉDUCTION : si trop grand, réduire à max_symbols
-            if len(base) > max_symbols:
-                base = base[:max_symbols]
-            
-            cleaned[sector][cap] = base
-            
-            # Sauvegarder le groupe nettoyé
-            try:
-                save_cleaned_group_cache(sector, cap, base)
-            except Exception:
-                pass
-    
-    return cleaned
+                        print(f"      🎲 [{sector}][{cap}] Fallback transsectoriel: {len(added)} symboles")
+                    except Exception as e:
+                        print(f"      ⚠️ [{sector}][{cap}] Erreur fallback transsectoriel: {e}")
 
+            # ÉTAPE 3 : Réduction (garde les fixes)
+            if len(base) > max_symbols:
+                extra_symbols = [s for s in base if s not in fixed_core]
+                random.shuffle(extra_symbols)
+                keep_count = max_symbols - len(fixed_core)
+                base = list(fixed_core) + extra_symbols[:keep_count]
+                print(f"      ✂️ [{sector}][{cap}] Réduit à {max_symbols} (garde {len(fixed_core)} fixes + {keep_count} aléatoires)")
+
+            base = list(dict.fromkeys(base))
+            cleaned[sector][cap] = base
+            print(f"      ✅ [{sector}][{cap}] Final: {len(base)} symboles ({len(fixed_core)} fixes + {len(base)-len(fixed_core)} aléatoires)")
+
+            if ttl_days > 0:
+                try:
+                    save_cleaned_group_cache(sector, cap, base)
+                except Exception:
+                    pass
+
+    return cleaned
 
 # ----
 # Top-level objective for SciPy DE (picklable on Windows)
@@ -280,7 +281,7 @@ class HybridOptimizer:
             self.bounds += price_bounds
 
         if self.use_fundamentals_features:
-            # Extra 11 params for fundamentals: 1 flag, 5 weights, 5 thresholds
+            # Extra 13 params for fundamentals: 1 flag, 6 weights, 6 thresholds
             fundamentals_bounds = [
                 (0.0, 1.0),    # use_fundamentals flag
                 (0.0, 3.0),    # a_rev_growth weight
@@ -292,7 +293,7 @@ class HybridOptimizer:
                 (-30.0, 30.0),  # th_eps_growth
                 (-30.0, 30.0),  # th_roe
                 (-10.0, 10.0),  # th_fcf_yield
-                (-10.0, 10.0),  # th_de_ratio (MANQUANT AVANT!)
+                (-10.0, 10.0),  # th_de_ratio
             ]
             self.bounds += fundamentals_bounds
         
@@ -384,7 +385,7 @@ class HybridOptimizer:
         # base = 14 (8 coeffs + 4 seuils + 2 globaux)
         # price features = +6
         fundamentals_index_offset = 20 if self.use_price_features else 14
-        if self.use_fundamentals_features and len(params) >= (fundamentals_index_offset + 11):  # 🔧 Changé de 10 à 11
+        if self.use_fundamentals_features and len(params) >= (fundamentals_index_offset + 11):  # ✅ MODIFIÉ: 11 params sans PEG
             use_fund = int(round(np.clip(params[fundamentals_index_offset], 0.0, 1.0)))
             a_rev = float(np.clip(round(params[fundamentals_index_offset + 1], self.precision), 0.0, 3.0))
             a_eps = float(np.clip(round(params[fundamentals_index_offset + 2], self.precision), 0.0, 3.0))
@@ -395,7 +396,7 @@ class HybridOptimizer:
             th_eps = float(np.clip(round(params[fundamentals_index_offset + 7], self.precision), -30.0, 30.0))
             th_roe = float(np.clip(round(params[fundamentals_index_offset + 8], self.precision), -30.0, 30.0))
             th_fcf = float(np.clip(round(params[fundamentals_index_offset + 9], self.precision), -10.0, 10.0))
-            th_de = float(np.clip(round(params[fundamentals_index_offset + 10], self.precision), -10.0, 10.0))  # 🔧 Nouveau: lire le 11ème param
+            th_de = float(np.clip(round(params[fundamentals_index_offset + 10], self.precision), -10.0, 10.0))
             fundamentals_extras = {
                 'use_fundamentals': use_fund,
                 'a_rev_growth': a_rev,
@@ -407,7 +408,7 @@ class HybridOptimizer:
                 'th_eps_growth': th_eps,
                 'th_roe': th_roe,
                 'th_fcf_yield': th_fcf,
-                'th_de_ratio': th_de,  # 🔧 Utiliser la vraie valeur au lieu de 0.0
+                'th_de_ratio': th_de,
             }
 
         total_gain = 0.0
@@ -1257,7 +1258,7 @@ def optimize_sector_coefficients_hybrid(
     if fundamentals_extras:
         print(f"   📊 Fundamentals: use={fundamentals_extras['use_fundamentals']}")
         print(f"      Poids: rev={fundamentals_extras['a_rev_growth']:.1f}, eps={fundamentals_extras['a_eps_growth']:.1f}, roe={fundamentals_extras['a_roe']:.1f}, fcf={fundamentals_extras['a_fcf_yield']:.1f}, de={fundamentals_extras['a_de_ratio']:.1f}")
-        print(f"      Seuils: rev={fundamentals_extras['th_rev_growth']:.1f}%, eps={fundamentals_extras['th_eps_growth']:.1f}%, roe={fundamentals_extras['th_roe']:.1f}%, fcf={fundamentals_extras['th_fcf_yield']:.1f}%")
+        print(f"      Seuils: rev={fundamentals_extras['th_rev_growth']:.1f}%, eps={fundamentals_extras['th_eps_growth']:.1f}%, roe={fundamentals_extras['th_roe']:.1f}%, fcf={fundamentals_extras['th_fcf_yield']:.1f}%, de={fundamentals_extras['th_de_ratio']:.1f}")
 
     # Sauvegarde des résultats - agrégé en un tuple unique
     all_thresholds = best_feature_thresholds + (best_seuil_achat, best_seuil_vente)
@@ -1482,10 +1483,10 @@ if __name__ == "__main__":
         
         print(f"      Total secteurs: {len(sector_symbol_counts)}")
 
-        # Nettoyage paresseux avec cache
-        print("\n   🧹 Nettoyage des groupes avec cache (complément + réduction)...")
-        sector_cap_ranges = clean_sector_cap_groups(sector_cap_ranges, ttl_days=100, min_symbols=4, max_symbols=12)
-    
+        # Nettoyage des groupes (complément + réduction)
+        print("\n   🧹 Nettoyage des groupes (complément + réduction)...")
+        sector_cap_ranges = clean_sector_cap_groups(sector_cap_ranges, ttl_days=0, min_symbols=6, max_symbols=15, fixed_ratio=0.6)
+
     else:
         print("\n⚠️ SQLite non disponible, utilisation de la méthode classique...")
         # Fallback: méthode originale
@@ -1526,9 +1527,9 @@ if __name__ == "__main__":
                 if syms:
                     print(f"{sector} [{cap_range}]: {len(syms)} symboles")
 
-        # Nettoyage paresseux avec cache sur la méthode fallback
-        print("\n   🧹 Nettoyage des groupes avec cache (complément + réduction)...")
-        sector_cap_ranges = clean_sector_cap_groups(sector_cap_ranges, ttl_days=100, min_symbols=4, max_symbols=12)
+        # Nettoyage des groupes (complément + réduction)
+        print("\n   🧹 Nettoyage des groupes (complément + réduction)...")
+        sector_cap_ranges = clean_sector_cap_groups(sector_cap_ranges, ttl_days=0, min_symbols=6, max_symbols=15, fixed_ratio=0.6)
 
     # Paramètres d'optimisation
     print("\n3️⃣  Configuration de l'optimisation:")
