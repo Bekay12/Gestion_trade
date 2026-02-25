@@ -1,0 +1,37 @@
+{
+  "period": "derniers_7_jours",
+  "start_date": "20260225",
+  "end_date": "20260225",
+  "total_analyses": 1,
+  "unique_dates": 1,
+  "total_results_collected": 4,
+  "unique_symbols": 4,
+  "signal_distribution": {
+    "ACHAT": 2,
+    "VENTE": 1,
+    "NEUTRE": 1,
+    "TOTAL": 4
+  },
+  "top_performers": [
+    {
+      "Symbol": "MSFT",
+      "Score": 9.1,
+      "Signal": "ACHAT"
+    },
+    {
+      "Symbol": "AAPL",
+      "Score": 8.7,
+      "Signal": "ACHAT"
+    },
+    {
+      "Symbol": "AMZN",
+      "Score": 6.8,
+      "Signal": "NEUTRE"
+    },
+    {
+      "Symbol": "GOOGL",
+      "Score": 5.2,
+      "Signal": "VENTE"
+    }
+  ]
+}

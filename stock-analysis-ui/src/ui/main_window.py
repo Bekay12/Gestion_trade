@@ -432,8 +432,11 @@ class MainWindow(QMainWindow):
         self.random_refresh_btn = QPushButton("🔄 Nouveau")
         self.random_refresh_btn.clicked.connect(self.refresh_random_symbols)
         self.random_show_btn = QPushButton("Afficher")
+        self.random_all_btn = QPushButton("📋 Tout sélect.")
+        self.random_all_btn.clicked.connect(lambda: self._select_all_items(self.random_list))
         random_btns.addWidget(self.random_refresh_btn)
         random_btns.addWidget(self.random_show_btn)
+        random_btns.addWidget(self.random_all_btn)
         random_layout.addLayout(random_btns)
         
         lists_container.addLayout(random_layout)
@@ -456,7 +459,10 @@ class MainWindow(QMainWindow):
         recent_btns = QVBoxLayout()
         recent_btns.setSpacing(2)
         self.recent_show_btn = QPushButton("Afficher")
+        self.recent_all_btn = QPushButton("📋 Tout sélect.")
+        self.recent_all_btn.clicked.connect(lambda: self._select_all_items(self.recent_list))
         recent_btns.addWidget(self.recent_show_btn)
+        recent_btns.addWidget(self.recent_all_btn)
         recent_layout.addLayout(recent_btns)
         
         lists_container.addLayout(recent_layout)
@@ -522,6 +528,12 @@ class MainWindow(QMainWindow):
         self.offline_mode_btn.clicked.connect(self.toggle_offline_mode)
         self.offline_mode_btn.setStyleSheet("QPushButton { background-color: #4CAF50; color: white; font-weight: bold; }")
         top_controls.addWidget(self.offline_mode_btn)
+        
+        # 💾 Bouton pour sauvegarder les graphiques en PDF
+        self.save_pdf_btn = QPushButton("💾 Sauvegarder (PDF)")
+        self.save_pdf_btn.setToolTip("Sauvegarder tous les graphiques de l'analyse en PDF")
+        self.save_pdf_btn.clicked.connect(self.export_results_pdf)
+        top_controls.addWidget(self.save_pdf_btn)
 
         self.layout.addLayout(top_controls)
 
@@ -566,7 +578,20 @@ class MainWindow(QMainWindow):
         'Consensus'
         ]
         # Add table to Results tab, not Analyze tab
+        # 🔧 Boutons d'export dans l'onglet Résultats
+        export_buttons_layout = QHBoxLayout()
+        export_buttons_layout.addStretch()
+        self.export_csv_btn = QPushButton("📥 Exporter (CSV)")
+        self.export_csv_btn.setToolTip("Exporter les résultats en fichier CSV")
+        self.export_csv_btn.clicked.connect(self.export_results_csv)
+        self.export_excel_btn = QPushButton("📊 Exporter (Excel)")
+        self.export_excel_btn.setToolTip("Exporter les résultats en fichier Excel")
+        self.export_excel_btn.clicked.connect(self.export_results_excel)
+        export_buttons_layout.addWidget(self.export_csv_btn)
+        export_buttons_layout.addWidget(self.export_excel_btn)
+        
         self.results_layout.addWidget(QLabel("📋 Résultats détaillés de l'analyse"))
+        self.results_layout.addLayout(export_buttons_layout)
         self.results_layout.addWidget(self.merged_table)
 
         self.merged_table.setColumnCount(len(merged_columns))
@@ -3474,6 +3499,268 @@ class MainWindow(QMainWindow):
             self.optim_window.show()
         except Exception as e:
             QMessageBox.critical(self, "Erreur", f"Impossible d'ouvrir la fenêtre d'optimisation: {e}")
+
+    def _select_all_items(self, list_widget):
+        """Sélectionner tous les éléments d'une QListWidget"""
+        list_widget.selectAll()
+
+    def _get_clean_columns_and_data(self):
+        """Filtrer les colonnes vides ou contenant uniquement des 0"""
+        if not self.current_results:
+            return [], []
+        
+        # Récupérer toutes les colonnes
+        all_columns = []
+        for col in range(self.merged_table.columnCount()):
+            header = self.merged_table.horizontalHeaderItem(col)
+            if header:
+                all_columns.append(header.text())
+        
+        if not all_columns:
+            all_columns = list(self.current_results[0].keys())
+        
+        # Identifier les colonnes à conserver
+        valid_columns = []
+        for col in all_columns:
+            has_valid_data = False
+            for result in self.current_results:
+                value = result.get(col, '')
+                # Vérifier si la colonne a des données non vides et pas 0
+                if value and value != '' and value != 0 and value != '0' and value != 'N/A':
+                    try:
+                        float_val = float(value) if isinstance(value, str) else value
+                        if float_val != 0:
+                            has_valid_data = True
+                            break
+                    except (ValueError, TypeError):
+                        if value not in ('', 'N/A', 0, '0'):
+                            has_valid_data = True
+                            break
+            
+            if has_valid_data:
+                valid_columns.append(col)
+        
+        print(f"📊 Colonnes filtrées: {len(all_columns)} → {len(valid_columns)} (suppression de {len(all_columns) - len(valid_columns)} colonnes vides/zéro)")
+        return valid_columns, self.current_results
+
+    def export_results_csv(self):
+        """Exporter les résultats actuels en fichier CSV avec auto-save dans Results"""
+        if not hasattr(self, 'current_results') or not self.current_results:
+            QMessageBox.warning(self, "Erreur", "Aucun résultat à exporter. Veuillez d'abord lancer une analyse.")
+            return
+        
+        import csv
+        from datetime import datetime
+        from pathlib import Path
+        
+        try:
+            # Nettoyer les colonnes vides/zéro
+            clean_columns, data = self._get_clean_columns_and_data()
+            
+            if not clean_columns:
+                QMessageBox.warning(self, "Erreur", "Aucune colonne avec données valides à exporter")
+                return
+            
+            # Créer le dossier Results avec chemins relatifs
+            results_dir = Path(__file__).parent.parent / "Results"
+            results_dir.mkdir(parents=True, exist_ok=True)
+            
+            # Générer le nom du fichier avec timestamp
+            filename = f"resultats_analyse_{datetime.now().strftime('%Y%m%d_%H%M%S')}.csv"
+            file_path = results_dir / filename
+            
+            with open(file_path, 'w', newline='', encoding='utf-8') as csvfile:
+                writer = csv.DictWriter(csvfile, fieldnames=clean_columns)
+                writer.writeheader()
+                
+                for result in data:
+                    # Créer une ligne en prenant les valeurs existantes
+                    row = {}
+                    for field in clean_columns:
+                        row[field] = result.get(field, '')
+                    writer.writerow(row)
+            
+            QMessageBox.information(self, "Succès", f"✅ Résultats exportés avec succès!\n\nDossier: Results\nFichier: {filename}\nColonnes: {len(clean_columns)}")
+            print(f"✅ Résultats exportés en CSV: {file_path}")
+        except Exception as e:
+            QMessageBox.critical(self, "Erreur", f"Erreur lors de l'export CSV:\n{e}")
+            print(f"❌ Erreur export CSV: {e}")
+            import traceback
+            traceback.print_exc()
+
+    def export_results_excel(self):
+        """Exporter les résultats actuels en fichier Excel avec auto-save dans Results"""
+        if not hasattr(self, 'current_results') or not self.current_results:
+            QMessageBox.warning(self, "Erreur", "Aucun résultat à exporter. Veuillez d'abord lancer une analyse.")
+            return
+        
+        from datetime import datetime
+        from pathlib import Path
+        
+        try:
+            # Vérifier si openpyxl est disponible
+            try:
+                import openpyxl
+                from openpyxl.styles import Font, PatternFill, Alignment, Border, Side
+            except ImportError:
+                QMessageBox.warning(
+                    self,
+                    "Bibliothèque manquante",
+                    "openpyxl n'est pas installé.\n\nVeuillez installer avec:\npip install openpyxl\n\nOu utiliser l'export CSV à la place."
+                )
+                return
+            
+            # Créer le dossier Results avec chemins relatifs
+            results_dir = Path(__file__).parent.parent / "Results"
+            results_dir.mkdir(parents=True, exist_ok=True)
+            
+            # Générer le nom du fichier avec timestamp
+            filename = f"resultats_analyse_{datetime.now().strftime('%Y%m%d_%H%M%S')}.xlsx"
+            file_path = results_dir / filename
+            
+            # Nettoyer les colonnes vides/zéro
+            columns, data = self._get_clean_columns_and_data()
+            
+            if not columns:
+                QMessageBox.warning(self, "Erreur", "Aucune colonne avec données valides à exporter")
+                return
+            
+            # Créer un classeur
+            workbook = openpyxl.Workbook()
+            worksheet = workbook.active
+            worksheet.title = "Résultats"
+            
+            # En-têtes
+            for col_idx, col_name in enumerate(columns, 1):
+                cell = worksheet.cell(row=1, column=col_idx)
+                cell.value = col_name
+                # Style d'en-tête
+                cell.font = Font(bold=True, color="FFFFFF")
+                cell.fill = PatternFill(start_color="4472C4", end_color="4472C4", fill_type="solid")
+                cell.alignment = Alignment(horizontal="center", vertical="center")
+            
+            # Données
+            for row_idx, result in enumerate(data, 2):
+                for col_idx, col_name in enumerate(columns, 1):
+                    value = result.get(col_name, '')
+                    cell = worksheet.cell(row=row_idx, column=col_idx)
+                    cell.value = value
+                    
+                    # Formatage selon le type
+                    if isinstance(value, (int, float)):
+                        cell.alignment = Alignment(horizontal="right")
+                    
+                    # Coloration selon la valeur pour certaines colonnes
+                    if col_name == "Signal":
+                        if value == "ACHAT":
+                            cell.font = Font(color="00B050")  # Vert
+                        elif value == "VENTE":
+                            cell.font = Font(color="FF0000")  # Rouge
+                    elif col_name in ["Fiabilite", "Rev. Growth (%)", "EBITDA Yield (%)"]:
+                        try:
+                            val = float(value) if value else 0
+                            if val > 0:
+                                cell.font = Font(color="00B050")  # Vert
+                            elif val < 0:
+                                cell.font = Font(color="FF0000")  # Rouge
+                        except:
+                            pass
+                    
+                    # Bordures légères
+                    thin_border = Border(
+                        left=Side(style='thin'),
+                        right=Side(style='thin'),
+                        top=Side(style='thin'),
+                        bottom=Side(style='thin')
+                    )
+                    cell.border = thin_border
+            
+            # Ajuster les largeurs de colonnes
+            for col_idx, col_name in enumerate(columns, 1):
+                max_length = max(
+                    len(str(col_name)),
+                    max(len(str(r.get(col_name, ''))) for r in data) if data else 0
+                )
+                adjusted_width = min(max_length + 2, 50)  # Max 50 pour lisibilité
+                worksheet.column_dimensions[openpyxl.utils.get_column_letter(col_idx)].width = adjusted_width
+            
+            # Geler la première ligne
+            worksheet.freeze_panes = "A2"
+            
+            # Sauvegarder
+            workbook.save(str(file_path))
+            
+            QMessageBox.information(self, "Succès", f"✅ Résultats exportés avec succès!\n\nDossier: Results\nFichier: {filename}\nColonnes: {len(columns)}")
+            print(f"✅ Résultats exportés en Excel: {file_path}")
+        except Exception as e:
+            QMessageBox.critical(self, "Erreur", f"Erreur lors de l'export Excel:\n{e}")
+            print(f"❌ Erreur export Excel: {e}")
+            import traceback
+            traceback.print_exc()
+
+    def export_results_pdf(self):
+        """Exporter tous les graphiques de l'analyse en PDF avec infos du tableau intégrées"""
+        try:
+            if not hasattr(self, 'current_results') or not self.current_results:
+                QMessageBox.warning(self, "Erreur", "Aucun résultat à exporter. Veuillez d'abord lancer une analyse.")
+                return
+            
+            # Construire les colonnes PDF directement depuis les clés des données
+            # (éviter _get_clean_columns_and_data qui utilise les headers UI avec \n)
+            all_data_keys = []
+            for result in self.current_results:
+                for key in result.keys():
+                    if key not in all_data_keys:
+                        all_data_keys.append(key)
+            
+            # Filtrer : garder uniquement les colonnes qui ont au moins 1 valeur non-vide
+            clean_columns = []
+            for col in all_data_keys:
+                for result in self.current_results:
+                    value = result.get(col, '')
+                    if value is not None and value != '' and value != 'N/A':
+                        try:
+                            if isinstance(value, (int, float)) and value != 0:
+                                clean_columns.append(col)
+                                break
+                            elif isinstance(value, str) and value not in ('0', '0.0', '0.00', ''):
+                                clean_columns.append(col)
+                                break
+                        except (ValueError, TypeError):
+                            clean_columns.append(col)
+                            break
+            
+            if not clean_columns:
+                QMessageBox.warning(self, "Erreur", "Aucune colonne avec données valides à exporter")
+                return
+            
+            print(f"📊 PDF Export: {len(all_data_keys)} clés données → {len(clean_columns)} colonnes retenues")
+            
+            # Importer le générateur de PDF
+            from pdf_generator import PDFReportGenerator
+            
+            # Créer le générateur et exporter
+            generator = PDFReportGenerator()
+            pdf_path = generator.export_pdf(self.plots_layout, self.current_results, clean_columns)
+            
+            if pdf_path:
+                # Extraire juste le nom du fichier pour le message
+                from pathlib import Path
+                filename = Path(pdf_path).name
+                QMessageBox.information(
+                    self, 
+                    "Succès", 
+                    f"✅ PDF créé avec succès!\n\n"
+                    f"Dossier: Results\nFichier: {filename}"
+                )
+            else:
+                QMessageBox.critical(self, "Erreur", "Impossible de créer le PDF")
+                
+        except Exception as e:
+            QMessageBox.critical(self, "Erreur", f"Erreur lors de la création du PDF:\n{e}")
+            print(f"❌ Erreur export PDF: {e}")
+            import traceback
+            traceback.print_exc()
 
 
 # Ensure the application only launches when run directly
