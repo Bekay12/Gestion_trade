@@ -246,6 +246,30 @@ def get_symbols_by_list_type(list_type: str = 'popular', active_only: bool = Tru
     
     return symbols
 
+def get_recent_symbols(limit: int = 30, active_only: bool = True) -> List[str]:
+    """Récupère les N derniers symboles ajoutés à la base de données, triés par date d'ajout (plus récents en premier)."""
+    init_symbols_table()
+    conn = sqlite3.connect(DB_PATH)
+    cursor = conn.cursor()
+
+    # Récupérer les symboles en triant par added_date DESC (plus récents en premier)
+    query = '''
+        SELECT DISTINCT s.symbol
+        FROM symbols s
+        WHERE 1=1
+    '''
+
+    if active_only:
+        query += ' AND s.is_active = 1'
+
+    query += ' ORDER BY s.added_date DESC LIMIT ?'
+
+    cursor.execute(query, (limit,))
+    symbols = [row[0] for row in cursor.fetchall()]
+    conn.close()
+
+    return symbols
+
 def auto_add_to_popular(symbols: List[str]) -> int:
     """
     Ajoute automatiquement des symboles à la liste 'popular' s'ils n'y sont pas déjà.

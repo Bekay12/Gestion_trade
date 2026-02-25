@@ -25,7 +25,7 @@ import qsi
 from trading_c_acceleration.qsi_optimized import extract_best_parameters
 
 try:
-    from symbol_manager import get_symbols_by_list_type
+    from symbol_manager import get_symbols_by_list_type, get_recent_symbols
     SYMBOL_MANAGER_AVAILABLE = True
 except ImportError:
     SYMBOL_MANAGER_AVAILABLE = False
@@ -35,12 +35,13 @@ class AnalysisThread(QThread):
     finished = pyqtSignal(dict)
     error = pyqtSignal(str)
     progress = pyqtSignal(str)
-    def __init__(self, symbols, mes_symbols, period="12mo"):
+    def __init__(self, symbols, mes_symbols, period="12mo", analysis_id=0):
         super().__init__()
         self.symbols = symbols
         self.mes_symbols = mes_symbols
         self.period = period
         self._stop_requested = False
+        self.analysis_id = analysis_id  # 🔧 Identifiant d'analyse
     def run(self):
         try:
             import builtins
@@ -75,10 +76,14 @@ class AnalysisThread(QThread):
                     verbose=True,
                     taux_reussite_min=fiab_threshold
                 )
-                self.finished.emit(result)
+                if not self._stop_requested:
+                    # 🔧 Ajouter l'identifiant d'analyse au résultat
+                    result['_analysis_id'] = self.analysis_id
+                    self.finished.emit(result)
                 break  # ou return
         except Exception as e:
-            self.error.emit(str(e))
+            if not self._stop_requested:
+                self.error.emit(str(e))
         finally:
             try:
                 builtins.print = original_print
@@ -94,11 +99,13 @@ class DownloadThread(QThread):
     error = pyqtSignal(str)
     progress = pyqtSignal(str)
 
-    def __init__(self, symbols, period="12mo", do_backtest=False):
+    def __init__(self, symbols, period="12mo", do_backtest=False, analysis_id=0):
         super().__init__()
         self.symbols = symbols
         self.period = period
         self.do_backtest = do_backtest
+        self._stop_requested = False
+        self.analysis_id = analysis_id  # 🔧 Identifiant d'analyse
 
     def run(self):
         try:
@@ -115,12 +122,21 @@ class DownloadThread(QThread):
             builtins.print = custom_print
 
             try:
+                if self._stop_requested:
+                    return
+                    
                 data = download_stock_data(self.symbols, self.period)
                 result = { 'data': data }
+
+                if self._stop_requested:
+                    return
 
                 if self.do_backtest and data:
                     backtests = []
                     for symbol, stock_data in data.items():
+                        if self._stop_requested:
+                            return
+                            
                         try:
                             prices = stock_data['Close']
                             volumes = stock_data['Volume']
@@ -164,12 +180,20 @@ class DownloadThread(QThread):
 
                     result['backtest_results'] = backtests
 
-                self.finished.emit(result)
+                if not self._stop_requested:
+                    # 🔧 Ajouter l'identifiant d'analyse au résultat
+                    result['_analysis_id'] = self.analysis_id
+                    self.finished.emit(result)
             finally:
                 builtins.print = original_print
 
         except Exception as e:
-            self.error.emit(str(e))
+            if not self._stop_requested:
+                self.error.emit(str(e))
+
+    def stop(self):
+        """Stop the thread gracefully"""
+        self._stop_requested = True
 
 class LogCapture:
     """Captures stdout/stderr and writes both to QTextEdit and to original stdout/stderr.
@@ -282,6 +306,7 @@ class MainWindow(QMainWindow):
         self.setup_ui()
 
         self.current_results = []
+        self._analysis_id = 0  # 🔧 Identifiant unique pour chaque analyse
     
     def add_log(self, message: str):
         """Ajouter un message à l'onglet Logs (sans redirection de stdout)."""
@@ -948,6 +973,34 @@ class MainWindow(QMainWindow):
             QMessageBox.warning(self, "Erreur", "Aucun symbole disponible dans 'Mes symboles'")
             return
         
+        # 🔧 Incrémenter l'ID d'analyse et stopper les threads précédents
+        self._analysis_id += 1
+        current_id = self._analysis_id
+        print(f"\n🚀 Nouvelle analyse populaire lancée #ID={current_id}")
+        
+        # 🔧 Réinitialiser les données complètement
+        self.current_results = []
+        if hasattr(self, 'filtered_results'):
+            delattr(self, 'filtered_results')
+        if hasattr(self, 'backtest_map'):
+            delattr(self, 'backtest_map')
+        
+        # Stop any running analysis thread before starting a new one
+        if hasattr(self, 'analysis_thread') and self.analysis_thread is not None:
+            try:
+                # Disconnect signals to prevent old thread from updating UI
+                self.analysis_thread.finished.disconnect()
+                self.analysis_thread.error.disconnect()
+                self.analysis_thread.progress.disconnect()
+            except Exception:
+                pass
+            
+            # Stop the thread
+            if self.analysis_thread.isRunning():
+                self.analysis_thread.stop()
+                self.analysis_thread.wait(2000)  # Wait max 2 seconds
+                print(f"⚠️ Ancien analysis thread arrêté")
+        
         # Disable buttons during analysis
         self.analyze_button.setEnabled(False)
         self.backtest_button.setEnabled(False)
@@ -962,11 +1015,12 @@ class MainWindow(QMainWindow):
         self.progress.setMinimumWidth(400)
         
         # Lancer l'analyse+backtest dans un thread (mes_symbols en premier arg, [] en deuxième)
-        self.analysis_thread = AnalysisThread(mes_symbols, [], period)
+        self.analysis_thread = AnalysisThread(mes_symbols, [], period, analysis_id=current_id)
         self.analysis_thread.finished.connect(self.on_analysis_complete)
         self.analysis_thread.error.connect(self.on_analysis_error)
         self.analysis_thread.progress.connect(self.on_analysis_progress)
         self.analysis_thread.start()
+        print(f"📊 Analysis thread démarré avec ID={current_id}")
 
     def clear_plots(self):
         # remove all widgets from plots_layout
@@ -984,6 +1038,12 @@ class MainWindow(QMainWindow):
         gc.collect()
 
     def on_download_complete(self, result):
+        # 🔧 Vérifier que ce résultat appartient à l'analyse actuelle
+        received_id = result.get('_analysis_id', 0) if isinstance(result, dict) else 0
+        if received_id != self._analysis_id:
+            print(f"⚠️ Résultat ignoré: ID={received_id}, ID actuel={self._analysis_id}")
+            return
+        
         # Called when the DownloadThread finishes
         # Re-enable buttons
         self.analyze_button.setEnabled(True)
@@ -992,6 +1052,10 @@ class MainWindow(QMainWindow):
 
         if self.progress:
             self.progress.close()
+        
+        # 🔧 Supprimer filtered_results si existant pour forcer l'utilisation de current_results
+        if hasattr(self, 'filtered_results'):
+            delattr(self, 'filtered_results')
 
         data = result.get('data', {}) if isinstance(result, dict) else {}
         backtests = result.get('backtest_results', []) if isinstance(result, dict) else []
@@ -1348,6 +1412,12 @@ class MainWindow(QMainWindow):
             QApplication.processEvents()
 
     def on_analysis_complete(self, result):
+        # 🔧 Vérifier que ce résultat appartient à l'analyse actuelle
+        received_id = result.get('_analysis_id', 0) if isinstance(result, dict) else 0
+        if received_id != self._analysis_id:
+            print(f"⚠️ Résultat ignoré: ID={received_id}, ID actuel={self._analysis_id}")
+            return
+        
         # Re-enable all buttons
         self.analyze_button.setEnabled(True)
         self.backtest_button.setEnabled(True)
@@ -1355,6 +1425,10 @@ class MainWindow(QMainWindow):
         
         if self.progress:
             self.progress.close()
+        
+        # 🔧 Supprimer filtered_results si existant pour forcer l'utilisation de current_results
+        if hasattr(self, 'filtered_results'):
+            delattr(self, 'filtered_results')
         
         # Stocker les résultats
         self.current_results = result.get('signals', [])
@@ -1583,6 +1657,34 @@ class MainWindow(QMainWindow):
             QMessageBox.warning(self, "Erreur", "Veuillez entrer une période d'analyse valide (ex: 12mo)")
             return
 
+        # 🔧 Incrémenter l'ID d'analyse et stopper les threads précédents
+        self._analysis_id += 1
+        current_id = self._analysis_id
+        print(f"\n🚀 Nouvelle analyse lancée #ID={current_id}")
+        
+        # 🔧 Réinitialiser les données complètement
+        self.current_results = []
+        if hasattr(self, 'filtered_results'):
+            delattr(self, 'filtered_results')
+        if hasattr(self, 'backtest_map'):
+            delattr(self, 'backtest_map')
+        
+        # Stop any running download thread before starting a new one
+        if hasattr(self, 'download_thread') and self.download_thread is not None:
+            try:
+                # Disconnect signals to prevent old thread from updating UI
+                self.download_thread.finished.disconnect()
+                self.download_thread.error.disconnect()
+                self.download_thread.progress.disconnect()
+            except Exception:
+                pass
+            
+            # Stop the thread
+            if self.download_thread.isRunning():
+                self.download_thread.stop()
+                self.download_thread.wait(2000)  # Wait max 2 seconds
+                print(f"⚠️ Ancien download thread arrêté")
+
         # Disable buttons during analysis
         self.analyze_button.setEnabled(False)
         self.backtest_button.setEnabled(False)
@@ -1597,11 +1699,12 @@ class MainWindow(QMainWindow):
         self.progress.setMinimumWidth(400)
 
         # Launch download thread (no backtest)
-        self.download_thread = DownloadThread(symbols, period, do_backtest=False)
+        self.download_thread = DownloadThread(symbols, period, do_backtest=False, analysis_id=current_id)
         self.download_thread.finished.connect(self.on_download_complete)
         self.download_thread.error.connect(self.on_analysis_error)
         self.download_thread.progress.connect(self.on_analysis_progress)
         self.download_thread.start()
+        print(f"📥 Download thread démarré avec ID={current_id}")
 
     def analyse_and_backtest(self):
         # For consistency with 'Analyser mouvements fiables', run the full
@@ -1624,6 +1727,34 @@ class MainWindow(QMainWindow):
             QMessageBox.warning(self, "Erreur", "Veuillez entrer une période d'analyse valide (ex: 12mo)")
             return
 
+        # 🔧 Incrémenter l'ID d'analyse et stopper les threads précédents
+        self._analysis_id += 1
+        current_id = self._analysis_id
+        print(f"\n🚀 Nouvelle analyse backtest lancée #ID={current_id}")
+        
+        # 🔧 Réinitialiser les données complètement
+        self.current_results = []
+        if hasattr(self, 'filtered_results'):
+            delattr(self, 'filtered_results')
+        if hasattr(self, 'backtest_map'):
+            delattr(self, 'backtest_map')
+        
+        # Stop any running analysis thread before starting a new one
+        if hasattr(self, 'analysis_thread') and self.analysis_thread is not None:
+            try:
+                # Disconnect signals to prevent old thread from updating UI
+                self.analysis_thread.finished.disconnect()
+                self.analysis_thread.error.disconnect()
+                self.analysis_thread.progress.disconnect()
+            except Exception:
+                pass
+            
+            # Stop the thread
+            if self.analysis_thread.isRunning():
+                self.analysis_thread.stop()
+                self.analysis_thread.wait(2000)  # Wait max 2 seconds
+                print(f"⚠️ Ancien analysis thread arrêté")
+
         # Disable buttons during analysis
         self.analyze_button.setEnabled(False)
         self.backtest_button.setEnabled(False)
@@ -1644,11 +1775,12 @@ class MainWindow(QMainWindow):
         selected_pop = symbols
         selected_mes = []
 
-        self.analysis_thread = AnalysisThread(selected_pop, selected_mes, period)
+        self.analysis_thread = AnalysisThread(selected_pop, selected_mes, period, analysis_id=current_id)
         self.analysis_thread.finished.connect(self.on_analysis_complete)
         self.analysis_thread.error.connect(self.on_analysis_error)
         self.analysis_thread.progress.connect(self.on_analysis_progress)
         self.analysis_thread.start()
+        print(f"📊 Analysis backtest thread démarré avec ID={current_id}")
 
     def update_results_table(self):
         """Fill the merged table (`self.merged_table`) with current results plus backtest metrics.
@@ -1657,7 +1789,8 @@ class MainWindow(QMainWindow):
             return
 
         self.merged_table.setRowCount(0)
-        raw_results = getattr(self, 'filtered_results', self.current_results)
+        # 🔧 Toujours utiliser current_results (filtered_results est supprimé à chaque nouvelle analyse)
+        raw_results = self.current_results
         
         # Appliquer le filtre de fiabilité minimum si un seuil est défini
         min_fiab_threshold = self.fiab_threshold_spin.value() if hasattr(self, 'fiab_threshold_spin') else 30
@@ -1790,7 +1923,7 @@ class MainWindow(QMainWindow):
                 
                 # Récupérer les seuils optimisés pour domaine_cap
                 seuil_achat = 4.2  # Défaut
-                seuil_vente = 4.2  # Défaut
+                seuil_vente = -0.5  # Défaut (négatif pour les seuils de vente)
                 try:
                     best_params_all = getattr(self, 'best_parameters', {})
                     param_key = None
@@ -1802,23 +1935,28 @@ class MainWindow(QMainWindow):
                     # Sinon fallback sur domaine seul
                     if not param_key and domaine in best_params_all:
                         param_key = domaine
-                    
+
                     if param_key and param_key in best_params_all:
                         params = best_params_all[param_key]
                         if len(params) > 2 and params[2]:
                             globals_th = params[2]
                             if isinstance(globals_th, (tuple, list)) and len(globals_th) >= 2:
-                                seuil_achat = float(globals_th[0])
-                                seuil_vente = float(globals_th[1])
-                except Exception:
+                                seuil_achat = float(globals_th[0]) if globals_th[0] else 4.2
+                                seuil_vente = float(globals_th[1]) if globals_th[1] else -0.5
+                except Exception as e:
+                    print(f"⚠️ Erreur lecture seuils pour {sym}: {e}")
                     pass
-                
+
                 # Calculer le ratio selon le signe du score
-                if score_val > 0:
-                    ratio = score_val / seuil_achat if seuil_achat != 0 else 0.0
-                elif score_val < 0:
-                    ratio = score_val / seuil_vente if seuil_vente != 0 else 0.0
-                else:
+                try:
+                    if score_val > 0:
+                        ratio = score_val / seuil_achat if seuil_achat and seuil_achat != 0 else 0.0
+                    elif score_val < 0:
+                        ratio = score_val / seuil_vente if seuil_vente and seuil_vente != 0 else 0.0
+                    else:
+                        ratio = 0.0
+                except Exception as e:
+                    print(f"⚠️ Erreur calcul ratio pour {sym}: {e}")
                     ratio = 0.0
                 
                 item = QTableWidgetItem(f"{ratio:.2f}")
@@ -1834,54 +1972,65 @@ class MainWindow(QMainWindow):
                     item.setForeground(QColor(255, 0, 0))  # Rouge : mauvais
                 self.merged_table.setItem(row, 9, item)
                 
-                
                 # Fiabilite and NbTrades (from signal or backtest)
-                fiab = signal.get('Fiabilite')
-                nb_trades = signal.get('NbTrades')
-                # if missing, check backtest map
-                bt = bt_map.get(sym, {})
-                if (fiab is None or fiab == 'N/A') and bt:
-                    fiab = bt.get('taux_reussite', 'N/A')
-                if (nb_trades is None or nb_trades == 0) and bt:
-                    nb_trades = bt.get('trades', 0)
+                try:
+                    fiab = signal.get('Fiabilite')
+                    nb_trades = signal.get('NbTrades')
+                    # if missing, check backtest map
+                    bt = bt_map.get(sym, {})
+                    if (fiab is None or fiab == 'N/A') and bt:
+                        fiab = bt.get('taux_reussite', 'N/A')
+                    if (nb_trades is None or nb_trades == 0) and bt:
+                        nb_trades = bt.get('trades', 0)
 
-                # Fiabilité display
-                if fiab is None or fiab == 'N/A':
-                    fiab_text = 'N/A'
-                    fiab_val = None
-                else:
-                    try:
-                        fiab_val = float(fiab)
-                        fiab_text = f"{fiab_val:.0f}%"
-                    except Exception:
-                        fiab_text = str(fiab)
+                    # Fiabilité display
+                    if fiab is None or fiab == 'N/A':
+                        fiab_text = 'N/A'
                         fiab_val = None
-
-                item = QTableWidgetItem(fiab_text)
-                if fiab_val is not None:
-                    item.setData(Qt.EditRole, fiab_val)
-                    # Harmoniser : >75% excellent, 50-75% bon, 30-50% moyen, <30% mauvais
-                    if fiab_val >= 75:
-                        item.setForeground(QColor(0, 128, 0))  # Vert foncé : excellent
-                    elif fiab_val >= 50:
-                        item.setForeground(QColor(34, 139, 34))  # Vert : bon
-                    elif fiab_val >= 30:
-                        item.setForeground(QColor(255, 165, 0))  # Orange : moyen
                     else:
-                        item.setForeground(QColor(255, 0, 0))  # Rouge : mauvais
-                self.merged_table.setItem(row, 10, item)
+                        try:
+                            fiab_val = float(fiab)
+                            fiab_text = f"{fiab_val:.0f}%"
+                        except Exception:
+                            fiab_text = str(fiab)
+                            fiab_val = None
+
+                    item = QTableWidgetItem(fiab_text)
+                    if fiab_val is not None:
+                        item.setData(Qt.EditRole, fiab_val)
+                        # Harmoniser : >75% excellent, 50-75% bon, 30-50% moyen, <30% mauvais
+                        if fiab_val >= 75:
+                            item.setForeground(QColor(0, 128, 0))  # Vert foncé : excellent
+                        elif fiab_val >= 50:
+                            item.setForeground(QColor(34, 139, 34))  # Vert : bon
+                        elif fiab_val >= 30:
+                            item.setForeground(QColor(255, 165, 0))  # Orange : moyen
+                        else:
+                            item.setForeground(QColor(255, 0, 0))  # Rouge : mauvais
+                    self.merged_table.setItem(row, 10, item)
+                except Exception as e:
+                    print(f"⚠️ Erreur colonne Fiabilité (10) pour {sym}: {e}")
+                    self.merged_table.setItem(row, 10, QTableWidgetItem("N/A"))
 
                 # NbTrades
-                nb_int = safe_int(nb_trades, 0)
-                item = QTableWidgetItem(str(nb_int))
-                item.setData(Qt.EditRole, nb_int)
-                self.merged_table.setItem(row, 11, item)
+                try:
+                    nb_int = safe_int(nb_trades, 0)
+                    item = QTableWidgetItem(str(nb_int))
+                    item.setData(Qt.EditRole, nb_int)
+                    self.merged_table.setItem(row, 11, item)
+                except Exception as e:
+                    print(f"⚠️ Erreur colonne NbTrades (11) pour {sym}: {e}")
+                    self.merged_table.setItem(row, 11, QTableWidgetItem("0"))
 
                 # Gagnants
-                gagnants = int(bt.get('gagnants', 0)) if bt else 0
-                item = QTableWidgetItem(str(gagnants))
-                item.setData(Qt.EditRole, gagnants)
-                self.merged_table.setItem(row, 12, item)
+                try:
+                    gagnants = int(bt.get('gagnants', 0)) if bt else 0
+                    item = QTableWidgetItem(str(gagnants))
+                    item.setData(Qt.EditRole, gagnants)
+                    self.merged_table.setItem(row, 12, item)
+                except Exception as e:
+                    print(f"⚠️ Erreur colonne Gagnants (12) pour {sym}: {e}")
+                    self.merged_table.setItem(row, 12, QTableWidgetItem("0"))
                 
                 # Colonnes Financières simples
                 # Colonne 13: Rev. Growth (%)
@@ -1988,38 +2137,43 @@ class MainWindow(QMainWindow):
 
                 # Backtest metrics (if available)
                 # Colonnes 23-24 pour Gain total et Gain moyen
-                trades = int(bt.get('trades', 0)) if bt else 0
-                taux = float(bt.get('taux_reussite', 0.0)) if bt else 0.0
-                gain_total = float(bt.get('gain_total', 0.0)) if bt else 0.0
-                gain_moy = float(bt.get('gain_moyen', 0.0)) if bt else 0.0
+                try:
+                    trades = int(bt.get('trades', 0)) if bt else 0
+                    taux = float(bt.get('taux_reussite', 0.0)) if bt else 0.0
+                    gain_total = float(bt.get('gain_total', 0.0)) if bt else 0.0
+                    gain_moy = float(bt.get('gain_moyen', 0.0)) if bt else 0.0
 
-                item = QTableWidgetItem(f"{gain_total:.2f}")
-                item.setData(Qt.EditRole, gain_total)
-                # Harmoniser : gain > 0 = bon
-                if gain_total > 200:
-                    item.setForeground(QColor(0, 128, 0))  # Vert foncé : excellent
-                elif gain_total > 50:
-                    item.setForeground(QColor(34, 139, 34))  # Vert : bon
-                elif gain_total > 0:
-                    item.setForeground(QColor(255, 165, 0))  # Orange : moyen
-                else:
-                    item.setForeground(QColor(255, 0, 0))  # Rouge : mauvais
-                self.merged_table.setItem(row, 23, item)
+                    item = QTableWidgetItem(f"{gain_total:.2f}")
+                    item.setData(Qt.EditRole, gain_total)
+                    # Harmoniser : gain > 0 = bon
+                    if gain_total > 200:
+                        item.setForeground(QColor(0, 128, 0))  # Vert foncé : excellent
+                    elif gain_total > 50:
+                        item.setForeground(QColor(34, 139, 34))  # Vert : bon
+                    elif gain_total > 0:
+                        item.setForeground(QColor(255, 165, 0))  # Orange : moyen
+                    else:
+                        item.setForeground(QColor(255, 0, 0))  # Rouge : mauvais
+                    self.merged_table.setItem(row, 23, item)
 
-                item = QTableWidgetItem(f"{gain_moy:.2f}")
-                item.setData(Qt.EditRole, gain_moy)
-                # Harmoniser : gain moyen > 0 = bon
-                if gain_moy > 20:
-                    item.setForeground(QColor(0, 128, 0))  # Vert foncé : excellent
-                elif gain_moy > 5:
-                    item.setForeground(QColor(34, 139, 34))  # Vert : bon
-                elif gain_moy > 0:
-                    item.setForeground(QColor(255, 165, 0))  # Orange : moyen
-                else:
-                    item.setForeground(QColor(255, 0, 0))  # Rouge : mauvais
-                self.merged_table.setItem(row, 24, item)
+                    item = QTableWidgetItem(f"{gain_moy:.2f}")
+                    item.setData(Qt.EditRole, gain_moy)
+                    # Harmoniser : gain moyen > 0 = bon
+                    if gain_moy > 20:
+                        item.setForeground(QColor(0, 128, 0))  # Vert foncé : excellent
+                    elif gain_moy > 5:
+                        item.setForeground(QColor(34, 139, 34))  # Vert : bon
+                    elif gain_moy > 0:
+                        item.setForeground(QColor(255, 165, 0))  # Orange : moyen
+                    else:
+                        item.setForeground(QColor(255, 0, 0))  # Rouge : mauvais
+                    self.merged_table.setItem(row, 24, item)
+                except Exception as e:
+                    print(f"⚠️ Erreur colonnes Gain (23-24) pour {sym}: {e}")
+                    self.merged_table.setItem(row, 23, QTableWidgetItem("0.00"))
+                    self.merged_table.setItem(row, 24, QTableWidgetItem("0.00"))
 
-                # Consensus (text column at index 26)
+                # Consensus (text column at index 25)
                 consensus = signal.get('Consensus', 'N/A')
                 # Debug: vérifier si le Consensus existe vraiment
                 if row == 0:  # Afficher seulement pour la première ligne
@@ -2035,13 +2189,16 @@ class MainWindow(QMainWindow):
                     item.setForeground(QColor(255, 165, 0))  # Orange : neutre
                 elif 'sell' in consensus_lower or 'vente' in consensus_lower:
                     item.setForeground(QColor(255, 0, 0))  # Rouge : mauvais
-                self.merged_table.setItem(row, 26, item)
+                self.merged_table.setItem(row, 25, item)
 
                 # item = QTableWidgetItem(f"{drawdown:.2f}")
                 # item.setData(Qt.EditRole, drawdown)
                 # self.merged_table.setItem(row, 19, item)
 
-            except Exception:
+            except Exception as e:
+                print(f"❌ Erreur remplissage table pour {signal.get('Symbole', '?')}: {e}")
+                import traceback
+                traceback.print_exc()
                 continue
         
         # Mettre à jour les onglets Graphiques et Comparaisons après remplissage de la table
@@ -3277,33 +3434,34 @@ class MainWindow(QMainWindow):
             QMessageBox.warning(self, "Erreur", f"Impossible de charger les symboles aléatoires: {e}")
     
     def load_recent_symbols(self):
-        """Charger 30 derniers SYMBOLES AJOUTÉS (union de mes_symbols et popular_symbols)."""
+        """Charger les 30 derniers SYMBOLES AJOUTÉS depuis la base de données."""
         try:
-            # Les "derniers" sont définis comme l'union des 2 listes (on priorise l'ordre d'insertion)
-            # Pour simplifier, on prend mes_symbols en premier (plus récents = plus import ants)
-            recent = []
-            seen = set()
-            
-            # D'abord mes_symbols (supposés plus récents = nouveaux dans portfolio)
-            for sym in self.mes_symbols_data:
-                if sym not in seen:
-                    recent.append(sym)
-                    seen.add(sym)
-            
-            # Puis les symboles populaires pas encore dans mes_symbols
-            for sym in reversed(self.popular_symbols_data):  # Reverser pour obtenir les "derniers" en premier
-                if sym not in seen and len(recent) < 30:
-                    recent.append(sym)
-                    seen.add(sym)
-            
-            recent = recent[:30]  # Limiter à 30
-            
+            if SYMBOL_MANAGER_AVAILABLE:
+                # Récupérer les 30 derniers symboles directement de la BDD, triés par date d'ajout
+                recent = get_recent_symbols(limit=30, active_only=True)
+            else:
+                # Fallback: si symbol_manager n'est pas disponible, utiliser les listes en fichier
+                recent = []
+                seen = set()
+
+                for sym in self.mes_symbols_data:
+                    if sym not in seen:
+                        recent.append(sym)
+                        seen.add(sym)
+
+                for sym in reversed(self.popular_symbols_data):
+                    if sym not in seen and len(recent) < 30:
+                        recent.append(sym)
+                        seen.add(sym)
+
+                recent = recent[:30]
+
             self.recent_list.clear()
             for sym in recent:
                 item = QListWidgetItem(sym)
                 item.setData(Qt.UserRole, sym)
                 self.recent_list.addItem(item)
-            
+
             self.recent_label.setText(f"🔥 Récents\n({len(recent)} symboles)")
         except Exception as e:
             QMessageBox.warning(self, "Erreur", f"Impossible de charger les symboles récents: {e}")
@@ -3327,9 +3485,9 @@ if __name__ == "__main__":
     sys.exit(app.exec_())
 
     #TODO:
+    # - Ajouter un bouton pour exporter les resultats (CSV/Excel)
     # - Ajouter dates d'annonces / résultats dans les signaux (ex: earnings date)
     # - harmoniser l'affichage des plots (embedded + external)
     # - améliorer le threading / gestion des erreurs
     # - Ajouter le earning dates et tous les autres nouveaux criteres a l'analyse et au backtest
-    # - Ajouter un bouton pour exporter les resultats (CSV/Excel)
     # - Ajouter un bouton pour choisir si backup des resultats avant analyse ou pas
