@@ -1732,7 +1732,7 @@ def download_stock_data(symbols: List[str], period: str) -> Dict[str, Dict[str, 
         return {}
     
     # ÉTAPE 1: VALIDATION ET NETTOYAGE
-    valid_periods = ['1d', '5d', '1mo', '3mo', '6mo', '12mo', '1y', "18mo", "24mo", '2y', '5y', '10y', 'ytd', 'max']
+    valid_periods = ['1d', '5d', '1mo', '3mo', '6mo', '12mo', '1y', "18mo", "24mo", '2y', '3y', '4y', '5y', '10y', 'ytd', 'max']
     if period not in valid_periods:
         print(f"🚨 Période invalide: {period}. Valeurs possibles: {valid_periods}")
         return {}

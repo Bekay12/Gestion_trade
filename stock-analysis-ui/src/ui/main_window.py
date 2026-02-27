@@ -482,10 +482,29 @@ class MainWindow(QMainWindow):
 
         top_controls = QHBoxLayout()
 
-        # Période d'analyse à gauche
+        # Période d'analyse à gauche (menu déroulant)
         top_controls.addWidget(QLabel("Période d'analyse:"))
-        self.period_input = QLineEdit(period)
-        self.period_input.setMaximumWidth(80)
+        self.period_input = QComboBox()
+        self.period_input.setMinimumWidth(220)
+        period_options = [
+            ("1mo",  "1 mois   — ~22 points (journalier)"),
+            ("3mo",  "3 mois   — ~63 points (journalier)"),
+            ("6mo",  "6 mois   — ~126 points (journalier)"),
+            ("1y",   "1 an     — ~252 points (journalier)"),
+            ("18mo", "18 mois  — ~378 points (journalier)"),
+            ("2y",   "2 ans    — ~504 points (journalier)"),
+            ("3y",   "3 ans    — ~756 points (journalier)"),
+            ("4y",   "4 ans    — ~1 008 points (journalier)"),
+            ("5y",   "5 ans    — ~1 260 points (journalier)"),
+            ("10y",  "10 ans   — ~2 520 points (journalier)"),
+            ("max",  "Max      — historique complet (journalier)"),
+        ]
+        default_index = 0
+        for i, (value, label) in enumerate(period_options):
+            self.period_input.addItem(label, userData=value)
+            if value == period:
+                default_index = i
+        self.period_input.setCurrentIndex(default_index)
         top_controls.addWidget(self.period_input)
 
         top_controls.addSpacing(24)  # Petit espace pour l'esthétique
@@ -988,10 +1007,10 @@ class MainWindow(QMainWindow):
         selected_mes = [it.data(Qt.UserRole) if it.data(Qt.UserRole) is not None else it.text() for it in self.mes_list.selectedItems()]
         mes_symbols = selected_mes if selected_mes else [self.mes_list.item(i).text() for i in range(self.mes_list.count())]
         
-        period = self.period_input.text().strip()
+        period = self.period_input.currentData()
         
         if not period:
-            QMessageBox.warning(self, "Erreur", "Veuillez entrer une période d'analyse valide (ex: 12mo)")
+            QMessageBox.warning(self, "Erreur", "Veuillez sélectionner une période d'analyse")
             return
         
         if not mes_symbols:
@@ -1390,7 +1409,7 @@ class MainWindow(QMainWindow):
             # Fallback: external plotting (analyse_et_affiche shows plots in separate windows)
             try:
                 if filtered_symbols:
-                    analyse_et_affiche(filtered_symbols, period=self.period_input.text().strip() or '12mo')
+                    analyse_et_affiche(filtered_symbols, period=self.period_input.currentData() or '12mo')
             except Exception:
                 pass
 
@@ -1522,7 +1541,7 @@ class MainWindow(QMainWindow):
                         stock_data = existing_data.get(sym)
                         if stock_data is None:
                             # Seulement télécharger si vraiment absent
-                            stock_data = download_stock_data([sym], self.period_input.text().strip() or '12mo').get(sym)
+                            stock_data = download_stock_data([sym], self.period_input.currentData() or '12mo').get(sym)
                         
                         if stock_data is None:
                             continue
@@ -1591,7 +1610,7 @@ class MainWindow(QMainWindow):
                         stock_data = existing_data.get(sym)
                         if stock_data is None:
                             # Seulement télécharger si vraiment absent
-                            stock_data = download_stock_data([sym], period=self.period_input.text().strip() or '12mo').get(sym)
+                            stock_data = download_stock_data([sym], period=self.period_input.currentData() or '12mo').get(sym)
                         if not stock_data:
                             continue
                         prices = stock_data['Close']
@@ -1677,9 +1696,9 @@ class MainWindow(QMainWindow):
             return
 
         # Get analysis period
-        period = self.period_input.text().strip()
+        period = self.period_input.currentData()
         if not period:
-            QMessageBox.warning(self, "Erreur", "Veuillez entrer une période d'analyse valide (ex: 12mo)")
+            QMessageBox.warning(self, "Erreur", "Veuillez sélectionner une période d'analyse")
             return
 
         # 🔧 Incrémenter l'ID d'analyse et stopper les threads précédents
@@ -1747,9 +1766,9 @@ class MainWindow(QMainWindow):
             QMessageBox.warning(self, "Erreur", "Veuillez entrer au moins un symbole")
             return
 
-        period = self.period_input.text().strip()
+        period = self.period_input.currentData()
         if not period:
-            QMessageBox.warning(self, "Erreur", "Veuillez entrer une période d'analyse valide (ex: 12mo)")
+            QMessageBox.warning(self, "Erreur", "Veuillez sélectionner une période d'analyse")
             return
 
         # 🔧 Incrémenter l'ID d'analyse et stopper les threads précédents
@@ -2568,7 +2587,7 @@ class MainWindow(QMainWindow):
             
             # Calculer la rentabilité annualisée en % par secteur
             # Capital investi: 50€ par stock
-            period_str = self.period_input.text().strip() if hasattr(self, 'period_input') else "12mo"
+            period_str = self.period_input.currentData() if hasattr(self, 'period_input') else "12mo"
             
             # Convertir la période en années
             if 'y' in period_str:
