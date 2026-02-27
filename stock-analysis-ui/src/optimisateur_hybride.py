@@ -739,7 +739,7 @@ class HybridOptimizer:
 
 def optimize_sector_coefficients_hybrid(
     sector_symbols, domain,
-    period='1y', strategy='hybrid',
+    period='5y', strategy='hybrid',
     montant=50, transaction_cost=1.0,
     initial_thresholds=(4.20, -0.5),
     budget_evaluations=1000,
@@ -1619,7 +1619,7 @@ if __name__ == "__main__":
 
             coeffs, gain_total, success_rate, thresholds, summary = optimize_sector_coefficients_hybrid(
                 sector_symbols, combo_key,
-                period='1y',
+                period='5y',
                 strategy=strategy,
                 montant=50,
                 transaction_cost=0.02,

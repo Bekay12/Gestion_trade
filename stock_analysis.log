@@ -2003,3 +2003,37 @@
 2026-02-25 13:22:35,778 - ERROR - 
 1 Failed download:
 2026-02-25 13:22:35,778 - ERROR - ['SAGE']: possibly delisted; no price data found  (period=12mo) (Yahoo error = "No data found, symbol may be delisted")
+2026-02-26 20:13:15,408 - ERROR - $JBSAY: possibly delisted; no price data found  (period=12mo) (Yahoo error = "No data found, symbol may be delisted")
+2026-02-26 20:13:15,412 - ERROR - 
+1 Failed download:
+2026-02-26 20:13:15,412 - ERROR - ['JBSAY']: possibly delisted; no price data found  (period=12mo) (Yahoo error = "No data found, symbol may be delisted")
+2026-02-26 20:13:17,748 - ERROR - $JBSAY: possibly delisted; no price data found  (period=12mo) (Yahoo error = "No data found, symbol may be delisted")
+2026-02-26 20:13:17,754 - ERROR - 
+1 Failed download:
+2026-02-26 20:13:17,754 - ERROR - ['JBSAY']: possibly delisted; no price data found  (period=12mo) (Yahoo error = "No data found, symbol may be delisted")
+2026-02-26 20:13:21,383 - ERROR - $KCO: possibly delisted; no price data found  (period=12mo)
+2026-02-26 20:13:21,386 - ERROR - 
+1 Failed download:
+2026-02-26 20:13:21,386 - ERROR - ['KCO']: possibly delisted; no price data found  (period=12mo)
+2026-02-26 20:13:21,927 - ERROR - $KCO: possibly delisted; no price data found  (period=12mo)
+2026-02-26 20:13:21,932 - ERROR - 
+1 Failed download:
+2026-02-26 20:13:21,932 - ERROR - ['KCO']: possibly delisted; no price data found  (period=12mo)
+2026-02-27 04:07:39,093 - ERROR - HTTP Error 404: {"quoteSummary":{"result":null,"error":{"code":"Not Found","description":"Quote not found for symbol: CCRD"}}}
+2026-02-27 04:07:39,497 - ERROR - $CCRD: possibly delisted; no price data found  (period=12mo) (Yahoo error = "No data found, symbol may be delisted")
+2026-02-27 04:07:39,498 - ERROR - 
+1 Failed download:
+2026-02-27 04:07:39,498 - ERROR - ['CCRD']: possibly delisted; no price data found  (period=12mo) (Yahoo error = "No data found, symbol may be delisted")
+2026-02-27 04:07:42,875 - ERROR - HTTP Error 404: {"quoteSummary":{"result":null,"error":{"code":"Not Found","description":"Quote not found for symbol: CCRD"}}}
+2026-02-27 04:07:43,199 - ERROR - $CCRD: possibly delisted; no price data found  (period=12mo) (Yahoo error = "No data found, symbol may be delisted")
+2026-02-27 04:07:43,202 - ERROR - 
+1 Failed download:
+2026-02-27 04:07:43,202 - ERROR - ['CCRD']: possibly delisted; no price data found  (period=12mo) (Yahoo error = "No data found, symbol may be delisted")
+2026-02-27 04:09:14,237 - ERROR - $CCRD: possibly delisted; no price data found  (period=24mo) (Yahoo error = "No data found, symbol may be delisted")
+2026-02-27 04:09:14,243 - ERROR - 
+1 Failed download:
+2026-02-27 04:09:14,243 - ERROR - ['CCRD']: possibly delisted; no price data found  (period=24mo) (Yahoo error = "No data found, symbol may be delisted")
+2026-02-27 04:09:18,062 - ERROR - $CCRD: possibly delisted; no price data found  (period=24mo) (Yahoo error = "No data found, symbol may be delisted")
+2026-02-27 04:09:18,064 - ERROR - 
+1 Failed download:
+2026-02-27 04:09:18,064 - ERROR - ['CCRD']: possibly delisted; no price data found  (period=24mo) (Yahoo error = "No data found, symbol may be delisted")
