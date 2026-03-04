@@ -1090,6 +1090,7 @@ def compute_financial_derivatives(symbol: str, lookback_quarters: int = 4) -> di
         # Données relatives (pour éviter biais grandes capitalisations)
         'ebitda_yield_pct': 0.0,   # EBITDA / EV (ou MC) * 100
         'fcf_yield_pct': 0.0,      # FCF / MarketCap * 100
+        'roe_val': 0.0,            # Return on Equity (%)
         'sector': 'Inconnu'
     }
     
@@ -1217,6 +1218,11 @@ def compute_financial_derivatives(symbol: str, lookback_quarters: int = 4) -> di
             derivatives['fcf_yield_pct'] = (fcf_num / market_cap_num) * 100.0
         else:
             derivatives['fcf_yield_pct'] = 0.0
+        
+        # ROE (Return on Equity)
+        roe = info.get('returnOnEquity')
+        if roe is not None:
+            derivatives['roe_val'] = float(roe) * 100
         
         # Sector
         sector = info.get('sector', 'Inconnu')

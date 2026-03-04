@@ -487,7 +487,6 @@ class MainWindow(QMainWindow):
         self.period_input = QComboBox()
         self.period_input.setMinimumWidth(220)
         period_options = [
-            ("1mo",  "1 mois   — ~22 points (journalier)"),
             ("3mo",  "3 mois   — ~63 points (journalier)"),
             ("6mo",  "6 mois   — ~126 points (journalier)"),
             ("1y",   "1 an     — ~252 points (journalier)"),
