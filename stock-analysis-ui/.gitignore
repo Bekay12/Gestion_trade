@@ -65,6 +65,7 @@ cache_logs/
 logs/
 *.log
 *.csv (garder optionnellement)
+signaux/
 
 # ==================== OS ====================
 Thumbs.db

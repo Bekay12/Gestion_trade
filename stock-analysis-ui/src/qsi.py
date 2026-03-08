@@ -343,7 +343,8 @@ def get_trading_signal(prices, volumes, domaine, domain_coeffs=None, domain_thre
                       variation_seuil=-20, volume_seuil=100000, return_derivatives: bool = False, symbol: str = None,
                       cap_range: str = None, price_extras: Dict[str, Union[int, float]] = None,
                       fundamentals_extras: Dict[str, Union[int, float]] = None,
-                      seuil_achat: float = None, seuil_vente: float = None):
+                      seuil_achat: float = None, seuil_vente: float = None,
+                      fin_data_override: dict = None):
     """Détermine les signaux de trading avec validation des données
     
     Args:
@@ -363,6 +364,7 @@ def get_trading_signal(prices, volumes, domaine, domain_coeffs=None, domain_thre
                             th_rev_growth, th_eps_growth, th_roe, th_fcf_yield, th_de_ratio
         seuil_achat: Seuil global pour signal ACHAT (défaut: 4.2)
         seuil_vente: Seuil global pour signal VENTE (défaut: -0.5)
+        fin_data_override: Dict de métriques fondamentales point-in-time (contourne le cache pickle pour le backtest)
     
     Returns:
         Tuple avec (signal, score, rsi, volume_mean, tendance)
@@ -793,8 +795,10 @@ def get_trading_signal(prices, volumes, domaine, domain_coeffs=None, domain_thre
             th_fcf = float(fund_extras.get('th_fcf_yield', 5.0) or 5.0)
             th_de = float(fund_extras.get('th_de_ratio', 1.0) or 1.0)
             
-            # Charger les données fondamentales du cache
-            fin_data = get_pickle_cache(symbol, 'financial', ttl_hours=24*30) if get_pickle_cache is not None else None
+            # Charger les données fondamentales : priorité au point-in-time (backtest), sinon cache
+            fin_data = fin_data_override if fin_data_override is not None else (
+                get_pickle_cache(symbol, 'financial', ttl_hours=24*30) if get_pickle_cache is not None else None
+            )
             
             if fin_data:
                 # Revenue Growth
@@ -1228,7 +1232,16 @@ def compute_financial_derivatives(symbol: str, lookback_quarters: int = 4) -> di
         sector = info.get('sector', 'Inconnu')
         derivatives['sector'] = sector
         
-        # Sauvegarder dans le cache
+        # ── Stockage évolutif des données trimestrielles et annuelles ──
+        try:
+            from fundamentals_cache import _store_quarterly_data, _store_annual_data, _save_snapshot
+            _save_snapshot(symbol, info)
+            _store_quarterly_data(symbol, ticker)
+            _store_annual_data(symbol, ticker)
+        except Exception as e:
+            print(f"⚠️ Erreur stockage trimestriel/annuel pour {symbol}: {e}")
+        
+        # Sauvegarder dans le cache pickle
         try:
             pd.to_pickle(derivatives, cache_file)
         except Exception:
@@ -2628,7 +2641,8 @@ def analyse_signaux_populaires(
                     'EBITDA Yield (%)': round(float(derivatives.get('ebitda_yield_pct') or 0.0), 2),
                     'FCF Yield (%)': round(float(derivatives.get('fcf_yield_pct') or 0.0), 2),
                     'D/E Ratio': round(float(derivatives.get('debt_to_equity') or 0.0), 2),
-                    'Market Cap (B$)': round(float(derivatives.get('market_cap_val') or 0.0), 2)
+                    'Market Cap (B$)': round(float(derivatives.get('market_cap_val') or 0.0), 2),
+                    'ROE (%)': round(float(derivatives.get('roe_val') or 0.0), 2)
                 }
         except Exception as e:
             if verbose:
@@ -2755,14 +2769,18 @@ def analyse_signaux_populaires(
             if not selected_key and domaine in best_params:
                 selected_key = domaine
 
-            coeffs, thresholds, globals_thresholds, _, _ = best_params.get(selected_key or domaine, (None, None, (4.2, -0.5), None, {}))
+            coeffs, thresholds, globals_thresholds, _, extras = best_params.get(selected_key or domaine, (None, None, (4.2, -0.5), None, {}))
             domain_coeffs = {domaine: coeffs} if coeffs else None
             feature_thresholds = thresholds[:8] if thresholds and len(thresholds) >= 8 else None
             domain_thresholds = {domaine: feature_thresholds} if feature_thresholds else None
 
+            # Récupérer les extras fondamentaux pour activer le PIT dans le backtest
+            fund_extras_bt = extras if isinstance(extras, dict) else {}
+
             resultats, events = backtest_signals_with_events(
                 prices, volumes, domaine, montant=50,
-                domain_coeffs=domain_coeffs, domain_thresholds=domain_thresholds
+                domain_coeffs=domain_coeffs, domain_thresholds=domain_thresholds,
+                fundamentals_extras=fund_extras_bt, symbol_name=s['Symbole']
             )
 
             backtest_results.append({
@@ -3200,6 +3218,7 @@ def analyse_signaux_populaires(
         sig.setdefault('FCF Yield (%)', 0.0)
         sig.setdefault('D/E Ratio', 0.0)
         sig.setdefault('Market Cap (B$)', 0.0)
+        sig.setdefault('ROE (%)', 0.0)
     
     return {
         "signals": signals,

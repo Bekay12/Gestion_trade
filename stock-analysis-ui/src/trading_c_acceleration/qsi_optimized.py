@@ -532,6 +532,10 @@ def backtest_signals_accelerated(prices: Union[pd.Series, pd.DataFrame], volumes
 def backtest_signals_with_events(prices, volumes, domaine, montant=50, transaction_cost=0.02, domain_coeffs=None, domain_thresholds=None, seuil_achat=4.2, seuil_vente=-0.5, extra_params=None, cap_range: str = None, fundamentals_extras: dict = None, symbol_name: str = None):
     """Backtest OPTIMISÉ qui pré-calcule tous les indicateurs une seule fois.
     
+    Utilise des données fondamentales point-in-time (PIT) pour éliminer le biais
+    d'anticipation : chaque barre n'utilise que les données trimestrielles qui
+    étaient réellement publiées à cette date.
+    
     Retourne: (backtest_result_dict, events_list)
     """
     try:
@@ -552,29 +556,54 @@ def backtest_signals_with_events(prices, volumes, domaine, montant=50, transacti
     signals = []
     prices_vals = []
     
-    # Précharger les fondamentaux une seule fois
-    fund_metrics = None
-    try:
-        use_fund = int(fundamentals_extras.get('use_fundamentals', 0)) if fundamentals_extras else 0
-        if use_fund and symbol_name:
-            from fundamentals_cache import get_fundamental_metrics
-            fund_metrics = get_fundamental_metrics(symbol_name, use_cache=True, allow_stale=True)
-    except Exception:
-        fund_metrics = None
+    # ── Point-in-time (PIT) fondamentaux : charger tous les trimestres + annuels une seule fois ──
+    use_fund = int(fundamentals_extras.get('use_fundamentals', 0)) if fundamentals_extras else 0
+    all_quarters = None
+    all_annuals = None
+    if use_fund and symbol_name:
+        try:
+            from fundamentals_cache import get_all_quarters_sorted, get_all_annual_sorted, compute_pit_fundamentals
+            all_quarters = get_all_quarters_sorted(symbol_name)
+            if not all_quarters:
+                all_quarters = None
+            all_annuals = get_all_annual_sorted(symbol_name)
+            if not all_annuals:
+                all_annuals = None
+        except Exception:
+            all_quarters = None
+            all_annuals = None
+
+    # Cache PIT pour éviter de recalculer pour le même trimestre
+    _pit_cache = {}
 
     # Pré-calcul de tous les signaux (une seule passe au lieu de N passes)
     for i in range(50, n):
         try:
+            # ── Calculer les fondamentaux point-in-time pour cette date ──
+            pit_fin_data = None
+            if all_quarters is not None or all_annuals is not None:
+                bar_date = str(prices.index[i].date()) if hasattr(prices.index[i], 'date') else str(prices.index[i])[:10]
+                # Cache par date tronquée au mois (les fondamentaux ne changent pas au jour le jour)
+                cache_month = bar_date[:7]
+                if cache_month in _pit_cache:
+                    pit_fin_data = _pit_cache[cache_month]
+                else:
+                    pit_fin_data = compute_pit_fundamentals(
+                        all_quarters or [], bar_date,
+                        annuals_sorted=all_annuals or []
+                    )
+                    _pit_cache[cache_month] = pit_fin_data
+
             sig, last_close, _, _, _, _, _ = qsi_get_trading_signal(
                 prices.iloc[:i+1], volumes.iloc[:i+1], domaine,
                 domain_coeffs=domain_coeffs, domain_thresholds=domain_thresholds,
                 cap_range=cap_range, price_extras=extra_params, fundamentals_extras=fundamentals_extras,
-                symbol=symbol_name, fundamentals_metrics=fund_metrics
+                symbol=symbol_name, fin_data_override=pit_fin_data
             )
             signals.append(sig)
             prices_vals.append(last_close)
         except TypeError:
-            # older signature without domain_thresholds
+            # older signature without fin_data_override
             try:
                 sig, last_close, _, _, _, _, _ = qsi_get_trading_signal(
                     prices.iloc[:i+1], volumes.iloc[:i+1], domaine, domain_coeffs=domain_coeffs
