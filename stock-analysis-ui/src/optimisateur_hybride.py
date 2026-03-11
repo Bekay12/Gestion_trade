@@ -386,7 +386,7 @@ def _de_objective(params, optimizer):
 class HybridOptimizer:
     """Optimiseur hybride utilisant plusieurs stratégies d'optimisation avec limitation des décimales"""
     
-    def __init__(self, stock_data, domain, montant=50, transaction_cost=1.0, precision=2, use_price_features: bool = False, use_fundamentals_features: bool = False):
+    def __init__(self, stock_data, domain, montant=50, transaction_cost=1.0, precision=2, use_price_features: bool = False, use_fundamentals_features: bool = False, optimization_mode: str = 'gain_moyen'):
         self.stock_data = stock_data
         self.domain = domain
         self.montant = montant
@@ -396,6 +396,7 @@ class HybridOptimizer:
         self.precision = precision  # 🔧 NUOVO: Précision des paramètres (nombre de décimales)
         self.use_price_features = use_price_features
         self.use_fundamentals_features = use_fundamentals_features
+        self.optimization_mode = optimization_mode  # 'gain_moyen' ou 'taux_reussite'
         
         # 🔧 Définir les bounds avec dimension réduite
         # - 8 coeffs (a1..a8)
@@ -448,10 +449,15 @@ class HybridOptimizer:
         self.initial_thresholds = None
         self.meilleur_score = -float('inf')  # 🔧 Meilleur score trouvé (global)
         self.meilleur_trades = 0  # 🔧 Stocker le nombre de trades de la meilleure config
+        self.meilleur_success = 0  # 🔧 Stocker le nombre de trades gagnants de la meilleure config
         # 🔧 Pénalité par trade/symbole: à gain égal, moins de trades = meilleur score
         # Ex: 0.02 * 6 trades/symbole = -0.12 sur le score. Assez pour départager,
         # trop petit pour dominer un vrai meilleur gain.
         self.trade_efficiency_penalty = 0.02
+
+    @property
+    def meilleur_success_rate(self):
+        return (self.meilleur_success / self.meilleur_trades * 100) if self.meilleur_trades > 0 else 0.0
         
     def round_params(self, params):
         """🔧 NOUVEAU: Arrondir les paramètres à la précision définie"""
@@ -558,6 +564,7 @@ class HybridOptimizer:
 
         total_gain = 0.0
         total_trades = 0
+        total_success = 0
         
         # 🚀 Helper function for parallel execution
         def evaluate_symbol(symbol, data):
@@ -572,9 +579,9 @@ class HybridOptimizer:
                     fundamentals_extras=fundamentals_extras if self.use_fundamentals_features else None,
                     symbol_name=symbol
                 )
-                return result['gain_total'], result['trades']
+                return result['gain_total'], result['trades'], result.get('gagnants', 0)
             except Exception as e:
-                return 0.0, 0
+                return 0.0, 0, 0
         
         try:
             # ⚡⚡ PARALLÉLISATION: Évaluer tous les symboles en parallèle
@@ -583,9 +590,10 @@ class HybridOptimizer:
                           for symbol, data in self.stock_data.items()}
                 
                 for future in as_completed(futures):
-                    gain, trades = future.result()
+                    gain, trades, success = future.result()
                     total_gain += gain
                     total_trades += trades
+                    total_success += success
 
             avg_gain = total_gain / len(self.stock_data) if self.stock_data else 0.0
             self.evaluation_count += 1
@@ -602,10 +610,19 @@ class HybridOptimizer:
             trades_per_symbol = total_trades / n_symbols if n_symbols > 0 else 0
             score = avg_gain - self.trade_efficiency_penalty * trades_per_symbol
 
+            # Mode taux_reussite : rejeter si success_rate < 50% ou gain <= 0
+            if self.optimization_mode == 'taux_reussite':
+                success_rate = (total_success / total_trades * 100) if total_trades > 0 else 0.0
+                if success_rate < 50.0 or avg_gain <= 0:
+                    penalized = -1e6
+                    self.best_cache[param_key] = penalized
+                    return penalized
+
             # 🔧 Tracker le nombre de trades de la meilleure config (global, pas par cache)
             if score > self.meilleur_score:
                 self.meilleur_score = score
                 self.meilleur_trades = total_trades
+                self.meilleur_success = total_success
 
             # Cache le résultat
             self.best_cache[param_key] = score
@@ -679,7 +696,7 @@ class HybridOptimizer:
 
                 population = new_population[:population_size]
 
-                pbar.set_postfix({'Meilleur': f"{best_fitness:.3f}", 'Trades': self.meilleur_trades})
+                pbar.set_postfix({'Meilleur': f"{best_fitness:.3f} ({self.meilleur_success_rate:.1f}%)", 'Trades': self.meilleur_trades})
                 pbar.update(1)
 
         return self.round_params(best_individual), best_fitness
@@ -730,7 +747,7 @@ class HybridOptimizer:
 
         with tqdm(total=max_iterations, desc="🔄 Évolution différentielle", unit="iter") as pbar:
             def callback(xk, convergence):
-                pbar.set_postfix({'Convergence': f"{convergence:.6f}", 'Trades': self.meilleur_trades})
+                pbar.set_postfix({'Convergence': f"{convergence:.6f}", 'Score': f"{self.meilleur_score:.3f} ({self.meilleur_success_rate:.1f}%)", 'Trades': self.meilleur_trades})
                 pbar.update(1)
 
             result = differential_evolution(
@@ -777,7 +794,7 @@ class HybridOptimizer:
                     best_score = score
                     best_params = sample.copy()
 
-                pbar.set_postfix({'Meilleur': f"{best_score:.3f}", 'Trades': self.meilleur_trades})
+                pbar.set_postfix({'Meilleur': f"{best_score:.3f} ({self.meilleur_success_rate:.1f}%)", 'Trades': self.meilleur_trades})
                 pbar.update(1)
 
         return best_params, best_score
@@ -832,55 +849,128 @@ class HybridOptimizer:
                         global_best_score = score
                         global_best_position = particles[i].copy()
 
-                pbar.set_postfix({'Meilleur': f"{global_best_score:.3f}", 'Trades': self.meilleur_trades})
+                pbar.set_postfix({'Meilleur': f"{global_best_score:.3f} ({self.meilleur_success_rate:.1f}%)", 'Trades': self.meilleur_trades})
                 pbar.update(1)
 
         return global_best_position, global_best_score
 
-    def local_search_refinement(self, initial_params, max_iterations=30):
-        """Recherche locale pour affiner une solution avec pas adaptatif"""
-        print(f"🔍 Affinement local (précision={self.precision}, iter={max_iterations})")
-        
-        # 🔧 MODIFIÉ: Pas adaptatif selon la précision
-        if self.precision == 1:
-            step_size = 0.1
-        elif self.precision == 2:
-            step_size = 0.05
+    def replay_all_historical(self, domain, use_price_features=False, use_fundamentals_features=False):
+        """Réévalue TOUS les sets historiques de la DB pour cette catégorie sur les données actuelles"""
+        import sqlite3
+        from config import OPTIMIZATION_DB_PATH
+
+        # Extraire secteur / cap_range depuis le domain composite
+        allowed_caps = {'Small', 'Mid', 'Large', 'Mega', 'Unknown'}
+        sector = domain
+        cap_range = None
+        if '_' in domain:
+            maybe_sector, maybe_cap = domain.rsplit('_', 1)
+            if maybe_cap in allowed_caps:
+                sector = maybe_sector
+                cap_range = maybe_cap
+
+        try:
+            conn = sqlite3.connect(OPTIMIZATION_DB_PATH)
+            conn.row_factory = sqlite3.Row
+            cur = conn.cursor()
+
+            # Charger TOUS les runs pour ce secteur+cap_range
+            if cap_range:
+                cur.execute(
+                    "SELECT * FROM optimization_runs WHERE sector = ? AND COALESCE(market_cap_range, 'Unknown') = ? ORDER BY timestamp",
+                    (sector, cap_range)
+                )
+            else:
+                cur.execute(
+                    "SELECT * FROM optimization_runs WHERE sector = ? ORDER BY timestamp",
+                    (sector,)
+                )
+
+            rows = cur.fetchall()
+            conn.close()
+        except Exception as e:
+            print(f"⚠️ Impossible de charger l'historique: {e}")
+            return None, -float('inf'), None
+
+        if not rows:
+            print(f"ℹ️ Aucun historique trouvé pour {domain}")
+            return None, -float('inf'), None
+
+        print(f"📚 Replay de {len(rows)} sets historiques pour {domain}...")
+
+        best_params = None
+        best_score = -float('inf')
+        best_label = None
+
+        def _read(row, col, default=0.0):
+            try:
+                v = row[col]
+                return float(v) if v is not None else default
+            except Exception:
+                return default
+
+        for row in rows:
+            try:
+                coeffs = tuple(_read(row, f'a{i+1}') for i in range(8))
+                thr_rsi = _read(row, 'th1', 50.0)
+                thr_vol = _read(row, 'th4', 1.0)
+                thr_adx = _read(row, 'th5', 25.0)
+                thr_score = _read(row, 'th8', 4.0)
+                seuil_achat = _read(row, 'seuil_achat', 4.2)
+                seuil_vente = _read(row, 'seuil_vente', -0.5)
+
+                params = list(coeffs) + [
+                    round(thr_rsi, self.precision),
+                    round(thr_vol, self.precision),
+                    round(thr_adx, self.precision),
+                    round(thr_score, self.precision),
+                    round(seuil_achat, self.precision),
+                    round(seuil_vente, self.precision),
+                ]
+
+                if use_price_features:
+                    params += [
+                        _read(row, 'use_price_slope'),
+                        _read(row, 'use_price_acc'),
+                        _read(row, 'a9'),
+                        _read(row, 'a10'),
+                        _read(row, 'th9'),
+                        _read(row, 'th10'),
+                    ]
+
+                if use_fundamentals_features:
+                    params += [
+                        _read(row, 'use_fundamentals'),
+                        _read(row, 'a11'),
+                        _read(row, 'a12'),
+                        _read(row, 'a13'),
+                        _read(row, 'a14'),
+                        _read(row, 'a15'),
+                        _read(row, 'th11'),
+                        _read(row, 'th12'),
+                        _read(row, 'th13'),
+                        _read(row, 'th14'),
+                        _read(row, 'th15'),
+                    ]
+
+                params_arr = np.array(params)
+                score = self.evaluate_config(params_arr)
+
+                if score > best_score:
+                    best_score = score
+                    best_params = params_arr.copy()
+                    best_label = f"Historical ({row['timestamp']})"
+
+            except Exception:
+                continue
+
+        if best_params is not None:
+            sr = (self.meilleur_success / self.meilleur_trades * 100) if self.meilleur_trades > 0 else 0.0
+            print(f"🏆 Meilleur historique: {best_label} score={best_score:.4f} ({sr:.1f}%)")
         else:
-            step_size = 0.01
-            
-        current_params = self.round_params(initial_params)
-        current_score = self.evaluate_config(current_params)
+            print(f"ℹ️ Aucun set historique valide")
 
-        bounds = self.bounds
-
-        improved = True
-        iteration = 0
-
-        with tqdm(total=max_iterations, desc="🔍 Recherche locale", unit="iter") as pbar:
-            while improved and iteration < max_iterations:
-                improved = False
-                for i in range(len(current_params)):
-                    # Essayer +/- step_size
-                    for delta in [-step_size, step_size]:
-                        test_params = current_params.copy()
-                        test_params[i] += delta
-
-                        # Respecter les contraintes et arrondir
-                        test_params[i] = round(np.clip(test_params[i], bounds[i][0], bounds[i][1]), self.precision)
-
-                        test_score = self.evaluate_config(test_params)
-
-                        if test_score > current_score:
-                            current_score = test_score
-                            current_params = test_params.copy()
-                            improved = True
-
-                iteration += 1
-                pbar.set_postfix({'Score': f"{current_score:.3f}", 'Amélioré': improved})
-                pbar.update(1)
-
-        return current_params, current_score
+        return best_params, best_score, best_label
 
 def optimize_sector_coefficients_hybrid(
     sector_symbols, domain,
@@ -891,7 +981,8 @@ def optimize_sector_coefficients_hybrid(
     precision=2,  # 🔧 NOUVEAU: Paramètre de précision
     cap_range='Unknown',
     use_price_features=False,
-    use_fundamentals_features=False
+    use_fundamentals_features=False,
+    optimization_mode='gain_moyen'
 ):
     """
     Optimisation hybride des coefficients sectoriels avec limitation des décimales
@@ -1161,7 +1252,7 @@ def optimize_sector_coefficients_hybrid(
             print(f"⚠️ Réévaluation des paramètres historiques impossible: {e}")
 
     # 🔧 MODIFIÉ: Initialisation de l'optimiseur avec précision
-    optimizer = HybridOptimizer(stock_data, domain, montant, transaction_cost, precision, use_price_features, use_fundamentals_features)
+    optimizer = HybridOptimizer(stock_data, domain, montant, transaction_cost, precision, use_price_features, use_fundamentals_features, optimization_mode)
 
     # 🔄 Normaliser le score historique via le même objective que l'optimiseur
     historical_candidate = None
@@ -1221,7 +1312,8 @@ def optimize_sector_coefficients_hybrid(
 
     # Sélection du meilleur résultat
     best_method, best_params, best_score = max(results, key=lambda x: x[2])
-    print(f"🏆 Meilleure méthode: {best_method} avec score {best_score:.4f}")
+    _sr = (optimizer.meilleur_success / optimizer.meilleur_trades * 100) if optimizer.meilleur_trades > 0 else 0.0
+    print(f"🏆 Meilleure méthode: {best_method} avec score {best_score:.4f} ({_sr:.1f}%)")
 
     # Afficher aussi le meilleur candidat non-historique pour transparence
     non_hist_candidates = [r for r in results if r[0] != 'Historical (re-eval)']
@@ -1231,29 +1323,22 @@ def optimize_sector_coefficients_hybrid(
         nh_th = tuple(float(nh_params[i]) for i in range(8, 16))
         nh_buy = float(nh_params[16])
         nh_sell = float(nh_params[17])
-        print(f"🔎 Meilleur candidat Optimiseur: {nh_method} score={nh_score:.4f}")
+        print(f"🔎 Meilleur candidat Optimiseur: {nh_method} score={nh_score:.4f} ({_sr:.1f}%)")
         print(f"   coeffs={nh_coeffs}")
         print(f"   seuils: features={nh_th}, achat={nh_buy:.2f}, vente={nh_sell:.2f}")
 
-    # Affinement local du meilleur résultat
+    # Replay de TOUS les sets historiques pour cette catégorie
     if strategy == 'hybrid':
-        print(f"🔧 Affinement local du meilleur résultat...")
-        refined_params, refined_score = optimizer.local_search_refinement(best_params)
-        if refined_score > best_score:
-            best_params = refined_params
-            best_score = refined_score
-            best_method = f"{best_method}+local"
-            print(f"✨ Affinement réussi: nouveau score {best_score:.4f}")
-
-        # 🔁 Tester aussi l'affinement local sur le candidat historique (s'il existe)
-        if historical_candidate:
-            hist_label, hist_params_vec, hist_score = historical_candidate
-            hist_refined_params, hist_refined_score = optimizer.local_search_refinement(hist_params_vec)
-            if hist_refined_score > best_score:
-                best_params = hist_refined_params
-                best_score = hist_refined_score
-                best_method = f"{hist_label}+local"
-                print(f"✨ Historique affiné bat l'optimiseur: nouveau score {best_score:.4f}")
+        hist_params, hist_score, hist_label = optimizer.replay_all_historical(
+            domain, use_price_features=use_price_features,
+            use_fundamentals_features=use_fundamentals_features
+        )
+        if hist_params is not None and hist_score > best_score:
+            best_params = hist_params
+            best_score = hist_score
+            best_method = hist_label
+            _sr = optimizer.meilleur_success_rate
+            print(f"✨ Un set historique bat l'optimiseur: {hist_label} score={best_score:.4f} ({_sr:.1f}%)")
 
     # 🔧 MODIFIÉ: Extraction conforme à la nouvelle structure (8 coeffs + 4 seuils optimisés + 2 globaux)
     best_coeffs = tuple(float(x) for x in best_params[:8])
@@ -1327,58 +1412,10 @@ def optimize_sector_coefficients_hybrid(
             'th_de_ratio': th_de,
         }
 
-    # Calcul des statistiques finales
-    total_success = 0
-    total_trades = 0
-    debug_trades_per_symbol = {}
-    
-    # 🔧 Vérifier si les features sont RÉELLEMENT activées
-    price_features_active = extra_params is not None and (
-        extra_params.get('use_price_slope', 0) or extra_params.get('use_price_acc', 0)
-    )
-    fund_features_active = fundamentals_extras is not None and (
-        fundamentals_extras.get('use_fundamentals', 0)
-    )
-    
-    print(f"   🔍 Recalcul avec: use_price_features={use_price_features}, use_fundamentals_features={use_fundamentals_features}")
-    print(f"      extra_params={extra_params}")
-    print(f"      fundamentals_extras={fundamentals_extras}")
-    print(f"      Features réellement actives: price={price_features_active}, fund={fund_features_active}")
-    
-    for symbol, data in stock_data.items():
-        if price_features_active or fund_features_active:
-            # Utiliser backtest_with_events pour les features étendues
-            result, _ = backtest_signals_with_events(
-                data['Close'], data['Volume'], domain,
-                domain_coeffs={domain: best_coeffs},
-                domain_thresholds={domain: best_feature_thresholds},
-                seuil_achat=best_seuil_achat, seuil_vente=best_seuil_vente,
-                montant=montant, transaction_cost=transaction_cost,
-                extra_params=extra_params,
-                fundamentals_extras=fundamentals_extras,
-                symbol_name=symbol
-            )
-        else:
-            # Backtest classique sans extras
-            result = backtest_signals(
-                data['Close'], data['Volume'], domain,
-                domain_coeffs={domain: best_coeffs},
-                domain_thresholds={domain: best_feature_thresholds},
-                seuil_achat=best_seuil_achat, seuil_vente=best_seuil_vente,
-                montant=montant, transaction_cost=transaction_cost
-            )
-        
-        symbol_trades = result.get('trades', 0)
-        debug_trades_per_symbol[symbol] = symbol_trades
-        total_success += result.get('gagnants', 0)
-        total_trades += symbol_trades
-
+    # Réutiliser les statistiques déjà calculées pendant l'optimisation (évite un recalcul lent)
+    total_trades = optimizer.meilleur_trades
+    total_success = optimizer.meilleur_success
     success_rate = (total_success / total_trades * 100) if total_trades > 0 else 0.0
-
-    # � DEBUG: Afficher les trades par symbole si le résultat semble incohérent
-    if total_trades == 0 and len(stock_data) > 0:
-        print(f"   ⚠️  DEBUG: Aucun trade malgré {len(stock_data)} symboles")
-        print(f"      Trades par symbole: {debug_trades_per_symbol}")
 
     # �📊 Rapport synthétique secteur
     if hist_avg_gain is not None:
@@ -1419,11 +1456,11 @@ def optimize_sector_coefficients_hybrid(
     if should_save:
         save_optimization_results(domain, best_coeffs, best_score, success_rate, total_trades, all_thresholds, cap_range, extra_params=extra_params, fundamentals_extras=fundamentals_extras)
         hist_str = f"{hist_ref:.2f}" if hist_ref is not None else "N/A"
-        print(f"💾 Sauvegarde: nouveau score {best_score:.2f} > historique réévalué {hist_str} (trades: {total_trades})")
+        print(f"💾 Sauvegarde: nouveau score {best_score:.2f} ({success_rate:.1f}%) > historique réévalué {hist_str} (trades: {total_trades})")
     elif no_trades:
         print(f"ℹ️ Pas de sauvegarde: aucun trade généré (score {best_score:.2f} mais 0 trades)")
     else:
-        print(f"ℹ️ Pas de sauvegarde: nouveau {best_score:.2f} ≤ historique réévalué {hist_ref:.2f} (epsilon={save_epsilon})")
+        print(f"ℹ️ Pas de sauvegarde: nouveau {best_score:.2f} ({success_rate:.1f}%) ≤ historique réévalué {hist_ref:.2f} (epsilon={save_epsilon})")
 
     summary = {
         'sector': domain,
@@ -1676,78 +1713,114 @@ if __name__ == "__main__":
         print("\n   🧹 Nettoyage des groupes (complément + réduction)...")
         sector_cap_ranges = clean_sector_cap_groups(sector_cap_ranges, ttl_days=0, min_total=300)
 
-    # Paramètres d'optimisation
-    print("\n3️⃣  Configuration de l'optimisation:")
-    search_strategies = ['hybrid', 'differential', 'genetic', 'pso', 'lhs']
-    
-    strategy = input("   Stratégie ('hybrid', 'differential', 'genetic', 'pso', 'lhs') : ").strip().lower()
-    i=0
-    while (strategy not in search_strategies) and i<3:
-        strategy = input("   Stratégie invalide. Choisir parmi ('hybrid', 'differential', 'genetic', 'pso', 'lhs') : ").strip().lower()
-        i+=1
-    if strategy not in search_strategies:
-        strategy = random.choice(search_strategies)
-        print(f"   Stratégie inconnue, utilisation aléatoire: {strategy}")
-
-    # Choix de la précision
-    try:
-        precision = int(input("   Précision (décimales: 1, 2, ou 3) [défaut: 2] : ").strip() or "2")
-        if precision not in [1, 2, 3]:
-            precision = 2
-    except ValueError:
-        precision = 2
-
-    # 🎯 ACTIVATION DES FEATURES ÉTENDUES
-    print("\n   📊 Features d'optimisation:")
-    use_price_features_input = input("   Activer price features (slope, acceleration) ? (o/N) : ").strip().lower()
-    use_price_features = (use_price_features_input == 'o')
-    
-    use_fundamentals_features_input = input("   Activer fundamentals features (rev_growth, eps, roe, etc.) ? (o/N) : ").strip().lower()
-    use_fundamentals_features = (use_fundamentals_features_input == 'o')
-    
-    # Calcul du nombre de paramètres (ajusté après réduction de dimension)
-    param_count = 14  # Base réduite: 8 coeffs + 4 seuils optimisés + 2 globaux
-    if use_price_features:
-        param_count += 6
-    if use_fundamentals_features:
-        param_count += 10
-    
+    # ═══════════════════════════════════════════════════════════════════════
+    # 3️⃣  CONFIGURATION DE L'OPTIMISATION (menu interactif)
+    # ═══════════════════════════════════════════════════════════════════════
     # Vérifier si accélération C disponible
     try:
         from trading_c_acceleration.qsi_optimized import C_ACCELERATION
         accel_status = "⚡ Module C activé" if C_ACCELERATION else "🐍 Python vectorisé"
-    except:
+    except Exception:
         accel_status = "🐍 Python vectorisé"
-    
-    print(f"\n   🔧 Configuration:")
-    print(f"      - Stratégie: {strategy}")
-    print(f"      - Précision: {precision} décimales")
-    print(f"      - Accélération: {accel_status}")
-    print(f"      - Parallélisation: ⚡⚡ {min(MAX_WORKERS, len(symbols))} workers (ThreadPool)")
-    print(f"      - Price features: {'✅ Activé (C accéléré)' if use_price_features else '❌ Désactivé'}")
-    print(f"      - Fundamentals features: {'✅ Activé (C accéléré)' if use_fundamentals_features else '❌ Désactivé'}")
-    print(f"      - Nombre de paramètres: {param_count}")
-    print(f"      - Seuils gelés: MACD=0, EMA=0, Ichimoku=0, Bollinger=0.5")
 
-    # Adapter le budget selon la précision
-    budget_base = 3500 #1000
+    total_to_optimize = sum(1 for s in sector_cap_ranges.values() for cap, syms in s.items() if syms)
+    total_symbols = sum(len(syms) for s in sector_cap_ranges.values() for syms in s.values())
+
+    # Valeurs par défaut
+    strategy = 'hybrid'
+    precision = 2
+    use_price_features = False
+    use_fundamentals_features = False
+    optimization_mode = 'gain_moyen'
+
+    def _show_config():
+        """Affiche la configuration courante"""
+        param_count = 14
+        if use_price_features:
+            param_count += 6
+        if use_fundamentals_features:
+            param_count += 10
+        budget_base = 3500
+        budget = int(budget_base * (0.5 if precision == 1 else (2.0 if precision == 3 else 1.0)))
+        mode_label = "Gain moyen" if optimization_mode == 'gain_moyen' else "Taux réussite ≥50% + gain>0"
+
+        print("\n" + "─" * 60)
+        print("  ⚙️  CONFIGURATION ACTUELLE")
+        print("─" * 60)
+        print(f"  [1] Stratégie ............. {strategy}")
+        print(f"  [2] Précision ............. {precision} décimale(s)")
+        print(f"  [3] Price features ........ {'✅ Oui' if use_price_features else '❌ Non'}")
+        print(f"  [4] Fundamentals features . {'✅ Oui' if use_fundamentals_features else '❌ Non'}")
+        print(f"  [5] Mode d'optimisation ... {mode_label}")
+        print("─" * 60)
+        print(f"  📊 {total_symbols} symboles · {total_to_optimize} groupes · {param_count} params · ~{budget} éval/groupe")
+        print(f"  🖥️  {accel_status} · {min(MAX_WORKERS, total_symbols)} workers")
+        print("─" * 60)
+        print("  [o] Lancer l'optimisation")
+        print("  [q] Quitter")
+        print("─" * 60)
+
+    while True:
+        _show_config()
+        choice = input("  Choix [1-5/o/q] : ").strip().lower()
+
+        if choice == '1':
+            options = {'1': 'hybrid', '2': 'differential', '3': 'genetic', '4': 'pso', '5': 'lhs'}
+            print("\n  Stratégies disponibles:")
+            print("    1. hybrid        (DE + PSO + LHS + replay historique)")
+            print("    2. differential  (Évolution différentielle seule)")
+            print("    3. genetic       (Algorithme génétique seul)")
+            print("    4. pso           (Particle Swarm seul)")
+            print("    5. lhs           (Latin Hypercube seul)")
+            s = input("  Choix [1-5] : ").strip()
+            if s in options:
+                strategy = options[s]
+
+        elif choice == '2':
+            print("\n  Précision :")
+            print("    1. Rapide   (1 décimale — espace réduit)")
+            print("    2. Standard (2 décimales)")
+            print("    3. Fine     (3 décimales — plus long)")
+            p = input("  Choix [1-3] : ").strip()
+            if p in ('1', '2', '3'):
+                precision = int(p)
+
+        elif choice == '3':
+            use_price_features = not use_price_features
+            print(f"  → Price features {'activés' if use_price_features else 'désactivés'}")
+
+        elif choice == '4':
+            use_fundamentals_features = not use_fundamentals_features
+            print(f"  → Fundamentals features {'activés' if use_fundamentals_features else 'désactivés'}")
+
+        elif choice == '5':
+            print("\n  Mode d'optimisation :")
+            print("    1. Gain moyen — maximise le gain (défaut)")
+            print("    2. Taux de réussite — gain max avec ≥50% de trades gagnants et gain > 0")
+            m = input("  Choix [1-2] : ").strip()
+            if m == '2':
+                optimization_mode = 'taux_reussite'
+            else:
+                optimization_mode = 'gain_moyen'
+
+        elif choice == 'o':
+            break
+
+        elif choice == 'q':
+            print("\n❌ Optimisation annulée")
+            sys.exit(0)
+
+    # Budget final
+    budget_base = 3500
     if precision == 1:
         budget_evaluations = int(budget_base * 0.5)
-    elif precision == 2:
-        budget_evaluations = budget_base
-    else:
+    elif precision == 3:
         budget_evaluations = int(budget_base * 2)
-    
-    print(f"   💡 Budget d'évaluations: {budget_evaluations} éval/segment secteur×cap")
-    
-    # Confirmation avant lancement
-    total_to_optimize = sum(1 for s in sector_cap_ranges.values() for cap, syms in s.items() if syms)
-    print(f"\n4️⃣  Prêt à optimiser {total_to_optimize} combinaisons secteur×cap_range")
-    confirm = input("   Lancer l'optimisation complète ? (o/N) : ").strip().lower()
-    
-    if confirm != 'o':
-        print("\n❌ Optimisation annulée")
-        sys.exit(0)
+    else:
+        budget_evaluations = budget_base
+
+    print(f"\n🚀 Lancement : {total_to_optimize} groupes · stratégie={strategy} · précision={precision} · mode={optimization_mode}")
+    print(f"   Budget: {budget_evaluations} éval/groupe\n")
 
     optimized_coeffs = {}
     sector_summaries = []
@@ -1772,7 +1845,8 @@ if __name__ == "__main__":
                 precision=precision,  # 🔧 NOUVEAU: Paramètre de précision
                 cap_range=cap_range,
                 use_price_features=use_price_features,  # 🎯 Features étendues
-                use_fundamentals_features=use_fundamentals_features  # 🎯 Features étendues
+                use_fundamentals_features=use_fundamentals_features,  # 🎯 Features étendues
+                optimization_mode=optimization_mode
             )
 
             if coeffs:

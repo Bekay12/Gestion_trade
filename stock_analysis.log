@@ -2111,3 +2111,11 @@
 2026-03-11 23:33:14,920 - ERROR - 
 1 Failed download:
 2026-03-11 23:33:14,920 - ERROR - ['AGS']: possibly delisted; no price data found  (period=18mo) (Yahoo error = "No data found, symbol may be delisted")
+2026-03-11 23:52:16,690 - ERROR - $SAND: possibly delisted; no price data found  (period=5y) (Yahoo error = "No data found, symbol may be delisted")
+2026-03-11 23:52:16,699 - ERROR - 
+1 Failed download:
+2026-03-11 23:52:16,699 - ERROR - ['SAND']: possibly delisted; no price data found  (period=5y) (Yahoo error = "No data found, symbol may be delisted")
+2026-03-11 23:52:18,047 - ERROR - $SAND: possibly delisted; no price data found  (period=5y) (Yahoo error = "No data found, symbol may be delisted")
+2026-03-11 23:52:18,056 - ERROR - 
+1 Failed download:
+2026-03-11 23:52:18,056 - ERROR - ['SAND']: possibly delisted; no price data found  (period=5y) (Yahoo error = "No data found, symbol may be delisted")
