@@ -2103,3 +2103,11 @@
 2026-03-07 01:12:56,938 - ERROR - 
 2 Failed downloads:
 2026-03-07 01:12:56,938 - ERROR - ['JBSAY', 'ELB']: possibly delisted; no price data found  (period=18mo) (Yahoo error = "No data found, symbol may be delisted")
+2026-03-11 23:33:11,038 - ERROR - $AGS: possibly delisted; no price data found  (period=18mo) (Yahoo error = "No data found, symbol may be delisted")
+2026-03-11 23:33:11,041 - ERROR - 
+1 Failed download:
+2026-03-11 23:33:11,041 - ERROR - ['AGS']: possibly delisted; no price data found  (period=18mo) (Yahoo error = "No data found, symbol may be delisted")
+2026-03-11 23:33:14,918 - ERROR - $AGS: possibly delisted; no price data found  (period=18mo) (Yahoo error = "No data found, symbol may be delisted")
+2026-03-11 23:33:14,920 - ERROR - 
+1 Failed download:
+2026-03-11 23:33:14,920 - ERROR - ['AGS']: possibly delisted; no price data found  (period=18mo) (Yahoo error = "No data found, symbol may be delisted")

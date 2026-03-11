@@ -35,7 +35,8 @@ try:
         init_symbols_table, sync_txt_to_sqlite, get_symbols_by_list_type, get_all_sectors,
         get_all_cap_ranges, get_symbols_by_sector_and_cap, get_symbol_count,
         get_cleaned_group_cache, save_cleaned_group_cache,
-        get_popular_symbols_by_sector, get_all_popular_symbols  # Pour logique hybride FIXE+ALÉATOIRE
+        get_popular_symbols_by_sector, get_all_popular_symbols,
+        get_symbols_by_sector  # Pour répartition proportionnelle
     )
     SYMBOL_MANAGER_AVAILABLE = True
 except ImportError:
@@ -136,93 +137,237 @@ def classify_cap_range(symbol: str) -> str:
 def clean_sector_cap_groups(sector_cap_ranges: Dict[str, Dict[str, List[str]]],
                             ttl_days: int = 10,
                             min_symbols: int = 6,
+                            min_total: int = 300,
                             max_symbols: int = 12,
                             fixed_ratio: float = 0.6) -> Dict[str, Dict[str, List[str]]]:
-    """Nettoie et équilibre les groupes avec PARTIE FIXE (mes_symbols) + PARTIE ALÉATOIRE (popular).
+    """Sélectionne les symboles pour l'optimisation avec répartition proportionnelle.
 
-    Étapes :
-    1. Partie FIXE (mes_symbols) : 60% par défaut
-    2. Complément ALÉATOIRE (popular même secteur), puis fallback transsectoriel si besoin
-    3. Réduction aléatoire en gardant tous les symboles fixes
+    Garanties :
+    1. Tous les symboles de mes_symbols (personal) sont TOUJOURS inclus.
+    2. Le total de symboles sélectionnés est >= min_total (défaut 300).
+    3. La répartition par secteur est proportionnelle au dataset complet.
+    4. Au sein de chaque secteur, le complément est pris aléatoirement parmi
+       les populaires du même secteur.
     """
+    import math
 
+    # ── Étape 0 : Recenser le dataset complet par secteur ──
+    dataset_per_sector: Dict[str, List[str]] = {}
+    for sector, buckets in sector_cap_ranges.items():
+        all_syms_sector = set()
+        for cap, syms in buckets.items():
+            all_syms_sector.update(syms)
+        if all_syms_sector:
+            dataset_per_sector[sector] = list(all_syms_sector)
+
+    dataset_total = sum(len(s) for s in dataset_per_sector.values())
+    if dataset_total == 0:
+        return sector_cap_ranges
+
+    # ── Étape 1 : Identifier TOUS les personal symbols ──
+    all_personal: Dict[str, set] = {}  # sector -> set of personal
+    all_personal_flat = set()
+    for sector in dataset_per_sector:
+        try:
+            ps = get_symbols_by_sector(sector, list_type='personal', active_only=True)
+            ps = [s.strip().upper() for s in ps if isinstance(s, str) and s.strip()]
+        except Exception:
+            ps = []
+        if ps:
+            all_personal[sector] = set(ps)
+            all_personal_flat.update(ps)
+    
+    # Also include personal symbols not matching any existing sector
+    try:
+        all_mes = get_symbols_by_list_type('personal', active_only=True)
+        all_mes = [s.strip().upper() for s in all_mes if isinstance(s, str) and s.strip()]
+        orphan_personal = set(all_mes) - all_personal_flat
+        if orphan_personal:
+            # Assign orphans to 'Unknown' sector  
+            all_personal.setdefault('Unknown', set()).update(orphan_personal)
+            all_personal_flat.update(orphan_personal)
+    except Exception:
+        pass
+
+    total_personal = len(all_personal_flat)
+    print(f"      🔒 Personal (mes_symbols) forcés: {total_personal} symboles")
+
+    # ── Étape 2 : Calculer la répartition proportionnelle ──
+    remaining_budget = max(0, min_total - total_personal)
+    
+    # Proportional allocation per sector (based on dataset size minus personal already included)
+    sector_allocation: Dict[str, int] = {}
+    for sector, syms in dataset_per_sector.items():
+        proportion = len(syms) / dataset_total
+        personal_in_sector = len(all_personal.get(sector, set()))
+        # Proportional share of the remaining budget
+        alloc = max(0, math.floor(proportion * remaining_budget))
+        sector_allocation[sector] = alloc
+    
+    # Distribute rounding remainder to largest sectors
+    allocated = sum(sector_allocation.values())
+    deficit = remaining_budget - allocated
+    if deficit > 0:
+        sorted_sectors = sorted(sector_allocation.keys(), 
+                                key=lambda s: len(dataset_per_sector.get(s, [])), reverse=True)
+        for i in range(deficit):
+            sector_allocation[sorted_sectors[i % len(sorted_sectors)]] += 1
+
+    print(f"      📊 Budget total: {min_total} (personal={total_personal} + proportionnel={remaining_budget})")
+    
+    # ── Étape 3 : Sélectionner les symboles par secteur ──
     cleaned: Dict[str, Dict[str, List[str]]] = {}
+    grand_total = 0
+    
     for sector, buckets in sector_cap_ranges.items():
         cleaned[sector] = {}
+        
+        # All available symbols in this sector (across all cap ranges)
+        all_sector_syms = set()
         for cap, syms in buckets.items():
-            if not syms:
-                cleaned[sector][cap] = []
-                continue
-
-            # Cache désactivé (ttl_days=0) pour forcer la nouvelle logique à chaque appel
-
-            # ÉTAPE 1 : PARTIE FIXE - mes_symbols
-            personal_symbols: List[str] = []
+            all_sector_syms.update(syms)
+        
+        # Personal symbols for this sector
+        personal_sector = all_personal.get(sector, set())
+        
+        # Target count for this sector = personal + proportional allocation
+        target = len(personal_sector) + sector_allocation.get(sector, 0)
+        
+        # Build the selection: personal first, then fill proportionally
+        selected = set(personal_sector)
+        
+        # Fill from popular symbols of this sector
+        if len(selected) < target:
+            needed = target - len(selected)
             try:
-                personal_symbols = get_symbols_by_sector_and_cap(
+                popular_sector = get_popular_symbols_by_sector(
                     sector=sector,
-                    cap_range=cap,
-                    list_type='personal'
+                    exclude_symbols=selected
                 )
-                personal_symbols = [s.strip().upper() for s in personal_symbols if isinstance(s, str) and s.strip()]
-                personal_symbols = list(dict.fromkeys(personal_symbols))
-            except Exception as e:
-                print(f"      ⚠️ [{sector}][{cap}] Erreur get_symbols_by_sector_and_cap: {e}")
-
-            target_fixed_count = max(1, int(min_symbols * fixed_ratio))
-            fixed_core = personal_symbols[:target_fixed_count]
-
-            base = list(fixed_core)
-            exclude_set = set(base)
-            print(f"      🔒 [{sector}][{cap}] Partie FIXE: {len(fixed_core)} symboles de mes_symbols")
-
-            # ÉTAPE 2 : Complément ALÉATOIRE (popular)
-            if len(base) < min_symbols:
-                needed = min_symbols - len(base)
+                random.shuffle(popular_sector)
+                added = popular_sector[:needed]
+                selected.update(added)
+            except Exception:
+                pass
+        
+        # If still short, use any available symbols from the dataset in this sector
+        if len(selected) < target:
+            remaining = [s for s in all_sector_syms if s not in selected]
+            random.shuffle(remaining)
+            selected.update(remaining[:target - len(selected)])
+        
+        # Build a lookup: symbol -> cap_range (from original buckets)
+        sym_to_cap: Dict[str, str] = {}
+        for cap, syms in buckets.items():
+            for s in syms:
+                sym_to_cap[s] = cap
+        
+        # For symbols not in original buckets (added from popular), look up their cap_range
+        new_syms = selected - set(sym_to_cap.keys())
+        if new_syms:
+            try:
+                import sqlite3
+                from config import DB_PATH
+                conn = sqlite3.connect(DB_PATH)
+                cursor = conn.cursor()
+                placeholders = ','.join('?' for _ in new_syms)
+                cursor.execute(
+                    f'SELECT symbol, market_cap_range FROM symbols WHERE symbol IN ({placeholders})',
+                    list(new_syms)
+                )
+                for row in cursor.fetchall():
+                    sym_to_cap[row[0]] = row[1] if row[1] else 'Unknown'
+                conn.close()
+            except Exception:
+                pass
+            # Default to 'Unknown' for any still-unmapped symbols
+            for s in new_syms:
+                if s not in sym_to_cap:
+                    sym_to_cap[s] = 'Unknown'
+        
+        # Distribute selected symbols into cap_range buckets
+        cap_groups: Dict[str, List[str]] = {}
+        for s in selected:
+            cap = sym_to_cap.get(s, 'Unknown')
+            cap_groups.setdefault(cap, []).append(s)
+        
+        # ── Compléter les cap_ranges < 6 avec des populaires du même secteur+cap ──
+        already_used = set(selected)
+        for cap in list(cap_groups.keys()):
+            if len(cap_groups[cap]) < min_symbols:
+                needed = min_symbols - len(cap_groups[cap])
                 try:
-                    popular_same_sector = get_popular_symbols_by_sector(
-                        sector=sector,
-                        max_count=100,
-                        exclude_symbols=exclude_set
+                    pop_same_cap = get_symbols_by_sector_and_cap(
+                        sector=sector, cap_range=cap, list_type='popular', active_only=True
                     )
-                    random.shuffle(popular_same_sector)
-                    added = popular_same_sector[:needed]
-                    base.extend(added)
-                    exclude_set.update(added)
-                    print(f"      🎲 [{sector}][{cap}] Ajout ALÉATOIRE: {len(added)} symboles (même secteur)")
-                except Exception as e:
-                    print(f"      ⚠️ [{sector}][{cap}] Erreur popular_same_sector: {e}")
-
-                if len(base) < min_symbols:
-                    needed = min_symbols - len(base)
-                    try:
-                        all_popular = get_all_popular_symbols(max_count=200, exclude_symbols=exclude_set)
-                        random.shuffle(all_popular)
-                        added = all_popular[:needed]
-                        base.extend(added)
-                        exclude_set.update(added)
-                        print(f"      🎲 [{sector}][{cap}] Fallback transsectoriel: {len(added)} symboles")
-                    except Exception as e:
-                        print(f"      ⚠️ [{sector}][{cap}] Erreur fallback transsectoriel: {e}")
-
-            # ÉTAPE 3 : Réduction (garde les fixes)
-            if len(base) > max_symbols:
-                extra_symbols = [s for s in base if s not in fixed_core]
-                random.shuffle(extra_symbols)
-                keep_count = max_symbols - len(fixed_core)
-                base = list(fixed_core) + extra_symbols[:keep_count]
-                print(f"      ✂️ [{sector}][{cap}] Réduit à {max_symbols} (garde {len(fixed_core)} fixes + {keep_count} aléatoires)")
-
-            base = list(dict.fromkeys(base))
-            cleaned[sector][cap] = base
-            print(f"      ✅ [{sector}][{cap}] Final: {len(base)} symboles ({len(fixed_core)} fixes + {len(base)-len(fixed_core)} aléatoires)")
-
-            if ttl_days > 0:
-                try:
-                    save_cleaned_group_cache(sector, cap, base)
+                    candidates = [s for s in pop_same_cap if s not in already_used]
+                    random.shuffle(candidates)
+                    added = candidates[:needed]
+                    if added:
+                        cap_groups[cap].extend(added)
+                        already_used.update(added)
+                        print(f"      📥 [{sector}][{cap}] Complété avec {len(added)} populaires → {len(cap_groups[cap])} symboles")
                 except Exception:
                     pass
-
+        
+        # ── Fusion des cap_ranges encore < 6 après complément ──
+        # Ordre de fusion : Small → Mid → Large → Mega → Unknown
+        CAP_ORDER = ['Small', 'Mid', 'Large', 'Mega', 'Unknown']
+        # Add any cap_range not in CAP_ORDER at the end
+        extra_caps = [c for c in cap_groups if c not in CAP_ORDER]
+        merge_order = CAP_ORDER + extra_caps
+        
+        merged_groups: Dict[str, List[str]] = {}
+        accumulator: List[str] = []
+        accumulator_labels: List[str] = []
+        
+        for cap in merge_order:
+            syms_in_cap = cap_groups.get(cap, [])
+            if not syms_in_cap:
+                continue
+            accumulator.extend(syms_in_cap)
+            accumulator_labels.append(cap)
+            
+            if len(accumulator) >= min_symbols:
+                # Enough symbols — create the merged group
+                merged_label = '+'.join(accumulator_labels)
+                merged_groups[merged_label] = list(dict.fromkeys(accumulator))
+                accumulator = []
+                accumulator_labels = []
+        
+        # Handle leftover: merge with the last created group
+        if accumulator:
+            if merged_groups:
+                # Merge into the last group
+                last_key = list(merged_groups.keys())[-1]
+                combined_label = last_key + '+' + '+'.join(accumulator_labels)
+                merged_groups[combined_label] = list(dict.fromkeys(
+                    merged_groups.pop(last_key) + accumulator
+                ))
+            else:
+                # No groups yet — create one with whatever we have
+                merged_label = '+'.join(accumulator_labels)
+                merged_groups[merged_label] = list(dict.fromkeys(accumulator))
+        
+        # Log merges
+        for label, syms_list in merged_groups.items():
+            if '+' in label:
+                print(f"      🔗 [{sector}] Fusionné {label}: {len(syms_list)} symboles")
+        
+        # Store merged groups
+        for label, syms_list in merged_groups.items():
+            cleaned[sector][label] = syms_list
+            grand_total += len(syms_list)
+        
+        sector_total = sum(len(s) for s in cleaned[sector].values())
+        if sector_total > 0:
+            pct = len(dataset_per_sector.get(sector, [])) / dataset_total * 100
+            print(f"      ✅ {sector}: {sector_total} symboles "
+                  f"({len(personal_sector)} personal + {sector_total - len(personal_sector)} popular) "
+                  f"[dataset: {pct:.0f}%]")
+    
+    print(f"      📊 TOTAL sélectionné: {grand_total} symboles (min={min_total})")
+    
     return cleaned
 
 # ----
@@ -1485,7 +1630,7 @@ if __name__ == "__main__":
 
         # Nettoyage des groupes (complément + réduction)
         print("\n   🧹 Nettoyage des groupes (complément + réduction)...")
-        sector_cap_ranges = clean_sector_cap_groups(sector_cap_ranges, ttl_days=0, min_symbols=6, max_symbols=15, fixed_ratio=0.6)
+        sector_cap_ranges = clean_sector_cap_groups(sector_cap_ranges, ttl_days=0, min_total=300)
 
     else:
         print("\n⚠️ SQLite non disponible, utilisation de la méthode classique...")
@@ -1529,7 +1674,7 @@ if __name__ == "__main__":
 
         # Nettoyage des groupes (complément + réduction)
         print("\n   🧹 Nettoyage des groupes (complément + réduction)...")
-        sector_cap_ranges = clean_sector_cap_groups(sector_cap_ranges, ttl_days=0, min_symbols=6, max_symbols=15, fixed_ratio=0.6)
+        sector_cap_ranges = clean_sector_cap_groups(sector_cap_ranges, ttl_days=0, min_total=300)
 
     # Paramètres d'optimisation
     print("\n3️⃣  Configuration de l'optimisation:")
