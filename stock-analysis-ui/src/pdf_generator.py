@@ -39,7 +39,7 @@ class PDFReportGenerator:
             print("⚠️ reportlab non installé, utilisation du fallback matplotlib")
             return False
     
-    def export_pdf(self, plots_layout, current_results: List[Dict], clean_columns: List[str]) -> Optional[str]:
+    def export_pdf(self, plots_layout, current_results: List[Dict], clean_columns: List[str], report_meta: Optional[Dict] = None) -> Optional[str]:
         """
         Exporter les graphiques et résultats en PDF
         
@@ -51,13 +51,14 @@ class PDFReportGenerator:
         Returns:
             Chemin du PDF créé ou None en cas d'erreur
         """
+        report_meta = report_meta or {}
         if self.has_reportlab:
-            return self._export_pdf_reportlab(plots_layout, current_results, clean_columns)
+            return self._export_pdf_reportlab(plots_layout, current_results, clean_columns, report_meta)
         else:
-            return self._export_pdf_matplotlib(plots_layout, current_results, clean_columns)
+            return self._export_pdf_matplotlib(plots_layout, current_results, clean_columns, report_meta)
     
     def _export_pdf_reportlab(self, plots_layout, current_results: List[Dict], 
-                             clean_columns: List[str]) -> Optional[str]:
+                             clean_columns: List[str], report_meta: Optional[Dict] = None) -> Optional[str]:
         """Exporter en PDF avec reportlab (professionnel)"""
         try:
             from reportlab.lib.pagesizes import A4, landscape
@@ -246,6 +247,9 @@ class PDFReportGenerator:
             # Page résumé
             if current_results and canvas_count > 0:
                 story.append(PageBreak())
+
+                report_meta = report_meta or {}
+                min_holding_days = int(report_meta.get('min_holding_days', 7) or 7)
                 
                 summary_style = ParagraphStyle(
                     'SummaryTitle',
@@ -278,6 +282,7 @@ class PDFReportGenerator:
                     ["📈 Total analysé", str(total_symbols), "📅 Date", datetime.now().strftime('%d/%m/%Y %H:%M:%S')],
                     ["✅ Achats", str(achats), "🎯 Fiabilité moy.", f"{avg_fiabilite:.1f}%"],
                     ["❌ Ventes", str(ventes), "💰 Gain total (Backtest)", f"{gain_total_bt:.2f} $"],
+                    ["⏱️ Durée min position", f"{min_holding_days} jour(s) actif(s)", "", ""],
                 ]
                 
                 stats_table = Table(stats_data, colWidths=[6*cm, 6*cm, 6*cm, 6*cm])
@@ -418,7 +423,7 @@ class PDFReportGenerator:
             return None
     
     def _export_pdf_matplotlib(self, plots_layout, current_results: List[Dict], 
-                              clean_columns: List[str]) -> Optional[str]:
+                              clean_columns: List[str], report_meta: Optional[Dict] = None) -> Optional[str]:
         """Fallback: Exporter en PDF avec matplotlib"""
         from matplotlib.backends.backend_pdf import PdfPages
         
@@ -496,6 +501,9 @@ class PDFReportGenerator:
                 if current_results:
                     fig, ax = plt.subplots(figsize=(11, 8.5))
                     ax.axis('off')
+
+                    report_meta = report_meta or {}
+                    min_holding_days = int(report_meta.get('min_holding_days', 7) or 7)
                     
                     total_symbols = len(current_results)
                     achats = sum(1 for r in current_results if r.get('Signal') == 'ACHAT')
@@ -517,6 +525,7 @@ class PDFReportGenerator:
 ⚪ Signaux NEUTRE: {total_symbols - achats - ventes}
 
 {"🎯 Fiabilité moyenne: " + f"{sum(fiabilites)/len(fiabilites):.1f}%" if fiabilites else "🎯 Fiabilité moyenne: N/A"}
+⏱️ Durée min position: {min_holding_days} jour(s) actif(s)
 """
                     
                     ax.text(0.05, 0.95, title_text + stats_text, transform=ax.transAxes, 

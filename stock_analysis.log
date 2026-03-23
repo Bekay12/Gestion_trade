@@ -2119,3 +2119,905 @@
 2026-03-11 23:52:18,056 - ERROR - 
 1 Failed download:
 2026-03-11 23:52:18,056 - ERROR - ['SAND']: possibly delisted; no price data found  (period=5y) (Yahoo error = "No data found, symbol may be delisted")
+2026-03-12 07:02:00,517 - ERROR - $SAND: possibly delisted; no price data found  (period=5y) (Yahoo error = "No data found, symbol may be delisted")
+2026-03-12 07:02:00,522 - ERROR - 
+1 Failed download:
+2026-03-12 07:02:00,522 - ERROR - ['SAND']: possibly delisted; no price data found  (period=5y) (Yahoo error = "No data found, symbol may be delisted")
+2026-03-12 07:02:01,523 - ERROR - $SAND: possibly delisted; no price data found  (period=5y) (Yahoo error = "No data found, symbol may be delisted")
+2026-03-12 07:02:01,532 - ERROR - 
+1 Failed download:
+2026-03-12 07:02:01,532 - ERROR - ['SAND']: possibly delisted; no price data found  (period=5y) (Yahoo error = "No data found, symbol may be delisted")
+2026-03-12 08:00:00,769 - ERROR - $CCRD: possibly delisted; no price data found  (period=5y) (Yahoo error = "No data found, symbol may be delisted")
+2026-03-12 08:00:00,775 - ERROR - 
+1 Failed download:
+2026-03-12 08:00:00,775 - ERROR - ['CCRD']: possibly delisted; no price data found  (period=5y) (Yahoo error = "No data found, symbol may be delisted")
+2026-03-12 08:00:02,725 - ERROR - $SOL: possibly delisted; no price data found  (period=5y) (Yahoo error = "No data found, symbol may be delisted")
+2026-03-12 08:00:02,725 - ERROR - 
+1 Failed download:
+2026-03-12 08:00:02,725 - ERROR - ['SOL']: possibly delisted; no price data found  (period=5y) (Yahoo error = "No data found, symbol may be delisted")
+2026-03-12 08:00:03,179 - ERROR - $SOL: possibly delisted; no price data found  (period=5y) (Yahoo error = "No data found, symbol may be delisted")
+2026-03-12 08:00:03,182 - ERROR - $CCRD: possibly delisted; no price data found  (period=5y) (Yahoo error = "No data found, symbol may be delisted")
+2026-03-12 08:00:03,191 - ERROR - 
+2 Failed downloads:
+2026-03-12 08:00:03,191 - ERROR - ['SOL', 'CCRD']: possibly delisted; no price data found  (period=5y) (Yahoo error = "No data found, symbol may be delisted")
+2026-03-12 08:00:10,143 - ERROR - HTTP Error 404: {"quoteSummary":{"result":null,"error":{"code":"Not Found","description":"Quote not found for symbol: CCRD"}}}
+2026-03-12 08:00:22,732 - ERROR - HTTP Error 404: {"quoteSummary":{"result":null,"error":{"code":"Not Found","description":"Quote not found for symbol: SOL"}}}
+2026-03-12 08:15:11,896 - ERROR - $TELL: possibly delisted; no price data found  (period=5y) (Yahoo error = "No data found, symbol may be delisted")
+2026-03-12 08:15:11,901 - ERROR - 
+1 Failed download:
+2026-03-12 08:15:11,901 - ERROR - ['TELL']: possibly delisted; no price data found  (period=5y) (Yahoo error = "No data found, symbol may be delisted")
+2026-03-12 08:15:12,672 - ERROR - $EDF.PA: possibly delisted; no price data found  (period=5y) (Yahoo error = "No data found, symbol may be delisted")
+2026-03-12 08:15:12,680 - ERROR - 
+1 Failed download:
+2026-03-12 08:15:12,681 - ERROR - ['EDF.PA']: possibly delisted; no price data found  (period=5y) (Yahoo error = "No data found, symbol may be delisted")
+2026-03-12 08:15:13,374 - ERROR - $ZEAL: possibly delisted; no price data found  (period=5y) (Yahoo error = "No data found, symbol may be delisted")
+2026-03-12 08:15:13,377 - ERROR - 
+1 Failed download:
+2026-03-12 08:15:13,377 - ERROR - ['ZEAL']: possibly delisted; no price data found  (period=5y) (Yahoo error = "No data found, symbol may be delisted")
+2026-03-12 08:15:13,862 - ERROR - $SGL: possibly delisted; no price data found  (period=5y)
+2026-03-12 08:15:13,867 - ERROR - 
+1 Failed download:
+2026-03-12 08:15:13,867 - ERROR - ['SGL']: possibly delisted; no price data found  (period=5y)
+2026-03-12 08:15:14,384 - ERROR - $SGL: possibly delisted; no price data found  (period=5y)
+2026-03-12 08:15:14,572 - ERROR - $EDF.PA: possibly delisted; no price data found  (period=5y) (Yahoo error = "No data found, symbol may be delisted")
+2026-03-12 08:15:14,578 - ERROR - $ZEAL: possibly delisted; no price data found  (period=5y) (Yahoo error = "No data found, symbol may be delisted")
+2026-03-12 08:15:14,588 - ERROR - $TELL: possibly delisted; no price data found  (period=5y) (Yahoo error = "No data found, symbol may be delisted")
+2026-03-12 08:15:14,591 - ERROR - 
+4 Failed downloads:
+2026-03-12 08:15:14,591 - ERROR - ['SGL']: possibly delisted; no price data found  (period=5y)
+2026-03-12 08:15:14,591 - ERROR - ['EDF.PA', 'ZEAL', 'TELL']: possibly delisted; no price data found  (period=5y) (Yahoo error = "No data found, symbol may be delisted")
+2026-03-12 19:58:11,034 - ERROR - 
+1 Failed download:
+2026-03-12 19:58:11,034 - ERROR - ['TCEHY']: TypeError("'NoneType' object is not subscriptable")
+2026-03-12 20:37:48,742 - ERROR - HTTP Error 404: {"quoteSummary":{"result":null,"error":{"code":"Not Found","description":"Quote not found for symbol: ERJ"}}}
+2026-03-12 20:37:49,160 - ERROR - $ERJ: possibly delisted; no price data found  (period=5y) (Yahoo error = "No data found, symbol may be delisted")
+2026-03-12 20:37:49,161 - ERROR - 
+1 Failed download:
+2026-03-12 20:37:49,161 - ERROR - ['ERJ']: possibly delisted; no price data found  (period=5y) (Yahoo error = "No data found, symbol may be delisted")
+2026-03-12 20:37:55,379 - ERROR - HTTP Error 404: {"quoteSummary":{"result":null,"error":{"code":"Not Found","description":"Quote not found for symbol: ERJ"}}}
+2026-03-12 20:37:55,874 - ERROR - $ERJ: possibly delisted; no price data found  (period=5y) (Yahoo error = "No data found, symbol may be delisted")
+2026-03-12 20:37:55,879 - ERROR - 
+1 Failed download:
+2026-03-12 20:37:55,879 - ERROR - ['ERJ']: possibly delisted; no price data found  (period=5y) (Yahoo error = "No data found, symbol may be delisted")
+2026-03-12 20:38:00,684 - ERROR - HTTP Error 404: {"quoteSummary":{"result":null,"error":{"code":"Not Found","description":"Quote not found for symbol: ERJ"}}}
+2026-03-12 21:03:46,586 - ERROR - $ELB: possibly delisted; no price data found  (period=5y) (Yahoo error = "No data found, symbol may be delisted")
+2026-03-12 21:03:46,590 - ERROR - 
+1 Failed download:
+2026-03-12 21:03:46,591 - ERROR - ['ELB']: possibly delisted; no price data found  (period=5y) (Yahoo error = "No data found, symbol may be delisted")
+2026-03-12 21:03:46,679 - ERROR - $SGL: possibly delisted; no price data found  (period=5y)
+2026-03-12 21:03:46,684 - ERROR - 
+1 Failed download:
+2026-03-12 21:03:46,684 - ERROR - ['SGL']: possibly delisted; no price data found  (period=5y)
+2026-03-12 21:03:47,266 - ERROR - $TELL: possibly delisted; no price data found  (period=5y) (Yahoo error = "No data found, symbol may be delisted")
+2026-03-12 21:03:47,272 - ERROR - 
+1 Failed download:
+2026-03-12 21:03:47,272 - ERROR - ['TELL']: possibly delisted; no price data found  (period=5y) (Yahoo error = "No data found, symbol may be delisted")
+2026-03-12 21:03:49,227 - ERROR - $UN01.DE: possibly delisted; no price data found  (period=5y) (Yahoo error = "No data found, symbol may be delisted")
+2026-03-12 21:03:49,232 - ERROR - 
+1 Failed download:
+2026-03-12 21:03:49,233 - ERROR - ['UN01.DE']: possibly delisted; no price data found  (period=5y) (Yahoo error = "No data found, symbol may be delisted")
+2026-03-12 21:03:50,102 - ERROR - $B4B.DE: possibly delisted; no price data found  (period=5y) (Yahoo error = "No data found, symbol may be delisted")
+2026-03-12 21:03:50,102 - ERROR - 
+1 Failed download:
+2026-03-12 21:03:50,103 - ERROR - ['B4B.DE']: possibly delisted; no price data found  (period=5y) (Yahoo error = "No data found, symbol may be delisted")
+2026-03-12 21:03:50,661 - ERROR - $SGL: possibly delisted; no price data found  (period=5y)
+2026-03-12 21:03:50,834 - ERROR - $ELB: possibly delisted; no price data found  (period=5y) (Yahoo error = "No data found, symbol may be delisted")
+2026-03-12 21:03:50,836 - ERROR - $TELL: possibly delisted; no price data found  (period=5y) (Yahoo error = "No data found, symbol may be delisted")
+2026-03-12 21:03:50,842 - ERROR - $B4B.DE: possibly delisted; no price data found  (period=5y) (Yahoo error = "No data found, symbol may be delisted")
+2026-03-12 21:03:50,863 - ERROR - $UN01.DE: possibly delisted; no price data found  (period=5y) (Yahoo error = "No data found, symbol may be delisted")
+2026-03-12 21:03:50,867 - ERROR - 
+5 Failed downloads:
+2026-03-12 21:03:50,867 - ERROR - ['SGL']: possibly delisted; no price data found  (period=5y)
+2026-03-12 21:03:50,867 - ERROR - ['ELB', 'TELL', 'B4B.DE', 'UN01.DE']: possibly delisted; no price data found  (period=5y) (Yahoo error = "No data found, symbol may be delisted")
+2026-03-31 19:24:56,658 - ERROR - Failed to get ticker 'ULVR.L' reason: Failed to perform, curl: (28) Operation timed out after 10000 milliseconds with 0 bytes received. See https://curl.se/libcurl/c/libcurl-errors.html first for more details.
+2026-03-31 19:35:12,170 - ERROR - H2O.DE: No earnings dates found, symbol may be delisted
+2026-03-31 19:35:12,660 - ERROR - HTTP Error 404: {"quoteSummary":{"result":null,"error":{"code":"Not Found","description":"No fundamentals data found for symbol: H2O.DE"}}}
+2026-03-31 19:35:13,384 - ERROR - Erreur lors de la mise à jour des données temporelles pour AVGO: time data "June 3, 2026 at 4 PM" doesn't match format "%B %d, %Y at %I %p", at position 0. You might want to try:
+    - passing `format` if your strings have a consistent format;
+    - passing `format='ISO8601'` if your strings are all ISO8601 but not necessarily in exactly the same format;
+    - passing `format='mixed'`, and the format will be inferred for each element individually. You might want to use `dayfirst` alongside this.
+2026-03-31 19:35:14,231 - ERROR - Erreur lors de la mise à jour des données temporelles pour ALAB: time data "May 5, 2026 at 4 PM" doesn't match format "%B %d, %Y at %I %p", at position 0. You might want to try:
+    - passing `format` if your strings have a consistent format;
+    - passing `format='ISO8601'` if your strings are all ISO8601 but not necessarily in exactly the same format;
+    - passing `format='mixed'`, and the format will be inferred for each element individually. You might want to use `dayfirst` alongside this.
+2026-03-31 19:35:15,060 - ERROR - Erreur lors de la mise à jour des données temporelles pour ENR.DE: time data "May 12, 2026 at 11 AM" doesn't match format "%B %d, %Y at %I %p", at position 0. You might want to try:
+    - passing `format` if your strings have a consistent format;
+    - passing `format='ISO8601'` if your strings are all ISO8601 but not necessarily in exactly the same format;
+    - passing `format='mixed'`, and the format will be inferred for each element individually. You might want to use `dayfirst` alongside this.
+2026-03-31 19:35:15,789 - ERROR - Erreur lors de la mise à jour des données temporelles pour IMNM: time data "May 12, 2026 at 4 PM" doesn't match format "%B %d, %Y at %I %p", at position 0. You might want to try:
+    - passing `format` if your strings have a consistent format;
+    - passing `format='ISO8601'` if your strings are all ISO8601 but not necessarily in exactly the same format;
+    - passing `format='mixed'`, and the format will be inferred for each element individually. You might want to use `dayfirst` alongside this.
+2026-03-31 19:35:16,898 - ERROR - Erreur lors de la mise à jour des données temporelles pour MBOT: time data "March 26, 2026 at 4 PM" doesn't match format "%B %d, %Y at %I %p", at position 0. You might want to try:
+    - passing `format` if your strings have a consistent format;
+    - passing `format='ISO8601'` if your strings are all ISO8601 but not necessarily in exactly the same format;
+    - passing `format='mixed'`, and the format will be inferred for each element individually. You might want to use `dayfirst` alongside this.
+2026-03-31 19:35:17,997 - ERROR - Erreur lors de la mise à jour des données temporelles pour MSTR: unconverted data remains when parsing with format "%B %d, %Y at %I %p": "PM", at position 0. You might want to try:
+    - passing `format` if your strings have a consistent format;
+    - passing `format='ISO8601'` if your strings are all ISO8601 but not necessarily in exactly the same format;
+    - passing `format='mixed'`, and the format will be inferred for each element individually. You might want to use `dayfirst` alongside this.
+2026-03-31 19:35:18,696 - ERROR - NXP: No earnings dates found, symbol may be delisted
+2026-03-31 19:35:19,660 - ERROR - Erreur lors de la mise à jour des données temporelles pour NVDA: time data "May 20, 2026 at 4 PM" doesn't match format "%B %d, %Y at %I %p", at position 0. You might want to try:
+    - passing `format` if your strings have a consistent format;
+    - passing `format='ISO8601'` if your strings are all ISO8601 but not necessarily in exactly the same format;
+    - passing `format='mixed'`, and the format will be inferred for each element individually. You might want to use `dayfirst` alongside this.
+2026-03-31 19:38:23,735 - ERROR - Erreur lors de la mise à jour des données temporelles pour ALAB: time data "May 5, 2026 at 4 PM" doesn't match format "%B %d, %Y at %I %p", at position 0. You might want to try:
+    - passing `format` if your strings have a consistent format;
+    - passing `format='ISO8601'` if your strings are all ISO8601 but not necessarily in exactly the same format;
+    - passing `format='mixed'`, and the format will be inferred for each element individually. You might want to use `dayfirst` alongside this.
+2026-03-31 19:38:24,471 - ERROR - Erreur lors de la mise à jour des données temporelles pour AVGO: time data "June 3, 2026 at 4 PM" doesn't match format "%B %d, %Y at %I %p", at position 0. You might want to try:
+    - passing `format` if your strings have a consistent format;
+    - passing `format='ISO8601'` if your strings are all ISO8601 but not necessarily in exactly the same format;
+    - passing `format='mixed'`, and the format will be inferred for each element individually. You might want to use `dayfirst` alongside this.
+2026-03-31 19:38:25,099 - ERROR - H2O.DE: No earnings dates found, symbol may be delisted
+2026-03-31 19:38:25,677 - ERROR - HTTP Error 404: {"quoteSummary":{"result":null,"error":{"code":"Not Found","description":"No fundamentals data found for symbol: H2O.DE"}}}
+2026-03-31 19:38:26,425 - ERROR - Erreur lors de la mise à jour des données temporelles pour IMNM: time data "May 12, 2026 at 4 PM" doesn't match format "%B %d, %Y at %I %p", at position 0. You might want to try:
+    - passing `format` if your strings have a consistent format;
+    - passing `format='ISO8601'` if your strings are all ISO8601 but not necessarily in exactly the same format;
+    - passing `format='mixed'`, and the format will be inferred for each element individually. You might want to use `dayfirst` alongside this.
+2026-03-31 19:38:27,320 - ERROR - Erreur lors de la mise à jour des données temporelles pour ENR.DE: time data "May 12, 2026 at 11 AM" doesn't match format "%B %d, %Y at %I %p", at position 0. You might want to try:
+    - passing `format` if your strings have a consistent format;
+    - passing `format='ISO8601'` if your strings are all ISO8601 but not necessarily in exactly the same format;
+    - passing `format='mixed'`, and the format will be inferred for each element individually. You might want to use `dayfirst` alongside this.
+2026-03-31 19:38:27,997 - ERROR - Erreur lors de la mise à jour des données temporelles pour MBOT: time data "March 26, 2026 at 4 PM" doesn't match format "%B %d, %Y at %I %p", at position 0. You might want to try:
+    - passing `format` if your strings have a consistent format;
+    - passing `format='ISO8601'` if your strings are all ISO8601 but not necessarily in exactly the same format;
+    - passing `format='mixed'`, and the format will be inferred for each element individually. You might want to use `dayfirst` alongside this.
+2026-03-31 19:38:28,826 - ERROR - Erreur lors de la mise à jour des données temporelles pour MSTR: unconverted data remains when parsing with format "%B %d, %Y at %I %p": "PM", at position 0. You might want to try:
+    - passing `format` if your strings have a consistent format;
+    - passing `format='ISO8601'` if your strings are all ISO8601 but not necessarily in exactly the same format;
+    - passing `format='mixed'`, and the format will be inferred for each element individually. You might want to use `dayfirst` alongside this.
+2026-03-31 19:38:29,555 - ERROR - Erreur lors de la mise à jour des données temporelles pour NVDA: time data "May 20, 2026 at 4 PM" doesn't match format "%B %d, %Y at %I %p", at position 0. You might want to try:
+    - passing `format` if your strings have a consistent format;
+    - passing `format='ISO8601'` if your strings are all ISO8601 but not necessarily in exactly the same format;
+    - passing `format='mixed'`, and the format will be inferred for each element individually. You might want to use `dayfirst` alongside this.
+2026-03-31 19:38:30,217 - ERROR - NXP: No earnings dates found, symbol may be delisted
+2026-03-31 19:40:22,017 - ERROR - Erreur lors de la mise à jour des données temporelles pour ALAB: time data "May 5, 2026 at 4 PM" doesn't match format "%B %d, %Y at %I %p", at position 0. You might want to try:
+    - passing `format` if your strings have a consistent format;
+    - passing `format='ISO8601'` if your strings are all ISO8601 but not necessarily in exactly the same format;
+    - passing `format='mixed'`, and the format will be inferred for each element individually. You might want to use `dayfirst` alongside this.
+2026-03-31 19:40:23,157 - ERROR - Erreur lors de la mise à jour des données temporelles pour ALDX: time data "May 15, 2026 at 4 PM" doesn't match format "%B %d, %Y at %I %p", at position 0. You might want to try:
+    - passing `format` if your strings have a consistent format;
+    - passing `format='ISO8601'` if your strings are all ISO8601 but not necessarily in exactly the same format;
+    - passing `format='mixed'`, and the format will be inferred for each element individually. You might want to use `dayfirst` alongside this.
+2026-03-31 19:40:24,541 - ERROR - Erreur lors de la mise à jour des données temporelles pour AVGO: time data "June 3, 2026 at 4 PM" doesn't match format "%B %d, %Y at %I %p", at position 0. You might want to try:
+    - passing `format` if your strings have a consistent format;
+    - passing `format='ISO8601'` if your strings are all ISO8601 but not necessarily in exactly the same format;
+    - passing `format='mixed'`, and the format will be inferred for each element individually. You might want to use `dayfirst` alongside this.
+2026-03-31 19:40:25,739 - ERROR - Erreur lors de la mise à jour des données temporelles pour ENR.DE: time data "May 12, 2026 at 11 AM" doesn't match format "%B %d, %Y at %I %p", at position 0. You might want to try:
+    - passing `format` if your strings have a consistent format;
+    - passing `format='ISO8601'` if your strings are all ISO8601 but not necessarily in exactly the same format;
+    - passing `format='mixed'`, and the format will be inferred for each element individually. You might want to use `dayfirst` alongside this.
+2026-03-31 19:40:26,771 - ERROR - H2O.DE: No earnings dates found, symbol may be delisted
+2026-03-31 19:40:27,191 - ERROR - HTTP Error 404: {"quoteSummary":{"result":null,"error":{"code":"Not Found","description":"No fundamentals data found for symbol: H2O.DE"}}}
+2026-03-31 19:40:28,553 - ERROR - Erreur lors de la mise à jour des données temporelles pour IMNM: time data "May 12, 2026 at 4 PM" doesn't match format "%B %d, %Y at %I %p", at position 0. You might want to try:
+    - passing `format` if your strings have a consistent format;
+    - passing `format='ISO8601'` if your strings are all ISO8601 but not necessarily in exactly the same format;
+    - passing `format='mixed'`, and the format will be inferred for each element individually. You might want to use `dayfirst` alongside this.
+2026-03-31 19:40:30,036 - ERROR - Erreur lors de la mise à jour des données temporelles pour MBOT: time data "March 26, 2026 at 4 PM" doesn't match format "%B %d, %Y at %I %p", at position 0. You might want to try:
+    - passing `format` if your strings have a consistent format;
+    - passing `format='ISO8601'` if your strings are all ISO8601 but not necessarily in exactly the same format;
+    - passing `format='mixed'`, and the format will be inferred for each element individually. You might want to use `dayfirst` alongside this.
+2026-03-31 19:40:31,145 - ERROR - Erreur lors de la mise à jour des données temporelles pour MSTR: unconverted data remains when parsing with format "%B %d, %Y at %I %p": "PM", at position 0. You might want to try:
+    - passing `format` if your strings have a consistent format;
+    - passing `format='ISO8601'` if your strings are all ISO8601 but not necessarily in exactly the same format;
+    - passing `format='mixed'`, and the format will be inferred for each element individually. You might want to use `dayfirst` alongside this.
+2026-03-31 19:40:32,817 - ERROR - Erreur lors de la mise à jour des données temporelles pour NVDA: time data "May 20, 2026 at 4 PM" doesn't match format "%B %d, %Y at %I %p", at position 0. You might want to try:
+    - passing `format` if your strings have a consistent format;
+    - passing `format='ISO8601'` if your strings are all ISO8601 but not necessarily in exactly the same format;
+    - passing `format='mixed'`, and the format will be inferred for each element individually. You might want to use `dayfirst` alongside this.
+2026-03-31 19:40:34,007 - ERROR - NXP: No earnings dates found, symbol may be delisted
+2026-03-31 19:40:35,393 - ERROR - Erreur lors de la mise à jour des données temporelles pour SEMR: time data "May 6, 2026 at 4 PM" doesn't match format "%B %d, %Y at %I %p", at position 0. You might want to try:
+    - passing `format` if your strings have a consistent format;
+    - passing `format='ISO8601'` if your strings are all ISO8601 but not necessarily in exactly the same format;
+    - passing `format='mixed'`, and the format will be inferred for each element individually. You might want to use `dayfirst` alongside this.
+2026-03-31 19:43:25,245 - ERROR - Erreur lors de la mise à jour des données temporelles pour ALAB: time data "May 5, 2026 at 4 PM" doesn't match format "%B %d, %Y at %I %p", at position 0. You might want to try:
+    - passing `format` if your strings have a consistent format;
+    - passing `format='ISO8601'` if your strings are all ISO8601 but not necessarily in exactly the same format;
+    - passing `format='mixed'`, and the format will be inferred for each element individually. You might want to use `dayfirst` alongside this.
+2026-03-31 19:43:26,604 - ERROR - Erreur lors de la mise à jour des données temporelles pour ALDX: time data "May 15, 2026 at 4 PM" doesn't match format "%B %d, %Y at %I %p", at position 0. You might want to try:
+    - passing `format` if your strings have a consistent format;
+    - passing `format='ISO8601'` if your strings are all ISO8601 but not necessarily in exactly the same format;
+    - passing `format='mixed'`, and the format will be inferred for each element individually. You might want to use `dayfirst` alongside this.
+2026-03-31 19:43:27,906 - ERROR - Erreur lors de la mise à jour des données temporelles pour AVGO: time data "June 3, 2026 at 4 PM" doesn't match format "%B %d, %Y at %I %p", at position 0. You might want to try:
+    - passing `format` if your strings have a consistent format;
+    - passing `format='ISO8601'` if your strings are all ISO8601 but not necessarily in exactly the same format;
+    - passing `format='mixed'`, and the format will be inferred for each element individually. You might want to use `dayfirst` alongside this.
+2026-03-31 19:43:29,022 - ERROR - Erreur lors de la mise à jour des données temporelles pour ENR.DE: time data "May 12, 2026 at 11 AM" doesn't match format "%B %d, %Y at %I %p", at position 0. You might want to try:
+    - passing `format` if your strings have a consistent format;
+    - passing `format='ISO8601'` if your strings are all ISO8601 but not necessarily in exactly the same format;
+    - passing `format='mixed'`, and the format will be inferred for each element individually. You might want to use `dayfirst` alongside this.
+2026-03-31 19:43:30,391 - ERROR - H2O.DE: No earnings dates found, symbol may be delisted
+2026-03-31 19:43:31,187 - ERROR - HTTP Error 404: {"quoteSummary":{"result":null,"error":{"code":"Not Found","description":"No fundamentals data found for symbol: H2O.DE"}}}
+2026-03-31 19:43:32,644 - ERROR - Erreur lors de la mise à jour des données temporelles pour IMNM: time data "May 12, 2026 at 4 PM" doesn't match format "%B %d, %Y at %I %p", at position 0. You might want to try:
+    - passing `format` if your strings have a consistent format;
+    - passing `format='ISO8601'` if your strings are all ISO8601 but not necessarily in exactly the same format;
+    - passing `format='mixed'`, and the format will be inferred for each element individually. You might want to use `dayfirst` alongside this.
+2026-03-31 19:43:33,624 - ERROR - Erreur lors de la mise à jour des données temporelles pour MBOT: time data "March 26, 2026 at 4 PM" doesn't match format "%B %d, %Y at %I %p", at position 0. You might want to try:
+    - passing `format` if your strings have a consistent format;
+    - passing `format='ISO8601'` if your strings are all ISO8601 but not necessarily in exactly the same format;
+    - passing `format='mixed'`, and the format will be inferred for each element individually. You might want to use `dayfirst` alongside this.
+2026-03-31 19:43:34,780 - ERROR - Erreur lors de la mise à jour des données temporelles pour MSTR: unconverted data remains when parsing with format "%B %d, %Y at %I %p": "PM", at position 0. You might want to try:
+    - passing `format` if your strings have a consistent format;
+    - passing `format='ISO8601'` if your strings are all ISO8601 but not necessarily in exactly the same format;
+    - passing `format='mixed'`, and the format will be inferred for each element individually. You might want to use `dayfirst` alongside this.
+2026-03-31 19:43:36,185 - ERROR - Erreur lors de la mise à jour des données temporelles pour NVDA: time data "May 20, 2026 at 4 PM" doesn't match format "%B %d, %Y at %I %p", at position 0. You might want to try:
+    - passing `format` if your strings have a consistent format;
+    - passing `format='ISO8601'` if your strings are all ISO8601 but not necessarily in exactly the same format;
+    - passing `format='mixed'`, and the format will be inferred for each element individually. You might want to use `dayfirst` alongside this.
+2026-03-31 19:43:37,521 - ERROR - NXP: No earnings dates found, symbol may be delisted
+2026-03-31 19:43:38,717 - ERROR - Erreur lors de la mise à jour des données temporelles pour SEMR: time data "May 6, 2026 at 4 PM" doesn't match format "%B %d, %Y at %I %p", at position 0. You might want to try:
+    - passing `format` if your strings have a consistent format;
+    - passing `format='ISO8601'` if your strings are all ISO8601 but not necessarily in exactly the same format;
+    - passing `format='mixed'`, and the format will be inferred for each element individually. You might want to use `dayfirst` alongside this.
+2026-04-01 09:14:01,689 - ERROR - Erreur lors de la mise à jour des données temporelles pour ALGN: unconverted data remains when parsing with format "%B %d, %Y at %I %p": "PM", at position 0. You might want to try:
+    - passing `format` if your strings have a consistent format;
+    - passing `format='ISO8601'` if your strings are all ISO8601 but not necessarily in exactly the same format;
+    - passing `format='mixed'`, and the format will be inferred for each element individually. You might want to use `dayfirst` alongside this.
+2026-04-01 09:14:02,738 - ERROR - Erreur lors de la mise à jour des données temporelles pour NI: time data "May 6, 2026 at 8 AM" doesn't match format "%B %d, %Y at %I %p", at position 0. You might want to try:
+    - passing `format` if your strings have a consistent format;
+    - passing `format='ISO8601'` if your strings are all ISO8601 but not necessarily in exactly the same format;
+    - passing `format='mixed'`, and the format will be inferred for each element individually. You might want to use `dayfirst` alongside this.
+2026-04-01 09:14:03,474 - ERROR - XLP: No earnings dates found, symbol may be delisted
+2026-04-01 09:14:03,929 - ERROR - HTTP Error 404: {"quoteSummary":{"result":null,"error":{"code":"Not Found","description":"No fundamentals data found for symbol: XLP"}}}
+2026-04-01 09:14:04,712 - ERROR - Erreur lors de la mise à jour des données temporelles pour INDB: unconverted data remains when parsing with format "%B %d, %Y at %I %p": "PM", at position 0. You might want to try:
+    - passing `format` if your strings have a consistent format;
+    - passing `format='ISO8601'` if your strings are all ISO8601 but not necessarily in exactly the same format;
+    - passing `format='mixed'`, and the format will be inferred for each element individually. You might want to use `dayfirst` alongside this.
+2026-04-01 09:14:05,584 - ERROR - Erreur lors de la mise à jour des données temporelles pour CMCSA: unconverted data remains when parsing with format "%B %d, %Y at %I %p": "AM", at position 0. You might want to try:
+    - passing `format` if your strings have a consistent format;
+    - passing `format='ISO8601'` if your strings are all ISO8601 but not necessarily in exactly the same format;
+    - passing `format='mixed'`, and the format will be inferred for each element individually. You might want to use `dayfirst` alongside this.
+2026-04-01 09:14:06,186 - ERROR - Erreur lors de la mise à jour des données temporelles pour YSN.DE: time data "May 5, 2026 at 11 AM" doesn't match format "%B %d, %Y at %I %p", at position 0. You might want to try:
+    - passing `format` if your strings have a consistent format;
+    - passing `format='ISO8601'` if your strings are all ISO8601 but not necessarily in exactly the same format;
+    - passing `format='mixed'`, and the format will be inferred for each element individually. You might want to use `dayfirst` alongside this.
+2026-04-01 09:14:07,019 - ERROR - Erreur lors de la mise à jour des données temporelles pour CAT: unconverted data remains when parsing with format "%B %d, %Y at %I %p": "AM", at position 0. You might want to try:
+    - passing `format` if your strings have a consistent format;
+    - passing `format='ISO8601'` if your strings are all ISO8601 but not necessarily in exactly the same format;
+    - passing `format='mixed'`, and the format will be inferred for each element individually. You might want to use `dayfirst` alongside this.
+2026-04-01 09:14:07,784 - ERROR - Erreur lors de la mise à jour des données temporelles pour AIR.PA: unconverted data remains when parsing with format "%B %d, %Y at %I %p": "AM", at position 0. You might want to try:
+    - passing `format` if your strings have a consistent format;
+    - passing `format='ISO8601'` if your strings are all ISO8601 but not necessarily in exactly the same format;
+    - passing `format='mixed'`, and the format will be inferred for each element individually. You might want to use `dayfirst` alongside this.
+2026-04-01 09:14:08,611 - ERROR - Erreur lors de la mise à jour des données temporelles pour CYTK: time data "May 6, 2026 at 4 PM" doesn't match format "%B %d, %Y at %I %p", at position 0. You might want to try:
+    - passing `format` if your strings have a consistent format;
+    - passing `format='ISO8601'` if your strings are all ISO8601 but not necessarily in exactly the same format;
+    - passing `format='mixed'`, and the format will be inferred for each element individually. You might want to use `dayfirst` alongside this.
+2026-04-01 09:14:09,437 - ERROR - Erreur lors de la mise à jour des données temporelles pour RCAT: time data "May 15, 2026 at 4 PM" doesn't match format "%B %d, %Y at %I %p", at position 0. You might want to try:
+    - passing `format` if your strings have a consistent format;
+    - passing `format='ISO8601'` if your strings are all ISO8601 but not necessarily in exactly the same format;
+    - passing `format='mixed'`, and the format will be inferred for each element individually. You might want to use `dayfirst` alongside this.
+2026-04-01 09:14:10,204 - ERROR - Erreur lors de la mise à jour des données temporelles pour WELL: unconverted data remains when parsing with format "%B %d, %Y at %I %p": "PM", at position 0. You might want to try:
+    - passing `format` if your strings have a consistent format;
+    - passing `format='ISO8601'` if your strings are all ISO8601 but not necessarily in exactly the same format;
+    - passing `format='mixed'`, and the format will be inferred for each element individually. You might want to use `dayfirst` alongside this.
+2026-04-01 09:14:10,842 - ERROR - Erreur lors de la mise à jour des données temporelles pour ASTS: time data "May 11, 2026 at 4 PM" doesn't match format "%B %d, %Y at %I %p", at position 0. You might want to try:
+    - passing `format` if your strings have a consistent format;
+    - passing `format='ISO8601'` if your strings are all ISO8601 but not necessarily in exactly the same format;
+    - passing `format='mixed'`, and the format will be inferred for each element individually. You might want to use `dayfirst` alongside this.
+2026-04-01 09:14:11,577 - ERROR - Erreur lors de la mise à jour des données temporelles pour 0027.HK: time data "May 7, 2026 at 4 AM" doesn't match format "%B %d, %Y at %I %p", at position 0. You might want to try:
+    - passing `format` if your strings have a consistent format;
+    - passing `format='ISO8601'` if your strings are all ISO8601 but not necessarily in exactly the same format;
+    - passing `format='mixed'`, and the format will be inferred for each element individually. You might want to use `dayfirst` alongside this.
+2026-04-01 09:14:12,403 - ERROR - Erreur lors de la mise à jour des données temporelles pour NTES: time data "May 14, 2026 at 8 AM" doesn't match format "%B %d, %Y at %I %p", at position 0. You might want to try:
+    - passing `format` if your strings have a consistent format;
+    - passing `format='ISO8601'` if your strings are all ISO8601 but not necessarily in exactly the same format;
+    - passing `format='mixed'`, and the format will be inferred for each element individually. You might want to use `dayfirst` alongside this.
+2026-04-01 10:48:01,587 - ERROR - Erreur lors de la mise à jour des données temporelles pour ALAB: time data "May 5, 2026 at 4 PM" doesn't match format "%B %d, %Y at %I %p", at position 0. You might want to try:
+    - passing `format` if your strings have a consistent format;
+    - passing `format='ISO8601'` if your strings are all ISO8601 but not necessarily in exactly the same format;
+    - passing `format='mixed'`, and the format will be inferred for each element individually. You might want to use `dayfirst` alongside this.
+2026-04-01 10:48:02,362 - ERROR - Erreur lors de la mise à jour des données temporelles pour ENR.DE: time data "May 12, 2026 at 11 AM" doesn't match format "%B %d, %Y at %I %p", at position 0. You might want to try:
+    - passing `format` if your strings have a consistent format;
+    - passing `format='ISO8601'` if your strings are all ISO8601 but not necessarily in exactly the same format;
+    - passing `format='mixed'`, and the format will be inferred for each element individually. You might want to use `dayfirst` alongside this.
+2026-04-01 10:48:03,181 - ERROR - Erreur lors de la mise à jour des données temporelles pour AVGO: time data "June 3, 2026 at 4 PM" doesn't match format "%B %d, %Y at %I %p", at position 0. You might want to try:
+    - passing `format` if your strings have a consistent format;
+    - passing `format='ISO8601'` if your strings are all ISO8601 but not necessarily in exactly the same format;
+    - passing `format='mixed'`, and the format will be inferred for each element individually. You might want to use `dayfirst` alongside this.
+2026-04-01 10:48:04,200 - ERROR - Erreur lors de la mise à jour des données temporelles pour IMNM: time data "May 12, 2026 at 4 PM" doesn't match format "%B %d, %Y at %I %p", at position 0. You might want to try:
+    - passing `format` if your strings have a consistent format;
+    - passing `format='ISO8601'` if your strings are all ISO8601 but not necessarily in exactly the same format;
+    - passing `format='mixed'`, and the format will be inferred for each element individually. You might want to use `dayfirst` alongside this.
+2026-04-01 10:48:05,033 - ERROR - Erreur lors de la mise à jour des données temporelles pour MSTR: unconverted data remains when parsing with format "%B %d, %Y at %I %p": "PM", at position 0. You might want to try:
+    - passing `format` if your strings have a consistent format;
+    - passing `format='ISO8601'` if your strings are all ISO8601 but not necessarily in exactly the same format;
+    - passing `format='mixed'`, and the format will be inferred for each element individually. You might want to use `dayfirst` alongside this.
+2026-04-01 10:48:05,650 - ERROR - NXP: No earnings dates found, symbol may be delisted
+2026-04-01 10:48:07,171 - ERROR - Erreur lors de la mise à jour des données temporelles pour MBOT: time data "March 26, 2026 at 4 PM" doesn't match format "%B %d, %Y at %I %p", at position 0. You might want to try:
+    - passing `format` if your strings have a consistent format;
+    - passing `format='ISO8601'` if your strings are all ISO8601 but not necessarily in exactly the same format;
+    - passing `format='mixed'`, and the format will be inferred for each element individually. You might want to use `dayfirst` alongside this.
+2026-04-01 10:48:07,963 - ERROR - Erreur lors de la mise à jour des données temporelles pour NVDA: time data "May 20, 2026 at 4 PM" doesn't match format "%B %d, %Y at %I %p", at position 0. You might want to try:
+    - passing `format` if your strings have a consistent format;
+    - passing `format='ISO8601'` if your strings are all ISO8601 but not necessarily in exactly the same format;
+    - passing `format='mixed'`, and the format will be inferred for each element individually. You might want to use `dayfirst` alongside this.
+2026-04-01 10:50:02,055 - ERROR - Erreur lors de la mise à jour des données temporelles pour AVGO: time data "June 3, 2026 at 4 PM" doesn't match format "%B %d, %Y at %I %p", at position 0. You might want to try:
+    - passing `format` if your strings have a consistent format;
+    - passing `format='ISO8601'` if your strings are all ISO8601 but not necessarily in exactly the same format;
+    - passing `format='mixed'`, and the format will be inferred for each element individually. You might want to use `dayfirst` alongside this.
+2026-04-01 10:50:02,229 - ERROR - Erreur lors de la mise à jour des données temporelles pour ENR.DE: time data "May 12, 2026 at 11 AM" doesn't match format "%B %d, %Y at %I %p", at position 0. You might want to try:
+    - passing `format` if your strings have a consistent format;
+    - passing `format='ISO8601'` if your strings are all ISO8601 but not necessarily in exactly the same format;
+    - passing `format='mixed'`, and the format will be inferred for each element individually. You might want to use `dayfirst` alongside this.
+2026-04-01 10:50:02,308 - ERROR - Erreur lors de la mise à jour des données temporelles pour IMNM: time data "May 12, 2026 at 4 PM" doesn't match format "%B %d, %Y at %I %p", at position 0. You might want to try:
+    - passing `format` if your strings have a consistent format;
+    - passing `format='ISO8601'` if your strings are all ISO8601 but not necessarily in exactly the same format;
+    - passing `format='mixed'`, and the format will be inferred for each element individually. You might want to use `dayfirst` alongside this.
+2026-04-01 10:50:02,382 - ERROR - Erreur lors de la mise à jour des données temporelles pour ALAB: time data "May 5, 2026 at 4 PM" doesn't match format "%B %d, %Y at %I %p", at position 0. You might want to try:
+    - passing `format` if your strings have a consistent format;
+    - passing `format='ISO8601'` if your strings are all ISO8601 but not necessarily in exactly the same format;
+    - passing `format='mixed'`, and the format will be inferred for each element individually. You might want to use `dayfirst` alongside this.
+2026-04-01 10:50:02,545 - ERROR - Erreur lors de la mise à jour des données temporelles pour MBOT: time data "March 26, 2026 at 4 PM" doesn't match format "%B %d, %Y at %I %p", at position 0. You might want to try:
+    - passing `format` if your strings have a consistent format;
+    - passing `format='ISO8601'` if your strings are all ISO8601 but not necessarily in exactly the same format;
+    - passing `format='mixed'`, and the format will be inferred for each element individually. You might want to use `dayfirst` alongside this.
+2026-04-01 10:50:02,620 - ERROR - Erreur lors de la mise à jour des données temporelles pour MSTR: unconverted data remains when parsing with format "%B %d, %Y at %I %p": "PM", at position 0. You might want to try:
+    - passing `format` if your strings have a consistent format;
+    - passing `format='ISO8601'` if your strings are all ISO8601 but not necessarily in exactly the same format;
+    - passing `format='mixed'`, and the format will be inferred for each element individually. You might want to use `dayfirst` alongside this.
+2026-04-01 10:50:02,695 - ERROR - Erreur lors de la mise à jour des données temporelles pour NVDA: time data "May 20, 2026 at 4 PM" doesn't match format "%B %d, %Y at %I %p", at position 0. You might want to try:
+    - passing `format` if your strings have a consistent format;
+    - passing `format='ISO8601'` if your strings are all ISO8601 but not necessarily in exactly the same format;
+    - passing `format='mixed'`, and the format will be inferred for each element individually. You might want to use `dayfirst` alongside this.
+2026-04-01 10:50:02,873 - ERROR - NXP: No earnings dates found, symbol may be delisted
+2026-04-01 10:50:09,883 - ERROR - Erreur lors de la mise à jour des données temporelles pour ALAB: time data "May 5, 2026 at 4 PM" doesn't match format "%B %d, %Y at %I %p", at position 0. You might want to try:
+    - passing `format` if your strings have a consistent format;
+    - passing `format='ISO8601'` if your strings are all ISO8601 but not necessarily in exactly the same format;
+    - passing `format='mixed'`, and the format will be inferred for each element individually. You might want to use `dayfirst` alongside this.
+2026-04-01 10:50:09,961 - ERROR - Erreur lors de la mise à jour des données temporelles pour ENR.DE: time data "May 12, 2026 at 11 AM" doesn't match format "%B %d, %Y at %I %p", at position 0. You might want to try:
+    - passing `format` if your strings have a consistent format;
+    - passing `format='ISO8601'` if your strings are all ISO8601 but not necessarily in exactly the same format;
+    - passing `format='mixed'`, and the format will be inferred for each element individually. You might want to use `dayfirst` alongside this.
+2026-04-01 10:50:10,106 - ERROR - Erreur lors de la mise à jour des données temporelles pour AVGO: time data "June 3, 2026 at 4 PM" doesn't match format "%B %d, %Y at %I %p", at position 0. You might want to try:
+    - passing `format` if your strings have a consistent format;
+    - passing `format='ISO8601'` if your strings are all ISO8601 but not necessarily in exactly the same format;
+    - passing `format='mixed'`, and the format will be inferred for each element individually. You might want to use `dayfirst` alongside this.
+2026-04-01 10:50:10,186 - ERROR - Erreur lors de la mise à jour des données temporelles pour IMNM: time data "May 12, 2026 at 4 PM" doesn't match format "%B %d, %Y at %I %p", at position 0. You might want to try:
+    - passing `format` if your strings have a consistent format;
+    - passing `format='ISO8601'` if your strings are all ISO8601 but not necessarily in exactly the same format;
+    - passing `format='mixed'`, and the format will be inferred for each element individually. You might want to use `dayfirst` alongside this.
+2026-04-01 10:50:10,265 - ERROR - Erreur lors de la mise à jour des données temporelles pour NVDA: time data "May 20, 2026 at 4 PM" doesn't match format "%B %d, %Y at %I %p", at position 0. You might want to try:
+    - passing `format` if your strings have a consistent format;
+    - passing `format='ISO8601'` if your strings are all ISO8601 but not necessarily in exactly the same format;
+    - passing `format='mixed'`, and the format will be inferred for each element individually. You might want to use `dayfirst` alongside this.
+2026-04-01 10:50:10,411 - ERROR - NXP: No earnings dates found, symbol may be delisted
+2026-04-01 10:50:10,634 - ERROR - Erreur lors de la mise à jour des données temporelles pour MSTR: unconverted data remains when parsing with format "%B %d, %Y at %I %p": "PM", at position 0. You might want to try:
+    - passing `format` if your strings have a consistent format;
+    - passing `format='ISO8601'` if your strings are all ISO8601 but not necessarily in exactly the same format;
+    - passing `format='mixed'`, and the format will be inferred for each element individually. You might want to use `dayfirst` alongside this.
+2026-04-01 10:50:10,710 - ERROR - Erreur lors de la mise à jour des données temporelles pour MBOT: time data "March 26, 2026 at 4 PM" doesn't match format "%B %d, %Y at %I %p", at position 0. You might want to try:
+    - passing `format` if your strings have a consistent format;
+    - passing `format='ISO8601'` if your strings are all ISO8601 but not necessarily in exactly the same format;
+    - passing `format='mixed'`, and the format will be inferred for each element individually. You might want to use `dayfirst` alongside this.
+2026-04-01 11:00:31,428 - ERROR - Erreur lors de la mise à jour des données temporelles pour ALAB: time data "May 5, 2026 at 4 PM" doesn't match format "%B %d, %Y at %I %p", at position 0. You might want to try:
+    - passing `format` if your strings have a consistent format;
+    - passing `format='ISO8601'` if your strings are all ISO8601 but not necessarily in exactly the same format;
+    - passing `format='mixed'`, and the format will be inferred for each element individually. You might want to use `dayfirst` alongside this.
+2026-04-01 11:00:32,206 - ERROR - Erreur lors de la mise à jour des données temporelles pour ENR.DE: time data "May 12, 2026 at 11 AM" doesn't match format "%B %d, %Y at %I %p", at position 0. You might want to try:
+    - passing `format` if your strings have a consistent format;
+    - passing `format='ISO8601'` if your strings are all ISO8601 but not necessarily in exactly the same format;
+    - passing `format='mixed'`, and the format will be inferred for each element individually. You might want to use `dayfirst` alongside this.
+2026-04-01 11:00:32,914 - ERROR - Erreur lors de la mise à jour des données temporelles pour AVGO: time data "June 3, 2026 at 4 PM" doesn't match format "%B %d, %Y at %I %p", at position 0. You might want to try:
+    - passing `format` if your strings have a consistent format;
+    - passing `format='ISO8601'` if your strings are all ISO8601 but not necessarily in exactly the same format;
+    - passing `format='mixed'`, and the format will be inferred for each element individually. You might want to use `dayfirst` alongside this.
+2026-04-01 11:00:33,891 - ERROR - Erreur lors de la mise à jour des données temporelles pour IMNM: time data "May 12, 2026 at 4 PM" doesn't match format "%B %d, %Y at %I %p", at position 0. You might want to try:
+    - passing `format` if your strings have a consistent format;
+    - passing `format='ISO8601'` if your strings are all ISO8601 but not necessarily in exactly the same format;
+    - passing `format='mixed'`, and the format will be inferred for each element individually. You might want to use `dayfirst` alongside this.
+2026-04-01 11:00:34,627 - ERROR - Erreur lors de la mise à jour des données temporelles pour MBOT: time data "March 26, 2026 at 4 PM" doesn't match format "%B %d, %Y at %I %p", at position 0. You might want to try:
+    - passing `format` if your strings have a consistent format;
+    - passing `format='ISO8601'` if your strings are all ISO8601 but not necessarily in exactly the same format;
+    - passing `format='mixed'`, and the format will be inferred for each element individually. You might want to use `dayfirst` alongside this.
+2026-04-01 11:00:35,361 - ERROR - Erreur lors de la mise à jour des données temporelles pour MSTR: unconverted data remains when parsing with format "%B %d, %Y at %I %p": "PM", at position 0. You might want to try:
+    - passing `format` if your strings have a consistent format;
+    - passing `format='ISO8601'` if your strings are all ISO8601 but not necessarily in exactly the same format;
+    - passing `format='mixed'`, and the format will be inferred for each element individually. You might want to use `dayfirst` alongside this.
+2026-04-01 11:00:35,978 - ERROR - NXP: No earnings dates found, symbol may be delisted
+2026-04-01 11:00:37,188 - ERROR - Erreur lors de la mise à jour des données temporelles pour NVDA: time data "May 20, 2026 at 4 PM" doesn't match format "%B %d, %Y at %I %p", at position 0. You might want to try:
+    - passing `format` if your strings have a consistent format;
+    - passing `format='ISO8601'` if your strings are all ISO8601 but not necessarily in exactly the same format;
+    - passing `format='mixed'`, and the format will be inferred for each element individually. You might want to use `dayfirst` alongside this.
+2026-04-01 11:00:50,861 - ERROR - Erreur lors de la mise à jour des données temporelles pour ENR.DE: time data "May 12, 2026 at 11 AM" doesn't match format "%B %d, %Y at %I %p", at position 0. You might want to try:
+    - passing `format` if your strings have a consistent format;
+    - passing `format='ISO8601'` if your strings are all ISO8601 but not necessarily in exactly the same format;
+    - passing `format='mixed'`, and the format will be inferred for each element individually. You might want to use `dayfirst` alongside this.
+2026-04-01 11:00:50,990 - ERROR - Erreur lors de la mise à jour des données temporelles pour AVGO: time data "June 3, 2026 at 4 PM" doesn't match format "%B %d, %Y at %I %p", at position 0. You might want to try:
+    - passing `format` if your strings have a consistent format;
+    - passing `format='ISO8601'` if your strings are all ISO8601 but not necessarily in exactly the same format;
+    - passing `format='mixed'`, and the format will be inferred for each element individually. You might want to use `dayfirst` alongside this.
+2026-04-01 11:00:51,064 - ERROR - Erreur lors de la mise à jour des données temporelles pour ALAB: time data "May 5, 2026 at 4 PM" doesn't match format "%B %d, %Y at %I %p", at position 0. You might want to try:
+    - passing `format` if your strings have a consistent format;
+    - passing `format='ISO8601'` if your strings are all ISO8601 but not necessarily in exactly the same format;
+    - passing `format='mixed'`, and the format will be inferred for each element individually. You might want to use `dayfirst` alongside this.
+2026-04-01 11:00:51,151 - ERROR - Erreur lors de la mise à jour des données temporelles pour IMNM: time data "May 12, 2026 at 4 PM" doesn't match format "%B %d, %Y at %I %p", at position 0. You might want to try:
+    - passing `format` if your strings have a consistent format;
+    - passing `format='ISO8601'` if your strings are all ISO8601 but not necessarily in exactly the same format;
+    - passing `format='mixed'`, and the format will be inferred for each element individually. You might want to use `dayfirst` alongside this.
+2026-04-01 11:00:51,289 - ERROR - NXP: No earnings dates found, symbol may be delisted
+2026-04-01 11:00:51,515 - ERROR - Erreur lors de la mise à jour des données temporelles pour NVDA: time data "May 20, 2026 at 4 PM" doesn't match format "%B %d, %Y at %I %p", at position 0. You might want to try:
+    - passing `format` if your strings have a consistent format;
+    - passing `format='ISO8601'` if your strings are all ISO8601 but not necessarily in exactly the same format;
+    - passing `format='mixed'`, and the format will be inferred for each element individually. You might want to use `dayfirst` alongside this.
+2026-04-01 11:00:51,593 - ERROR - Erreur lors de la mise à jour des données temporelles pour MSTR: unconverted data remains when parsing with format "%B %d, %Y at %I %p": "PM", at position 0. You might want to try:
+    - passing `format` if your strings have a consistent format;
+    - passing `format='ISO8601'` if your strings are all ISO8601 but not necessarily in exactly the same format;
+    - passing `format='mixed'`, and the format will be inferred for each element individually. You might want to use `dayfirst` alongside this.
+2026-04-01 11:00:51,736 - ERROR - Erreur lors de la mise à jour des données temporelles pour MBOT: time data "March 26, 2026 at 4 PM" doesn't match format "%B %d, %Y at %I %p", at position 0. You might want to try:
+    - passing `format` if your strings have a consistent format;
+    - passing `format='ISO8601'` if your strings are all ISO8601 but not necessarily in exactly the same format;
+    - passing `format='mixed'`, and the format will be inferred for each element individually. You might want to use `dayfirst` alongside this.
+2026-04-01 11:01:30,943 - ERROR - Erreur lors de la mise à jour des données temporelles pour ALAB: time data "May 5, 2026 at 4 PM" doesn't match format "%B %d, %Y at %I %p", at position 0. You might want to try:
+    - passing `format` if your strings have a consistent format;
+    - passing `format='ISO8601'` if your strings are all ISO8601 but not necessarily in exactly the same format;
+    - passing `format='mixed'`, and the format will be inferred for each element individually. You might want to use `dayfirst` alongside this.
+2026-04-01 11:01:31,110 - ERROR - Erreur lors de la mise à jour des données temporelles pour ENR.DE: time data "May 12, 2026 at 11 AM" doesn't match format "%B %d, %Y at %I %p", at position 0. You might want to try:
+    - passing `format` if your strings have a consistent format;
+    - passing `format='ISO8601'` if your strings are all ISO8601 but not necessarily in exactly the same format;
+    - passing `format='mixed'`, and the format will be inferred for each element individually. You might want to use `dayfirst` alongside this.
+2026-04-01 11:01:31,189 - ERROR - Erreur lors de la mise à jour des données temporelles pour AVGO: time data "June 3, 2026 at 4 PM" doesn't match format "%B %d, %Y at %I %p", at position 0. You might want to try:
+    - passing `format` if your strings have a consistent format;
+    - passing `format='ISO8601'` if your strings are all ISO8601 but not necessarily in exactly the same format;
+    - passing `format='mixed'`, and the format will be inferred for each element individually. You might want to use `dayfirst` alongside this.
+2026-04-01 11:01:31,266 - ERROR - Erreur lors de la mise à jour des données temporelles pour IMNM: time data "May 12, 2026 at 4 PM" doesn't match format "%B %d, %Y at %I %p", at position 0. You might want to try:
+    - passing `format` if your strings have a consistent format;
+    - passing `format='ISO8601'` if your strings are all ISO8601 but not necessarily in exactly the same format;
+    - passing `format='mixed'`, and the format will be inferred for each element individually. You might want to use `dayfirst` alongside this.
+2026-04-01 11:01:31,455 - ERROR - Erreur lors de la mise à jour des données temporelles pour MBOT: time data "March 26, 2026 at 4 PM" doesn't match format "%B %d, %Y at %I %p", at position 0. You might want to try:
+    - passing `format` if your strings have a consistent format;
+    - passing `format='ISO8601'` if your strings are all ISO8601 but not necessarily in exactly the same format;
+    - passing `format='mixed'`, and the format will be inferred for each element individually. You might want to use `dayfirst` alongside this.
+2026-04-01 11:01:31,535 - ERROR - Erreur lors de la mise à jour des données temporelles pour MSTR: unconverted data remains when parsing with format "%B %d, %Y at %I %p": "PM", at position 0. You might want to try:
+    - passing `format` if your strings have a consistent format;
+    - passing `format='ISO8601'` if your strings are all ISO8601 but not necessarily in exactly the same format;
+    - passing `format='mixed'`, and the format will be inferred for each element individually. You might want to use `dayfirst` alongside this.
+2026-04-01 11:01:31,615 - ERROR - Erreur lors de la mise à jour des données temporelles pour NVDA: time data "May 20, 2026 at 4 PM" doesn't match format "%B %d, %Y at %I %p", at position 0. You might want to try:
+    - passing `format` if your strings have a consistent format;
+    - passing `format='ISO8601'` if your strings are all ISO8601 but not necessarily in exactly the same format;
+    - passing `format='mixed'`, and the format will be inferred for each element individually. You might want to use `dayfirst` alongside this.
+2026-04-01 11:01:31,793 - ERROR - NXP: No earnings dates found, symbol may be delisted
+2026-04-01 11:04:30,625 - ERROR - HTTP Error 404: {"quoteSummary":{"result":null,"error":{"code":"Not Found","description":"Quote not found for symbol: CDTX"}}}
+2026-04-01 11:04:31,112 - ERROR - $CDTX: possibly delisted; no price data found  (period=18mo) (Yahoo error = "No data found, symbol may be delisted")
+2026-04-01 11:04:31,113 - ERROR - 
+1 Failed download:
+2026-04-01 11:04:31,113 - ERROR - ['CDTX']: possibly delisted; no price data found  (period=18mo) (Yahoo error = "No data found, symbol may be delisted")
+2026-04-01 11:04:31,632 - ERROR - HTTP Error 404: {"quoteSummary":{"result":null,"error":{"code":"Not Found","description":"Quote not found for symbol: CDTX"}}}
+2026-04-01 11:04:31,933 - ERROR - $CDTX: possibly delisted; no price data found  (period=18mo) (Yahoo error = "No data found, symbol may be delisted")
+2026-04-01 11:04:31,942 - ERROR - 
+1 Failed download:
+2026-04-01 11:04:31,942 - ERROR - ['CDTX']: possibly delisted; no price data found  (period=18mo) (Yahoo error = "No data found, symbol may be delisted")
+2026-04-01 11:06:36,420 - ERROR - Erreur lors de la mise à jour des données temporelles pour CNTX: time data "March 23, 2026 at 4 PM" doesn't match format "%B %d, %Y at %I %p", at position 0. You might want to try:
+    - passing `format` if your strings have a consistent format;
+    - passing `format='ISO8601'` if your strings are all ISO8601 but not necessarily in exactly the same format;
+    - passing `format='mixed'`, and the format will be inferred for each element individually. You might want to use `dayfirst` alongside this.
+2026-04-02 19:07:55,992 - ERROR - Erreur lors de la mise à jour des données temporelles pour AVGO: time data "June 3, 2026 at 4 PM" doesn't match format "%B %d, %Y at %I %p", at position 0. You might want to try:
+    - passing `format` if your strings have a consistent format;
+    - passing `format='ISO8601'` if your strings are all ISO8601 but not necessarily in exactly the same format;
+    - passing `format='mixed'`, and the format will be inferred for each element individually. You might want to use `dayfirst` alongside this.
+2026-04-02 19:07:56,619 - ERROR - Erreur lors de la mise à jour des données temporelles pour ALAB: time data "May 5, 2026 at 4 PM" doesn't match format "%B %d, %Y at %I %p", at position 0. You might want to try:
+    - passing `format` if your strings have a consistent format;
+    - passing `format='ISO8601'` if your strings are all ISO8601 but not necessarily in exactly the same format;
+    - passing `format='mixed'`, and the format will be inferred for each element individually. You might want to use `dayfirst` alongside this.
+2026-04-02 19:07:57,304 - ERROR - Erreur lors de la mise à jour des données temporelles pour MBOT: time data "March 26, 2026 at 4 PM" doesn't match format "%B %d, %Y at %I %p", at position 0. You might want to try:
+    - passing `format` if your strings have a consistent format;
+    - passing `format='ISO8601'` if your strings are all ISO8601 but not necessarily in exactly the same format;
+    - passing `format='mixed'`, and the format will be inferred for each element individually. You might want to use `dayfirst` alongside this.
+2026-04-02 19:07:58,008 - ERROR - Erreur lors de la mise à jour des données temporelles pour MSTR: unconverted data remains when parsing with format "%B %d, %Y at %I %p": "PM", at position 0. You might want to try:
+    - passing `format` if your strings have a consistent format;
+    - passing `format='ISO8601'` if your strings are all ISO8601 but not necessarily in exactly the same format;
+    - passing `format='mixed'`, and the format will be inferred for each element individually. You might want to use `dayfirst` alongside this.
+2026-04-02 19:07:58,699 - ERROR - Erreur lors de la mise à jour des données temporelles pour NVDA: time data "May 20, 2026 at 4 PM" doesn't match format "%B %d, %Y at %I %p", at position 0. You might want to try:
+    - passing `format` if your strings have a consistent format;
+    - passing `format='ISO8601'` if your strings are all ISO8601 but not necessarily in exactly the same format;
+    - passing `format='mixed'`, and the format will be inferred for each element individually. You might want to use `dayfirst` alongside this.
+2026-04-02 19:07:59,361 - ERROR - NXP: No earnings dates found, symbol may be delisted
+2026-04-02 19:08:21,623 - ERROR - Erreur lors de la mise à jour des données temporelles pour AVGO: time data "June 3, 2026 at 4 PM" doesn't match format "%B %d, %Y at %I %p", at position 0. You might want to try:
+    - passing `format` if your strings have a consistent format;
+    - passing `format='ISO8601'` if your strings are all ISO8601 but not necessarily in exactly the same format;
+    - passing `format='mixed'`, and the format will be inferred for each element individually. You might want to use `dayfirst` alongside this.
+2026-04-02 19:08:21,696 - ERROR - Erreur lors de la mise à jour des données temporelles pour ALAB: time data "May 5, 2026 at 4 PM" doesn't match format "%B %d, %Y at %I %p", at position 0. You might want to try:
+    - passing `format` if your strings have a consistent format;
+    - passing `format='ISO8601'` if your strings are all ISO8601 but not necessarily in exactly the same format;
+    - passing `format='mixed'`, and the format will be inferred for each element individually. You might want to use `dayfirst` alongside this.
+2026-04-02 19:08:21,774 - ERROR - Erreur lors de la mise à jour des données temporelles pour MBOT: time data "March 26, 2026 at 4 PM" doesn't match format "%B %d, %Y at %I %p", at position 0. You might want to try:
+    - passing `format` if your strings have a consistent format;
+    - passing `format='ISO8601'` if your strings are all ISO8601 but not necessarily in exactly the same format;
+    - passing `format='mixed'`, and the format will be inferred for each element individually. You might want to use `dayfirst` alongside this.
+2026-04-02 19:08:21,895 - ERROR - Erreur lors de la mise à jour des données temporelles pour MSTR: unconverted data remains when parsing with format "%B %d, %Y at %I %p": "PM", at position 0. You might want to try:
+    - passing `format` if your strings have a consistent format;
+    - passing `format='ISO8601'` if your strings are all ISO8601 but not necessarily in exactly the same format;
+    - passing `format='mixed'`, and the format will be inferred for each element individually. You might want to use `dayfirst` alongside this.
+2026-04-02 19:08:21,973 - ERROR - Erreur lors de la mise à jour des données temporelles pour NVDA: time data "May 20, 2026 at 4 PM" doesn't match format "%B %d, %Y at %I %p", at position 0. You might want to try:
+    - passing `format` if your strings have a consistent format;
+    - passing `format='ISO8601'` if your strings are all ISO8601 but not necessarily in exactly the same format;
+    - passing `format='mixed'`, and the format will be inferred for each element individually. You might want to use `dayfirst` alongside this.
+2026-04-02 19:08:22,042 - ERROR - NXP: No earnings dates found, symbol may be delisted
+2026-04-02 19:09:30,488 - ERROR - HTTP Error 401: {"finance":{"result":null,"error":{"code":"Unauthorized","description":"Invalid Crumb"}}}
+2026-04-02 19:09:58,375 - ERROR - Erreur lors de la mise à jour des données temporelles pour CB: unconverted data remains when parsing with format "%B %d, %Y at %I %p": "PM", at position 0. You might want to try:
+    - passing `format` if your strings have a consistent format;
+    - passing `format='ISO8601'` if your strings are all ISO8601 but not necessarily in exactly the same format;
+    - passing `format='mixed'`, and the format will be inferred for each element individually. You might want to use `dayfirst` alongside this.
+2026-04-02 19:09:59,189 - ERROR - Erreur lors de la mise à jour des données temporelles pour PG: unconverted data remains when parsing with format "%B %d, %Y at %I %p": "AM", at position 0. You might want to try:
+    - passing `format` if your strings have a consistent format;
+    - passing `format='ISO8601'` if your strings are all ISO8601 but not necessarily in exactly the same format;
+    - passing `format='mixed'`, and the format will be inferred for each element individually. You might want to use `dayfirst` alongside this.
+2026-04-02 19:09:59,931 - ERROR - Erreur lors de la mise à jour des données temporelles pour CSCO: time data "May 13, 2026 at 4 PM" doesn't match format "%B %d, %Y at %I %p", at position 0. You might want to try:
+    - passing `format` if your strings have a consistent format;
+    - passing `format='ISO8601'` if your strings are all ISO8601 but not necessarily in exactly the same format;
+    - passing `format='mixed'`, and the format will be inferred for each element individually. You might want to use `dayfirst` alongside this.
+2026-04-02 19:10:00,822 - ERROR - Erreur lors de la mise à jour des données temporelles pour CAH: unconverted data remains when parsing with format "%B %d, %Y at %I %p": "AM", at position 0. You might want to try:
+    - passing `format` if your strings have a consistent format;
+    - passing `format='ISO8601'` if your strings are all ISO8601 but not necessarily in exactly the same format;
+    - passing `format='mixed'`, and the format will be inferred for each element individually. You might want to use `dayfirst` alongside this.
+2026-04-02 19:10:01,539 - ERROR - Erreur lors de la mise à jour des données temporelles pour NVO: time data "May 6, 2026 at 8 AM" doesn't match format "%B %d, %Y at %I %p", at position 0. You might want to try:
+    - passing `format` if your strings have a consistent format;
+    - passing `format='ISO8601'` if your strings are all ISO8601 but not necessarily in exactly the same format;
+    - passing `format='mixed'`, and the format will be inferred for each element individually. You might want to use `dayfirst` alongside this.
+2026-04-02 19:10:02,475 - ERROR - Erreur lors de la mise à jour des données temporelles pour SU.PA: time data "July 30, 2026 at 11 AM" doesn't match format "%B %d, %Y at %I %p", at position 0. You might want to try:
+    - passing `format` if your strings have a consistent format;
+    - passing `format='ISO8601'` if your strings are all ISO8601 but not necessarily in exactly the same format;
+    - passing `format='mixed'`, and the format will be inferred for each element individually. You might want to use `dayfirst` alongside this.
+2026-04-02 19:10:03,314 - ERROR - Erreur lors de la mise à jour des données temporelles pour FIX: unconverted data remains when parsing with format "%B %d, %Y at %I %p": "PM", at position 0. You might want to try:
+    - passing `format` if your strings have a consistent format;
+    - passing `format='ISO8601'` if your strings are all ISO8601 but not necessarily in exactly the same format;
+    - passing `format='mixed'`, and the format will be inferred for each element individually. You might want to use `dayfirst` alongside this.
+2026-04-02 19:10:04,014 - ERROR - Erreur lors de la mise à jour des données temporelles pour ADBE: time data "June 11, 2026 at 4 PM" doesn't match format "%B %d, %Y at %I %p", at position 0. You might want to try:
+    - passing `format` if your strings have a consistent format;
+    - passing `format='ISO8601'` if your strings are all ISO8601 but not necessarily in exactly the same format;
+    - passing `format='mixed'`, and the format will be inferred for each element individually. You might want to use `dayfirst` alongside this.
+2026-04-02 19:10:04,820 - ERROR - Erreur lors de la mise à jour des données temporelles pour VTR: unconverted data remains when parsing with format "%B %d, %Y at %I %p": "PM", at position 0. You might want to try:
+    - passing `format` if your strings have a consistent format;
+    - passing `format='ISO8601'` if your strings are all ISO8601 but not necessarily in exactly the same format;
+    - passing `format='mixed'`, and the format will be inferred for each element individually. You might want to use `dayfirst` alongside this.
+2026-04-02 19:10:05,535 - ERROR - Erreur lors de la mise à jour des données temporelles pour PM: unconverted data remains when parsing with format "%B %d, %Y at %I %p": "AM", at position 0. You might want to try:
+    - passing `format` if your strings have a consistent format;
+    - passing `format='ISO8601'` if your strings are all ISO8601 but not necessarily in exactly the same format;
+    - passing `format='mixed'`, and the format will be inferred for each element individually. You might want to use `dayfirst` alongside this.
+2026-04-02 19:10:06,188 - ERROR - Erreur lors de la mise à jour des données temporelles pour MSTR: unconverted data remains when parsing with format "%B %d, %Y at %I %p": "PM", at position 0. You might want to try:
+    - passing `format` if your strings have a consistent format;
+    - passing `format='ISO8601'` if your strings are all ISO8601 but not necessarily in exactly the same format;
+    - passing `format='mixed'`, and the format will be inferred for each element individually. You might want to use `dayfirst` alongside this.
+2026-04-02 19:10:06,942 - ERROR - Erreur lors de la mise à jour des données temporelles pour 3328.HK: time data "May 6, 2026 at 4 AM" doesn't match format "%B %d, %Y at %I %p", at position 0. You might want to try:
+    - passing `format` if your strings have a consistent format;
+    - passing `format='ISO8601'` if your strings are all ISO8601 but not necessarily in exactly the same format;
+    - passing `format='mixed'`, and the format will be inferred for each element individually. You might want to use `dayfirst` alongside this.
+2026-04-02 19:12:58,294 - ERROR - Erreur lors de la mise à jour des données temporelles pour PG: unconverted data remains when parsing with format "%B %d, %Y at %I %p": "AM", at position 0. You might want to try:
+    - passing `format` if your strings have a consistent format;
+    - passing `format='ISO8601'` if your strings are all ISO8601 but not necessarily in exactly the same format;
+    - passing `format='mixed'`, and the format will be inferred for each element individually. You might want to use `dayfirst` alongside this.
+2026-04-02 19:12:58,372 - ERROR - Erreur lors de la mise à jour des données temporelles pour CB: unconverted data remains when parsing with format "%B %d, %Y at %I %p": "PM", at position 0. You might want to try:
+    - passing `format` if your strings have a consistent format;
+    - passing `format='ISO8601'` if your strings are all ISO8601 but not necessarily in exactly the same format;
+    - passing `format='mixed'`, and the format will be inferred for each element individually. You might want to use `dayfirst` alongside this.
+2026-04-02 19:12:58,527 - ERROR - Erreur lors de la mise à jour des données temporelles pour CAH: unconverted data remains when parsing with format "%B %d, %Y at %I %p": "AM", at position 0. You might want to try:
+    - passing `format` if your strings have a consistent format;
+    - passing `format='ISO8601'` if your strings are all ISO8601 but not necessarily in exactly the same format;
+    - passing `format='mixed'`, and the format will be inferred for each element individually. You might want to use `dayfirst` alongside this.
+2026-04-02 19:12:58,598 - ERROR - Erreur lors de la mise à jour des données temporelles pour SU.PA: time data "July 30, 2026 at 11 AM" doesn't match format "%B %d, %Y at %I %p", at position 0. You might want to try:
+    - passing `format` if your strings have a consistent format;
+    - passing `format='ISO8601'` if your strings are all ISO8601 but not necessarily in exactly the same format;
+    - passing `format='mixed'`, and the format will be inferred for each element individually. You might want to use `dayfirst` alongside this.
+2026-04-02 19:12:58,676 - ERROR - Erreur lors de la mise à jour des données temporelles pour ADBE: time data "June 11, 2026 at 4 PM" doesn't match format "%B %d, %Y at %I %p", at position 0. You might want to try:
+    - passing `format` if your strings have a consistent format;
+    - passing `format='ISO8601'` if your strings are all ISO8601 but not necessarily in exactly the same format;
+    - passing `format='mixed'`, and the format will be inferred for each element individually. You might want to use `dayfirst` alongside this.
+2026-04-02 19:12:58,846 - ERROR - Erreur lors de la mise à jour des données temporelles pour FIX: unconverted data remains when parsing with format "%B %d, %Y at %I %p": "PM", at position 0. You might want to try:
+    - passing `format` if your strings have a consistent format;
+    - passing `format='ISO8601'` if your strings are all ISO8601 but not necessarily in exactly the same format;
+    - passing `format='mixed'`, and the format will be inferred for each element individually. You might want to use `dayfirst` alongside this.
+2026-04-02 19:12:58,923 - ERROR - Erreur lors de la mise à jour des données temporelles pour NVO: time data "May 6, 2026 at 8 AM" doesn't match format "%B %d, %Y at %I %p", at position 0. You might want to try:
+    - passing `format` if your strings have a consistent format;
+    - passing `format='ISO8601'` if your strings are all ISO8601 but not necessarily in exactly the same format;
+    - passing `format='mixed'`, and the format will be inferred for each element individually. You might want to use `dayfirst` alongside this.
+2026-04-02 19:12:59,001 - ERROR - Erreur lors de la mise à jour des données temporelles pour VTR: unconverted data remains when parsing with format "%B %d, %Y at %I %p": "PM", at position 0. You might want to try:
+    - passing `format` if your strings have a consistent format;
+    - passing `format='ISO8601'` if your strings are all ISO8601 but not necessarily in exactly the same format;
+    - passing `format='mixed'`, and the format will be inferred for each element individually. You might want to use `dayfirst` alongside this.
+2026-04-02 19:12:59,172 - ERROR - Erreur lors de la mise à jour des données temporelles pour PM: unconverted data remains when parsing with format "%B %d, %Y at %I %p": "AM", at position 0. You might want to try:
+    - passing `format` if your strings have a consistent format;
+    - passing `format='ISO8601'` if your strings are all ISO8601 but not necessarily in exactly the same format;
+    - passing `format='mixed'`, and the format will be inferred for each element individually. You might want to use `dayfirst` alongside this.
+2026-04-02 19:12:59,252 - ERROR - Erreur lors de la mise à jour des données temporelles pour 3328.HK: time data "May 6, 2026 at 4 AM" doesn't match format "%B %d, %Y at %I %p", at position 0. You might want to try:
+    - passing `format` if your strings have a consistent format;
+    - passing `format='ISO8601'` if your strings are all ISO8601 but not necessarily in exactly the same format;
+    - passing `format='mixed'`, and the format will be inferred for each element individually. You might want to use `dayfirst` alongside this.
+2026-04-02 19:12:59,331 - ERROR - Erreur lors de la mise à jour des données temporelles pour MSTR: unconverted data remains when parsing with format "%B %d, %Y at %I %p": "PM", at position 0. You might want to try:
+    - passing `format` if your strings have a consistent format;
+    - passing `format='ISO8601'` if your strings are all ISO8601 but not necessarily in exactly the same format;
+    - passing `format='mixed'`, and the format will be inferred for each element individually. You might want to use `dayfirst` alongside this.
+2026-04-02 19:15:14,787 - ERROR - $RKN: possibly delisted; no price data found  (period=5y)
+2026-04-02 19:15:14,790 - ERROR - 
+1 Failed download:
+2026-04-02 19:15:14,790 - ERROR - ['RKN']: possibly delisted; no price data found  (period=5y)
+2026-04-02 19:15:15,391 - ERROR - $RKN: possibly delisted; no price data found  (period=5y)
+2026-04-02 19:15:15,400 - ERROR - 
+1 Failed download:
+2026-04-02 19:15:15,400 - ERROR - ['RKN']: possibly delisted; no price data found  (period=5y)
+2026-04-02 19:16:03,445 - ERROR - Erreur lors de la mise à jour des données temporelles pour SLNG: time data "May 6, 2026 at 4 PM" doesn't match format "%B %d, %Y at %I %p", at position 0. You might want to try:
+    - passing `format` if your strings have a consistent format;
+    - passing `format='ISO8601'` if your strings are all ISO8601 but not necessarily in exactly the same format;
+    - passing `format='mixed'`, and the format will be inferred for each element individually. You might want to use `dayfirst` alongside this.
+2026-04-02 19:16:04,107 - ERROR - Erreur lors de la mise à jour des données temporelles pour CNTX: time data "March 23, 2026 at 4 PM" doesn't match format "%B %d, %Y at %I %p", at position 0. You might want to try:
+    - passing `format` if your strings have a consistent format;
+    - passing `format='ISO8601'` if your strings are all ISO8601 but not necessarily in exactly the same format;
+    - passing `format='mixed'`, and the format will be inferred for each element individually. You might want to use `dayfirst` alongside this.
+2026-04-02 19:16:05,042 - ERROR - YDES: No earnings dates found, symbol may be delisted
+2026-04-02 19:16:05,542 - ERROR - HTTP Error 404: {"quoteSummary":{"result":null,"error":{"code":"Not Found","description":"No fundamentals data found for symbol: YDES"}}}
+2026-04-02 19:16:06,376 - ERROR - Erreur lors de la mise à jour des données temporelles pour FULC: unconverted data remains when parsing with format "%B %d, %Y at %I %p": "AM", at position 0. You might want to try:
+    - passing `format` if your strings have a consistent format;
+    - passing `format='ISO8601'` if your strings are all ISO8601 but not necessarily in exactly the same format;
+    - passing `format='mixed'`, and the format will be inferred for each element individually. You might want to use `dayfirst` alongside this.
+2026-04-02 19:16:07,122 - ERROR - Erreur lors de la mise à jour des données temporelles pour CTEV: time data "May 7, 2026 at 4 PM" doesn't match format "%B %d, %Y at %I %p", at position 0. You might want to try:
+    - passing `format` if your strings have a consistent format;
+    - passing `format='ISO8601'` if your strings are all ISO8601 but not necessarily in exactly the same format;
+    - passing `format='mixed'`, and the format will be inferred for each element individually. You might want to use `dayfirst` alongside this.
+2026-04-02 19:16:07,925 - ERROR - Erreur lors de la mise à jour des données temporelles pour NVO: time data "May 6, 2026 at 8 AM" doesn't match format "%B %d, %Y at %I %p", at position 0. You might want to try:
+    - passing `format` if your strings have a consistent format;
+    - passing `format='ISO8601'` if your strings are all ISO8601 but not necessarily in exactly the same format;
+    - passing `format='mixed'`, and the format will be inferred for each element individually. You might want to use `dayfirst` alongside this.
+2026-04-02 19:20:27,006 - ERROR - Erreur lors de la mise à jour des données temporelles pour CBRE: unconverted data remains when parsing with format "%B %d, %Y at %I %p": "AM", at position 0. You might want to try:
+    - passing `format` if your strings have a consistent format;
+    - passing `format='ISO8601'` if your strings are all ISO8601 but not necessarily in exactly the same format;
+    - passing `format='mixed'`, and the format will be inferred for each element individually. You might want to use `dayfirst` alongside this.
+2026-04-02 19:20:27,738 - ERROR - Erreur lors de la mise à jour des données temporelles pour FLNC: time data "May 6, 2026 at 4 PM" doesn't match format "%B %d, %Y at %I %p", at position 0. You might want to try:
+    - passing `format` if your strings have a consistent format;
+    - passing `format='ISO8601'` if your strings are all ISO8601 but not necessarily in exactly the same format;
+    - passing `format='mixed'`, and the format will be inferred for each element individually. You might want to use `dayfirst` alongside this.
+2026-04-02 19:20:28,472 - ERROR - Erreur lors de la mise à jour des données temporelles pour FTV: unconverted data remains when parsing with format "%B %d, %Y at %I %p": "AM", at position 0. You might want to try:
+    - passing `format` if your strings have a consistent format;
+    - passing `format='ISO8601'` if your strings are all ISO8601 but not necessarily in exactly the same format;
+    - passing `format='mixed'`, and the format will be inferred for each element individually. You might want to use `dayfirst` alongside this.
+2026-04-02 19:20:29,245 - ERROR - Erreur lors de la mise à jour des données temporelles pour HON: unconverted data remains when parsing with format "%B %d, %Y at %I %p": "AM", at position 0. You might want to try:
+    - passing `format` if your strings have a consistent format;
+    - passing `format='ISO8601'` if your strings are all ISO8601 but not necessarily in exactly the same format;
+    - passing `format='mixed'`, and the format will be inferred for each element individually. You might want to use `dayfirst` alongside this.
+2026-04-02 19:20:30,109 - ERROR - Erreur lors de la mise à jour des données temporelles pour PARR: time data "May 5, 2026 at 4 PM" doesn't match format "%B %d, %Y at %I %p", at position 0. You might want to try:
+    - passing `format` if your strings have a consistent format;
+    - passing `format='ISO8601'` if your strings are all ISO8601 but not necessarily in exactly the same format;
+    - passing `format='mixed'`, and the format will be inferred for each element individually. You might want to use `dayfirst` alongside this.
+2026-04-02 19:20:30,841 - ERROR - Erreur lors de la mise à jour des données temporelles pour AEE: time data "May 5, 2026 at 4 PM" doesn't match format "%B %d, %Y at %I %p", at position 0. You might want to try:
+    - passing `format` if your strings have a consistent format;
+    - passing `format='ISO8601'` if your strings are all ISO8601 but not necessarily in exactly the same format;
+    - passing `format='mixed'`, and the format will be inferred for each element individually. You might want to use `dayfirst` alongside this.
+2026-04-02 19:20:31,487 - ERROR - Erreur lors de la mise à jour des données temporelles pour CACI: unconverted data remains when parsing with format "%B %d, %Y at %I %p": "PM", at position 0. You might want to try:
+    - passing `format` if your strings have a consistent format;
+    - passing `format='ISO8601'` if your strings are all ISO8601 but not necessarily in exactly the same format;
+    - passing `format='mixed'`, and the format will be inferred for each element individually. You might want to use `dayfirst` alongside this.
+2026-04-02 19:20:32,303 - ERROR - Erreur lors de la mise à jour des données temporelles pour NI: time data "May 6, 2026 at 8 AM" doesn't match format "%B %d, %Y at %I %p", at position 0. You might want to try:
+    - passing `format` if your strings have a consistent format;
+    - passing `format='ISO8601'` if your strings are all ISO8601 but not necessarily in exactly the same format;
+    - passing `format='mixed'`, and the format will be inferred for each element individually. You might want to use `dayfirst` alongside this.
+2026-04-02 19:20:32,866 - ERROR - NXP: No earnings dates found, symbol may be delisted
+2026-04-02 19:20:33,948 - ERROR - Erreur lors de la mise à jour des données temporelles pour HRZN: unconverted data remains when parsing with format "%B %d, %Y at %I %p": "PM", at position 0. You might want to try:
+    - passing `format` if your strings have a consistent format;
+    - passing `format='ISO8601'` if your strings are all ISO8601 but not necessarily in exactly the same format;
+    - passing `format='mixed'`, and the format will be inferred for each element individually. You might want to use `dayfirst` alongside this.
+2026-04-02 19:20:34,636 - ERROR - Erreur lors de la mise à jour des données temporelles pour SNEX: time data "May 6, 2026 at 4 PM" doesn't match format "%B %d, %Y at %I %p", at position 0. You might want to try:
+    - passing `format` if your strings have a consistent format;
+    - passing `format='ISO8601'` if your strings are all ISO8601 but not necessarily in exactly the same format;
+    - passing `format='mixed'`, and the format will be inferred for each element individually. You might want to use `dayfirst` alongside this.
+2026-04-02 19:20:35,213 - ERROR - Erreur lors de la mise à jour des données temporelles pour BA.L: time data "July 30, 2026 at 11 AM" doesn't match format "%B %d, %Y at %I %p", at position 0. You might want to try:
+    - passing `format` if your strings have a consistent format;
+    - passing `format='ISO8601'` if your strings are all ISO8601 but not necessarily in exactly the same format;
+    - passing `format='mixed'`, and the format will be inferred for each element individually. You might want to use `dayfirst` alongside this.
+2026-04-02 23:33:03,360 - ERROR - Erreur lors de la mise à jour des données temporelles pour AVGO: time data "June 3, 2026 at 4 PM" doesn't match format "%B %d, %Y at %I %p", at position 0. You might want to try:
+    - passing `format` if your strings have a consistent format;
+    - passing `format='ISO8601'` if your strings are all ISO8601 but not necessarily in exactly the same format;
+    - passing `format='mixed'`, and the format will be inferred for each element individually. You might want to use `dayfirst` alongside this.
+2026-04-02 23:33:03,991 - ERROR - Erreur lors de la mise à jour des données temporelles pour ALAB: time data "May 5, 2026 at 4 PM" doesn't match format "%B %d, %Y at %I %p", at position 0. You might want to try:
+    - passing `format` if your strings have a consistent format;
+    - passing `format='ISO8601'` if your strings are all ISO8601 but not necessarily in exactly the same format;
+    - passing `format='mixed'`, and the format will be inferred for each element individually. You might want to use `dayfirst` alongside this.
+2026-04-02 23:33:04,713 - ERROR - Erreur lors de la mise à jour des données temporelles pour NVDA: time data "May 20, 2026 at 4 PM" doesn't match format "%B %d, %Y at %I %p", at position 0. You might want to try:
+    - passing `format` if your strings have a consistent format;
+    - passing `format='ISO8601'` if your strings are all ISO8601 but not necessarily in exactly the same format;
+    - passing `format='mixed'`, and the format will be inferred for each element individually. You might want to use `dayfirst` alongside this.
+2026-04-02 23:33:05,381 - ERROR - Erreur lors de la mise à jour des données temporelles pour MBOT: time data "March 26, 2026 at 4 PM" doesn't match format "%B %d, %Y at %I %p", at position 0. You might want to try:
+    - passing `format` if your strings have a consistent format;
+    - passing `format='ISO8601'` if your strings are all ISO8601 but not necessarily in exactly the same format;
+    - passing `format='mixed'`, and the format will be inferred for each element individually. You might want to use `dayfirst` alongside this.
+2026-04-02 23:33:06,028 - ERROR - NXP: No earnings dates found, symbol may be delisted
+2026-04-02 23:33:07,254 - ERROR - Erreur lors de la mise à jour des données temporelles pour MSTR: unconverted data remains when parsing with format "%B %d, %Y at %I %p": "PM", at position 0. You might want to try:
+    - passing `format` if your strings have a consistent format;
+    - passing `format='ISO8601'` if your strings are all ISO8601 but not necessarily in exactly the same format;
+    - passing `format='mixed'`, and the format will be inferred for each element individually. You might want to use `dayfirst` alongside this.
+2026-04-03 00:06:47,629 - ERROR - Erreur lors de la mise à jour des données temporelles pour AVGO: time data "June 3, 2026 at 4 PM" doesn't match format "%B %d, %Y at %I %p", at position 0. You might want to try:
+    - passing `format` if your strings have a consistent format;
+    - passing `format='ISO8601'` if your strings are all ISO8601 but not necessarily in exactly the same format;
+    - passing `format='mixed'`, and the format will be inferred for each element individually. You might want to use `dayfirst` alongside this.
+2026-04-03 00:06:48,250 - ERROR - Erreur lors de la mise à jour des données temporelles pour ALAB: time data "May 5, 2026 at 4 PM" doesn't match format "%B %d, %Y at %I %p", at position 0. You might want to try:
+    - passing `format` if your strings have a consistent format;
+    - passing `format='ISO8601'` if your strings are all ISO8601 but not necessarily in exactly the same format;
+    - passing `format='mixed'`, and the format will be inferred for each element individually. You might want to use `dayfirst` alongside this.
+2026-04-03 00:06:48,861 - ERROR - Erreur lors de la mise à jour des données temporelles pour ENR.DE: time data "May 12, 2026 at 11 AM" doesn't match format "%B %d, %Y at %I %p", at position 0. You might want to try:
+    - passing `format` if your strings have a consistent format;
+    - passing `format='ISO8601'` if your strings are all ISO8601 but not necessarily in exactly the same format;
+    - passing `format='mixed'`, and the format will be inferred for each element individually. You might want to use `dayfirst` alongside this.
+2026-04-03 00:06:49,438 - ERROR - Erreur lors de la mise à jour des données temporelles pour MBOT: time data "March 26, 2026 at 4 PM" doesn't match format "%B %d, %Y at %I %p", at position 0. You might want to try:
+    - passing `format` if your strings have a consistent format;
+    - passing `format='ISO8601'` if your strings are all ISO8601 but not necessarily in exactly the same format;
+    - passing `format='mixed'`, and the format will be inferred for each element individually. You might want to use `dayfirst` alongside this.
+2026-04-03 00:06:50,177 - ERROR - Erreur lors de la mise à jour des données temporelles pour NVDA: time data "May 20, 2026 at 4 PM" doesn't match format "%B %d, %Y at %I %p", at position 0. You might want to try:
+    - passing `format` if your strings have a consistent format;
+    - passing `format='ISO8601'` if your strings are all ISO8601 but not necessarily in exactly the same format;
+    - passing `format='mixed'`, and the format will be inferred for each element individually. You might want to use `dayfirst` alongside this.
+2026-04-03 00:06:50,842 - ERROR - Erreur lors de la mise à jour des données temporelles pour MSTR: unconverted data remains when parsing with format "%B %d, %Y at %I %p": "PM", at position 0. You might want to try:
+    - passing `format` if your strings have a consistent format;
+    - passing `format='ISO8601'` if your strings are all ISO8601 but not necessarily in exactly the same format;
+    - passing `format='mixed'`, and the format will be inferred for each element individually. You might want to use `dayfirst` alongside this.
+2026-04-03 00:06:51,499 - ERROR - NXP: No earnings dates found, symbol may be delisted
+2026-04-03 00:11:01,737 - ERROR - $0011.HK: possibly delisted; no price data found  (period=1y) (Yahoo error = "No data found, symbol may be delisted")
+2026-04-03 00:11:01,739 - ERROR - 
+1 Failed download:
+2026-04-03 00:11:01,739 - ERROR - ['0011.HK']: possibly delisted; no price data found  (period=1y) (Yahoo error = "No data found, symbol may be delisted")
+2026-04-03 00:11:01,835 - ERROR - $SGL: possibly delisted; no price data found  (period=1y)
+2026-04-03 00:11:01,841 - ERROR - 
+1 Failed download:
+2026-04-03 00:11:01,842 - ERROR - ['SGL']: possibly delisted; no price data found  (period=1y)
+2026-04-03 00:11:02,123 - ERROR - $SGL: possibly delisted; no price data found  (period=1y)
+2026-04-03 00:11:02,537 - ERROR - $0011.HK: possibly delisted; no price data found  (period=1y) (Yahoo error = "No data found, symbol may be delisted")
+2026-04-03 00:11:02,537 - ERROR - 
+2 Failed downloads:
+2026-04-03 00:11:02,537 - ERROR - ['SGL']: possibly delisted; no price data found  (period=1y)
+2026-04-03 00:11:02,537 - ERROR - ['0011.HK']: possibly delisted; no price data found  (period=1y) (Yahoo error = "No data found, symbol may be delisted")
+2026-04-03 00:11:16,438 - ERROR - Erreur lors de la mise à jour des données temporelles pour HPE: time data "June 2, 2026 at 4 PM" doesn't match format "%B %d, %Y at %I %p", at position 0. You might want to try:
+    - passing `format` if your strings have a consistent format;
+    - passing `format='ISO8601'` if your strings are all ISO8601 but not necessarily in exactly the same format;
+    - passing `format='mixed'`, and the format will be inferred for each element individually. You might want to use `dayfirst` alongside this.
+2026-04-03 00:11:17,078 - ERROR - Erreur lors de la mise à jour des données temporelles pour CL: time data "May 1, 2026 at 8 AM" doesn't match format "%B %d, %Y at %I %p", at position 0. You might want to try:
+    - passing `format` if your strings have a consistent format;
+    - passing `format='ISO8601'` if your strings are all ISO8601 but not necessarily in exactly the same format;
+    - passing `format='mixed'`, and the format will be inferred for each element individually. You might want to use `dayfirst` alongside this.
+2026-04-03 00:11:17,819 - ERROR - Erreur lors de la mise à jour des données temporelles pour FN: time data "May 4, 2026 at 4 PM" doesn't match format "%B %d, %Y at %I %p", at position 0. You might want to try:
+    - passing `format` if your strings have a consistent format;
+    - passing `format='ISO8601'` if your strings are all ISO8601 but not necessarily in exactly the same format;
+    - passing `format='mixed'`, and the format will be inferred for each element individually. You might want to use `dayfirst` alongside this.
+2026-04-03 00:11:18,519 - ERROR - Erreur lors de la mise à jour des données temporelles pour PRAX: unconverted data remains when parsing with format "%B %d, %Y at %I %p": "AM", at position 0. You might want to try:
+    - passing `format` if your strings have a consistent format;
+    - passing `format='ISO8601'` if your strings are all ISO8601 but not necessarily in exactly the same format;
+    - passing `format='mixed'`, and the format will be inferred for each element individually. You might want to use `dayfirst` alongside this.
+2026-04-03 00:11:19,201 - ERROR - Erreur lors de la mise à jour des données temporelles pour JD: time data "May 7, 2026 at 8 AM" doesn't match format "%B %d, %Y at %I %p", at position 0. You might want to try:
+    - passing `format` if your strings have a consistent format;
+    - passing `format='ISO8601'` if your strings are all ISO8601 but not necessarily in exactly the same format;
+    - passing `format='mixed'`, and the format will be inferred for each element individually. You might want to use `dayfirst` alongside this.
+2026-04-03 00:11:19,985 - ERROR - Erreur lors de la mise à jour des données temporelles pour CNC: unconverted data remains when parsing with format "%B %d, %Y at %I %p": "AM", at position 0. You might want to try:
+    - passing `format` if your strings have a consistent format;
+    - passing `format='ISO8601'` if your strings are all ISO8601 but not necessarily in exactly the same format;
+    - passing `format='mixed'`, and the format will be inferred for each element individually. You might want to use `dayfirst` alongside this.
+2026-04-03 00:11:20,710 - ERROR - Erreur lors de la mise à jour des données temporelles pour AVY: unconverted data remains when parsing with format "%B %d, %Y at %I %p": "AM", at position 0. You might want to try:
+    - passing `format` if your strings have a consistent format;
+    - passing `format='ISO8601'` if your strings are all ISO8601 but not necessarily in exactly the same format;
+    - passing `format='mixed'`, and the format will be inferred for each element individually. You might want to use `dayfirst` alongside this.
+2026-04-03 00:11:21,338 - ERROR - Erreur lors de la mise à jour des données temporelles pour TDY: unconverted data remains when parsing with format "%B %d, %Y at %I %p": "AM", at position 0. You might want to try:
+    - passing `format` if your strings have a consistent format;
+    - passing `format='ISO8601'` if your strings are all ISO8601 but not necessarily in exactly the same format;
+    - passing `format='mixed'`, and the format will be inferred for each element individually. You might want to use `dayfirst` alongside this.
+2026-04-03 00:11:21,991 - ERROR - Erreur lors de la mise à jour des données temporelles pour TDG: time data "May 5, 2026 at 8 AM" doesn't match format "%B %d, %Y at %I %p", at position 0. You might want to try:
+    - passing `format` if your strings have a consistent format;
+    - passing `format='ISO8601'` if your strings are all ISO8601 but not necessarily in exactly the same format;
+    - passing `format='mixed'`, and the format will be inferred for each element individually. You might want to use `dayfirst` alongside this.
+2026-04-03 00:18:55,327 - ERROR - $RKN: possibly delisted; no price data found  (period=1y)
+2026-04-03 00:18:55,328 - ERROR - 
+1 Failed download:
+2026-04-03 00:18:55,328 - ERROR - ['RKN']: possibly delisted; no price data found  (period=1y)
+2026-04-03 00:18:55,718 - ERROR - $RKN: possibly delisted; no price data found  (period=1y)
+2026-04-03 00:18:55,735 - ERROR - 
+1 Failed download:
+2026-04-03 00:18:55,735 - ERROR - ['RKN']: possibly delisted; no price data found  (period=1y)
+2026-04-03 00:19:04,312 - ERROR - Erreur lors de la mise à jour des données temporelles pour CNTX: time data "March 23, 2026 at 4 PM" doesn't match format "%B %d, %Y at %I %p", at position 0. You might want to try:
+    - passing `format` if your strings have a consistent format;
+    - passing `format='ISO8601'` if your strings are all ISO8601 but not necessarily in exactly the same format;
+    - passing `format='mixed'`, and the format will be inferred for each element individually. You might want to use `dayfirst` alongside this.
+2026-04-03 00:19:04,914 - ERROR - YDES: No earnings dates found, symbol may be delisted
+2026-04-03 00:19:05,389 - ERROR - HTTP Error 404: {"quoteSummary":{"result":null,"error":{"code":"Not Found","description":"No fundamentals data found for symbol: YDES"}}}
+2026-04-03 00:19:06,180 - ERROR - Erreur lors de la mise à jour des données temporelles pour ORGN: time data "May 14, 2026 at 4 PM" doesn't match format "%B %d, %Y at %I %p", at position 0. You might want to try:
+    - passing `format` if your strings have a consistent format;
+    - passing `format='ISO8601'` if your strings are all ISO8601 but not necessarily in exactly the same format;
+    - passing `format='mixed'`, and the format will be inferred for each element individually. You might want to use `dayfirst` alongside this.
+2026-04-03 00:19:06,888 - ERROR - Erreur lors de la mise à jour des données temporelles pour CTEV: time data "May 7, 2026 at 4 PM" doesn't match format "%B %d, %Y at %I %p", at position 0. You might want to try:
+    - passing `format` if your strings have a consistent format;
+    - passing `format='ISO8601'` if your strings are all ISO8601 but not necessarily in exactly the same format;
+    - passing `format='mixed'`, and the format will be inferred for each element individually. You might want to use `dayfirst` alongside this.
+2026-04-03 00:20:07,910 - ERROR - $RKN: possibly delisted; no price data found  (period=1y)
+2026-04-03 00:20:07,915 - ERROR - 
+1 Failed download:
+2026-04-03 00:20:07,915 - ERROR - ['RKN']: possibly delisted; no price data found  (period=1y)
+2026-04-03 00:20:08,200 - ERROR - $RKN: possibly delisted; no price data found  (period=1y)
+2026-04-03 00:20:08,205 - ERROR - 
+1 Failed download:
+2026-04-03 00:20:08,206 - ERROR - ['RKN']: possibly delisted; no price data found  (period=1y)
+2026-04-03 00:20:09,226 - ERROR - Erreur lors de la mise à jour des données temporelles pour CNTX: time data "March 23, 2026 at 4 PM" doesn't match format "%B %d, %Y at %I %p", at position 0. You might want to try:
+    - passing `format` if your strings have a consistent format;
+    - passing `format='ISO8601'` if your strings are all ISO8601 but not necessarily in exactly the same format;
+    - passing `format='mixed'`, and the format will be inferred for each element individually. You might want to use `dayfirst` alongside this.
+2026-04-03 00:20:10,498 - ERROR - ROMA: No earnings dates found, symbol may be delisted
+2026-04-03 00:20:11,954 - ERROR - Erreur lors de la mise à jour des données temporelles pour SLNG: time data "May 6, 2026 at 4 PM" doesn't match format "%B %d, %Y at %I %p", at position 0. You might want to try:
+    - passing `format` if your strings have a consistent format;
+    - passing `format='ISO8601'` if your strings are all ISO8601 but not necessarily in exactly the same format;
+    - passing `format='mixed'`, and the format will be inferred for each element individually. You might want to use `dayfirst` alongside this.
+2026-04-03 00:20:12,288 - ERROR - Erreur lors de la mise à jour des données temporelles pour ORGN: time data "May 14, 2026 at 4 PM" doesn't match format "%B %d, %Y at %I %p", at position 0. You might want to try:
+    - passing `format` if your strings have a consistent format;
+    - passing `format='ISO8601'` if your strings are all ISO8601 but not necessarily in exactly the same format;
+    - passing `format='mixed'`, and the format will be inferred for each element individually. You might want to use `dayfirst` alongside this.
+2026-04-03 00:20:13,264 - ERROR - PELI: No earnings dates found, symbol may be delisted
+2026-04-03 00:20:13,669 - ERROR - HTTP Error 404: {"quoteSummary":{"result":null,"error":{"code":"Not Found","description":"No fundamentals data found for symbol: PELI"}}}
+2026-04-03 00:20:14,723 - ERROR - BDMD: No earnings dates found, symbol may be delisted
+2026-04-03 00:20:15,301 - ERROR - HTTP Error 404: {"quoteSummary":{"result":null,"error":{"code":"Not Found","description":"No fundamentals data found for symbol: BDMD"}}}
+2026-04-03 00:20:16,668 - ERROR - Erreur lors de la mise à jour des données temporelles pour CSTE: time data "May 6, 2026 at 8 AM" doesn't match format "%B %d, %Y at %I %p", at position 0. You might want to try:
+    - passing `format` if your strings have a consistent format;
+    - passing `format='ISO8601'` if your strings are all ISO8601 but not necessarily in exactly the same format;
+    - passing `format='mixed'`, and the format will be inferred for each element individually. You might want to use `dayfirst` alongside this.
+2026-04-03 00:20:17,815 - ERROR - GDC: No earnings dates found, symbol may be delisted
+2026-04-03 00:20:18,313 - ERROR - HTTP Error 404: {"quoteSummary":{"result":null,"error":{"code":"Not Found","description":"No fundamentals data found for symbol: GDC"}}}
+2026-04-03 00:20:19,464 - ERROR - AADR: No earnings dates found, symbol may be delisted
+2026-04-03 00:20:19,906 - ERROR - HTTP Error 404: {"quoteSummary":{"result":null,"error":{"code":"Not Found","description":"No fundamentals data found for symbol: AADR"}}}
+2026-04-03 00:20:21,144 - ERROR - Erreur lors de la mise à jour des données temporelles pour SER: time data "March 25, 2026 at 4 PM" doesn't match format "%B %d, %Y at %I %p", at position 0. You might want to try:
+    - passing `format` if your strings have a consistent format;
+    - passing `format='ISO8601'` if your strings are all ISO8601 but not necessarily in exactly the same format;
+    - passing `format='mixed'`, and the format will be inferred for each element individually. You might want to use `dayfirst` alongside this.
+2026-04-03 00:20:22,534 - ERROR - Erreur lors de la mise à jour des données temporelles pour TATT: time data "May 18, 2026 at 4 PM" doesn't match format "%B %d, %Y at %I %p", at position 0. You might want to try:
+    - passing `format` if your strings have a consistent format;
+    - passing `format='ISO8601'` if your strings are all ISO8601 but not necessarily in exactly the same format;
+    - passing `format='mixed'`, and the format will be inferred for each element individually. You might want to use `dayfirst` alongside this.
+2026-04-03 00:20:23,070 - ERROR - YDES: No earnings dates found, symbol may be delisted
+2026-04-03 00:20:23,468 - ERROR - HTTP Error 404: {"quoteSummary":{"result":null,"error":{"code":"Not Found","description":"No fundamentals data found for symbol: YDES"}}}
+2026-04-03 00:20:24,681 - ERROR - Erreur lors de la mise à jour des données temporelles pour HUMA: time data "May 12, 2026 at 8 AM" doesn't match format "%B %d, %Y at %I %p", at position 0. You might want to try:
+    - passing `format` if your strings have a consistent format;
+    - passing `format='ISO8601'` if your strings are all ISO8601 but not necessarily in exactly the same format;
+    - passing `format='mixed'`, and the format will be inferred for each element individually. You might want to use `dayfirst` alongside this.
+2026-04-03 00:20:25,974 - ERROR - Erreur lors de la mise à jour des données temporelles pour LIDR: time data "May 7, 2026 at 4 PM" doesn't match format "%B %d, %Y at %I %p", at position 0. You might want to try:
+    - passing `format` if your strings have a consistent format;
+    - passing `format='ISO8601'` if your strings are all ISO8601 but not necessarily in exactly the same format;
+    - passing `format='mixed'`, and the format will be inferred for each element individually. You might want to use `dayfirst` alongside this.
+2026-04-03 00:20:27,229 - ERROR - Erreur lors de la mise à jour des données temporelles pour NNBR: time data "May 6, 2026 at 4 PM" doesn't match format "%B %d, %Y at %I %p", at position 0. You might want to try:
+    - passing `format` if your strings have a consistent format;
+    - passing `format='ISO8601'` if your strings are all ISO8601 but not necessarily in exactly the same format;
+    - passing `format='mixed'`, and the format will be inferred for each element individually. You might want to use `dayfirst` alongside this.
+2026-04-03 00:20:28,321 - ERROR - ANNA: No earnings dates found, symbol may be delisted
+2026-04-03 00:20:28,777 - ERROR - HTTP Error 404: {"quoteSummary":{"result":null,"error":{"code":"Not Found","description":"No fundamentals data found for symbol: ANNA"}}}
+2026-04-03 00:20:30,142 - ERROR - Erreur lors de la mise à jour des données temporelles pour CSIQ: time data "May 14, 2026 at 8 AM" doesn't match format "%B %d, %Y at %I %p", at position 0. You might want to try:
+    - passing `format` if your strings have a consistent format;
+    - passing `format='ISO8601'` if your strings are all ISO8601 but not necessarily in exactly the same format;
+    - passing `format='mixed'`, and the format will be inferred for each element individually. You might want to use `dayfirst` alongside this.
+2026-04-03 00:20:31,620 - ERROR - HPAI: No earnings dates found, symbol may be delisted
+2026-04-03 00:20:32,100 - ERROR - HTTP Error 404: {"quoteSummary":{"result":null,"error":{"code":"Not Found","description":"No fundamentals data found for symbol: HPAI"}}}
+2026-04-03 00:20:33,493 - ERROR - Erreur lors de la mise à jour des données temporelles pour TNC: unconverted data remains when parsing with format "%B %d, %Y at %I %p": "PM", at position 0. You might want to try:
+    - passing `format` if your strings have a consistent format;
+    - passing `format='ISO8601'` if your strings are all ISO8601 but not necessarily in exactly the same format;
+    - passing `format='mixed'`, and the format will be inferred for each element individually. You might want to use `dayfirst` alongside this.
+2026-04-03 00:20:34,547 - ERROR - Erreur lors de la mise à jour des données temporelles pour BOOM: unconverted data remains when parsing with format "%B %d, %Y at %I %p": "PM", at position 0. You might want to try:
+    - passing `format` if your strings have a consistent format;
+    - passing `format='ISO8601'` if your strings are all ISO8601 but not necessarily in exactly the same format;
+    - passing `format='mixed'`, and the format will be inferred for each element individually. You might want to use `dayfirst` alongside this.
+2026-04-03 00:20:35,116 - ERROR - Erreur lors de la mise à jour des données temporelles pour CTEV: time data "May 7, 2026 at 4 PM" doesn't match format "%B %d, %Y at %I %p", at position 0. You might want to try:
+    - passing `format` if your strings have a consistent format;
+    - passing `format='ISO8601'` if your strings are all ISO8601 but not necessarily in exactly the same format;
+    - passing `format='mixed'`, and the format will be inferred for each element individually. You might want to use `dayfirst` alongside this.
+2026-04-03 00:20:36,029 - ERROR - Erreur lors de la mise à jour des données temporelles pour FULC: unconverted data remains when parsing with format "%B %d, %Y at %I %p": "AM", at position 0. You might want to try:
+    - passing `format` if your strings have a consistent format;
+    - passing `format='ISO8601'` if your strings are all ISO8601 but not necessarily in exactly the same format;
+    - passing `format='mixed'`, and the format will be inferred for each element individually. You might want to use `dayfirst` alongside this.
+2026-04-03 00:20:37,061 - ERROR - Erreur lors de la mise à jour des données temporelles pour TARA: time data "May 7, 2026 at 8 AM" doesn't match format "%B %d, %Y at %I %p", at position 0. You might want to try:
+    - passing `format` if your strings have a consistent format;
+    - passing `format='ISO8601'` if your strings are all ISO8601 but not necessarily in exactly the same format;
+    - passing `format='mixed'`, and the format will be inferred for each element individually. You might want to use `dayfirst` alongside this.
+2026-04-03 00:20:38,254 - ERROR - Erreur lors de la mise à jour des données temporelles pour NVO: time data "May 6, 2026 at 8 AM" doesn't match format "%B %d, %Y at %I %p", at position 0. You might want to try:
+    - passing `format` if your strings have a consistent format;
+    - passing `format='ISO8601'` if your strings are all ISO8601 but not necessarily in exactly the same format;
+    - passing `format='mixed'`, and the format will be inferred for each element individually. You might want to use `dayfirst` alongside this.
+2026-04-03 00:20:39,284 - ERROR - Erreur lors de la mise à jour des données temporelles pour URGN: time data "May 12, 2026 at 8 AM" doesn't match format "%B %d, %Y at %I %p", at position 0. You might want to try:
+    - passing `format` if your strings have a consistent format;
+    - passing `format='ISO8601'` if your strings are all ISO8601 but not necessarily in exactly the same format;
+    - passing `format='mixed'`, and the format will be inferred for each element individually. You might want to use `dayfirst` alongside this.
+2026-04-03 00:20:40,354 - ERROR - H2O.DE: No earnings dates found, symbol may be delisted
+2026-04-03 00:20:41,038 - ERROR - HTTP Error 404: {"quoteSummary":{"result":null,"error":{"code":"Not Found","description":"No fundamentals data found for symbol: H2O.DE"}}}
+2026-04-03 00:21:45,639 - ERROR - Erreur lors de la mise à jour des données temporelles pour CGTX: time data "March 26, 2026 at 7 AM" doesn't match format "%B %d, %Y at %I %p", at position 0. You might want to try:
+    - passing `format` if your strings have a consistent format;
+    - passing `format='ISO8601'` if your strings are all ISO8601 but not necessarily in exactly the same format;
+    - passing `format='mixed'`, and the format will be inferred for each element individually. You might want to use `dayfirst` alongside this.
+2026-04-03 00:21:55,065 - ERROR - Erreur lors de la mise à jour des données temporelles pour CGTX: time data "March 26, 2026 at 7 AM" doesn't match format "%B %d, %Y at %I %p", at position 0. You might want to try:
+    - passing `format` if your strings have a consistent format;
+    - passing `format='ISO8601'` if your strings are all ISO8601 but not necessarily in exactly the same format;
+    - passing `format='mixed'`, and the format will be inferred for each element individually. You might want to use `dayfirst` alongside this.

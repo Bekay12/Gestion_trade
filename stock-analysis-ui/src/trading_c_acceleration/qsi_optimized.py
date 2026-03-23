@@ -83,6 +83,9 @@ if not C_ACCELERATION:
 warnings.filterwarnings("ignore", category=FutureWarning)
 logging.basicConfig(level=logging.INFO, filename='stock_analysis.log', filemode='a', format='%(asctime)s - %(levelname)s - %(message)s')
 
+# Minimum holding duration in active trading bars before a sell can execute.
+MIN_HOLDING_BARS = 7
+
 def calculate_macd(prices, fast=12, slow=26, signal=9):
     """Calcule le MACD et sa ligne de signal - INCHANGÉ"""
     ema_fast = prices.ewm(span=fast, adjust=False).mean()
@@ -420,7 +423,7 @@ def backtest_signals_c_extended(prices: Union[pd.Series, pd.DataFrame], volumes:
 def backtest_signals_accelerated(prices: Union[pd.Series, pd.DataFrame], volumes: Union[pd.Series, pd.DataFrame],
                                 domaine: str, montant: float = 50, transaction_cost: float = 0.02, 
                                 domain_coeffs=None, domain_thresholds=None, seuil_achat=None, seuil_vente=None,
-                                cap_range: str = None) -> Dict:
+                                cap_range: str = None, min_holding_bars: int = MIN_HOLDING_BARS) -> Dict:
     """
     🚀 VERSION ACCÉLÉRÉE avec module C - Interface IDENTIQUE à votre fonction
     
@@ -496,9 +499,11 @@ def backtest_signals_accelerated(prices: Union[pd.Series, pd.DataFrame], volumes
         seuil_achat = 4.2
     if seuil_vente is None:
         seuil_vente = -0.5
+
+    min_holding_bars = max(1, int(min_holding_bars))
     
     # ✨ ACCÉLÉRATION C - Si disponible, utilise le module C ultra-rapide
-    if C_ACCELERATION:
+    if C_ACCELERATION and min_holding_bars == MIN_HOLDING_BARS:
         try:
             # NOTE: Ne PAS écraser seuil_achat/seuil_vente ici - ils sont déjà correctement définis
             # depuis globals_thresholds (lignes 343-345) ou les valeurs par défaut
@@ -521,15 +526,23 @@ def backtest_signals_accelerated(prices: Union[pd.Series, pd.DataFrame], volumes
         except Exception as e:
             print(f"⚠️ Erreur module C, fallback Python: {e}")
             # En cas d'erreur, utilise la version Python avec events
-            result_dict, _ = backtest_signals_with_events(prices, volumes, domaine, montant, transaction_cost, domain_coeffs, domain_thresholds, seuil_achat, seuil_vente)
+            result_dict, _ = backtest_signals_with_events(
+                prices, volumes, domaine, montant, transaction_cost,
+                domain_coeffs, domain_thresholds, seuil_achat, seuil_vente,
+                min_holding_bars=min_holding_bars,
+            )
             return result_dict
     
     # Fallback: Si C n'est pas disponible, utiliser la version Python
     print(f"⚠️ Fallback à Python: C_ACCELERATION={C_ACCELERATION}")
-    result_dict, _ = backtest_signals_with_events(prices, volumes, domaine, montant, transaction_cost, domain_coeffs, domain_thresholds, seuil_achat, seuil_vente)
+    result_dict, _ = backtest_signals_with_events(
+        prices, volumes, domaine, montant, transaction_cost,
+        domain_coeffs, domain_thresholds, seuil_achat, seuil_vente,
+        min_holding_bars=min_holding_bars,
+    )
     return result_dict
 
-def backtest_signals_with_events(prices, volumes, domaine, montant=50, transaction_cost=0.02, domain_coeffs=None, domain_thresholds=None, seuil_achat=4.2, seuil_vente=-0.5, extra_params=None, cap_range: str = None, fundamentals_extras: dict = None, symbol_name: str = None):
+def backtest_signals_with_events(prices, volumes, domaine, montant=50, transaction_cost=0.02, domain_coeffs=None, domain_thresholds=None, seuil_achat=4.2, seuil_vente=-0.5, extra_params=None, cap_range: str = None, fundamentals_extras: dict = None, timeline_extras: dict = None, symbol_name: str = None, min_holding_bars: int = MIN_HOLDING_BARS):
     """Backtest OPTIMISÉ qui pré-calcule tous les indicateurs une seule fois.
     
     Utilise des données fondamentales point-in-time (PIT) pour éliminer le biais
@@ -551,6 +564,8 @@ def backtest_signals_with_events(prices, volumes, domaine, montant=50, transacti
     n = len(prices)
     if n < 60:
         return {"trades": 0, "gagnants": 0, "taux_reussite": 0, "gain_total": 0.0, "gain_moyen": 0.0, "drawdown_max": 0.0}, []
+
+    min_holding_bars = max(1, int(min_holding_bars))
 
     # 🚀 PRÉ-CALCULER tous les signaux une seule fois (OPTIMISATION MAJEURE)
     signals = []
@@ -575,14 +590,28 @@ def backtest_signals_with_events(prices, volumes, domaine, montant=50, transacti
 
     # Cache PIT pour éviter de recalculer pour le même trimestre
     _pit_cache = {}
+    _timeline_pit_cache = {}
+    
+    use_timeline = bool(timeline_extras and timeline_extras.get('use_timeline', 0))
+    timeline_cache_instance = None
+    if use_timeline and symbol_name:
+        try:
+            import sys
+            import os
+            sys.path.append(os.path.dirname(os.path.dirname(os.path.abspath(__file__))))
+            from timeline_cache import TimelineCache
+            timeline_cache_instance = TimelineCache()
+        except Exception:
+            pass
 
     # Pré-calcul de tous les signaux (une seule passe au lieu de N passes)
     for i in range(50, n):
         try:
+            bar_date = str(prices.index[i].date()) if hasattr(prices.index[i], 'date') else str(prices.index[i])[:10]
+            
             # ── Calculer les fondamentaux point-in-time pour cette date ──
             pit_fin_data = None
             if all_quarters is not None or all_annuals is not None:
-                bar_date = str(prices.index[i].date()) if hasattr(prices.index[i], 'date') else str(prices.index[i])[:10]
                 # Cache par date tronquée au mois (les fondamentaux ne changent pas au jour le jour)
                 cache_month = bar_date[:7]
                 if cache_month in _pit_cache:
@@ -593,11 +622,24 @@ def backtest_signals_with_events(prices, volumes, domaine, montant=50, transacti
                         annuals_sorted=all_annuals or []
                     )
                     _pit_cache[cache_month] = pit_fin_data
+            
+            # ── Calculer les données timeline PIT pour cette date ──
+            pit_timeline_data = None
+            if timeline_cache_instance is not None:
+                # Cache par semaine ou 10 jours pour ne pas surcharger la base
+                # Ou on peut appeler en direct car sqlite est rapide, mais un petit cache dict aide
+                # On va stocker la reponse par date
+                if bar_date in _timeline_pit_cache:
+                    pit_timeline_data = _timeline_pit_cache[bar_date]
+                else:
+                    pit_timeline_data = timeline_cache_instance.get_pit_timeline_data(symbol_name, bar_date)
+                    _timeline_pit_cache[bar_date] = pit_timeline_data
 
             sig, last_close, _, _, _, _, _ = qsi_get_trading_signal(
                 prices.iloc[:i+1], volumes.iloc[:i+1], domaine,
                 domain_coeffs=domain_coeffs, domain_thresholds=domain_thresholds,
                 cap_range=cap_range, price_extras=extra_params, fundamentals_extras=fundamentals_extras,
+                timeline_extras=pit_timeline_data,
                 symbol=symbol_name, fin_data_override=pit_fin_data
             )
             signals.append(sig)
@@ -620,6 +662,8 @@ def backtest_signals_with_events(prices, volumes, domaine, montant=50, transacti
     # 🚀 Backtest rapide sur les signaux pré-calculés
     position = 0
     entry_price = 0.0
+    entry_idx = -1
+    last_exit_idx = -10**9
     trades = 0
     gagnants = 0
     gain_total = 0.0
@@ -630,17 +674,20 @@ def backtest_signals_with_events(prices, volumes, domaine, montant=50, transacti
     for idx, (sig, last_close) in enumerate(zip(signals, prices_vals)):
         i = idx + 50  # Offset réel dans la série
         
-        if sig == 'ACHAT' and position == 0:
+        if sig == 'ACHAT' and position == 0 and (i - last_exit_idx) >= min_holding_bars:
             position = 1
             entry_price = last_close
+            entry_idx = i
             events.append({"date": prices.index[i], "type": "BUY", "price": float(last_close), "idx": i})
-        elif sig == 'VENTE' and position == 1:
+        elif sig == 'VENTE' and position == 1 and (i - entry_idx) >= min_holding_bars:
             profit = (last_close - entry_price) / entry_price * montant - transaction_cost
             gain_total += profit
             trades += 1
             if profit > 0:
                 gagnants += 1
             position = 0
+            entry_idx = -1
+            last_exit_idx = i
             events.append({"date": prices.index[i], "type": "SELL", "price": float(last_close), "idx": i})
 
         # Track peak for drawdown
@@ -653,7 +700,7 @@ def backtest_signals_with_events(prices, volumes, domaine, montant=50, transacti
                 drawdown_max = dd
 
     # If still in position, close at last available price
-    if position == 1:
+    if position == 1 and (n - 1 - entry_idx) >= min_holding_bars:
         last_close = prices_vals[-1]
         profit = (last_close - entry_price) / entry_price * montant - transaction_cost
         gain_total += profit
