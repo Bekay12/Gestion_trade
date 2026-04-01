@@ -2,6 +2,8 @@
 #include <stdlib.h>
 #include <math.h>
 
+#define MIN_HOLDING_BARS 7
+
 double get_trading_signal_score(TechnicalIndicators *indicators, TradingCoefficients *coeffs, 
                                double *prices, double *volumes, int length, int current_idx) {
     if (current_idx < 50 || current_idx >= length-1 || !indicators || !coeffs) return 0.0;
@@ -215,6 +217,8 @@ BacktestResult backtest_symbol_c(double *prices, double *volumes, int length,
     // Structures pour la simulation
     int position_open = 0;
     double entry_price = 0.0;
+    int entry_idx = -1;
+    int last_exit_idx = -1000000;
     double *gains = malloc(length * sizeof(double));
     int gain_count = 0;
     double *portfolio_values = malloc(length * sizeof(double));
@@ -234,12 +238,13 @@ BacktestResult backtest_symbol_c(double *prices, double *volumes, int length,
         double score = get_trading_signal_score(&indicators, coeffs, prices, volumes, length, i);
         
         // Signal d'achat
-        if (score >= coeffs->buy_threshold && !position_open) {
+        if (score >= coeffs->buy_threshold && !position_open && (i - last_exit_idx) >= MIN_HOLDING_BARS) {
             position_open = 1;
             entry_price = prices[i];
+            entry_idx = i;
         }
         // Signal de vente
-        else if (score <= coeffs->sell_threshold && position_open) {
+        else if (score <= coeffs->sell_threshold && position_open && (i - entry_idx) >= MIN_HOLDING_BARS) {
             double exit_price = prices[i];
             double return_pct = (exit_price - entry_price) / entry_price;
             double gain = amount * return_pct * (1.0 - 2.0 * transaction_cost);
@@ -255,6 +260,8 @@ BacktestResult backtest_symbol_c(double *prices, double *volumes, int length,
                 portfolio_count++;
             }
             position_open = 0;
+            entry_idx = -1;
+            last_exit_idx = i;
         }
     }
     

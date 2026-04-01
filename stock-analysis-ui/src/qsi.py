@@ -343,6 +343,7 @@ def get_trading_signal(prices, volumes, domaine, domain_coeffs=None, domain_thre
                       variation_seuil=-20, volume_seuil=100000, return_derivatives: bool = False, symbol: str = None,
                       cap_range: str = None, price_extras: Dict[str, Union[int, float]] = None,
                       fundamentals_extras: Dict[str, Union[int, float]] = None,
+                      timeline_extras: Dict[str, Union[int, float]] = None,
                       seuil_achat: float = None, seuil_vente: float = None,
                       fin_data_override: dict = None):
     """Détermine les signaux de trading avec validation des données
@@ -835,6 +836,25 @@ def get_trading_signal(prices, volumes, domaine, domain_coeffs=None, domain_thre
                     score += a_de
                 elif a_de != 0:
                     score -= a_de
+    except Exception:
+        pass
+
+    # Intégration des métriques temporelles (timeline)
+    try:
+        if timeline_extras:
+            # Surprise Earnings (Bonus / Malus de -1 à +2)
+            surprise_pct = timeline_extras.get("latest_earnings_surprise", 0.0)
+            if surprise_pct > 10.0:
+                score += 2  # Forte surprise positive
+            elif surprise_pct > 0.0:
+                score += 1
+            elif surprise_pct < -5.0:
+                score -= 1  # Mauvaise surprise
+                
+            # Analyst Upgrades (Bonus)
+            upgrades = timeline_extras.get("recent_upgrades_count", 0)
+            if upgrades >= 2:
+                score += 1
     except Exception:
         pass
 
@@ -2492,7 +2512,8 @@ def analyse_signaux_populaires(
     period="12mo", afficher_graphiques=True,
     chunk_size=20, verbose=True,
     save_csv=True, plot_all=False,
-    max_workers=5, taux_reussite_min=30
+    max_workers=5, taux_reussite_min=30,
+    min_holding_days=7,
 ):
     """
     Analyse les signaux pour les actions populaires, affiche les résultats, effectue le backtest,
@@ -2502,6 +2523,7 @@ def analyse_signaux_populaires(
     Args:
         max_workers: Nombre de threads pour analyse parallèle (défaut: 4)
         taux_reussite_min: Seuil minimum de fiabilité pour l'évaluation filtrée (défaut: 30)
+        min_holding_days: Durée minimale de détention en jours actifs (défaut: 7)
     """
     import matplotlib.pyplot as plt
     from concurrent.futures import ThreadPoolExecutor, as_completed
@@ -2780,7 +2802,8 @@ def analyse_signaux_populaires(
             resultats, events = backtest_signals_with_events(
                 prices, volumes, domaine, montant=50,
                 domain_coeffs=domain_coeffs, domain_thresholds=domain_thresholds,
-                fundamentals_extras=fund_extras_bt, symbol_name=s['Symbole']
+                fundamentals_extras=fund_extras_bt, symbol_name=s['Symbole'],
+                min_holding_bars=max(1, int(min_holding_days)),
             )
 
             backtest_results.append({

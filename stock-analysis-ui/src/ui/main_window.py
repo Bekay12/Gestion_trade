@@ -13,6 +13,7 @@ from matplotlib.figure import Figure
 import sys
 import os
 import math
+from datetime import datetime
 import yfinance as yf
 
 # Ensure project `src` root is on sys.path
@@ -35,13 +36,14 @@ class AnalysisThread(QThread):
     finished = pyqtSignal(dict)
     error = pyqtSignal(str)
     progress = pyqtSignal(str)
-    def __init__(self, symbols, mes_symbols, period="12mo", analysis_id=0):
+    def __init__(self, symbols, mes_symbols, period="12mo", analysis_id=0, min_holding_days=7):
         super().__init__()
         self.symbols = symbols
         self.mes_symbols = mes_symbols
         self.period = period
         self._stop_requested = False
         self.analysis_id = analysis_id  # 🔧 Identifiant d'analyse
+        self.min_holding_days = max(1, int(min_holding_days))
     def run(self):
         try:
             import builtins
@@ -74,7 +76,8 @@ class AnalysisThread(QThread):
                     afficher_graphiques=False,
                     plot_all=False,
                     verbose=True,
-                    taux_reussite_min=fiab_threshold
+                    taux_reussite_min=fiab_threshold,
+                    min_holding_days=self.min_holding_days
                 )
                 if not self._stop_requested:
                     # 🔧 Ajouter l'identifiant d'analyse au résultat
@@ -99,13 +102,14 @@ class DownloadThread(QThread):
     error = pyqtSignal(str)
     progress = pyqtSignal(str)
 
-    def __init__(self, symbols, period="12mo", do_backtest=False, analysis_id=0):
+    def __init__(self, symbols, period="12mo", do_backtest=False, analysis_id=0, min_holding_days=7):
         super().__init__()
         self.symbols = symbols
         self.period = period
         self.do_backtest = do_backtest
         self._stop_requested = False
         self.analysis_id = analysis_id  # 🔧 Identifiant d'analyse
+        self.min_holding_days = max(1, int(min_holding_days))
 
     def run(self):
         try:
@@ -164,7 +168,8 @@ class DownloadThread(QThread):
                                 'domaine': domaine,
                                 'montant': 50,
                                 'domain_coeffs': domain_coeffs,
-                                'domain_thresholds': {domaine: feature_thresholds} if feature_thresholds else None
+                                'domain_thresholds': {domaine: feature_thresholds} if feature_thresholds else None,
+                                'min_holding_bars': self.min_holding_days,
                             }
                             
                             bt = backtest_signals(**backtest_kwargs)
@@ -528,6 +533,17 @@ class MainWindow(QMainWindow):
         self.fiab_threshold_spin.setToolTip("Seuil minimum de fiabilité pour filtrer les résultats du backtest")
         top_controls.addWidget(self.fiab_threshold_spin)
 
+        # Durée minimale de détention (en jours de bourse / barres actives)
+        top_controls.addWidget(QLabel("Durée min position:"))
+        self.min_hold_days_spin = QSpinBox()
+        self.min_hold_days_spin.setMinimum(1)
+        self.min_hold_days_spin.setMaximum(60)
+        self.min_hold_days_spin.setValue(7)
+        self.min_hold_days_spin.setSuffix(" j")
+        self.min_hold_days_spin.setMaximumWidth(80)
+        self.min_hold_days_spin.setToolTip("Nombre minimum de jours actifs avant d'autoriser une vente en backtest")
+        top_controls.addWidget(self.min_hold_days_spin)
+
         top_controls.addSpacing(24)  # Petit espace pour l'esthétique
 
         self.popular_signals_button = QPushButton("Analyse de mes symboles")
@@ -593,7 +609,7 @@ class MainWindow(QMainWindow):
         # COLONNES BACKTEST
         'Gain\ntotal($)','Gain\nmoyen($)',
         # INFO
-        'Consensus'
+        'Consensus', 'Earn\nSurp(%)', 'Ana\nUpgrad'
         ]
         # Add table to Results tab, not Analyze tab
         # 🔧 Boutons d'export dans l'onglet Résultats
@@ -1058,7 +1074,8 @@ class MainWindow(QMainWindow):
         self.progress.setMinimumWidth(400)
         
         # Lancer l'analyse+backtest dans un thread (mes_symbols en premier arg, [] en deuxième)
-        self.analysis_thread = AnalysisThread(mes_symbols, [], period, analysis_id=current_id)
+        min_holding_days = self.min_hold_days_spin.value() if hasattr(self, 'min_hold_days_spin') else 7
+        self.analysis_thread = AnalysisThread(mes_symbols, [], period, analysis_id=current_id, min_holding_days=min_holding_days)
         self.analysis_thread.finished.connect(self.on_analysis_complete)
         self.analysis_thread.error.connect(self.on_analysis_error)
         self.analysis_thread.progress.connect(self.on_analysis_progress)
@@ -1244,6 +1261,67 @@ class MainWindow(QMainWindow):
                     traceback.print_exc()
                     derivatives = {}
 
+                # Timeline metrics (earnings surprise and analyst upgrades)
+                timeline_surprise = 'N/A'
+                timeline_upgrades = 0
+                timeline_err = None
+                try:
+                    from timeline_cache import TimelineCache
+                    if not hasattr(self, '_timeline_cache'):
+                        timeline_db_path = os.path.abspath(
+                            os.path.join(os.path.dirname(__file__), '..', 'stock_analysis.db')
+                        )
+                        self._timeline_cache = TimelineCache(db_path=timeline_db_path)
+
+                    last_dt = prices.index[-1]
+                    if hasattr(last_dt, 'strftime'):
+                        target_date = last_dt.strftime('%Y-%m-%d')
+                    else:
+                        target_date = str(last_dt)[:10]
+
+                    # Refresh timeline data before reading strict PIT metrics.
+                    try:
+                        self._timeline_cache.update_timeline_data(symbol)
+                    except Exception as refresh_err:
+                        print(f"⚠️ Timeline refresh failed for {symbol}: {refresh_err}")
+
+                    pit_timeline = self._timeline_cache.get_pit_timeline_data(symbol, target_date)
+                    if isinstance(pit_timeline, dict):
+                        surprise_val = pit_timeline.get('latest_earnings_surprise', None)
+                        if surprise_val is not None:
+                            timeline_surprise = round(float(surprise_val), 2)
+                        timeline_upgrades = int(pit_timeline.get('recent_upgrades_count', 0) or 0)
+                except Exception as e:
+                    timeline_err = e
+
+                if timeline_err is not None:
+                    print(f"⚠️ Timeline enrich failed for {symbol}: {timeline_err}")
+                    # Fallback PIT read using today's date, without forcing refresh.
+                    try:
+                        from timeline_cache import TimelineCache
+                        if not hasattr(self, '_timeline_cache'):
+                            timeline_db_path = os.path.abspath(
+                                os.path.join(os.path.dirname(__file__), '..', 'stock_analysis.db')
+                            )
+                            self._timeline_cache = TimelineCache(db_path=timeline_db_path)
+                        fallback_date = datetime.now().strftime('%Y-%m-%d')
+                        pit_timeline = self._timeline_cache.get_pit_timeline_data(symbol, fallback_date)
+                        if isinstance(pit_timeline, dict):
+                            surprise_val = pit_timeline.get('latest_earnings_surprise', None)
+                            if surprise_val is not None:
+                                timeline_surprise = round(float(surprise_val), 2)
+                            timeline_upgrades = int(pit_timeline.get('recent_upgrades_count', 0) or 0)
+                    except Exception as fallback_err:
+                        print(f"⚠️ Timeline fallback failed for {symbol}: {fallback_err}")
+
+                if not hasattr(self, '_timeline_debug_count'):
+                    self._timeline_debug_count = 0
+                if self._timeline_debug_count < 12:
+                    print(
+                        f"🧪 TIMELINE {symbol}: surprise={timeline_surprise} upgrades={timeline_upgrades}"
+                    )
+                    self._timeline_debug_count += 1
+
                 row_info = {
                     'Symbole': symbol,
                     'Signal': sig,
@@ -1268,7 +1346,9 @@ class MainWindow(QMainWindow):
                     'FCF Yield (%)': round(float((derivatives.get('fcf_yield_pct') or 0.0)), 2),
                     'D/E Ratio': round(float((derivatives.get('debt_to_equity') or 0.0)), 2),
                     'Market Cap (B$)': round(float((derivatives.get('market_cap_val') or 0.0)), 2),
-                    'ROE (%)': round(float((derivatives.get('roe_val') or 0.0)), 2)
+                    'ROE (%)': round(float((derivatives.get('roe_val') or 0.0)), 2),
+                    'Earn Surp (%)': timeline_surprise,
+                    'Ana Upgrad': timeline_upgrades
                 }
 
                 self.current_results.append(row_info)
@@ -1295,7 +1375,9 @@ class MainWindow(QMainWindow):
                         'FCF Yield (%)': 0.0,
                         'D/E Ratio': 0.0,
                         'Market Cap (B$)': 0.0,
-                        'ROE (%)': 0.0
+                        'ROE (%)': 0.0,
+                        'Earn Surp (%)': 'N/A',
+                        'Ana Upgrad': 0
                     }
                     self.current_results.append(row_info)
                 except Exception:
@@ -1512,6 +1594,8 @@ class MainWindow(QMainWindow):
             r.setdefault('D/E Ratio', 0.0)
             r.setdefault('Market Cap (B$)', 0.0)
             r.setdefault('ROE (%)', 0.0)
+            r.setdefault('Earn Surp (%)', 'N/A')
+            r.setdefault('Ana Upgrad', 0)
         
         # 🔧 Charger les meilleurs paramètres une seule fois
         try:
@@ -1533,6 +1617,43 @@ class MainWindow(QMainWindow):
                 # Calculer les dérivées techniques et métriques financières si manquantes
                 need_derivatives = not r.get('dPrice') or float(r.get('dPrice', 0)) == 0.0
                 need_financials = not r.get('Market Cap (B$)') or float(r.get('Market Cap (B$)', 0)) == 0.0
+                need_timeline = (r.get('Earn Surp (%)', 'N/A') in ('N/A', '', None)) or int(r.get('Ana Upgrad', 0) or 0) == 0
+
+                # Timeline enrichment does not require market candles; fetch it first.
+                if need_timeline:
+                    try:
+                        from timeline_cache import TimelineCache
+                        if not hasattr(self, '_timeline_cache'):
+                            timeline_db_path = os.path.abspath(
+                                os.path.join(os.path.dirname(__file__), '..', 'stock_analysis.db')
+                            )
+                            self._timeline_cache = TimelineCache(db_path=timeline_db_path)
+                        try:
+                            self._timeline_cache.update_timeline_data(sym)
+                        except Exception as refresh_err:
+                            print(f"⚠️ Timeline refresh failed for {sym}: {refresh_err}")
+
+                        # Use today's date for PIT when market data is unavailable.
+                        target_date = datetime.now().strftime('%Y-%m-%d')
+                        pit_timeline = self._timeline_cache.get_pit_timeline_data(sym, target_date)
+                        if isinstance(pit_timeline, dict):
+                            surprise_val = pit_timeline.get('latest_earnings_surprise', None)
+                            if surprise_val is None:
+                                r['Earn Surp (%)'] = 'N/A'
+                            else:
+                                r['Earn Surp (%)'] = round(float(surprise_val), 2)
+                            r['Ana Upgrad'] = int(pit_timeline.get('recent_upgrades_count', 0) or 0)
+                            if not hasattr(self, '_timeline_debug_count'):
+                                self._timeline_debug_count = 0
+                            if self._timeline_debug_count < 12:
+                                print(
+                                    f"🧪 TIMELINE {sym}: surprise={r.get('Earn Surp (%)')} upgrades={r.get('Ana Upgrad')} target={target_date}"
+                                )
+                                self._timeline_debug_count += 1
+                    except Exception as e:
+                        print(f"⚠️ Timeline enrich failed for {sym}: {e}")
+                        r.setdefault('Earn Surp (%)', 'N/A')
+                        r.setdefault('Ana Upgrad', 0)
                 
                 if need_derivatives or need_financials:
                     try:
@@ -1742,7 +1863,8 @@ class MainWindow(QMainWindow):
         self.progress.setMinimumWidth(400)
 
         # Launch download thread (no backtest)
-        self.download_thread = DownloadThread(symbols, period, do_backtest=False, analysis_id=current_id)
+        min_holding_days = self.min_hold_days_spin.value() if hasattr(self, 'min_hold_days_spin') else 7
+        self.download_thread = DownloadThread(symbols, period, do_backtest=False, analysis_id=current_id, min_holding_days=min_holding_days)
         self.download_thread.finished.connect(self.on_download_complete)
         self.download_thread.error.connect(self.on_analysis_error)
         self.download_thread.progress.connect(self.on_analysis_progress)
@@ -1818,7 +1940,8 @@ class MainWindow(QMainWindow):
         selected_pop = symbols
         selected_mes = []
 
-        self.analysis_thread = AnalysisThread(selected_pop, selected_mes, period, analysis_id=current_id)
+        min_holding_days = self.min_hold_days_spin.value() if hasattr(self, 'min_hold_days_spin') else 7
+        self.analysis_thread = AnalysisThread(selected_pop, selected_mes, period, analysis_id=current_id, min_holding_days=min_holding_days)
         self.analysis_thread.finished.connect(self.on_analysis_complete)
         self.analysis_thread.error.connect(self.on_analysis_error)
         self.analysis_thread.progress.connect(self.on_analysis_progress)
@@ -1831,6 +1954,10 @@ class MainWindow(QMainWindow):
         if not hasattr(self, 'current_results'):
             return
 
+        sorting_was_enabled = self.merged_table.isSortingEnabled()
+        if sorting_was_enabled:
+            self.merged_table.setSortingEnabled(False)
+
         self.merged_table.setRowCount(0)
         # 🔧 Toujours utiliser current_results (filtered_results est supprimé à chaque nouvelle analyse)
         raw_results = self.current_results
@@ -1839,6 +1966,8 @@ class MainWindow(QMainWindow):
         min_fiab_threshold = self.fiab_threshold_spin.value() if hasattr(self, 'fiab_threshold_spin') else 30
         filtered_results = []
         for r in raw_results:
+            if not isinstance(r, dict):
+                continue
             fiab_val = r.get('Fiabilite', 'N/A')
             if fiab_val == 'N/A':
                 # Toujours inclure si pas de données de fiabilité
@@ -1898,6 +2027,7 @@ class MainWindow(QMainWindow):
                 return default
 
         for signal in results_to_display:
+            row = -1
             try:
                 row = self.merged_table.rowCount()
                 self.merged_table.insertRow(row)
@@ -2234,6 +2364,43 @@ class MainWindow(QMainWindow):
                     item.setForeground(QColor(255, 0, 0))  # Rouge : mauvais
                 self.merged_table.setItem(row, 25, item)
 
+                # Earnings Surprise (column 26)
+                surprise_raw = signal.get('Earn Surp (%)', signal.get('latest_earnings_surprise', 'N/A'))
+                try:
+                    if surprise_raw in (None, '', 'N/A'):
+                        surprise_item = QTableWidgetItem('N/A')
+                    else:
+                        surprise_val = float(surprise_raw)
+                        surprise_item = QTableWidgetItem(f"{surprise_val:.2f}%")
+                        surprise_item.setData(Qt.EditRole, surprise_val)
+                        if surprise_val > 10:
+                            surprise_item.setForeground(QColor(0, 128, 0))
+                        elif surprise_val > 0:
+                            surprise_item.setForeground(QColor(34, 139, 34))
+                        elif surprise_val < -5:
+                            surprise_item.setForeground(QColor(255, 0, 0))
+                        else:
+                            surprise_item.setForeground(QColor(255, 165, 0))
+                    self.merged_table.setItem(row, 26, surprise_item)
+                except Exception:
+                    self.merged_table.setItem(row, 26, QTableWidgetItem('N/A'))
+
+                # Analyst Upgrades (column 27)
+                upgrades_raw = signal.get('Ana Upgrad', signal.get('recent_upgrades_count', 0))
+                try:
+                    upgrades_val = int(upgrades_raw or 0)
+                    upgrades_item = QTableWidgetItem(str(upgrades_val))
+                    upgrades_item.setData(Qt.EditRole, upgrades_val)
+                    if upgrades_val >= 2:
+                        upgrades_item.setForeground(QColor(0, 128, 0))
+                    elif upgrades_val == 1:
+                        upgrades_item.setForeground(QColor(34, 139, 34))
+                    else:
+                        upgrades_item.setForeground(QColor(255, 165, 0))
+                    self.merged_table.setItem(row, 27, upgrades_item)
+                except Exception:
+                    self.merged_table.setItem(row, 27, QTableWidgetItem('0'))
+
                 # item = QTableWidgetItem(f"{drawdown:.2f}")
                 # item.setData(Qt.EditRole, drawdown)
                 # self.merged_table.setItem(row, 19, item)
@@ -2242,7 +2409,12 @@ class MainWindow(QMainWindow):
                 print(f"❌ Erreur remplissage table pour {signal.get('Symbole', '?')}: {e}")
                 import traceback
                 traceback.print_exc()
+                if row >= 0:
+                    self.merged_table.removeRow(row)
                 continue
+
+        if sorting_was_enabled:
+            self.merged_table.setSortingEnabled(True)
         
         # Mettre à jour les onglets Graphiques et Comparaisons après remplissage de la table
         try:
@@ -2414,7 +2586,14 @@ class MainWindow(QMainWindow):
 
             # Build summary text
             lines = []
-            lines.append(f"🌍 Résultat global :\n - Taux de réussite = {taux_global:.1f}%\n - Nombre de trades = {total_trades}\n - Gain total brut = {total_gain:.2f} $")
+            min_hold_days = self.min_hold_days_spin.value() if hasattr(self, 'min_hold_days_spin') else 7
+            lines.append(
+                f"🌍 Résultat global :\n"
+                f" - Taux de réussite = {taux_global:.1f}%\n"
+                f" - Nombre de trades = {total_trades}\n"
+                f" - Gain total brut = {total_gain:.2f} $\n"
+                f" - Durée min position = {min_hold_days} jour(s) actif(s)"
+            )
             lines.append("\n📊 Taux de réussite par domaine:")
             for dom, stats in sorted(domain_stats.items(), key=lambda x: -x[1]['trades']):
                 trades = stats['trades']
@@ -2556,8 +2735,10 @@ class MainWindow(QMainWindow):
             title.setStyleSheet("font-weight: bold; font-size: 12px;")
             
             global_info = stats['global']
+            min_hold_days = self.min_hold_days_spin.value() if hasattr(self, 'min_hold_days_spin') else 7
             summary_text = (
-                f"🌍 Résultat global: Taux={global_info['taux']:.1f}% | Trades={global_info['trades']} | Gain=${global_info['gain']:.2f}"
+                f"🌍 Résultat global: Taux={global_info['taux']:.1f}% | Trades={global_info['trades']} | "
+                f"Gain=${global_info['gain']:.2f} | Durée min={min_hold_days}j"
             )
             summary_label = QLabel(summary_text)
             summary_label.setStyleSheet("background-color: #f0f0f0; padding: 6px; border-radius: 4px; font-size: 10px;")
@@ -2903,7 +3084,7 @@ class MainWindow(QMainWindow):
                         ebitda_text = self.merged_table.item(row, 14).text() if self.merged_table.item(row, 14) else '0'
                         ebitda = float(ebitda_text) if ebitda_text else 0.0
                         gain = float(self.merged_table.item(row, 22).text()) if self.merged_table.item(row, 22) else 0.0
-                        consensus = self.merged_table.item(row, 24).text() if self.merged_table.item(row, 24) else 'N/A'
+                        consensus = self.merged_table.item(row, 25).text() if self.merged_table.item(row, 25) else 'N/A'
                         
                         symbols_data[sym] = {
                             'Score': score,
@@ -3759,7 +3940,16 @@ class MainWindow(QMainWindow):
             
             # Créer le générateur et exporter
             generator = PDFReportGenerator()
-            pdf_path = generator.export_pdf(self.plots_layout, self.current_results, clean_columns)
+            min_hold_days = self.min_hold_days_spin.value() if hasattr(self, 'min_hold_days_spin') else 7
+            report_meta = {
+                'min_holding_days': int(min_hold_days),
+            }
+            pdf_path = generator.export_pdf(
+                self.plots_layout,
+                self.current_results,
+                clean_columns,
+                report_meta=report_meta,
+            )
             
             if pdf_path:
                 # Extraire juste le nom du fichier pour le message
