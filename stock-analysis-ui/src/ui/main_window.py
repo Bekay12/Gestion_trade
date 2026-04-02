@@ -10,6 +10,7 @@ from PyQt5.QtGui import QColor
 import io
 from matplotlib.backends.backend_qt5agg import FigureCanvasQTAgg as FigureCanvas
 from matplotlib.figure import Figure
+from matplotlib import dates as mdates
 import sys
 import os
 import math
@@ -1471,20 +1472,10 @@ class MainWindow(QMainWindow):
                     'cap_range': row.get('CapRange'),
                 }
 
-                fig = Figure(figsize=(10, 5))
-                ax = fig.add_subplot(111)
-                show_xaxis = True if i == len(filtered_symbols) - 1 else False
-                try:
-                    plot_unified_chart(sym, prices, volumes, ax, show_xaxis=show_xaxis, score_override=score_val, precomputed=precomp)
-                except Exception:
-                    ax.plot(prices.index, prices.values)
-                    if isinstance(score_val, (int, float)):
-                        ax.set_title(f"{sym} | Score: {score_val:.2f}")
-                    else:
-                        ax.set_title(sym)
+                fig = self._build_symbol_figure_with_score(sym, prices, volumes, precomp=precomp, events=[])
 
                 canvas = FigureCanvas(fig)
-                canvas.setMinimumHeight(240)
+                canvas.setMinimumHeight(340)
                 self.plots_layout.addWidget(canvas)
         except Exception:
             # Fallback: external plotting (analyse_et_affiche shows plots in separate windows)
@@ -1750,32 +1741,17 @@ class MainWindow(QMainWindow):
                             'cap_range': pre_row.get('CapRange'),
                         }
 
-                        fig = Figure(figsize=(10, 5))
-                        ax = fig.add_subplot(111)
-                        show_xaxis = True
-                        try:
-                            plot_unified_chart(sym, prices, volumes, ax, show_xaxis=show_xaxis, score_override=score_val, precomputed=precomp)
-                        except Exception:
-                            ax.plot(prices.index, prices.values)
-                            if isinstance(score_val, (int, float)):
-                                ax.set_title(f"{sym} | Score: {score_val:.2f}")
-                            else:
-                                ax.set_title(sym)
-
                         # Add trade markers based on events déjà calculés par le backtest
                         events = events_map.get(sym, [])
                         if len(events) == 0:
                             print(f"⚠️ {sym}: Aucun événement généré")
                         else:
                             print(f"✅ {sym}: {len(events)} événement(s) trouvé(s)")
-                        for ev in events:
-                            if ev.get('type') == 'BUY':
-                                ax.scatter(ev['date'], ev['price'], marker='^', s=80, color='green', edgecolor='black', zorder=6)
-                            elif ev.get('type') == 'SELL':
-                                ax.scatter(ev['date'], ev['price'], marker='v', s=80, color='red', edgecolor='black', zorder=6)
+
+                        fig = self._build_symbol_figure_with_score(sym, prices, volumes, precomp=precomp, events=events)
 
                         canvas = FigureCanvas(fig)
-                        canvas.setMinimumHeight(280)
+                        canvas.setMinimumHeight(340)
                         self.plots_layout.addWidget(canvas)
                     except Exception:
                         continue
@@ -2645,6 +2621,149 @@ class MainWindow(QMainWindow):
                 w.setParent(None)
         import gc
         gc.collect()
+
+    def _compute_score_series(self, prices, volumes, domaine='Inconnu', cap_range=None, symbol=None):
+        """Calcule l'evolution du score sur la fenetre analysee (jours actifs)."""
+        score_dates = []
+        score_values = []
+        start_idx = 50
+
+        if len(prices) <= start_idx:
+            return score_dates, score_values
+
+        # Precision maximale: calcul quotidien (chaque jour actif) pour eviter
+        # les artefacts visuels d'interpolation sur les seuils.
+        step = 1
+
+        for i in range(start_idx, len(prices), step):
+            try:
+                _sig, _last_price, _trend, _last_rsi, _vol_mean, score, _ = get_trading_signal(
+                    prices.iloc[:i + 1],
+                    volumes.iloc[:i + 1],
+                    domaine=domaine,
+                    cap_range=cap_range,
+                    symbol=symbol,
+                    return_derivatives=True,
+                )
+                score_dates.append(prices.index[i])
+                score_values.append(float(score))
+            except Exception:
+                continue
+
+        # Assurer un point final (dernier jour) pour la lecture visuelle
+        if score_dates and score_dates[-1] != prices.index[-1]:
+            try:
+                _sig, _last_price, _trend, _last_rsi, _vol_mean, score, _ = get_trading_signal(
+                    prices,
+                    volumes,
+                    domaine=domaine,
+                    cap_range=cap_range,
+                    symbol=symbol,
+                    return_derivatives=True,
+                )
+                score_dates.append(prices.index[-1])
+                score_values.append(float(score))
+            except Exception:
+                pass
+
+        return score_dates, score_values
+
+    def _get_global_thresholds_for_symbol(self, domaine='Inconnu', cap_range=None):
+        """Retourne (seuil_achat, seuil_vente) optimises pour secteur/cap, avec fallback par defaut."""
+        default_buy = 4.2
+        default_sell = -0.5
+        try:
+            best_params = getattr(self, 'best_parameters', None) or extract_best_parameters()
+            selected_key = None
+
+            if cap_range:
+                comp_key = f"{domaine}_{cap_range}"
+                if comp_key in best_params:
+                    selected_key = comp_key
+
+            if not selected_key and domaine in best_params:
+                selected_key = domaine
+
+            if selected_key:
+                _coeffs, _thresholds, globals_thresholds, _gain, _extras = best_params[selected_key]
+                buy_thr = float(globals_thresholds[0])
+                sell_thr = float(globals_thresholds[1])
+                return buy_thr, sell_thr
+        except Exception:
+            pass
+
+        return default_buy, default_sell
+
+    def _build_symbol_figure_with_score(self, sym, prices, volumes, precomp=None, events=None):
+        """Construit une figure: trace principal + score au fil du temps en dessous."""
+        precomp = precomp or {}
+        events = events or []
+
+        fig = Figure(figsize=(10, 7.2))
+        gs = fig.add_gridspec(2, 1, height_ratios=[3.0, 1.2], hspace=0.18)
+        ax_main = fig.add_subplot(gs[0, 0])
+        ax_score = fig.add_subplot(gs[1, 0], sharex=ax_main)
+
+        score_val = precomp.get('score')
+        try:
+            # Use show_xaxis=True to avoid plot_unified_chart clearing shared x tick labels.
+            plot_unified_chart(sym, prices, volumes, ax_main, show_xaxis=True, score_override=score_val, precomputed=precomp)
+        except Exception:
+            ax_main.plot(prices.index, prices.values, color='black', linewidth=1.2)
+            if isinstance(score_val, (int, float)):
+                ax_main.set_title(f"{sym} | Score: {score_val:.2f}")
+            else:
+                ax_main.set_title(sym)
+
+        # Hide x labels on top panel only; keep bottom panel date labels visible.
+        ax_main.tick_params(axis='x', which='both', bottom=False, top=False, labelbottom=False)
+
+        for ev in events:
+            if ev.get('type') == 'BUY':
+                ax_main.scatter(ev['date'], ev['price'], marker='^', s=80, color='green', edgecolor='black', zorder=6)
+            elif ev.get('type') == 'SELL':
+                ax_main.scatter(ev['date'], ev['price'], marker='v', s=80, color='red', edgecolor='black', zorder=6)
+
+        score_dates, score_values = self._compute_score_series(
+            prices,
+            volumes,
+            domaine=precomp.get('domaine', 'Inconnu'),
+            cap_range=precomp.get('cap_range'),
+            symbol=sym,
+        )
+        buy_thr, sell_thr = self._get_global_thresholds_for_symbol(
+            domaine=precomp.get('domaine', 'Inconnu'),
+            cap_range=precomp.get('cap_range'),
+        )
+
+        if score_dates and score_values:
+            ax_score.plot(score_dates, score_values, color='#1565C0', linewidth=1.6, label='Score')
+            ax_score.axhline(y=buy_thr, color='green', linestyle='--', alpha=0.5, linewidth=1.0, label=f'Seuil Achat ({buy_thr:.2f})')
+            ax_score.axhline(y=sell_thr, color='red', linestyle='--', alpha=0.5, linewidth=1.0, label=f'Seuil Vente ({sell_thr:.2f})')
+            ax_score.legend(loc='upper left', fontsize=8, frameon=True)
+        else:
+            ax_score.text(0.5, 0.5, 'Score indisponible', transform=ax_score.transAxes,
+                          ha='center', va='center', fontsize=9)
+
+        ax_score.set_ylabel('Score', fontsize=9)
+        ax_score.set_xlabel('Date', fontsize=9)
+        ax_score.text(
+            0.01,
+            0.98,
+            'Seuils appliques au score (pas au prix)',
+            transform=ax_score.transAxes,
+            va='top',
+            ha='left',
+            fontsize=8,
+            color='#424242',
+            bbox=dict(facecolor='white', alpha=0.6, edgecolor='none', pad=1.5),
+        )
+        ax_score.xaxis.set_major_locator(mdates.AutoDateLocator(minticks=4, maxticks=8))
+        ax_score.xaxis.set_major_formatter(mdates.ConciseDateFormatter(ax_score.xaxis.get_major_locator()))
+        ax_score.tick_params(axis='x', labelrotation=0, labelsize=8)
+        ax_score.grid(True, alpha=0.25)
+        fig.tight_layout()
+        return fig
 
 
 
