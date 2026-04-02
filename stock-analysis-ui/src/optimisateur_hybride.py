@@ -404,13 +404,13 @@ class HybridOptimizer:
         #   (les seuils MACD/EMA/Ichimoku/Bollinger sont fixés)
         # - 2 seuils globaux achat/vente
         base_bounds = (
-            [(0.5, 3.0)] * 8 +  # coefficients a1-a8 (indices 0-7)
+            [(-0.5, 3.0)] * 8 +  # coefficients a1-a8 (indices 0-7)
             [(30.0, 70.0)] +     # threshold RSI (index 8) - garder
             [(0.5, 2.5)] +       # threshold Volume (index 9) - garder
             [(15.0, 35.0)] +     # threshold ADX (index 10) - garder
             [(2.0, 6.0)] +       # threshold Score (index 11) - garder
-            [(2.0, 6.0)] +       # seuil_achat global (index 12)
-            [(-6.0, -2.0)]       # seuil_vente global (index 13)
+            [(1.0, 6.0)] +       # seuil_achat global (index 12)
+            [(-6.0, -1.0)]       # seuil_vente global (index 13)
         )
         self.bounds = base_bounds
         
@@ -421,8 +421,8 @@ class HybridOptimizer:
                 (0.0, 1.0),  # use_price_acc
                 (-0.5, 3.0),  # a9 weight
                 (-0.5, 3.0),  # a10 weight
-                (-0.15, 0.15),  # th9 on price_slope_rel
-                (-0.15, 0.15),  # th10 on price_acc_rel
+                (-0.25, 0.25),  # th9 on price_slope_rel
+                (-0.25, 0.25),  # th10 on price_acc_rel
             ]
             self.bounds += price_bounds
 
@@ -430,16 +430,16 @@ class HybridOptimizer:
             # Extra 13 params for fundamentals: 1 flag, 6 weights, 6 thresholds
             fundamentals_bounds = [
                 (0.0, 1.0),    # use_fundamentals flag
-                (0.0, 3.0),    # a_rev_growth weight
-                (0.0, 3.0),    # a_eps_growth weight
-                (0.0, 3.0),    # a_roe weight
-                (0.0, 3.0),    # a_fcf_yield weight
-                (0.0, 3.0),    # a_de_ratio weight
+                (-0.50, 3.0),    # a_rev_growth weight
+                (-0.50, 3.0),    # a_eps_growth weight
+                (-0.50, 3.0),    # a_roe weight
+                (-0.50, 3.0),    # a_fcf_yield weight
+                (-0.50, 3.0),    # a_de_ratio weight
                 (-30.0, 30.0),  # th_rev_growth
                 (-30.0, 30.0),  # th_eps_growth
                 (-30.0, 30.0),  # th_roe
-                (-10.0, 10.0),  # th_fcf_yield
-                (-10.0, 10.0),  # th_de_ratio
+                (-20.0, 20.0),  # th_fcf_yield
+                (-20.0, 20.0),  # th_de_ratio
             ]
             self.bounds += fundamentals_bounds
         

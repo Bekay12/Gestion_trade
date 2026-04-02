@@ -407,6 +407,7 @@ def get_trading_signal(prices, volumes, domaine, domain_coeffs=None, domain_thre
         prev_signal = float(snap.get('prev_signal', 0.0))
         variation_30j = float(snap.get('variation_30j', np.nan))
         variation_180j = float(snap.get('variation_180j', np.nan))
+        variation_5j = float(snap.get('variation_5j', np.nan))
         volume_mean = float(snap.get('volume_mean', 0.0))
         volume_std = float(snap.get('volume_std', 0.0))
         current_volume = float(snap.get('current_volume', float(volumes.iloc[-1])))
@@ -440,6 +441,7 @@ def get_trading_signal(prices, volumes, domaine, domain_coeffs=None, domain_thre
 
         variation_30j = ((last_close - float(prices.iloc[-30])) / float(prices.iloc[-30]) * 100) if len(prices) >= 30 else np.nan
         variation_180j = ((last_close - float(prices.iloc[-180])) / float(prices.iloc[-180]) * 100) if len(prices) >= 180 else np.nan
+        variation_5j = ((last_close - float(prices.iloc[-6])) / float(prices.iloc[-6]) * 100) if len(prices) >= 6 else np.nan
 
         if len(volumes) >= 30:
             volume_mean = float(volumes.rolling(window=30).mean().iloc[-1])
@@ -484,6 +486,7 @@ def get_trading_signal(prices, volumes, domaine, domain_coeffs=None, domain_thre
                 'prev_signal': prev_signal,
                 'variation_30j': float(variation_30j) if not np.isnan(variation_30j) else np.nan,
                 'variation_180j': float(variation_180j) if not np.isnan(variation_180j) else np.nan,
+                'variation_5j': float(variation_5j) if not np.isnan(variation_5j) else np.nan,
                 'volume_mean': volume_mean,
                 'volume_std': volume_std,
                 'current_volume': current_volume,
@@ -887,7 +890,7 @@ def get_trading_signal(prices, volumes, domaine, domain_coeffs=None, domain_thre
 
 
     # Helper: compute robust numerical derivatives (slope) for series
-    def compute_derivatives(series_dict, window: int = 8):
+    def compute_derivatives(series_dict, window: int = 5):
         """
         Compute slope (units per period) and relative slope (slope / last_value)
         using a linear fit (polyfit degree 1) on the last `window` points when possible.
@@ -922,7 +925,7 @@ def get_trading_signal(prices, volumes, domaine, domain_coeffs=None, domain_thre
 
     # Helper: compute a simple second-order effect (acceleration)
     # using difference of slopes across two adjacent windows.
-    def compute_accelerations(series_dict, window: int = 8):
+    def compute_accelerations(series_dict, window: int = 5):
         """
         Approximate acceleration as the difference between the most recent
         slope over the last `window` points and the slope over the preceding
@@ -972,7 +975,7 @@ def get_trading_signal(prices, volumes, domaine, domain_coeffs=None, domain_thre
                 'macd': macd_series,
                 'rsi': rsi_series,
                 'volume': volumes
-            }, window=8)
+            }, window=5)
             derivatives.update(technical_derivatives)
             # Ajouter également les accélérations (deuxième dérivée approximative)
             technical_acc = compute_accelerations({
@@ -980,7 +983,7 @@ def get_trading_signal(prices, volumes, domaine, domain_coeffs=None, domain_thre
                 'macd': macd_series,
                 'rsi': rsi_series,
                 'volume': volumes
-            }, window=8)
+            }, window=5)
             derivatives.update(technical_acc)
         except Exception as e:
             print(f"⚠️ Erreur calcul dérivées techniques: {e}")
@@ -1013,6 +1016,16 @@ def get_trading_signal(prices, volumes, domaine, domain_coeffs=None, domain_thre
             derivatives['fcf_val'] = None
             derivatives['debt_to_equity_val'] = None
             derivatives['market_cap_val'] = None
+    
+    # 🔧 CORRECTION: Inclure les seuils utilisés pour synchronisation affichage
+    # ✅ CRITICAL: Ajouter les paramètres de synchronisation pour éviter décalages ui-logique
+    derivatives['_seuil_achat_used'] = buy_threshold
+    derivatives['_seuil_vente_used'] = sell_threshold
+    derivatives['_selected_param_key'] = selected_key or domaine or 'UNKNOWN'
+    derivatives['var_5j_pct'] = float(variation_5j) if not np.isnan(variation_5j) else 0.0
+    derivatives['_cap_range_used'] = cap_range or 'None'
+    derivatives['_domaine_used'] = domaine or 'Inconnu'
+    derivatives['_score_value'] = round(score, 3)
     
     return signal, last_close, last_close > last_ema20, round(last_rsi, 2), round(volume_mean, 2), round(score, 3), derivatives
 
@@ -2578,6 +2591,17 @@ def analyse_signaux_populaires(
                 except Exception:
                     domaine = "Inconnu"
             
+            # 🔧 CORRECTION: Normaliser le secteur dès le départ pour cohérence
+            try:
+                from sector_normalizer import normalize_sector
+                domaine_raw = domaine
+                domaine = normalize_sector(domaine)
+                if domaine_raw != domaine and verbose:
+                    print(f"   🔄 {symbol}: Secteur normalisé '{domaine_raw}' → '{domaine}'")
+            except Exception:
+                # Si normalize_sector n'existe pas ou erreur, continuer avec le secteur raw
+                pass
+            
             # Recherche de la clé de paramètres optimisés
             selected_key = None
             if cap_range and cap_range != "Unknown":
@@ -2655,8 +2679,12 @@ def analyse_signaux_populaires(
                     'Volume moyen': volume_mean,
                     'Consensus': consensus.get('label', 'Neutre'),
                     'ConsensusMean': consensus.get('mean', None),
+                    # 🔧 CORRECTION: Ajouter les seuils utilisés pour synchronisation à l'affichage
+                    '_seuil_achat_used': derivatives.get('_seuil_achat_used'),
+                    '_seuil_vente_used': derivatives.get('_seuil_vente_used'),
+                    '_selected_param_key': derivatives.get('_selected_param_key'),
                     'dPrice': round((derivatives.get('price_slope_rel') or 0.0) * 100, 2),
-                    'dMACD': round((derivatives.get('macd_slope_rel') or 0.0) * 100, 2),
+                    'Var5j (%)': round(float(derivatives.get('var_5j_pct') or 0.0), 2),
                     'dRSI': round((derivatives.get('rsi_slope_rel') or 0.0) * 100, 2),
                     'dVolRel': round((derivatives.get('volume_slope_rel') or 0.0) * 100, 2),
                     'Rev. Growth (%)': round(float(derivatives.get('rev_growth_val') or 0.0), 2),
@@ -3233,7 +3261,7 @@ def analyse_signaux_populaires(
     # 🔧 S'assurer que tous les signaux ont les champs financiers complétés
     for sig in signals:
         sig.setdefault('dPrice', 0.0)
-        sig.setdefault('dMACD', 0.0)
+        sig.setdefault('Var5j (%)', 0.0)
         sig.setdefault('dRSI', 0.0)
         sig.setdefault('dVolRel', 0.0)
         sig.setdefault('Rev. Growth (%)', 0.0)

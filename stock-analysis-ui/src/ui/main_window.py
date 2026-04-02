@@ -10,6 +10,7 @@ from PyQt5.QtGui import QColor
 import io
 from matplotlib.backends.backend_qt5agg import FigureCanvasQTAgg as FigureCanvas
 from matplotlib.figure import Figure
+from matplotlib import dates as mdates
 import sys
 import os
 import math
@@ -605,11 +606,11 @@ class MainWindow(QMainWindow):
         # COLONNES FINANCIÈRES
         'Rev.\nGrowth(%)','EBITDA\nYield(%)','FCF\nYield(%)','D/E\nRatio','Market\nCap(B$)','ROE\n(%)',
         # COLONNES DERIVÉES
-        'dPrice','dMACD','dRSI','dVol\nRel',
+        'dPrice','Var5j\n(%)','dRSI','dVol\nRel',
         # COLONNES BACKTEST
         'Gain\ntotal($)','Gain\nmoyen($)',
         # INFO
-        'Consensus', 'Earn\nSurp(%)', 'Ana\nUpgrad'
+        'Consensus'
         ]
         # Add table to Results tab, not Analyze tab
         # 🔧 Boutons d'export dans l'onglet Résultats
@@ -1149,7 +1150,7 @@ class MainWindow(QMainWindow):
                         info = yf.Ticker(symbol).info
                         domaine = info.get("sector", "Inconnu")
                     
-                    # ✅ NEW: Normaliser le secteur pour cohérence avec la DB
+                    # 🔧 CORRECTION: Normaliser le secteur systématiquement pour cohérence
                     from sector_normalizer import normalize_sector
                     domaine_raw = domaine
                     domaine = normalize_sector(domaine)
@@ -1250,7 +1251,12 @@ class MainWindow(QMainWindow):
                         seuil_achat=seuil_achat_opt, seuil_vente=seuil_vente_opt
                     )
                     
-                    # 🔍 Debug: vérifier si les métriques financières sont présentes
+                    # � SYNC: Log les paramètres utilisés pour auditer les décalages
+                    if symbol in ['KIM', 'AEP'] or symbol.endswith('.HK'):  # Debug stocks spécifiques
+                        print(f"✅ {symbol} SYNC: cap_range={cap_range} | domaine={domaine} | "
+                              f"score={score:.3f} | seuil={derivatives.get('_seuil_achat_used', 'N/A'):.2f}")
+                    
+                    # �🔍 Debug: vérifier si les métriques financières sont présentes
                     if not derivatives.get('rev_growth_val') and not derivatives.get('market_cap_val'):
                         print(f"⚠️ {symbol}: Métriques financières manquantes dans derivatives")
                         print(f"   Clés disponibles: {list(derivatives.keys())}")
@@ -1260,67 +1266,6 @@ class MainWindow(QMainWindow):
                     import traceback
                     traceback.print_exc()
                     derivatives = {}
-
-                # Timeline metrics (earnings surprise and analyst upgrades)
-                timeline_surprise = 'N/A'
-                timeline_upgrades = 0
-                timeline_err = None
-                try:
-                    from timeline_cache import TimelineCache
-                    if not hasattr(self, '_timeline_cache'):
-                        timeline_db_path = os.path.abspath(
-                            os.path.join(os.path.dirname(__file__), '..', 'stock_analysis.db')
-                        )
-                        self._timeline_cache = TimelineCache(db_path=timeline_db_path)
-
-                    last_dt = prices.index[-1]
-                    if hasattr(last_dt, 'strftime'):
-                        target_date = last_dt.strftime('%Y-%m-%d')
-                    else:
-                        target_date = str(last_dt)[:10]
-
-                    # Refresh timeline data before reading strict PIT metrics.
-                    try:
-                        self._timeline_cache.update_timeline_data(symbol)
-                    except Exception as refresh_err:
-                        print(f"⚠️ Timeline refresh failed for {symbol}: {refresh_err}")
-
-                    pit_timeline = self._timeline_cache.get_pit_timeline_data(symbol, target_date)
-                    if isinstance(pit_timeline, dict):
-                        surprise_val = pit_timeline.get('latest_earnings_surprise', None)
-                        if surprise_val is not None:
-                            timeline_surprise = round(float(surprise_val), 2)
-                        timeline_upgrades = int(pit_timeline.get('recent_upgrades_count', 0) or 0)
-                except Exception as e:
-                    timeline_err = e
-
-                if timeline_err is not None:
-                    print(f"⚠️ Timeline enrich failed for {symbol}: {timeline_err}")
-                    # Fallback PIT read using today's date, without forcing refresh.
-                    try:
-                        from timeline_cache import TimelineCache
-                        if not hasattr(self, '_timeline_cache'):
-                            timeline_db_path = os.path.abspath(
-                                os.path.join(os.path.dirname(__file__), '..', 'stock_analysis.db')
-                            )
-                            self._timeline_cache = TimelineCache(db_path=timeline_db_path)
-                        fallback_date = datetime.now().strftime('%Y-%m-%d')
-                        pit_timeline = self._timeline_cache.get_pit_timeline_data(symbol, fallback_date)
-                        if isinstance(pit_timeline, dict):
-                            surprise_val = pit_timeline.get('latest_earnings_surprise', None)
-                            if surprise_val is not None:
-                                timeline_surprise = round(float(surprise_val), 2)
-                            timeline_upgrades = int(pit_timeline.get('recent_upgrades_count', 0) or 0)
-                    except Exception as fallback_err:
-                        print(f"⚠️ Timeline fallback failed for {symbol}: {fallback_err}")
-
-                if not hasattr(self, '_timeline_debug_count'):
-                    self._timeline_debug_count = 0
-                if self._timeline_debug_count < 12:
-                    print(
-                        f"🧪 TIMELINE {symbol}: surprise={timeline_surprise} upgrades={timeline_upgrades}"
-                    )
-                    self._timeline_debug_count += 1
 
                 row_info = {
                     'Symbole': symbol,
@@ -1337,7 +1282,7 @@ class MainWindow(QMainWindow):
                     'Consensus': (qsi.get_consensus(symbol) or {}).get('label', 'Neutre'),
                     'ConsensusMean': (qsi.get_consensus(symbol) or {}).get('mean', None),
                     'dPrice': round((derivatives.get('price_slope_rel') or 0.0) * 100, 2),
-                    'dMACD': round((derivatives.get('macd_slope_rel') or 0.0) * 100, 2),
+                    'Var5j (%)': round(float((derivatives.get('var_5j_pct') or 0.0)), 2),
                     'dRSI': round((derivatives.get('rsi_slope_rel') or 0.0) * 100, 2),
                     'dVolRel': round((derivatives.get('volume_slope_rel') or 0.0) * 100, 2),
                     # ✅ Métriques financières simples - protection contre None
@@ -1346,9 +1291,7 @@ class MainWindow(QMainWindow):
                     'FCF Yield (%)': round(float((derivatives.get('fcf_yield_pct') or 0.0)), 2),
                     'D/E Ratio': round(float((derivatives.get('debt_to_equity') or 0.0)), 2),
                     'Market Cap (B$)': round(float((derivatives.get('market_cap_val') or 0.0)), 2),
-                    'ROE (%)': round(float((derivatives.get('roe_val') or 0.0)), 2),
-                    'Earn Surp (%)': timeline_surprise,
-                    'Ana Upgrad': timeline_upgrades
+                    'ROE (%)': round(float((derivatives.get('roe_val') or 0.0)), 2)
                 }
 
                 self.current_results.append(row_info)
@@ -1367,7 +1310,7 @@ class MainWindow(QMainWindow):
                         'CapRange': qsi.get_cap_range_for_symbol(symbol),
                         'Volume moyen': 0.0,
                         'dPrice': 0.0,
-                        'dMACD': 0.0,
+                        'Var5j (%)': 0.0,
                         'dRSI': 0.0,
                         'dVolRel': 0.0,
                         'Rev. Growth (%)': 0.0,
@@ -1375,9 +1318,7 @@ class MainWindow(QMainWindow):
                         'FCF Yield (%)': 0.0,
                         'D/E Ratio': 0.0,
                         'Market Cap (B$)': 0.0,
-                        'ROE (%)': 0.0,
-                        'Earn Surp (%)': 'N/A',
-                        'Ana Upgrad': 0
+                        'ROE (%)': 0.0
                     }
                     self.current_results.append(row_info)
                 except Exception:
@@ -1471,20 +1412,10 @@ class MainWindow(QMainWindow):
                     'cap_range': row.get('CapRange'),
                 }
 
-                fig = Figure(figsize=(10, 5))
-                ax = fig.add_subplot(111)
-                show_xaxis = True if i == len(filtered_symbols) - 1 else False
-                try:
-                    plot_unified_chart(sym, prices, volumes, ax, show_xaxis=show_xaxis, score_override=score_val, precomputed=precomp)
-                except Exception:
-                    ax.plot(prices.index, prices.values)
-                    if isinstance(score_val, (int, float)):
-                        ax.set_title(f"{sym} | Score: {score_val:.2f}")
-                    else:
-                        ax.set_title(sym)
+                fig = self._build_symbol_figure_with_score(sym, prices, volumes, precomp=precomp, events=[])
 
                 canvas = FigureCanvas(fig)
-                canvas.setMinimumHeight(240)
+                canvas.setMinimumHeight(340)
                 self.plots_layout.addWidget(canvas)
         except Exception:
             # Fallback: external plotting (analyse_et_affiche shows plots in separate windows)
@@ -1585,7 +1516,7 @@ class MainWindow(QMainWindow):
         for r in self.current_results:
             r.setdefault('CapRange', qsi.get_cap_range_for_symbol(r.get('Symbole', '')))
             r.setdefault('dPrice', 0.0)
-            r.setdefault('dMACD', 0.0)
+            r.setdefault('Var5j (%)', 0.0)
             r.setdefault('dRSI', 0.0)
             r.setdefault('dVolRel', 0.0)
             r.setdefault('Rev. Growth (%)', 0.0)
@@ -1594,8 +1525,6 @@ class MainWindow(QMainWindow):
             r.setdefault('D/E Ratio', 0.0)
             r.setdefault('Market Cap (B$)', 0.0)
             r.setdefault('ROE (%)', 0.0)
-            r.setdefault('Earn Surp (%)', 'N/A')
-            r.setdefault('Ana Upgrad', 0)
         
         # 🔧 Charger les meilleurs paramètres une seule fois
         try:
@@ -1617,44 +1546,6 @@ class MainWindow(QMainWindow):
                 # Calculer les dérivées techniques et métriques financières si manquantes
                 need_derivatives = not r.get('dPrice') or float(r.get('dPrice', 0)) == 0.0
                 need_financials = not r.get('Market Cap (B$)') or float(r.get('Market Cap (B$)', 0)) == 0.0
-                need_timeline = (r.get('Earn Surp (%)', 'N/A') in ('N/A', '', None)) or int(r.get('Ana Upgrad', 0) or 0) == 0
-
-                # Timeline enrichment does not require market candles; fetch it first.
-                if need_timeline:
-                    try:
-                        from timeline_cache import TimelineCache
-                        if not hasattr(self, '_timeline_cache'):
-                            timeline_db_path = os.path.abspath(
-                                os.path.join(os.path.dirname(__file__), '..', 'stock_analysis.db')
-                            )
-                            self._timeline_cache = TimelineCache(db_path=timeline_db_path)
-                        try:
-                            self._timeline_cache.update_timeline_data(sym)
-                        except Exception as refresh_err:
-                            print(f"⚠️ Timeline refresh failed for {sym}: {refresh_err}")
-
-                        # Use today's date for PIT when market data is unavailable.
-                        target_date = datetime.now().strftime('%Y-%m-%d')
-                        pit_timeline = self._timeline_cache.get_pit_timeline_data(sym, target_date)
-                        if isinstance(pit_timeline, dict):
-                            surprise_val = pit_timeline.get('latest_earnings_surprise', None)
-                            if surprise_val is None:
-                                r['Earn Surp (%)'] = 'N/A'
-                            else:
-                                r['Earn Surp (%)'] = round(float(surprise_val), 2)
-                            r['Ana Upgrad'] = int(pit_timeline.get('recent_upgrades_count', 0) or 0)
-                            if not hasattr(self, '_timeline_debug_count'):
-                                self._timeline_debug_count = 0
-                            if self._timeline_debug_count < 12:
-                                print(
-                                    f"🧪 TIMELINE {sym}: surprise={r.get('Earn Surp (%)')} upgrades={r.get('Ana Upgrad')} target={target_date}"
-                                )
-                                self._timeline_debug_count += 1
-                    except Exception as e:
-                        print(f"⚠️ Timeline enrich failed for {sym}: {e}")
-                        r.setdefault('Earn Surp (%)', 'N/A')
-                        r.setdefault('Ana Upgrad', 0)
-                
                 if need_derivatives or need_financials:
                     try:
                         # Réutiliser les données en mémoire au lieu de re-télécharger
@@ -1682,7 +1573,7 @@ class MainWindow(QMainWindow):
                         # Dérivées techniques (relatives en %)
                         if need_derivatives:
                             r['dPrice'] = round(derivatives.get('price_slope_rel', 0.0) * 100, 2)
-                            r['dMACD'] = round(derivatives.get('macd_slope_rel', 0.0) * 100, 2)
+                            r['Var5j (%)'] = round(float(derivatives.get('var_5j_pct', 0.0)), 2)
                             r['dRSI'] = round(derivatives.get('rsi_slope_rel', 0.0) * 100, 2)
                             r['dVolRel'] = round(derivatives.get('volume_slope_rel', 0.0) * 100, 2)
                         
@@ -1696,7 +1587,7 @@ class MainWindow(QMainWindow):
                         # leave defaults
                         if need_derivatives:
                             r.setdefault('dPrice', 0.0)
-                            r.setdefault('dMACD', 0.0)
+                            r.setdefault('Var5j (%)', 0.0)
                             r.setdefault('dRSI', 0.0)
                             r.setdefault('dVolRel', 0.0)
         except Exception:
@@ -1750,32 +1641,17 @@ class MainWindow(QMainWindow):
                             'cap_range': pre_row.get('CapRange'),
                         }
 
-                        fig = Figure(figsize=(10, 5))
-                        ax = fig.add_subplot(111)
-                        show_xaxis = True
-                        try:
-                            plot_unified_chart(sym, prices, volumes, ax, show_xaxis=show_xaxis, score_override=score_val, precomputed=precomp)
-                        except Exception:
-                            ax.plot(prices.index, prices.values)
-                            if isinstance(score_val, (int, float)):
-                                ax.set_title(f"{sym} | Score: {score_val:.2f}")
-                            else:
-                                ax.set_title(sym)
-
                         # Add trade markers based on events déjà calculés par le backtest
                         events = events_map.get(sym, [])
                         if len(events) == 0:
                             print(f"⚠️ {sym}: Aucun événement généré")
                         else:
                             print(f"✅ {sym}: {len(events)} événement(s) trouvé(s)")
-                        for ev in events:
-                            if ev.get('type') == 'BUY':
-                                ax.scatter(ev['date'], ev['price'], marker='^', s=80, color='green', edgecolor='black', zorder=6)
-                            elif ev.get('type') == 'SELL':
-                                ax.scatter(ev['date'], ev['price'], marker='v', s=80, color='red', edgecolor='black', zorder=6)
+
+                        fig = self._build_symbol_figure_with_score(sym, prices, volumes, precomp=precomp, events=events)
 
                         canvas = FigureCanvas(fig)
-                        canvas.setMinimumHeight(280)
+                        canvas.setMinimumHeight(340)
                         self.plots_layout.addWidget(canvas)
                     except Exception:
                         continue
@@ -1992,7 +1868,7 @@ class MainWindow(QMainWindow):
             r.setdefault('Drawdown_max', 0.0)
             # Dérivées techniques
             r.setdefault('dPrice', 0.0)
-            r.setdefault('dMACD', 0.0)
+            r.setdefault('Var5j (%)', 0.0)
             r.setdefault('dRSI', 0.0)
             r.setdefault('dVolRel', 0.0)
             # Données financières
@@ -2026,33 +1902,122 @@ class MainWindow(QMainWindow):
             except Exception:
                 return default
 
+        def sentiment_to_color(sentiment: float) -> QColor:
+            """Mappe un score de sentiment [-1, 1] vers une couleur Rouge->Orange->Vert."""
+            try:
+                s = max(-1.0, min(1.0, float(sentiment)))
+            except Exception:
+                s = 0.0
+
+            if s >= 0:
+                # Orange (0) -> Vert (1)
+                t = s
+                r = int(255 + (0 - 255) * t)
+                g = int(165 + (128 - 165) * t)
+                b = int(0)
+            else:
+                # Rouge (-1) -> Orange (0)
+                t = s + 1.0
+                r = int(255)
+                g = int(0 + (165 - 0) * t)
+                b = int(0)
+            return QColor(r, g, b)
+
+        def score_sentiment_from_thresholds(score_val: float, buy_thr: float, sell_thr: float) -> float:
+            """Sentiment symétrique basé sur les seuils [vente, achat].
+            -1: score très orienté vente, +1: score très orienté achat, 0: zone intermédiaire."""
+            try:
+                s = float(score_val)
+                b = float(buy_thr)
+                v = float(sell_thr)
+            except Exception:
+                return 0.0
+
+            # Cas limite: seuils invalides
+            if b == v:
+                return 0.0
+
+            # Bornes min/max pour garder une interpolation robuste
+            lo = min(v, b)
+            hi = max(v, b)
+
+            # Interpolation linéaire entre les seuils: lo->-1, hi->+1
+            if s <= lo:
+                return -1.0
+            if s >= hi:
+                return 1.0
+
+            # Position normalisée [0,1] puis transformée en [-1,1]
+            pos = (s - lo) / (hi - lo)
+            return max(-1.0, min(1.0, (pos * 2.0) - 1.0))
+
         for signal in results_to_display:
             row = -1
             try:
                 row = self.merged_table.rowCount()
                 self.merged_table.insertRow(row)
                 sym = signal.get('Symbole', '')
+                feature_sentiments = []
+
+                # Résoudre les seuils du sous-domaine (domaine + cap range) pour colorisation cohérente
+                score_val = safe_float(signal.get('Score', 0.0))
+                domaine = str(signal.get('Domaine', ''))
+                cap_range = str(signal.get('CapRange', ''))
+                seuil_achat = signal.get('_seuil_achat_used')
+                seuil_vente = signal.get('_seuil_vente_used')
+                if seuil_achat is None or seuil_vente is None:
+                    seuil_achat = 4.2
+                    seuil_vente = -0.5
+                    try:
+                        best_params_all = getattr(self, 'best_parameters', {})
+                        param_key = None
+                        if cap_range and cap_range != "Unknown":
+                            test_key = f"{domaine}_{cap_range}"
+                            if test_key in best_params_all:
+                                param_key = test_key
+                        if not param_key and domaine in best_params_all:
+                            param_key = domaine
+                        if param_key and param_key in best_params_all:
+                            params = best_params_all[param_key]
+                            if len(params) > 2 and params[2]:
+                                globals_th = params[2]
+                                if isinstance(globals_th, (tuple, list)) and len(globals_th) >= 2:
+                                    seuil_achat = float(globals_th[0]) if globals_th[0] else 4.2
+                                    seuil_vente = float(globals_th[1]) if globals_th[1] else -0.5
+                    except Exception:
+                        pass
+                score_sent = score_sentiment_from_thresholds(score_val, seuil_achat, seuil_vente)
 
                 # Basic columns
                 self.merged_table.setItem(row, 0, QTableWidgetItem(str(sym)))
                 self.merged_table.setItem(row, 1, QTableWidgetItem(str(signal.get('Signal', ''))))
 
                 if signal.get('Signal', '') == 'ACHAT':
-                    self.merged_table.item(row, 1).setForeground(QColor(0, 128, 0))  # Vert
+                    self.merged_table.item(row, 1).setForeground(sentiment_to_color(max(0.35, score_sent)))
+                    feature_sentiments.append(max(0.35, score_sent))
                 elif signal.get('Signal', '') == 'VENTE':
-                    self.merged_table.item(row, 1).setForeground(QColor(255, 0, 0))  # Rouge
+                    self.merged_table.item(row, 1).setForeground(sentiment_to_color(min(-0.35, score_sent)))
+                    feature_sentiments.append(min(-0.35, score_sent))
+                else:
+                    self.merged_table.item(row, 1).setForeground(QColor(255, 165, 0))
+                    feature_sentiments.append(score_sent * 0.5)
 
-                score = safe_float(signal.get('Score', 0.0))
-                item = QTableWidgetItem(f"{score:.2f}")
-                item.setData(Qt.EditRole, score)
+                item = QTableWidgetItem(f"{score_val:.2f}")
+                item.setData(Qt.EditRole, score_val)
+                item.setForeground(sentiment_to_color(score_sent))
+                feature_sentiments.append(score_sent)
                 self.merged_table.setItem(row, 2, item)
 
                 prix = safe_float(signal.get('Prix', 0.0))
                 item = QTableWidgetItem(f"{prix:.2f}")
                 item.setData(Qt.EditRole, prix)
+                item.setForeground(QColor(0, 0, 0))
                 self.merged_table.setItem(row, 3, item)
 
-                self.merged_table.setItem(row, 4, QTableWidgetItem(str(signal.get('Tendance', ''))))
+                tendance_text = str(signal.get('Tendance', ''))
+                tendance_item = QTableWidgetItem(tendance_text)
+                tendance_item.setForeground(QColor(0, 0, 0))
+                self.merged_table.setItem(row, 4, tendance_item)
 
                 rsi = safe_float(signal.get('RSI', 0.0))
                 item = QTableWidgetItem(f"{rsi:.2f}")
@@ -2060,66 +2025,37 @@ class MainWindow(QMainWindow):
                 # RSI: < 30 = excellent (survente, opportunité achat), 30-40 = bon, 40-60 = neutre, 60-70 = attention, > 70 = mauvais (surachat)
                 if rsi < 30:
                     item.setForeground(QColor(0, 128, 0))  # Vert foncé : excellent (survente)
+                    feature_sentiments.append(0.9)
                 elif rsi < 40:
                     item.setForeground(QColor(34, 139, 34))  # Vert : bon
+                    feature_sentiments.append(0.6)
                 elif rsi <= 60:
                     item.setForeground(QColor(255, 165, 0))  # Orange : zone neutre
+                    feature_sentiments.append(0.0)
                 elif rsi <= 70:
                     item.setForeground(QColor(255, 100, 0))  # Orange foncé : attention (surachat imminent)
+                    feature_sentiments.append(-0.4)
                 else:
                     item.setForeground(QColor(255, 0, 0))  # Rouge : mauvais (surachat)
+                    feature_sentiments.append(-0.9)
                 self.merged_table.setItem(row, 5, item)
 
                 vol = safe_float(signal.get('Volume moyen', 0.0))
                 item = QTableWidgetItem(f"{vol:,.0f}")
                 item.setData(Qt.EditRole, float(vol))
-                # Volume: plus de volume = meilleure liquidité
-                if vol > 5000000:
-                    item.setForeground(QColor(0, 128, 0))  # Vert foncé : excellent volume
-                elif vol > 1000000:
-                    item.setForeground(QColor(34, 139, 34))  # Vert : bon volume
-                elif vol > 100000:
-                    item.setForeground(QColor(255, 165, 0))  # Orange : volume moyen
-                else:
-                    item.setForeground(QColor(255, 0, 0))  # Rouge : faible liquidité
+                item.setForeground(QColor(0, 0, 0))
                 self.merged_table.setItem(row, 6, item)
 
-                self.merged_table.setItem(row, 7, QTableWidgetItem(str(signal.get('Domaine', ''))))
+                domain_item = QTableWidgetItem(str(signal.get('Domaine', '')))
+                domain_item.setForeground(QColor(0, 0, 0))
+                self.merged_table.setItem(row, 7, domain_item)
 
-                self.merged_table.setItem(row, 8, QTableWidgetItem(str(signal.get('CapRange', ''))))
+                cap_item = QTableWidgetItem(str(signal.get('CapRange', '')))
+                cap_item.setForeground(QColor(0, 0, 0))
+                self.merged_table.setItem(row, 8, cap_item)
 
                 
-                # Score/Seuil ratio (dynamique selon domaine_cap et signe du score)
-                score_val = safe_float(signal.get('Score', 0.0))
-                domaine = str(signal.get('Domaine', ''))
-                cap_range = str(signal.get('CapRange', ''))
-                
-                # Récupérer les seuils optimisés pour domaine_cap
-                seuil_achat = 4.2  # Défaut
-                seuil_vente = -0.5  # Défaut (négatif pour les seuils de vente)
-                try:
-                    best_params_all = getattr(self, 'best_parameters', {})
-                    param_key = None
-                    # Chercher d'abord domaine_cap
-                    if cap_range and cap_range != "Unknown":
-                        test_key = f"{domaine}_{cap_range}"
-                        if test_key in best_params_all:
-                            param_key = test_key
-                    # Sinon fallback sur domaine seul
-                    if not param_key and domaine in best_params_all:
-                        param_key = domaine
-
-                    if param_key and param_key in best_params_all:
-                        params = best_params_all[param_key]
-                        if len(params) > 2 and params[2]:
-                            globals_th = params[2]
-                            if isinstance(globals_th, (tuple, list)) and len(globals_th) >= 2:
-                                seuil_achat = float(globals_th[0]) if globals_th[0] else 4.2
-                                seuil_vente = float(globals_th[1]) if globals_th[1] else -0.5
-                except Exception as e:
-                    print(f"⚠️ Erreur lecture seuils pour {sym}: {e}")
-                    pass
-
+                # Score/Seuil ratio - 🔧 CORRECTION: Utiliser les seuils stockés au calcul, pas recalculer
                 # Calculer le ratio selon le signe du score
                 try:
                     if score_val > 0:
@@ -2134,15 +2070,8 @@ class MainWindow(QMainWindow):
                 
                 item = QTableWidgetItem(f"{ratio:.2f}")
                 item.setData(Qt.EditRole, ratio)
-                # Harmoniser : ratio > 1 = excellent (dépassé le seuil), 0.5-1 = moyen, <0.5 = mauvais
-                if ratio > 1.5:
-                    item.setForeground(QColor(0, 128, 0))  # Vert foncé : excellent
-                elif ratio > 1.0:
-                    item.setForeground(QColor(34, 139, 34))  # Vert : bon (dépasse le seuil)
-                elif ratio > 0.5:
-                    item.setForeground(QColor(255, 165, 0))  # Orange : moyen
-                else:
-                    item.setForeground(QColor(255, 0, 0))  # Rouge : mauvais
+                item.setForeground(sentiment_to_color(score_sent))
+                feature_sentiments.append(score_sent)
                 self.merged_table.setItem(row, 9, item)
                 
                 # Fiabilite and NbTrades (from signal or backtest)
@@ -2174,12 +2103,18 @@ class MainWindow(QMainWindow):
                         # Harmoniser : >75% excellent, 50-75% bon, 30-50% moyen, <30% mauvais
                         if fiab_val >= 75:
                             item.setForeground(QColor(0, 128, 0))  # Vert foncé : excellent
+                            feature_sentiments.append(0.9)
                         elif fiab_val >= 50:
                             item.setForeground(QColor(34, 139, 34))  # Vert : bon
+                            feature_sentiments.append(0.6)
                         elif fiab_val >= 30:
                             item.setForeground(QColor(255, 165, 0))  # Orange : moyen
+                            feature_sentiments.append(0.1)
                         else:
                             item.setForeground(QColor(255, 0, 0))  # Rouge : mauvais
+                            feature_sentiments.append(-0.7)
+                    else:
+                        feature_sentiments.append(0.0)
                     self.merged_table.setItem(row, 10, item)
                 except Exception as e:
                     print(f"⚠️ Erreur colonne Fiabilité (10) pour {sym}: {e}")
@@ -2190,6 +2125,7 @@ class MainWindow(QMainWindow):
                     nb_int = safe_int(nb_trades, 0)
                     item = QTableWidgetItem(str(nb_int))
                     item.setData(Qt.EditRole, nb_int)
+                    item.setForeground(QColor(0, 0, 0))
                     self.merged_table.setItem(row, 11, item)
                 except Exception as e:
                     print(f"⚠️ Erreur colonne NbTrades (11) pour {sym}: {e}")
@@ -2200,6 +2136,7 @@ class MainWindow(QMainWindow):
                     gagnants = int(bt.get('gagnants', 0)) if bt else 0
                     item = QTableWidgetItem(str(gagnants))
                     item.setData(Qt.EditRole, gagnants)
+                    item.setForeground(QColor(0, 0, 0))
                     self.merged_table.setItem(row, 12, item)
                 except Exception as e:
                     print(f"⚠️ Erreur colonne Gagnants (12) pour {sym}: {e}")
@@ -2213,12 +2150,16 @@ class MainWindow(QMainWindow):
                 # Harmoniser : croissance revenue positive = bon
                 if rev_growth > 20:
                     item.setForeground(QColor(0, 128, 0))  # Vert foncé : excellent
+                    feature_sentiments.append(0.9)
                 elif rev_growth > 5:
                     item.setForeground(QColor(34, 139, 34))  # Vert : bon
+                    feature_sentiments.append(0.6)
                 elif rev_growth > 0:
                     item.setForeground(QColor(255, 165, 0))  # Orange : moyen
+                    feature_sentiments.append(0.1)
                 else:
                     item.setForeground(QColor(255, 0, 0))  # Rouge : mauvais (négatif)
+                    feature_sentiments.append(-0.8)
                 self.merged_table.setItem(row, 13, item)
 
                 # Colonne 14: EBITDA Yield (%) - avec couleurs
@@ -2228,12 +2169,16 @@ class MainWindow(QMainWindow):
                 # Harmoniser : EBITDA positif élevé = bon
                 if ebitda > 15:
                     item.setForeground(QColor(0, 128, 0))  # Vert foncé : excellent
+                    feature_sentiments.append(0.9)
                 elif ebitda > 8:
                     item.setForeground(QColor(34, 139, 34))  # Vert : bon
+                    feature_sentiments.append(0.6)
                 elif ebitda > 0:
                     item.setForeground(QColor(255, 165, 0))  # Orange : moyen
+                    feature_sentiments.append(0.1)
                 else:
                     item.setForeground(QColor(255, 0, 0))  # Rouge : mauvais (négatif)
+                    feature_sentiments.append(-0.8)
                 self.merged_table.setItem(row, 14, item)
 
                 # Colonne 15: FCF Yield (%)
@@ -2243,12 +2188,16 @@ class MainWindow(QMainWindow):
                 # Harmoniser : FCF positif = bon
                 if fcf > 10:
                     item.setForeground(QColor(0, 128, 0))  # Vert foncé : excellent
+                    feature_sentiments.append(0.9)
                 elif fcf > 3:
                     item.setForeground(QColor(34, 139, 34))  # Vert : bon
+                    feature_sentiments.append(0.6)
                 elif fcf > 0:
                     item.setForeground(QColor(255, 165, 0))  # Orange : moyen
+                    feature_sentiments.append(0.1)
                 else:
                     item.setForeground(QColor(255, 0, 0))  # Rouge : mauvais (négatif)
+                    feature_sentiments.append(-0.8)
                 self.merged_table.setItem(row, 15, item)
 
                 # Colonne 16: D/E Ratio (bas = bon)
@@ -2258,18 +2207,23 @@ class MainWindow(QMainWindow):
                 # Harmoniser : ratio bas = excellent (moins d'endettement), ratio haut = mauvais
                 if de_ratio < 0.5:
                     item.setForeground(QColor(0, 128, 0))  # Vert foncé : excellent
+                    feature_sentiments.append(0.9)
                 elif de_ratio < 1.5:
                     item.setForeground(QColor(34, 139, 34))  # Vert : bon
+                    feature_sentiments.append(0.6)
                 elif de_ratio < 2.5:
                     item.setForeground(QColor(255, 165, 0))  # Orange : moyen
+                    feature_sentiments.append(0.1)
                 else:
                     item.setForeground(QColor(255, 0, 0))  # Rouge : mauvais (trop endetté)
+                    feature_sentiments.append(-0.8)
                 self.merged_table.setItem(row, 16, item)
 
                 # Colonne 16: Market Cap (B$)
                 market_cap = safe_float(signal.get('Market Cap (B$)', 0.0))
                 item = QTableWidgetItem(f"{market_cap:.2f}")
                 item.setData(Qt.EditRole, market_cap)
+                item.setForeground(QColor(0, 0, 0))
                 self.merged_table.setItem(row, 17, item)
 
                 # Colonne 17: ROE (%)
@@ -2279,33 +2233,81 @@ class MainWindow(QMainWindow):
                 # Colorer basé sur ROE : vert si > 15%, orange si 10-15%, rouge si < 10%
                 if roe > 15:
                     item.setForeground(QColor(0, 128, 0))  # Vert : excellent
+                    feature_sentiments.append(0.8)
                 elif roe > 10:
                     item.setForeground(QColor(255, 165, 0))  # Orange : bon
+                    feature_sentiments.append(0.3)
                 elif roe > 5:
                     item.setForeground(QColor(255, 140, 0))  # Orange clair : acceptable
+                    feature_sentiments.append(0.0)
                 else:
                     item.setForeground(QColor(255, 0, 0))  # Rouge : faible
+                    feature_sentiments.append(-0.8)
                 self.merged_table.setItem(row, 18, item)
 
                 # Derivatives (colonnes 19-22)
                 dprice = safe_float(signal.get('dPrice', 0.0))
                 item = QTableWidgetItem(f"{dprice:.3f}")
                 item.setData(Qt.EditRole, dprice)
+                if dprice > 0.4:
+                    item.setForeground(QColor(34, 139, 34))
+                    feature_sentiments.append(0.4)
+                elif dprice < -0.4:
+                    item.setForeground(QColor(255, 0, 0))
+                    feature_sentiments.append(-0.4)
+                else:
+                    item.setForeground(QColor(255, 165, 0))
+                    feature_sentiments.append(0.0)
                 self.merged_table.setItem(row, 19, item)
 
-                dmacd = safe_float(signal.get('dMACD', 0.0))
-                item = QTableWidgetItem(f"{dmacd:.3f}")
-                item.setData(Qt.EditRole, dmacd)
+                var5j = safe_float(signal.get('Var5j (%)', 0.0))
+                item = QTableWidgetItem(f"{var5j:.3f}")
+                item.setData(Qt.EditRole, var5j)
+                # Contrarien: baisse hebdo = opportunité d'achat, hausse forte = prudence
+                if var5j <= -5.0:
+                    item.setForeground(QColor(0, 128, 0))
+                    feature_sentiments.append(0.9)
+                elif var5j <= -2.0:
+                    item.setForeground(QColor(34, 139, 34))
+                    feature_sentiments.append(0.6)
+                elif var5j < 2.0:
+                    item.setForeground(QColor(255, 165, 0))
+                    feature_sentiments.append(0.1)
+                elif var5j < 5.0:
+                    item.setForeground(QColor(255, 100, 0))
+                    feature_sentiments.append(-0.5)
+                else:
+                    item.setForeground(QColor(255, 0, 0))
+                    feature_sentiments.append(-0.9)
                 self.merged_table.setItem(row, 20, item)
 
                 drsi = safe_float(signal.get('dRSI', 0.0))
                 item = QTableWidgetItem(f"{drsi:.3f}")
                 item.setData(Qt.EditRole, drsi)
+                # Contrarien RSI slope: baisse RSI = meilleure probabilité de creux
+                if drsi <= -2.0:
+                    item.setForeground(QColor(34, 139, 34))
+                    feature_sentiments.append(0.5)
+                elif drsi >= 2.0:
+                    item.setForeground(QColor(255, 0, 0))
+                    feature_sentiments.append(-0.5)
+                else:
+                    item.setForeground(QColor(255, 165, 0))
+                    feature_sentiments.append(0.0)
                 self.merged_table.setItem(row, 21, item)
 
                 dvol = safe_float(signal.get('dVolRel', 0.0))
                 item = QTableWidgetItem(f"{dvol:.3f}")
                 item.setData(Qt.EditRole, dvol)
+                if dvol > 0.5:
+                    item.setForeground(QColor(34, 139, 34))
+                    feature_sentiments.append(0.4)
+                elif dvol < -0.5:
+                    item.setForeground(QColor(255, 0, 0))
+                    feature_sentiments.append(-0.4)
+                else:
+                    item.setForeground(QColor(255, 165, 0))
+                    feature_sentiments.append(0.0)
                 self.merged_table.setItem(row, 22, item)
 
                 # Backtest metrics (if available)
@@ -2321,12 +2323,16 @@ class MainWindow(QMainWindow):
                     # Harmoniser : gain > 0 = bon
                     if gain_total > 200:
                         item.setForeground(QColor(0, 128, 0))  # Vert foncé : excellent
+                        feature_sentiments.append(0.9)
                     elif gain_total > 50:
                         item.setForeground(QColor(34, 139, 34))  # Vert : bon
+                        feature_sentiments.append(0.6)
                     elif gain_total > 0:
                         item.setForeground(QColor(255, 165, 0))  # Orange : moyen
+                        feature_sentiments.append(0.1)
                     else:
                         item.setForeground(QColor(255, 0, 0))  # Rouge : mauvais
+                        feature_sentiments.append(-0.8)
                     self.merged_table.setItem(row, 23, item)
 
                     item = QTableWidgetItem(f"{gain_moy:.2f}")
@@ -2334,12 +2340,16 @@ class MainWindow(QMainWindow):
                     # Harmoniser : gain moyen > 0 = bon
                     if gain_moy > 20:
                         item.setForeground(QColor(0, 128, 0))  # Vert foncé : excellent
+                        feature_sentiments.append(0.9)
                     elif gain_moy > 5:
                         item.setForeground(QColor(34, 139, 34))  # Vert : bon
+                        feature_sentiments.append(0.6)
                     elif gain_moy > 0:
                         item.setForeground(QColor(255, 165, 0))  # Orange : moyen
+                        feature_sentiments.append(0.1)
                     else:
                         item.setForeground(QColor(255, 0, 0))  # Rouge : mauvais
+                        feature_sentiments.append(-0.8)
                     self.merged_table.setItem(row, 24, item)
                 except Exception as e:
                     print(f"⚠️ Erreur colonnes Gain (23-24) pour {sym}: {e}")
@@ -2364,42 +2374,17 @@ class MainWindow(QMainWindow):
                     item.setForeground(QColor(255, 0, 0))  # Rouge : mauvais
                 self.merged_table.setItem(row, 25, item)
 
-                # Earnings Surprise (column 26)
-                surprise_raw = signal.get('Earn Surp (%)', signal.get('latest_earnings_surprise', 'N/A'))
+                # Couleur moyenne du symbole basée sur l'ensemble des features colorisées
                 try:
-                    if surprise_raw in (None, '', 'N/A'):
-                        surprise_item = QTableWidgetItem('N/A')
+                    if feature_sentiments:
+                        avg_sentiment = sum(feature_sentiments) / len(feature_sentiments)
                     else:
-                        surprise_val = float(surprise_raw)
-                        surprise_item = QTableWidgetItem(f"{surprise_val:.2f}%")
-                        surprise_item.setData(Qt.EditRole, surprise_val)
-                        if surprise_val > 10:
-                            surprise_item.setForeground(QColor(0, 128, 0))
-                        elif surprise_val > 0:
-                            surprise_item.setForeground(QColor(34, 139, 34))
-                        elif surprise_val < -5:
-                            surprise_item.setForeground(QColor(255, 0, 0))
-                        else:
-                            surprise_item.setForeground(QColor(255, 165, 0))
-                    self.merged_table.setItem(row, 26, surprise_item)
+                        avg_sentiment = 0.0
+                    symbol_item = self.merged_table.item(row, 0)
+                    if symbol_item is not None:
+                        symbol_item.setForeground(sentiment_to_color(avg_sentiment))
                 except Exception:
-                    self.merged_table.setItem(row, 26, QTableWidgetItem('N/A'))
-
-                # Analyst Upgrades (column 27)
-                upgrades_raw = signal.get('Ana Upgrad', signal.get('recent_upgrades_count', 0))
-                try:
-                    upgrades_val = int(upgrades_raw or 0)
-                    upgrades_item = QTableWidgetItem(str(upgrades_val))
-                    upgrades_item.setData(Qt.EditRole, upgrades_val)
-                    if upgrades_val >= 2:
-                        upgrades_item.setForeground(QColor(0, 128, 0))
-                    elif upgrades_val == 1:
-                        upgrades_item.setForeground(QColor(34, 139, 34))
-                    else:
-                        upgrades_item.setForeground(QColor(255, 165, 0))
-                    self.merged_table.setItem(row, 27, upgrades_item)
-                except Exception:
-                    self.merged_table.setItem(row, 27, QTableWidgetItem('0'))
+                    pass
 
                 # item = QTableWidgetItem(f"{drawdown:.2f}")
                 # item.setData(Qt.EditRole, drawdown)
@@ -2645,6 +2630,174 @@ class MainWindow(QMainWindow):
                 w.setParent(None)
         import gc
         gc.collect()
+
+    def _compute_score_series(self, prices, volumes, domaine='Inconnu', cap_range=None, symbol=None):
+        """Calcule l'evolution du score sur la fenetre analysee (jours actifs).
+        
+        ✅ THREAD-SAFE: Garantit que cap_range reste constant tout au long de la calcul
+        """
+        score_dates = []
+        score_values = []
+        start_idx = 50
+
+        if len(prices) <= start_idx:
+            return score_dates, score_values
+
+        # 🔧 GUARD: Valider les paramètres à l'entrée
+        if not domaine or domaine == 'Inconnu':
+            domaine = 'Technology'  # Fallback de sécurité
+        
+        # ✅ CRÍTICO: cap_range ne doit JAMAIS changer dans cette fonction
+        original_cap_range = cap_range
+        original_domaine = domaine
+
+        # Precision maximale: calcul quotidien (chaque jour actif) pour eviter
+        # les artefacts visuels d'interpolation sur les seuils.
+        step = 1
+
+        for i in range(start_idx, len(prices), step):
+            try:
+                _sig, _last_price, _trend, _last_rsi, _vol_mean, score, derivatives = get_trading_signal(
+                    prices.iloc[:i + 1],
+                    volumes.iloc[:i + 1],
+                    domaine=original_domaine,  # ✅ Toujours utiliser ORIGINAL
+                    cap_range=original_cap_range,  # ✅ Toujours utiliser ORIGINAL
+                    symbol=symbol,
+                    return_derivatives=True,
+                )
+                # 🔍 Assertion de sécurité
+                used_cap = derivatives.get('_cap_range_used', original_cap_range)
+                if used_cap != original_cap_range and original_cap_range is not None:
+                    print(f"⚠️ {symbol}: cap_range décalé de {original_cap_range} à {used_cap} à l'itération {i}")
+                
+                score_dates.append(prices.index[i])
+                score_values.append(float(score))
+            except Exception:
+                continue
+
+        # Assurer un point final (dernier jour) pour la lecture visuelle
+        if score_dates and score_dates[-1] != prices.index[-1]:
+            try:
+                _sig, _last_price, _trend, _last_rsi, _vol_mean, score, derivatives = get_trading_signal(
+                    prices,
+                    volumes,
+                    domaine=original_domaine,
+                    cap_range=original_cap_range,
+                    symbol=symbol,
+                    return_derivatives=True,
+                )
+                score_dates.append(prices.index[-1])
+                score_values.append(float(score))
+            except Exception:
+                pass
+
+        return score_dates, score_values
+
+    def _get_global_thresholds_for_symbol(self, domaine='Inconnu', cap_range=None):
+        """Retourne (seuil_achat, seuil_vente) optimises pour secteur/cap, avec fallback par defaut.
+        
+        ✅ GARANTIE: Les seuils retournés correspondent EXACTEMENT au cap_range fourni
+        """
+        default_buy = 4.2
+        default_sell = -0.5
+        try:
+            best_params = getattr(self, 'best_parameters', None) or extract_best_parameters()
+            selected_key = None
+
+            # ✅ ORDRE CRITIQUE: Chercher d'abord cap_range+domaine, sinon juste domaine
+            if cap_range and cap_range != 'Unknown':
+                comp_key = f"{domaine}_{cap_range}"
+                if comp_key in best_params:
+                    selected_key = comp_key
+
+            if not selected_key and domaine in best_params:
+                selected_key = domaine
+
+            if selected_key:
+                _coeffs, _thresholds, globals_thresholds, _gain, _extras = best_params[selected_key]
+                buy_thr = float(globals_thresholds[0])
+                sell_thr = float(globals_thresholds[1])
+                
+                # 🔍 Debug log pour tracer les seuils utilisés
+                if domaine in ['Real Estate', 'Utilities'] or (cap_range and cap_range != 'Unknown'):
+                    print(f"✅ SEUILS: cap_range={cap_range}, key={selected_key} → buy={buy_thr:.2f}, sell={sell_thr:.2f}")
+                
+                return buy_thr, sell_thr
+        except Exception as e:
+            print(f"⚠️ Erreur _get_global_thresholds_for_symbol: {e}")
+
+        return default_buy, default_sell
+
+    def _build_symbol_figure_with_score(self, sym, prices, volumes, precomp=None, events=None):
+        """Construit une figure: trace principal + score au fil du temps en dessous."""
+        precomp = precomp or {}
+        events = events or []
+
+        fig = Figure(figsize=(10, 7.2))
+        gs = fig.add_gridspec(2, 1, height_ratios=[3.0, 1.2], hspace=0.18)
+        ax_main = fig.add_subplot(gs[0, 0])
+        ax_score = fig.add_subplot(gs[1, 0], sharex=ax_main)
+
+        score_val = precomp.get('score')
+        try:
+            # Use show_xaxis=True to avoid plot_unified_chart clearing shared x tick labels.
+            plot_unified_chart(sym, prices, volumes, ax_main, show_xaxis=True, score_override=score_val, precomputed=precomp)
+        except Exception:
+            ax_main.plot(prices.index, prices.values, color='black', linewidth=1.2)
+            if isinstance(score_val, (int, float)):
+                ax_main.set_title(f"{sym} | Score: {score_val:.2f}")
+            else:
+                ax_main.set_title(sym)
+
+        # Hide x labels on top panel only; keep bottom panel date labels visible.
+        ax_main.tick_params(axis='x', which='both', bottom=False, top=False, labelbottom=False)
+
+        for ev in events:
+            if ev.get('type') == 'BUY':
+                ax_main.scatter(ev['date'], ev['price'], marker='^', s=80, color='green', edgecolor='black', zorder=6)
+            elif ev.get('type') == 'SELL':
+                ax_main.scatter(ev['date'], ev['price'], marker='v', s=80, color='red', edgecolor='black', zorder=6)
+
+        score_dates, score_values = self._compute_score_series(
+            prices,
+            volumes,
+            domaine=precomp.get('domaine', 'Inconnu'),
+            cap_range=precomp.get('cap_range'),
+            symbol=sym,
+        )
+        buy_thr, sell_thr = self._get_global_thresholds_for_symbol(
+            domaine=precomp.get('domaine', 'Inconnu'),
+            cap_range=precomp.get('cap_range'),
+        )
+
+        if score_dates and score_values:
+            ax_score.plot(score_dates, score_values, color='#1565C0', linewidth=1.6, label='Score')
+            ax_score.axhline(y=buy_thr, color='green', linestyle='--', alpha=0.5, linewidth=1.0, label=f'Seuil Achat ({buy_thr:.2f})')
+            ax_score.axhline(y=sell_thr, color='red', linestyle='--', alpha=0.5, linewidth=1.0, label=f'Seuil Vente ({sell_thr:.2f})')
+            ax_score.legend(loc='upper left', fontsize=8, frameon=True)
+        else:
+            ax_score.text(0.5, 0.5, 'Score indisponible', transform=ax_score.transAxes,
+                          ha='center', va='center', fontsize=9)
+
+        ax_score.set_ylabel('Score', fontsize=9)
+        ax_score.set_xlabel('Date', fontsize=9)
+        ax_score.text(
+            0.01,
+            0.98,
+            'Seuils appliques au score (pas au prix)',
+            transform=ax_score.transAxes,
+            va='top',
+            ha='left',
+            fontsize=8,
+            color='#424242',
+            bbox=dict(facecolor='white', alpha=0.6, edgecolor='none', pad=1.5),
+        )
+        ax_score.xaxis.set_major_locator(mdates.AutoDateLocator(minticks=4, maxticks=8))
+        ax_score.xaxis.set_major_formatter(mdates.ConciseDateFormatter(ax_score.xaxis.get_major_locator()))
+        ax_score.tick_params(axis='x', labelrotation=0, labelsize=8)
+        ax_score.grid(True, alpha=0.25)
+        fig.tight_layout()
+        return fig
 
 
 
