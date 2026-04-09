@@ -16,6 +16,7 @@ import sys
 import os
 import math
 from datetime import datetime
+import pandas as pd
 import yfinance as yf
 
 # Ensure project `src` root is on sys.path
@@ -652,7 +653,7 @@ class MainWindow(QMainWindow):
         self.merged_table.setMinimumHeight(600)
         self.merged_table.setSizePolicy(QSizePolicy.Expanding, QSizePolicy.Expanding)
         merged_columns = [
-        'Symbole','Signal','Score','Prix','Tendance','RSI','Volume\nmoyen','Domaine','Cap\nRange','Score/\nSeuil',
+        'Symbole','Signal','Score','Prix\n(USD)','Tendance','RSI','Volume\nmoyen($)','Domaine','Cap\nRange','Score/\nSeuil',
         'Fiabilite\n(%)','Nb\nTrades','Gagnants',
         # COLONNES FINANCIÈRES
         'Rev.\nGrowth(%)','EBITDA\nYield(%)','FCF\nYield(%)','D/E\nRatio','Market\nCap(B$)','ROE\n(%)',
@@ -1327,23 +1328,27 @@ class MainWindow(QMainWindow):
                     'Signal': sig,
                     'Score': score,
                     'Prix': last_price,
+                    'Devise': str(stock_data.get('Currency', 'USD')),
+                    'FxRateToUSD': float(stock_data.get('FxRateToUSD', 1.0) or 1.0),
                     'Tendance': 'Hausse' if trend else 'Baisse',
                     'RSI': last_rsi,
                     'DomaineOriginal': original_domaine,
                     'Domaine': domaine,
                     'CapRange': cap_range,
-                    'Volume moyen': volume_mean,
+                    'Volume moyen': float(derivatives.get('volume_mean_usd', volume_mean * last_price)),
                     # Consensus (stable via cache/offline fallback)
                     'Consensus': consensus_data.get('label', 'Neutre'),
                     'ConsensusMean': consensus_data.get('mean', None),
                     'dPrice': round((derivatives.get('price_slope_rel') or 0.0) * 100, 2),
                     'Var5j (%)': round(float((derivatives.get('var_5j_pct') or 0.0)), 2),
                     'dRSI': round((derivatives.get('rsi_slope_rel') or 0.0) * 100, 2),
-                    'dVolRel': round((derivatives.get('volume_slope_rel') or 0.0) * 100, 2),
+                    'dVolRel': round((derivatives['volume_slope_rel_usd'] if 'volume_slope_rel_usd' in derivatives else derivatives.get('volume_slope_rel', 0.0) or 0.0) * 100, 2),
                     # ✅ Métriques financières simples - protection contre None
                     'Rev. Growth (%)': round(float((derivatives.get('rev_growth_val') or 0.0)), 2),
                     'EBITDA Yield (%)': round(float((derivatives.get('ebitda_yield_pct') or 0.0)), 2),
                     'FCF Yield (%)': round(float((derivatives.get('fcf_yield_pct') or 0.0)), 2),
+                    'EBITDA (B$)': round(float((derivatives.get('ebitda_val') or 0.0)), 2),
+                    'FCF (B$)': round(float((derivatives.get('fcf_val') or 0.0)), 2),
                     'D/E Ratio': round(float((derivatives.get('debt_to_equity') or 0.0)), 2),
                     'Market Cap (B$)': round(float((derivatives.get('market_cap_val') or 0.0)), 2),
                     'ROE (%)': round(float((derivatives.get('roe_val') or 0.0)), 2)
@@ -1359,6 +1364,8 @@ class MainWindow(QMainWindow):
                         'Signal': 'ERREUR',
                         'Score': 0.0,
                         'Prix': float(stock_data['Close'].iloc[-1]) if 'Close' in stock_data else 0.0,
+                        'Devise': str(stock_data.get('Currency', 'USD')),
+                        'FxRateToUSD': float(stock_data.get('FxRateToUSD', 1.0) or 1.0),
                         'Tendance': 'N/A',
                         'RSI': 0.0,
                         'Domaine': 'Inconnu',
@@ -1371,6 +1378,8 @@ class MainWindow(QMainWindow):
                         'Rev. Growth (%)': 0.0,
                         'EBITDA Yield (%)': 0.0,
                         'FCF Yield (%)': 0.0,
+                        'EBITDA (B$)': 0.0,
+                        'FCF (B$)': 0.0,
                         'D/E Ratio': 0.0,
                         'Market Cap (B$)': 0.0,
                         'ROE (%)': 0.0
@@ -1443,9 +1452,10 @@ class MainWindow(QMainWindow):
                 if include_none_val:
                     filtered.append(r)
 
-        # Render plots only for filtered symbols (embedded). If embedding fails, fallback to external plots.
+        # Render plots only for filtered symbols (embedded).
         self.clear_plots()
         filtered_symbols = [r['Symbole'] for r in filtered]
+        rendered_count = 0
         try:
             for i, sym in enumerate(filtered_symbols):
                 stock_data = data.get(sym)
@@ -1473,13 +1483,12 @@ class MainWindow(QMainWindow):
                 # Hauteur plus généreuse pour éviter la coupure des titres
                 canvas.setMinimumHeight(520)
                 self.plots_layout.addWidget(canvas)
+                rendered_count += 1
         except Exception:
-            # Fallback: external plotting (analyse_et_affiche shows plots in separate windows)
-            try:
-                if filtered_symbols:
-                    analyse_et_affiche(filtered_symbols, period=self.period_input.currentData() or '15mo')
-            except Exception:
-                pass
+            pass
+
+        if filtered_symbols and rendered_count == 0:
+            self.plots_layout.addWidget(QLabel("Aucun graphe integre n'a pu etre affiche pour cette analyse."))
 
         # NOTE: Do not replace the user's popular/mes lists with filtered results.
         # Instead, we can optionally update item tooltips to show fiabilité without
@@ -1571,6 +1580,8 @@ class MainWindow(QMainWindow):
         # 🔧 Initialiser les colonnes par défaut pour tous les signaux
         for r in self.current_results:
             r.setdefault('CapRange', qsi.get_cap_range_for_symbol(r.get('Symbole', '')))
+            r.setdefault('Devise', 'USD')
+            r.setdefault('FxRateToUSD', 1.0)
             r.setdefault('dPrice', 0.0)
             r.setdefault('Var5j (%)', 0.0)
             r.setdefault('dRSI', 0.0)
@@ -1578,6 +1589,8 @@ class MainWindow(QMainWindow):
             r.setdefault('Rev. Growth (%)', 0.0)
             r.setdefault('EBITDA Yield (%)', 0.0)
             r.setdefault('FCF Yield (%)', 0.0)
+            r.setdefault('EBITDA (B$)', 0.0)
+            r.setdefault('FCF (B$)', 0.0)
             r.setdefault('D/E Ratio', 0.0)
             r.setdefault('Market Cap (B$)', 0.0)
             r.setdefault('ROE (%)', 0.0)
@@ -1640,7 +1653,7 @@ class MainWindow(QMainWindow):
                             r['dPrice'] = round(derivatives.get('price_slope_rel', 0.0) * 100, 2)
                             r['Var5j (%)'] = round(float(derivatives.get('var_5j_pct', 0.0)), 2)
                             r['dRSI'] = round(derivatives.get('rsi_slope_rel', 0.0) * 100, 2)
-                            r['dVolRel'] = round(derivatives.get('volume_slope_rel', 0.0) * 100, 2)
+                            r['dVolRel'] = round((derivatives['volume_slope_rel_usd'] if 'volume_slope_rel_usd' in derivatives else derivatives.get('volume_slope_rel', 0.0) or 0.0) * 100, 2)
                         
                         # ✅ Métriques financières simples
                         r['Rev. Growth (%)'] = round(derivatives.get('rev_growth_val', 0.0), 2)
@@ -1905,6 +1918,22 @@ class MainWindow(QMainWindow):
         if not hasattr(self, 'current_results'):
             return
 
+        def _parse_numeric(val, default=None):
+            try:
+                if val is None:
+                    return default
+                if isinstance(val, str):
+                    raw = val.strip()
+                    if raw == '' or raw.upper() == 'N/A':
+                        return default
+                    raw = raw.replace('%', '').replace('$', '').replace(',', '').replace('x', '').strip()
+                    if raw == '':
+                        return default
+                    return float(raw)
+                return float(val)
+            except Exception:
+                return default
+
         sorting_was_enabled = self.merged_table.isSortingEnabled()
         if sorting_was_enabled:
             self.merged_table.setSortingEnabled(False)
@@ -1924,11 +1953,11 @@ class MainWindow(QMainWindow):
                 # Toujours inclure si pas de données de fiabilité
                 filtered_results.append(r)
             else:
-                try:
-                    fiab_num = float(fiab_val) if isinstance(fiab_val, (int, float, str)) else 0.0
+                fiab_num = _parse_numeric(fiab_val, None)
+                if fiab_num is not None:
                     if fiab_num >= min_fiab_threshold:
                         filtered_results.append(r)
-                except (ValueError, TypeError):
+                else:
                     # Inclure si conversion échoue
                     filtered_results.append(r)
         
@@ -1950,6 +1979,8 @@ class MainWindow(QMainWindow):
             r.setdefault('Rev. Growth (%)', 0.0)
             r.setdefault('EBITDA Yield (%)', 0.0)
             r.setdefault('FCF Yield (%)', 0.0)
+            r.setdefault('EBITDA (B$)', 0.0)
+            r.setdefault('FCF (B$)', 0.0)
             r.setdefault('D/E Ratio', 0.0)
             r.setdefault('Market Cap (B$)', 0.0)
             r.setdefault('ROE (%)', 0.0)
@@ -1961,8 +1992,14 @@ class MainWindow(QMainWindow):
             try:
                 if val is None:
                     return default
-                if isinstance(val, str) and val.strip() == '':
-                    return default
+                if isinstance(val, str):
+                    raw = val.strip()
+                    if raw == '' or raw.upper() == 'N/A':
+                        return default
+                    raw = raw.replace('%', '').replace('$', '').replace(',', '').replace('x', '').strip()
+                    if raw == '':
+                        return default
+                    return float(raw)
                 return float(val)
             except Exception:
                 return default
@@ -2084,7 +2121,7 @@ class MainWindow(QMainWindow):
                 self.merged_table.setItem(row, 2, item)
 
                 prix = safe_float(signal.get('Prix', 0.0))
-                item = QTableWidgetItem(f"{prix:.2f}")
+                item = QTableWidgetItem(f"${prix:.2f}")
                 item.setData(Qt.EditRole, prix)
                 item.setForeground(QColor(0, 0, 0))
                 self.merged_table.setItem(row, 3, item)
@@ -2165,12 +2202,11 @@ class MainWindow(QMainWindow):
                         fiab_text = 'N/A'
                         fiab_val = None
                     else:
-                        try:
-                            fiab_val = float(fiab)
-                            fiab_text = f"{fiab_val:.0f}%"
-                        except Exception:
+                        fiab_val = safe_float(fiab, None)
+                        if fiab_val is not None:
+                            fiab_text = f"{fiab_val:.2f}%"
+                        else:
                             fiab_text = str(fiab)
-                            fiab_val = None
 
                     item = QTableWidgetItem(fiab_text)
                     if fiab_val is not None:
@@ -2322,7 +2358,7 @@ class MainWindow(QMainWindow):
 
                 # Derivatives (colonnes 19-22)
                 dprice = safe_float(signal.get('dPrice', 0.0))
-                item = QTableWidgetItem(f"{dprice:.3f}")
+                item = QTableWidgetItem(f"{dprice:.2f}")
                 item.setData(Qt.EditRole, dprice)
                 if dprice > 0.4:
                     item.setForeground(QColor(34, 139, 34))
@@ -2336,7 +2372,7 @@ class MainWindow(QMainWindow):
                 self.merged_table.setItem(row, 19, item)
 
                 var5j = safe_float(signal.get('Var5j (%)', 0.0))
-                item = QTableWidgetItem(f"{var5j:.3f}")
+                item = QTableWidgetItem(f"{var5j:.2f}")
                 item.setData(Qt.EditRole, var5j)
                 # Contrarien: baisse hebdo = opportunité d'achat, hausse forte = prudence
                 if var5j <= -5.0:
@@ -2357,7 +2393,7 @@ class MainWindow(QMainWindow):
                 self.merged_table.setItem(row, 20, item)
 
                 drsi = safe_float(signal.get('dRSI', 0.0))
-                item = QTableWidgetItem(f"{drsi:.3f}")
+                item = QTableWidgetItem(f"{drsi:.2f}")
                 item.setData(Qt.EditRole, drsi)
                 # Contrarien RSI slope: baisse RSI = meilleure probabilité de creux
                 if drsi <= -2.0:
@@ -2372,7 +2408,7 @@ class MainWindow(QMainWindow):
                 self.merged_table.setItem(row, 21, item)
 
                 dvol = safe_float(signal.get('dVolRel', 0.0))
-                item = QTableWidgetItem(f"{dvol:.3f}")
+                item = QTableWidgetItem(f"{dvol:.2f}")
                 item.setData(Qt.EditRole, dvol)
                 if dvol > 0.5:
                     item.setForeground(QColor(34, 139, 34))
@@ -2836,7 +2872,19 @@ class MainWindow(QMainWindow):
         ax_main = fig.add_subplot(gs[0, 0])
         ax_score = fig.add_subplot(gs[1, 0], sharex=ax_main)
 
+        score_dates = precomp.get('score_dates') or []
+        score_values = precomp.get('score_values') or []
+        if not score_dates or not score_values:
+            score_dates, score_values = self._compute_score_series(
+                prices,
+                volumes,
+                domaine=precomp.get('domaine', 'Inconnu'),
+                cap_range=precomp.get('cap_range'),
+                symbol=sym,
+            )
+
         score_val = precomp.get('score')
+
         try:
             # Use show_xaxis=True to avoid plot_unified_chart clearing shared x tick labels.
             plot_unified_chart(sym, prices, volumes, ax_main, show_xaxis=True, score_override=score_val, precomputed=precomp)
@@ -2850,26 +2898,16 @@ class MainWindow(QMainWindow):
         # Hide x labels on top panel only; keep bottom panel date labels visible.
         ax_main.tick_params(axis='x', which='both', bottom=False, top=False, labelbottom=False)
 
+        buy_thr, sell_thr = self._get_global_thresholds_for_symbol(
+            domaine=precomp.get('domaine', 'Inconnu'),
+            cap_range=precomp.get('cap_range'),
+        )
+
         for ev in events:
             if ev.get('type') == 'BUY':
                 ax_main.scatter(ev['date'], ev['price'], marker='^', s=80, color='green', edgecolor='black', zorder=6)
             elif ev.get('type') == 'SELL':
                 ax_main.scatter(ev['date'], ev['price'], marker='v', s=80, color='red', edgecolor='black', zorder=6)
-
-        score_dates = precomp.get('score_dates') or []
-        score_values = precomp.get('score_values') or []
-        if not score_dates or not score_values:
-            score_dates, score_values = self._compute_score_series(
-                prices,
-                volumes,
-                domaine=precomp.get('domaine', 'Inconnu'),
-                cap_range=precomp.get('cap_range'),
-                symbol=sym,
-            )
-        buy_thr, sell_thr = self._get_global_thresholds_for_symbol(
-            domaine=precomp.get('domaine', 'Inconnu'),
-            cap_range=precomp.get('cap_range'),
-        )
 
         if score_dates and score_values:
             ax_score.plot(score_dates, score_values, color='#1565C0', linewidth=1.6, label='Score')
@@ -3146,7 +3184,7 @@ class MainWindow(QMainWindow):
             traceback.print_exc()
     
     def populate_comparisons_tab(self):
-        """Onglet Comparaisons: permet de sélectionner jusqu'à 15 symboles et les comparer."""
+        """Onglet Comparaisons: permet de sélectionner jusqu'à 100 symboles et les comparer."""
         try:
             # Nettoyer l'onglet Comparaisons
             while self.comparisons_layout.count() > 0:
@@ -3155,7 +3193,7 @@ class MainWindow(QMainWindow):
                     widget.deleteLater()
             
             # Titre
-            title = QLabel("📊 Comparaison personnalisée de symboles (max 15)")
+            title = QLabel("📊 Comparaison personnalisée de symboles (max 100)")
             title.setStyleSheet("font-weight: bold; font-size: 12px;")
             self.comparisons_layout.addWidget(title)
             
@@ -3179,7 +3217,7 @@ class MainWindow(QMainWindow):
             
             # Label pour sélection avec boutons rapides
             select_header_layout = QHBoxLayout()
-            select_label = QLabel("✓ Sélectionnez jusqu'à 15 symboles:")
+            select_label = QLabel("✓ Sélectionnez jusqu'à 100 symboles:")
             select_label.setStyleSheet("font-weight: bold; font-size: 10px;")
             select_header_layout.addWidget(select_label)
             select_header_layout.addStretch()
@@ -3282,8 +3320,8 @@ class MainWindow(QMainWindow):
                 if not selected:
                     QMessageBox.warning(self, "Erreur", "Sélectionnez au moins 1 symbole pour comparer")
                     return
-                if len(selected) > 15:
-                    QMessageBox.warning(self, "Erreur", "Maximum 15 symboles à la fois")
+                if len(selected) > 100:
+                    QMessageBox.warning(self, "Erreur", "Maximum 100 symboles à la fois")
                     return
                 
                 # Nettoyer les résultats précédents
@@ -3321,26 +3359,64 @@ class MainWindow(QMainWindow):
     def _generate_comparison_table(self, symbols_to_compare):
         """Génère un tableau comparatif pour les symboles sélectionnés avec classement par pertinence."""
         try:
-            # Récupérer les données pour chaque symbole
+            def safe_float(value, default=0.0):
+                try:
+                    if value is None:
+                        return default
+                    return float(str(value).replace('%', '').replace('$', '').replace(',', '').strip())
+                except Exception:
+                    return default
+
+            def table_text(row, col, default='0'):
+                item = self.merged_table.item(row, col)
+                return item.text() if item else default
+
+            def clone_table_item(source_item, fallback_text=''):
+                text = source_item.text() if source_item else fallback_text
+                item = QTableWidgetItem(text)
+                if source_item:
+                    # Keep the already-formatted text from source_item to preserve UI rounding.
+                    item.setData(Qt.EditRole, source_item.data(Qt.EditRole))
+                    item.setForeground(source_item.foreground())
+                    item.setBackground(source_item.background())
+                    item.setFont(source_item.font())
+                    item.setTextAlignment(source_item.textAlignment())
+                    item.setFlags(source_item.flags())
+                    tooltip = source_item.toolTip()
+                    if tooltip:
+                        item.setToolTip(tooltip)
+                return item
+
+            # Récupérer les données pour chaque symbole en recopiant les colonnes du tableau résultats
             symbols_data = {}
             for row in range(self.merged_table.rowCount()):
                 try:
-                    sym = self.merged_table.item(row, 0).text()
+                    sym_item = self.merged_table.item(row, 0)
+                    if not sym_item:
+                        continue
+                    sym = sym_item.text()
                     if sym in symbols_to_compare:
-                        score = float(self.merged_table.item(row, 2).text()) if self.merged_table.item(row, 2) else 0.0
-                        prix = float(self.merged_table.item(row, 3).text()) if self.merged_table.item(row, 3) else 0.0
-                        rsi = float(self.merged_table.item(row, 5).text()) if self.merged_table.item(row, 5) else 0.0
-                        domaine = self.merged_table.item(row, 7).text() if self.merged_table.item(row, 7) else 'N/A'
-                        score_seuil = float(self.merged_table.item(row, 9).text()) if self.merged_table.item(row, 9) else 0.0
-                        fiab_text = self.merged_table.item(row, 10).text() if self.merged_table.item(row, 10) else 'N/A'
-                        fiab = float(fiab_text.replace('%', '')) if fiab_text != 'N/A' else 0.0
-                        trades = int(self.merged_table.item(row, 11).text()) if self.merged_table.item(row, 11) else 0
-                        gagnants = int(self.merged_table.item(row, 12).text()) if self.merged_table.item(row, 12) else 0
-                        # ✅ Ajouter EBITDA (colonne 14 dans merged_table)
-                        ebitda_text = self.merged_table.item(row, 14).text() if self.merged_table.item(row, 14) else '0'
-                        ebitda = float(ebitda_text) if ebitda_text else 0.0
-                        gain = float(self.merged_table.item(row, 22).text()) if self.merged_table.item(row, 22) else 0.0
-                        consensus = self.merged_table.item(row, 25).text() if self.merged_table.item(row, 25) else 'N/A'
+                        score = safe_float(table_text(row, 2))
+                        prix = safe_float(table_text(row, 3))
+                        rsi = safe_float(table_text(row, 5))
+                        domaine = table_text(row, 7, 'N/A')
+                        score_seuil = safe_float(table_text(row, 9))
+                        fiab = safe_float(table_text(row, 10))
+                        trades = int(safe_float(table_text(row, 11)))
+                        gagnants = int(safe_float(table_text(row, 12)))
+                        rev_growth = safe_float(table_text(row, 13))
+                        ebitda = safe_float(table_text(row, 14))
+                        fcf = safe_float(table_text(row, 15))
+                        debt_to_equity = safe_float(table_text(row, 16))
+                        market_cap = safe_float(table_text(row, 17))
+                        roe = safe_float(table_text(row, 18))
+                        dprice = safe_float(table_text(row, 19))
+                        var5j = safe_float(table_text(row, 20))
+                        drsi = safe_float(table_text(row, 21))
+                        dvol = safe_float(table_text(row, 22))
+                        gain_total = safe_float(table_text(row, 23))
+                        gain_moyen = safe_float(table_text(row, 24))
+                        consensus = table_text(row, 25, 'N/A')
                         
                         symbols_data[sym] = {
                             'Score': score,
@@ -3351,39 +3427,88 @@ class MainWindow(QMainWindow):
                             'Fiabilité (%)': fiab,
                             'Nb Trades': trades,
                             'Gagnants': gagnants,
-                            'EBITDA Yield (%)': ebitda,  # ✅ Ajouté
-                            'Gain ($)': gain,
+                            'Rev. Growth (%)': rev_growth,
+                            'EBITDA Yield (%)': ebitda,
+                            'FCF Yield (%)': fcf,
+                            'D/E Ratio': debt_to_equity,
+                            'Market Cap (B$)': market_cap,
+                            'ROE (%)': roe,
+                            'dPrice': dprice,
+                            'Var5j (%)': var5j,
+                            'dRSI': drsi,
+                            'dVolRel': dvol,
+                            'Gain total ($)': gain_total,
+                            'Gain moyen ($)': gain_moyen,
                             'Consensus': consensus
                         }
                 except Exception:
                     continue
+
+            if not symbols_data:
+                self.comparison_results_layout.addWidget(QLabel("Aucune donnée exploitable pour la comparaison."))
+                return
             
-            # Calculer un score de pertinence pour chaque symbole
-            pertinence_scores = {}
-            for sym, data in symbols_data.items():
-                # Score de pertinence = combinaison pondérée des métriques
-                # Facteurs: Score/Seuil (25%), Fiabilité (25%), EBITDA (20%), Gain (15%), RSI (10%), Consensus (5%)
-                score_factor = min(data['Score/Seuil'], 2.0) * 25  # Max 50 points
-                fiab_factor = data['Fiabilité (%)'] * 0.25  # Max 25 points
-                
-                # ✅ EBITDA a une influence majeure (20%)
-                ebitda_val = data.get('EBITDA Yield (%)', 0.0)
-                ebitda_factor = min(max(ebitda_val / 10, 0), 2) * 10  # Max 20 points (positif surtout)
-                
-                gain_factor = min(max(data['Gain ($)'] / 100, 0), 1.5) * 10  # Max 15 points
-                rsi_factor = abs(50 - data['RSI']) * 0.1  # Proche de 50 = meilleur
-                consensus_factor = 5 if data['Consensus'] != 'N/A' else 0
-                
-                pertinence = score_factor + fiab_factor + ebitda_factor + gain_factor + rsi_factor + consensus_factor
-                pertinence_scores[sym] = pertinence
+            # Logique multicritere par rang:
+            # pour chaque critere, le meilleur gagne n points, puis n-1 ... jusqu'a 1.
+            # Pertinence (%) = points_total / (n * m) * 100
+            # (n = nombre de stocks compares, m = nombre de criteres)
+            criteria_config = [
+                {'key': 'Score', 'label': 'Score', 'order': 'desc'},
+                {'key': 'Score/Seuil', 'label': 'Score/Seuil', 'order': 'desc'},
+                {'key': 'Fiabilité (%)', 'label': 'Fiabilite (%)', 'order': 'desc'},
+                {'key': 'Nb Trades', 'label': 'Nb Trades', 'order': 'desc'},
+                {'key': 'Gagnants', 'label': 'Gagnants', 'order': 'desc'},
+                {'key': 'Rev. Growth (%)', 'label': 'Rev Growth (%)', 'order': 'desc'},
+                {'key': 'EBITDA Yield (%)', 'label': 'EBITDA (%)', 'order': 'desc'},
+                {'key': 'FCF Yield (%)', 'label': 'FCF (%)', 'order': 'desc'},
+                {'key': 'D/E Ratio', 'label': 'D/E', 'order': 'asc'},
+                {'key': 'Market Cap (B$)', 'label': 'Market Cap (B$)', 'order': 'desc'},
+                {'key': 'ROE (%)', 'label': 'ROE (%)', 'order': 'desc'},
+                {'key': 'dPrice', 'label': 'dPrice', 'order': 'desc'},
+                {'key': 'Var5j (%)', 'label': 'Var5j (%)', 'order': 'asc'},
+                {'key': 'dRSI', 'label': 'dRSI', 'order': 'asc'},
+                {'key': 'dVolRel', 'label': 'dVolRel', 'order': 'desc'},
+                {'key': 'Gain total ($)', 'label': 'Gain total ($)', 'order': 'desc'},
+                {'key': 'Gain moyen ($)', 'label': 'Gain moyen ($)', 'order': 'desc'},
+            ]
+
+            selected_symbols = [sym for sym in symbols_to_compare if sym in symbols_data]
+            n_stocks = len(selected_symbols)
+            m_criteria = len(criteria_config)
+            max_points = n_stocks * m_criteria if n_stocks > 0 and m_criteria > 0 else 1
+
+            points_by_symbol = {sym: 0 for sym in selected_symbols}
+
+            for criterion in criteria_config:
+                key = criterion['key']
+                reverse = criterion['order'] == 'desc'
+                ranked = sorted(
+                    selected_symbols,
+                    key=lambda s: safe_float(symbols_data[s].get(key, 0.0), 0.0),
+                    reverse=reverse,
+                )
+                for rank_idx, sym in enumerate(ranked):
+                    # n_stocks points pour le 1er, ... 1 point pour le dernier
+                    points_by_symbol[sym] += (n_stocks - rank_idx)
+
+            pertinence_scores = {
+                sym: (points_by_symbol[sym] / max_points) * 100.0
+                for sym in selected_symbols
+            }
             
-            # Classer par pertinence (décroissant)
-            sorted_symbols = sorted(symbols_data.keys(), key=lambda x: pertinence_scores[x], reverse=True)
+            # Classer par pertinence (décroissant), puis garde-fous de tri secondaires
+            sorted_symbols = sorted(
+                selected_symbols,
+                key=lambda x: (pertinence_scores[x], symbols_data[x]['Score/Seuil'], symbols_data[x]['Score']),
+                reverse=True
+            )
             
             # Créer un tableau QTableWidget pour afficher la comparaison
             table = QTableWidget()
-            columns = ['Rang', 'Symbole', 'Domaine', 'Score', 'Score/Seuil', 'Fiabilité (%)', 'Nb Trades', 
-                      'Gagnants', 'RSI', 'Prix', 'EBITDA (%)', 'Gain ($)', 'Consensus', 'Pertinence']
+            columns = ['Rang', 'Symbole', 'Signal', 'Score', 'Prix', 'Tendance', 'RSI', 'Volume moyen($)', 'Domaine', 'Cap Range',
+                      'Score/Seuil', 'Fiabilité (%)', 'Nb Trades', 'Gagnants', 'Rev Growth (%)', 'EBITDA (%)', 'FCF (%)',
+                      'D/E', 'Market Cap (B$)', 'ROE (%)', 'dPrice', 'Var5j (%)', 'dRSI', 'dVolRel', 'Gain total ($)',
+                      'Gain moyen ($)', 'Consensus', 'Pertinence']
             table.setColumnCount(len(columns))
             table.setHorizontalHeaderLabels(columns)
             table.horizontalHeader().setSectionResizeMode(QHeaderView.ResizeToContents)
@@ -3403,87 +3528,51 @@ class MainWindow(QMainWindow):
                 elif rank == 2:
                     item.setBackground(QColor(211, 211, 211))  # Gris pour 2ème
                 table.setItem(row, 0, item)
-                
-                # Symbole
-                table.setItem(row, 1, QTableWidgetItem(sym))
-                
-                # Domaine
-                table.setItem(row, 2, QTableWidgetItem(data['Domaine']))
-                
-                # Score
-                item = QTableWidgetItem(f"{data['Score']:.2f}")
-                item.setData(Qt.EditRole, data['Score'])
-                table.setItem(row, 3, item)
-                
-                # Score/Seuil
-                item = QTableWidgetItem(f"{data['Score/Seuil']:.2f}")
-                item.setData(Qt.EditRole, data['Score/Seuil'])
-                table.setItem(row, 4, item)
-                
-                # Fiabilité
-                item = QTableWidgetItem(f"{data['Fiabilité (%)']:.1f}%")
-                item.setData(Qt.EditRole, data['Fiabilité (%)'])
-                table.setItem(row, 5, item)
-                
-                # Nb Trades
-                item = QTableWidgetItem(str(data['Nb Trades']))
-                item.setData(Qt.EditRole, data['Nb Trades'])
-                table.setItem(row, 6, item)
-                
-                # Gagnants
-                item = QTableWidgetItem(str(data['Gagnants']))
-                item.setData(Qt.EditRole, data['Gagnants'])
-                table.setItem(row, 7, item)
-                
-                # RSI
-                item = QTableWidgetItem(f"{data['RSI']:.1f}")
-                item.setData(Qt.EditRole, data['RSI'])
-                table.setItem(row, 8, item)
-                
-                # Prix
-                item = QTableWidgetItem(f"${data['Prix']:.2f}")
-                item.setData(Qt.EditRole, data['Prix'])
-                table.setItem(row, 9, item)
-                
-                # EBITDA ✅ Ajout avec couleurs
-                ebitda = data.get('EBITDA Yield (%)', 0.0)
-                item = QTableWidgetItem(f"{ebitda:.2f}")
-                item.setData(Qt.EditRole, ebitda)
-                # Appliquer les couleurs selon les seuils
-                if ebitda > 15:
-                    item.setForeground(QColor(0, 128, 0))  # Vert foncé
-                elif ebitda > 8:
-                    item.setForeground(QColor(34, 139, 34))  # Vert
-                elif ebitda > 0:
-                    item.setForeground(QColor(255, 165, 0))  # Orange
-                else:
-                    item.setForeground(QColor(255, 0, 0))  # Rouge
-                table.setItem(row, 10, item)
-                
-                # Gain
-                color = Qt.green if data['Gain ($)'] > 0 else Qt.red if data['Gain ($)'] < 0 else Qt.white
-                item = QTableWidgetItem(f"${data['Gain ($)']:.2f}")
-                item.setData(Qt.EditRole, data['Gain ($)'])
-                item.setBackground(color)
-                table.setItem(row, 11, item)
-                
-                # Consensus
-                table.setItem(row, 12, QTableWidgetItem(data['Consensus']))
-                
-                # Pertinence
-                item = QTableWidgetItem(f"{pertinence:.1f}")
+
+                # Rechercher la ligne source une seule fois pour recopier toutes les colonnes
+                source_row = None
+                for r in range(self.merged_table.rowCount()):
+                    item = self.merged_table.item(r, 0)
+                    if item and item.text() == sym:
+                        source_row = r
+                        break
+                if source_row is None:
+                    continue
+
+                # Copier les cellules 0..25 depuis le tableau source vers 1..26 (0 est reserve au rang)
+                for source_col, target_col in enumerate(range(1, 27), start=0):
+                    source_item = self.merged_table.item(source_row, source_col)
+                    table.setItem(row, target_col, clone_table_item(source_item, table_text(source_row, source_col, '')))
+
+                # Pertinence affichée telle quelle pour garder le tri du tableau source
+                item = QTableWidgetItem(f"{pertinence:.2f}%")
                 item.setData(Qt.EditRole, pertinence)
                 item.setBackground(Qt.yellow)
-                table.setItem(row, 13, item)
+                item.setToolTip(f"Points: {points_by_symbol.get(sym, 0)} / {max_points}")
+                table.setItem(row, 27, item)
             
             table.setSortingEnabled(True)
             table.setMinimumHeight(300)
             
             # Ajouter un résumé
-            summary = QLabel(f"📊 Comparaison de {len(sorted_symbols)} symbole(s) | 🥇 Meilleur: {sorted_symbols[0]} (Pertinence: {pertinence_scores[sorted_symbols[0]]:.1f})")
+            summary = QLabel(
+                f"📊 Comparaison de {len(sorted_symbols)} symbole(s) | "
+                f"🧮 Méthode: rang multicritère ({m_criteria} critères) | "
+                f"🥇 Meilleur: {sorted_symbols[0]} "
+                f"(Pertinence: {pertinence_scores[sorted_symbols[0]]:.1f}%)"
+            )
             summary.setStyleSheet("background-color: #e3f2fd; padding: 6px; border-radius: 4px; font-weight: bold;")
+
+            sens_parts = []
+            for c in criteria_config:
+                arrow = '↘ décroissant' if c['order'] == 'desc' else '↗ croissant'
+                sens_parts.append(f"{c['label']}: {arrow}")
+            senses_label = QLabel("🧭 Sens des critères: " + " | ".join(sens_parts))
+            senses_label.setWordWrap(True)
+            senses_label.setStyleSheet("background-color: #f6f8fa; padding: 6px; border-radius: 4px; font-size: 9px;")
             
             self.comparison_results_layout.addWidget(summary)
+            self.comparison_results_layout.addWidget(senses_label)
             self.comparisons_layout.addWidget(table)
             
         except Exception as e:
@@ -3600,6 +3689,12 @@ class MainWindow(QMainWindow):
                     if df is None or df.empty:
                         print(f"⚠️ Pas de données pour {symbol}")
                         continue
+
+                    # Uniformiser tous les calculs de prix en USD.
+                    try:
+                        df = qsi._normalize_prices_to_usd(symbol, df)
+                    except Exception:
+                        pass
                     
                     # Normaliser l'index
                     if df.index.name is None or df.index.name != 'Date':

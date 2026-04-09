@@ -359,7 +359,8 @@ def backtest_signals_c_extended(prices: Union[pd.Series, pd.DataFrame], volumes:
         clean_volumes = volumes.fillna(0)
         
         prices_array = np.array(clean_prices.values, dtype=np.float64)
-        volumes_array = np.array(clean_volumes.values, dtype=np.float64)
+        volumes_notional = (clean_prices.astype(float) * clean_volumes.astype(float)).fillna(0.0)
+        volumes_array = np.array(volumes_notional.values, dtype=np.float64)
         
         # Construction du tuple étendu pour C
         # Format: (a1-a8, buy_th, sell_th, price_features[11], fund_features[11], fund_metrics[5])
@@ -541,7 +542,8 @@ def backtest_signals_accelerated(prices: Union[pd.Series, pd.DataFrame], volumes
             
             # Conversion en arrays NumPy pour C
             prices_array = np.array(clean_prices.values, dtype=np.float64)
-            volumes_array = np.array(clean_volumes.values, dtype=np.float64)
+            volumes_notional = (clean_prices.astype(float) * clean_volumes.astype(float)).fillna(0.0)
+            volumes_array = np.array(volumes_notional.values, dtype=np.float64)
             coeffs_tuple = coeffs + (seuil_achat, seuil_vente)  # Tuple avec tous les paramètres
             
             # 🔥 APPEL DE LA FONCTION C ULTRA-RAPIDE

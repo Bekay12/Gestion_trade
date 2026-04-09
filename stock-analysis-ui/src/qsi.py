@@ -17,6 +17,7 @@ import time
 from matplotlib import dates as mdates
 import logging
 import warnings
+import json
 from pathlib import Path
 from datetime import datetime, timedelta
 from typing import List, Dict, Union
@@ -94,7 +95,7 @@ def save_to_evolutive_csv(signals, filename="signaux_trading.csv"):
     # Préparer les données avec le nouveau champ de fiabilité
     header = [
         'Symbole', 'Signal', 'Score', 'Prix', 'Tendance',
-        'RSI', 'Volume moyen', 'Domaine', 'Fiabilite', 'Detection_Time'
+        'RSI', 'Volume moyen', 'Domaine', 'Devise', 'Fiabilite', 'Detection_Time'
     ]
 
     rows = []
@@ -113,6 +114,7 @@ def save_to_evolutive_csv(signals, filename="signaux_trading.csv"):
             f"{s['RSI']:.2f}",
             f"{s['Volume moyen']:,.0f}",
             s['Domaine'],
+            s.get('Devise', 'USD'),
             fiabilite,
             datetime.now().strftime("%Y-%m-%d %H:%M:%S")
         ])
@@ -440,6 +442,9 @@ def get_trading_signal(prices, volumes, domaine, domain_coeffs=None, domain_thre
         volume_mean = float(snap.get('volume_mean', 0.0))
         volume_std = float(snap.get('volume_std', 0.0))
         current_volume = float(snap.get('current_volume', float(volumes.iloc[-1])))
+        volume_mean_usd = float(snap.get('volume_mean_usd', volume_mean * last_close))
+        volume_std_usd = float(snap.get('volume_std_usd', volume_std * last_close))
+        current_volume_usd = float(snap.get('current_volume_usd', last_close * current_volume))
         last_bb_percent = float(snap.get('last_bb_percent', 0.5))
         last_adx = float(snap.get('last_adx', 0.0))
         last_ichimoku_base = float(snap.get('last_ichimoku_base', last_close))
@@ -479,6 +484,19 @@ def get_trading_signal(prices, volumes, domaine, domain_coeffs=None, domain_thre
             volume_mean = float(volumes.mean()) if len(volumes) > 0 else 0.0
             volume_std = 0.0
         current_volume = float(volumes.iloc[-1])
+        try:
+            notional_volume = prices.astype(float) * volumes.astype(float)
+            if len(notional_volume) >= 30:
+                volume_mean_usd = float(notional_volume.rolling(window=30).mean().iloc[-1])
+                volume_std_usd = float(notional_volume.rolling(window=30).std().iloc[-1])
+            else:
+                volume_mean_usd = float(notional_volume.mean()) if len(notional_volume) > 0 else 0.0
+                volume_std_usd = float(notional_volume.std()) if len(notional_volume) > 0 else 0.0
+            current_volume_usd = float(last_close * current_volume)
+        except Exception:
+            volume_mean_usd = float(volume_mean * last_close)
+            volume_std_usd = float(volume_std * last_close)
+            current_volume_usd = float(last_close * current_volume)
 
         from ta.volatility import BollingerBands
         from ta.trend import ADXIndicator, IchimokuIndicator
@@ -519,16 +537,26 @@ def get_trading_signal(prices, volumes, domaine, domain_coeffs=None, domain_thre
                 'volume_mean': volume_mean,
                 'volume_std': volume_std,
                 'current_volume': current_volume,
+                'volume_mean_usd': volume_mean_usd,
+                'volume_std_usd': volume_std_usd,
+                'current_volume_usd': current_volume_usd,
                 'last_bb_percent': last_bb_percent,
                 'last_adx': last_adx,
                 'last_ichimoku_base': last_ichimoku_base,
                 'last_ichimoku_conversion': last_ichimoku_conversion,
             }
 
+    volume_mean_harmonized = float(volume_mean_usd)
+    volume_std_harmonized = float(volume_std_usd)
+    current_volume_harmonized = float(current_volume_usd)
+    derivatives['volume_mean_usd'] = float(volume_mean_harmonized)
+    derivatives['volume_std_usd'] = float(volume_std_harmonized)
+    derivatives['current_volume_usd'] = float(current_volume_harmonized)
+
     # Conditions d'achat optimisées
     is_macd_cross_up = prev_macd < prev_signal and last_macd > last_signal
     is_macd_cross_down = prev_macd > prev_signal and last_macd < last_signal
-    is_volume_ok = volume_mean > volume_seuil
+    is_volume_ok = volume_mean_harmonized > volume_seuil
     is_variation_ok = not np.isnan(variation_30j) and variation_30j > variation_seuil
 
     # CORRECTION 2: Utilisation de valeurs scalaires pour les comparaisons
@@ -659,7 +687,7 @@ def get_trading_signal(prices, volumes, domaine, domain_coeffs=None, domain_thre
         score -= a6
 
     # Volume avec seuil personnalisé
-    if is_volume_ok and volume_mean > volume_threshold * 100000:
+    if is_volume_ok and volume_mean_harmonized > volume_threshold * 100000:
         score += m2 * a6
     else:
         score -= m2 * a6
@@ -677,7 +705,7 @@ def get_trading_signal(prices, volumes, domaine, domain_coeffs=None, domain_thre
         (last_rsi < (100 - rsi_threshold)) and
         (last_bb_percent < bollinger_threshold + 0.2) and
         (strong_uptrend or adx_strong_trend) and
-        (volume_mean > volume_seuil) and
+        (volume_mean_harmonized > volume_seuil) and
         (is_variation_ok if not np.isnan(variation_30j) else True)
     )
 
@@ -688,7 +716,7 @@ def get_trading_signal(prices, volumes, domaine, domain_coeffs=None, domain_thre
         (last_rsi > rsi_threshold - 20) and
         (last_bb_percent > bollinger_threshold - 0.2) and
         (strong_downtrend or adx_strong_trend) and
-        (volume_mean > volume_seuil)
+        (volume_mean_harmonized > volume_seuil)
     )
 
     if strong_uptrend:
@@ -741,6 +769,7 @@ def get_trading_signal(prices, volumes, domaine, domain_coeffs=None, domain_thre
             price_acc_rel = 0.0
             rsi_slope_rel = 0.0
             volume_slope_rel = 0.0
+            volume_slope_rel_usd = 0.0
             cache_key = None
             if symbol:
                 try:
@@ -757,6 +786,7 @@ def get_trading_signal(prices, volumes, domaine, domain_coeffs=None, domain_thre
                 price_acc_rel = float(cached.get('price_acc_rel', 0.0) or 0.0)
                 rsi_slope_rel = float(cached.get('rsi_slope_rel', 0.0) or 0.0)
                 volume_slope_rel = float(cached.get('volume_slope_rel', 0.0) or 0.0)
+                volume_slope_rel_usd = float(cached.get('volume_slope_rel_usd', 0.0) or 0.0)
             else:
                 try:
                     arr = np.asarray(prices.dropna().values.astype(float)) if isinstance(prices, (pd.Series, pd.DataFrame)) else np.asarray(prices)
@@ -818,11 +848,19 @@ def get_trading_signal(prices, volumes, domaine, domain_coeffs=None, domain_thre
                         volume_slope_rel = _relative_slope(arr_vol, PRICE_FEATURE_WINDOW)
                     except Exception:
                         volume_slope_rel = 0.0
+
+                    # slope relatif volume notionnel USD
+                    try:
+                        arr_notional = np.asarray((prices.astype(float) * volumes.astype(float)).dropna().values.astype(float))
+                        volume_slope_rel_usd = _relative_slope(arr_notional, PRICE_FEATURE_WINDOW) if len(arr_notional) >= 2 else 0.0
+                    except Exception:
+                        volume_slope_rel_usd = 0.0
                 except Exception:
                     price_slope_rel = 0.0
                     price_acc_rel = 0.0
                     rsi_slope_rel = 0.0
                     volume_slope_rel = 0.0
+                    volume_slope_rel_usd = 0.0
 
                 # Stocker en cache
                 if cache_key is not None:
@@ -831,6 +869,7 @@ def get_trading_signal(prices, volumes, domaine, domain_coeffs=None, domain_thre
                         'price_acc_rel': price_acc_rel,
                         'rsi_slope_rel': rsi_slope_rel,
                         'volume_slope_rel': volume_slope_rel,
+                        'volume_slope_rel_usd': volume_slope_rel_usd,
                     }
 
             if use_price_extras:
@@ -855,6 +894,11 @@ def get_trading_signal(prices, volumes, domaine, domain_coeffs=None, domain_thre
                     score += a_pv5
                 else:
                     score -= a_pv5
+
+                derivatives['volume_mean_usd'] = float(volume_mean_harmonized)
+                derivatives['volume_std_usd'] = float(volume_std_harmonized)
+                derivatives['current_volume_usd'] = float(current_volume_harmonized)
+                derivatives['volume_slope_rel_usd'] = float(volume_slope_rel_usd)
     except Exception:
         pass
 
@@ -1112,7 +1156,7 @@ def get_trading_signal(prices, volumes, domaine, domain_coeffs=None, domain_thre
     derivatives['_domaine_used'] = domaine or 'Inconnu'
     derivatives['_score_value'] = round(score, 3)
     
-    return signal, last_close, last_close > last_ema20, round(last_rsi, 2), round(volume_mean, 2), round(score, 3), derivatives
+    return signal, last_close, last_close > last_ema20, round(last_rsi, 2), round(volume_mean_harmonized, 2), round(score, 3), derivatives
 
 # ====================================================================
 # MÉTRIQUES FINANCIÈRES CLÉS ET LEURS DÉRIVÉES
@@ -1134,18 +1178,28 @@ def get_financial_metrics(symbol: str) -> dict:
         'gross_margin': None,
         'free_cash_flow': None,
         'debt_to_equity': None,
-        'market_cap': None
+        'market_cap': None,
+        'currency': 'USD',
+        'fx_rate_to_usd': 1.0,
+        'values_in_usd': True,
     }
     
     try:
         import yfinance as yf  # Import paresseux
         ticker = yf.Ticker(symbol)
         info = ticker.info
+
+        quote_currency = str(info.get('currency') or 'USD').upper()
+        fin_currency = str(info.get('financialCurrency') or quote_currency or 'USD').upper()
+        fx_quote_to_usd = _get_rate_to_usd(quote_currency, source_symbol=symbol)
+        fx_fin_to_usd = _get_rate_to_usd(fin_currency, source_symbol=symbol)
+        metrics['currency'] = fin_currency
+        metrics['fx_rate_to_usd'] = fx_fin_to_usd
         
         # 1. Capitalisation boursière
         market_cap = info.get('marketCap')
         if market_cap:
-            metrics['market_cap'] = float(market_cap) / 1e9
+            metrics['market_cap'] = (float(market_cap) * fx_quote_to_usd) / 1e9
         
         # 2. Ratio Dette/Équité
         debt_to_equity = info.get('debtToEquity')
@@ -1187,7 +1241,7 @@ def get_financial_metrics(symbol: str) -> dict:
                 if 'Free Cash Flow' in cashflow.index:
                     # ✅ CORRECTION 4: Ajouter  pour accéder à la première valeur
                     fcf = cashflow.loc['Free Cash Flow'].iloc[0]
-                    metrics['free_cash_flow'] = float(fcf) / 1e9
+                    metrics['free_cash_flow'] = (float(fcf) * fx_fin_to_usd) / 1e9
             except Exception:
                 pass
     
@@ -1209,6 +1263,9 @@ def compute_financial_derivatives(symbol: str, lookback_quarters: int = 4) -> di
         'rev_growth_val': 0.0,
         'ebitda_val': 0.0,
         'fcf_val': 0.0,
+        'currency': 'USD',
+        'fx_rate_to_usd': 1.0,
+        'values_in_usd': True,
         # Données relatives (pour éviter biais grandes capitalisations)
         'ebitda_yield_pct': 0.0,   # EBITDA / EV (ou MC) * 100
         'fcf_yield_pct': 0.0,      # FCF / MarketCap * 100
@@ -1238,12 +1295,39 @@ def compute_financial_derivatives(symbol: str, lookback_quarters: int = 4) -> di
             return 'Unknown'
 
     def _ensure_relative_metrics(d: dict) -> dict:
-        """Complète les métriques relatives (yield %) si manquantes depuis un cache ancien."""
+        """Complète les métriques relatives et force les valeurs monétaires en USD."""
         try:
+            # Migration cache: convertir une seule fois les anciens snapshots non-USD.
+            already_usd = bool(d.get('values_in_usd', False))
+            cache_currency = str(d.get('currency') or '').upper()
+            if not already_usd:
+                cur = cache_currency or _fetch_native_currency(symbol)
+                rate = _safe_float(d.get('fx_rate_to_usd'), 0.0)
+                if rate <= 0:
+                    rate = _get_rate_to_usd(cur, source_symbol=symbol)
+                for k in ('market_cap_val', 'ebitda_val', 'fcf_val', 'enterprise_value_b'):
+                    d[k] = _safe_float(d.get(k), 0.0) * rate
+                d['currency'] = str(cur or 'USD').upper()
+                d['fx_rate_to_usd'] = rate
+                d['values_in_usd'] = True
+
             mc_b = float(d.get('market_cap_val') or 0.0)
             ebitda_b = float(d.get('ebitda_val') or 0.0)
             fcf_b = float(d.get('fcf_val') or 0.0)
             ev_b = float(d.get('enterprise_value_b') or 0.0)
+
+            # Heuristique de correction des anciens caches où EBITDA/FCF étaient en milliers/millions.
+            if mc_b > 0 and abs(ebitda_b) / mc_b > 5.0:
+                for scale in (1e3, 1e6):
+                    if (abs(ebitda_b) / scale) / mc_b <= 2.5:
+                        ebitda_b /= scale
+                        fcf_b /= scale
+                        ev_b /= scale
+                        d['ebitda_val'] = ebitda_b
+                        d['fcf_val'] = fcf_b
+                        d['enterprise_value_b'] = ev_b
+                        break
+
             # EBITDA Yield
             denom_b = ev_b if ev_b > 0 else mc_b
             if ('ebitda_yield_pct' not in d) or (d.get('ebitda_yield_pct') is None):
@@ -1255,6 +1339,25 @@ def compute_financial_derivatives(symbol: str, lookback_quarters: int = 4) -> di
             d.setdefault('ebitda_yield_pct', 0.0)
             d.setdefault('fcf_yield_pct', 0.0)
         return d
+
+    def _sanitize_financial_units(ebitda_usd: float, fcf_usd: float, ev_usd: float, market_cap_usd: float):
+        """Corrige les cas yfinance où certaines valeurs financières sont en milliers/millions.
+        Heuristique conservative: si EBITDA/MarketCap est irréaliste, on tente /1000 puis /1e6.
+        """
+        try:
+            if market_cap_usd <= 0:
+                return ebitda_usd, fcf_usd, ev_usd
+            ratio = abs(ebitda_usd) / market_cap_usd if market_cap_usd else 0.0
+            if ratio <= 5.0:
+                return ebitda_usd, fcf_usd, ev_usd
+
+            for scale in (1e3, 1e6):
+                new_ratio = abs(ebitda_usd / scale) / market_cap_usd
+                if new_ratio <= 2.5:
+                    return ebitda_usd / scale, fcf_usd / scale, ev_usd / scale
+        except Exception:
+            pass
+        return ebitda_usd, fcf_usd, ev_usd
     
     # En mode offline, utiliser uniquement le cache
     if OFFLINE_MODE:
@@ -1291,6 +1394,14 @@ def compute_financial_derivatives(symbol: str, lookback_quarters: int = 4) -> di
         import yfinance as yf  # Import paresseux
         ticker = yf.Ticker(symbol)
         info = ticker.info
+
+        quote_currency = str(info.get('currency') or 'USD').upper()
+        fin_currency = str(info.get('financialCurrency') or quote_currency or 'USD').upper()
+        fx_quote_to_usd = _get_rate_to_usd(quote_currency, source_symbol=symbol)
+        fx_fin_to_usd = _get_rate_to_usd(fin_currency, source_symbol=symbol)
+        derivatives['currency'] = fin_currency
+        derivatives['fx_rate_to_usd'] = fx_fin_to_usd
+        derivatives['values_in_usd'] = True
         
         # ⚡ Récupérer DIRECTEMENT de .info (1 seul appel API, très rapide)
         
@@ -1303,13 +1414,13 @@ def compute_financial_derivatives(symbol: str, lookback_quarters: int = 4) -> di
         ebitda = info.get('ebitda')
         ebitda_num = float(ebitda) if ebitda else 0.0
         if ebitda_num:
-            derivatives['ebitda_val'] = ebitda_num / 1e9
+            derivatives['ebitda_val'] = (ebitda_num * fx_fin_to_usd) / 1e9
         
         # Free Cash Flow
         fcf = info.get('freeCashflow')
         fcf_num = float(fcf) if fcf else 0.0
         if fcf_num:
-            derivatives['fcf_val'] = fcf_num / 1e9
+            derivatives['fcf_val'] = (fcf_num * fx_fin_to_usd) / 1e9
         
         # Debt to Equity
         debt_to_equity = info.get('debtToEquity')
@@ -1320,24 +1431,40 @@ def compute_financial_derivatives(symbol: str, lookback_quarters: int = 4) -> di
         market_cap = info.get('marketCap')
         market_cap_num = float(market_cap) if market_cap else 0.0
         if market_cap_num:
-            derivatives['market_cap_val'] = market_cap_num / 1e9
+            derivatives['market_cap_val'] = (market_cap_num * fx_quote_to_usd) / 1e9
 
         # Enterprise Value (pour EBITDA relatif)
         ev = info.get('enterpriseValue')
         ev_num = float(ev) if ev else 0.0
-        derivatives['enterprise_value_b'] = ev_num / 1e9 if ev_num else 0.0
+        derivatives['enterprise_value_b'] = (ev_num * fx_fin_to_usd) / 1e9 if ev_num else 0.0
 
         # Calculs relatifs (pour éviter biais de taille)
         # EBITDA Yield: EBITDA / EV (fallback: MarketCap)
-        denom = ev_num if ev_num > 0 else market_cap_num
+        ebitda_usd = ebitda_num * fx_fin_to_usd
+        fcf_usd = fcf_num * fx_fin_to_usd
+        ev_usd = ev_num * fx_fin_to_usd
+        market_cap_usd = market_cap_num * fx_quote_to_usd
+
+        ebitda_usd, fcf_usd, ev_usd = _sanitize_financial_units(
+            ebitda_usd,
+            fcf_usd,
+            ev_usd,
+            market_cap_usd,
+        )
+
+        derivatives['ebitda_val'] = ebitda_usd / 1e9 if ebitda_usd else 0.0
+        derivatives['fcf_val'] = fcf_usd / 1e9 if fcf_usd else 0.0
+        derivatives['enterprise_value_b'] = ev_usd / 1e9 if ev_usd else 0.0
+
+        denom = ev_usd if ev_usd > 0 else market_cap_usd
         if denom > 0:
-            derivatives['ebitda_yield_pct'] = (ebitda_num / denom) * 100.0
+            derivatives['ebitda_yield_pct'] = (ebitda_usd / denom) * 100.0
         else:
             derivatives['ebitda_yield_pct'] = 0.0
         
         # FCF Yield: FCF / MarketCap
-        if market_cap_num > 0:
-            derivatives['fcf_yield_pct'] = (fcf_num / market_cap_num) * 100.0
+        if market_cap_usd > 0:
+            derivatives['fcf_yield_pct'] = (fcf_usd / market_cap_usd) * 100.0
         else:
             derivatives['fcf_yield_pct'] = 0.0
         
@@ -1395,7 +1522,7 @@ def get_symbol_info_from_db(symbol: str) -> dict:
     if symbol in _SYMBOL_INFO_CACHE:
         return _SYMBOL_INFO_CACHE[symbol]
     
-    result = {'sector': None, 'cap_range': 'Unknown', 'market_cap_b': 0.0}
+    result = {'sector': None, 'cap_range': 'Unknown', 'market_cap_b': 0.0, 'currency': 'USD'}
     try:
         import sqlite3
         from config import DB_PATH
@@ -1403,18 +1530,28 @@ def get_symbol_info_from_db(symbol: str) -> dict:
             conn = sqlite3.connect(DB_PATH)
             conn.row_factory = sqlite3.Row
             cursor = conn.cursor()
-            cursor.execute("""
-                SELECT sector, market_cap_range, market_cap_value 
-                FROM symbols 
-                WHERE symbol = ? AND is_active = 1
-                LIMIT 1
-            """, (symbol,))
+            try:
+                cursor.execute("""
+                    SELECT sector, market_cap_range, market_cap_value, currency
+                    FROM symbols
+                    WHERE symbol = ? AND is_active = 1
+                    LIMIT 1
+                """, (symbol,))
+            except Exception:
+                cursor.execute("""
+                    SELECT sector, market_cap_range, market_cap_value
+                    FROM symbols
+                    WHERE symbol = ? AND is_active = 1
+                    LIMIT 1
+                """, (symbol,))
             row = cursor.fetchone()
             conn.close()
             if row:
                 result['sector'] = row['sector'] if row['sector'] else None
                 result['cap_range'] = row['market_cap_range'] if row['market_cap_range'] else 'Unknown'
                 result['market_cap_b'] = float(row['market_cap_value']) if row['market_cap_value'] else 0.0
+                if 'currency' in row.keys():
+                    result['currency'] = str(row['currency'] or 'USD').upper()
     except Exception:
         pass
     
@@ -1422,7 +1559,7 @@ def get_symbol_info_from_db(symbol: str) -> dict:
     return result
 
 
-def update_symbol_info_in_db(symbol: str, sector: str = None, cap_range: str = None, market_cap_b: float = None):
+def update_symbol_info_in_db(symbol: str, sector: str = None, cap_range: str = None, market_cap_b: float = None, currency: str = None):
     """Met à jour sector/cap_range/market_cap dans stock_analysis.db après récupération yfinance.
     
     Aussi actualise le cache mémoire.
@@ -1453,6 +1590,9 @@ def update_symbol_info_in_db(symbol: str, sector: str = None, cap_range: str = N
             if market_cap_b and market_cap_b > 0:
                 updates.append("market_cap_value = ?")
                 params.append(market_cap_b)
+            if currency:
+                updates.append("currency = ?")
+                params.append(str(currency).upper())
             if updates:
                 updates.append("last_checked = datetime('now')")
                 params.append(symbol)
@@ -1460,9 +1600,9 @@ def update_symbol_info_in_db(symbol: str, sector: str = None, cap_range: str = N
         else:
             # Insérer nouveau symbole
             cursor.execute("""
-                INSERT INTO symbols (symbol, sector, market_cap_range, market_cap_value, list_type, is_active)
-                VALUES (?, ?, ?, ?, 'popular', 1)
-            """, (symbol, sector, cap_range, market_cap_b or 0.0))
+                INSERT INTO symbols (symbol, sector, market_cap_range, market_cap_value, currency, is_active)
+                VALUES (?, ?, ?, ?, ?, 1)
+            """, (symbol, sector, cap_range, market_cap_b or 0.0, str(currency or 'USD').upper()))
         
         conn.commit()
         conn.close()
@@ -1471,7 +1611,8 @@ def update_symbol_info_in_db(symbol: str, sector: str = None, cap_range: str = N
         _SYMBOL_INFO_CACHE[symbol] = {
             'sector': sector or _SYMBOL_INFO_CACHE.get(symbol, {}).get('sector'),
             'cap_range': cap_range or _SYMBOL_INFO_CACHE.get(symbol, {}).get('cap_range', 'Unknown'),
-            'market_cap_b': market_cap_b or _SYMBOL_INFO_CACHE.get(symbol, {}).get('market_cap_b', 0.0)
+            'market_cap_b': market_cap_b or _SYMBOL_INFO_CACHE.get(symbol, {}).get('market_cap_b', 0.0),
+            'currency': str(currency or _SYMBOL_INFO_CACHE.get(symbol, {}).get('currency', 'USD')).upper(),
         }
     except Exception:
         pass
@@ -1694,6 +1835,172 @@ CACHE_MAX_AGE_HOURS = 14  # Augmenté de 2h à 24h pour sets de symboles volumin
 # Configuration globale pour le mode offline
 OFFLINE_MODE = False  # Mettre à True pour forcer le mode hors-ligne
 
+# Clé de version pour invalider proprement les anciens caches non normalisés USD
+PRICE_CACHE_VERSION = "usd_v1"
+FX_CACHE_FILE = Path("cache_data") / "fx_rates_daily.json"
+_FX_DAILY_MEM = {}
+
+_CCY_SUBUNIT_TO_MAJOR = {
+    'GBX': ('GBP', 0.01),
+    'GBPX': ('GBP', 0.01),
+    'GBP.P': ('GBP', 0.01),
+    'GBP': ('GBP', 1.0),
+    'GBp': ('GBP', 0.01),
+    'ZAc': ('ZAR', 0.01),
+    'ZAR': ('ZAR', 1.0),
+}
+
+def _get_price_cache_file(symbol: str, period: str) -> Path:
+    return CACHE_DIR / f"{symbol}_{period}_{PRICE_CACHE_VERSION}.pkl"
+
+def _safe_float(val, default=0.0):
+    try:
+        if val is None:
+            return float(default)
+        return float(val)
+    except Exception:
+        return float(default)
+
+def _normalize_currency_unit(currency: str):
+    cur = str(currency or 'USD').strip()
+    if not cur:
+        return 'USD', 1.0
+    if cur in _CCY_SUBUNIT_TO_MAJOR:
+        return _CCY_SUBUNIT_TO_MAJOR[cur]
+    cur_up = cur.upper()
+    if cur_up in _CCY_SUBUNIT_TO_MAJOR:
+        return _CCY_SUBUNIT_TO_MAJOR[cur_up]
+    return cur_up, 1.0
+
+def _load_fx_daily_cache() -> dict:
+    global _FX_DAILY_MEM
+    today = datetime.now().strftime("%Y-%m-%d")
+    if _FX_DAILY_MEM.get("date") == today:
+        return _FX_DAILY_MEM
+    cache = {"date": today, "rates": {}}
+    try:
+        if FX_CACHE_FILE.exists():
+            raw = json.loads(FX_CACHE_FILE.read_text(encoding="utf-8"))
+            if isinstance(raw, dict) and raw.get("date") == today and isinstance(raw.get("rates"), dict):
+                cache = raw
+    except Exception:
+        pass
+    _FX_DAILY_MEM = cache
+    return _FX_DAILY_MEM
+
+def _save_fx_daily_cache(cache: dict):
+    global _FX_DAILY_MEM
+    _FX_DAILY_MEM = cache
+    try:
+        FX_CACHE_FILE.parent.mkdir(parents=True, exist_ok=True)
+        FX_CACHE_FILE.write_text(json.dumps(cache, ensure_ascii=True, indent=2), encoding="utf-8")
+    except Exception:
+        pass
+
+def _fetch_native_currency(symbol: str) -> str:
+    # DB/cache local d'abord
+    try:
+        dbi = get_symbol_info_from_db(symbol) or {}
+        cur = str(dbi.get('currency') or '').strip().upper()
+        # Si la devise cachee est USD mais que le ticker semble non-US (suffixe Yahoo),
+        # on force une verification reseau pour eviter les faux USD historiques.
+        if cur and not (cur == 'USD' and '.' in str(symbol)):
+            return cur
+    except Exception:
+        pass
+
+    if OFFLINE_MODE:
+        return 'USD'
+
+    try:
+        t = yf.Ticker(symbol)
+        fi = getattr(t, 'fast_info', {}) or {}
+        cur = fi.get('currency')
+        if not cur:
+            info = t.info or {}
+            cur = info.get('currency')
+        return str(cur or 'USD').strip().upper()
+    except Exception:
+        return 'USD'
+
+def _get_rate_to_usd(currency: str, source_symbol: str = None) -> float:
+    cur, unit_factor = _normalize_currency_unit(currency)
+    if not cur or cur == 'USD':
+        return float(unit_factor)
+
+    cache = _load_fx_daily_cache()
+    rates = cache.setdefault('rates', {})
+    cache_key = f"{cur}@{unit_factor}"
+    if cache_key in rates:
+        return _safe_float((rates[cache_key] or {}).get('rate_to_usd'), 1.0)
+
+    if OFFLINE_MODE:
+        return float(unit_factor)
+
+    rate = None
+    fx_pair = f"{cur}USD=X"
+    try:
+        fx_ticker = yf.Ticker(fx_pair)
+        fi = getattr(fx_ticker, 'fast_info', {}) or {}
+        rate = fi.get('last_price') or fi.get('lastPrice')
+        if rate is None:
+            info = fx_ticker.info or {}
+            rate = info.get('regularMarketPrice') or info.get('currentPrice')
+    except Exception:
+        rate = None
+
+    rate_to_usd = _safe_float(rate, 1.0) * float(unit_factor)
+    if rate_to_usd <= 0:
+        rate_to_usd = 1.0
+    rates[cache_key] = {
+        'rate_to_usd': rate_to_usd,
+        'source_symbol': str(source_symbol or ''),
+        'currency': cur,
+        'unit_factor': unit_factor,
+        'updated_at': datetime.now().isoformat(),
+    }
+    _save_fx_daily_cache(cache)
+    return rate_to_usd
+
+def _normalize_prices_to_usd(symbol: str, df: pd.DataFrame) -> pd.DataFrame:
+    if df is None or df.empty or 'Close' not in df.columns:
+        return df
+
+    out = df.copy()
+    try:
+        if 'Close_native' in out.columns:
+            close_native = out['Close_native'].astype(float)
+        else:
+            close_native = out['Close'].astype(float)
+
+        currency = None
+        if 'Currency' in out.columns and len(out):
+            currency = str(out['Currency'].iloc[-1] or '').strip().upper()
+        if not currency:
+            currency = _fetch_native_currency(symbol)
+
+        rate_to_usd = _get_rate_to_usd(currency, source_symbol=symbol)
+        out['Close_native'] = close_native
+        out['FxRateToUSD'] = float(rate_to_usd)
+        out['Currency'] = currency or 'USD'
+        out['Close'] = close_native * float(rate_to_usd)
+
+        # Persister la devise côté DB pour réutilisation offline
+        try:
+            dbi = get_symbol_info_from_db(symbol) or {}
+            update_symbol_info_in_db(
+                symbol,
+                sector=dbi.get('sector'),
+                cap_range=dbi.get('cap_range'),
+                market_cap_b=dbi.get('market_cap_b'),
+                currency=currency,
+            )
+        except Exception:
+            pass
+    except Exception:
+        return df
+    return out
+
 def load_symbol_lists():
     """Charge toutes les listes de symboles avec gestion d'erreurs robuste"""
     lists_config = {
@@ -1862,7 +2169,7 @@ def analyze_cache_status(symbols: List[str], period: str, max_age_hours: int) ->
     missing_count = 0
     
     for symbol in symbols:
-        cache_file = CACHE_DIR / f"{symbol}_{period}.pkl"
+        cache_file = _get_price_cache_file(symbol, period)
         if cache_file.exists():
             try:
                 age_hours = (datetime.now() - datetime.fromtimestamp(
@@ -1889,13 +2196,14 @@ def analyze_cache_status(symbols: List[str], period: str, max_age_hours: int) ->
 def get_cached_data(symbol: str, period: str, max_age_hours: int = CACHE_MAX_AGE_HOURS, force_offline: bool = False) -> pd.DataFrame:
     """Récupère les données en cache si elles existent et sont récentes, sinon télécharge."""
     
-    cache_file = CACHE_DIR / f"{symbol}_{period}.pkl"
+    cache_file = _get_price_cache_file(symbol, period)
     
     # Mode forcé offline ou global OFFLINE_MODE
     if force_offline or OFFLINE_MODE:
         if cache_file.exists():
             try:
-                return pd.read_pickle(cache_file)
+                cached = pd.read_pickle(cache_file)
+                return _normalize_prices_to_usd(symbol, cached)
             except Exception as e:
                 print(f"⚠️ Erreur lecture cache {symbol}: {e}")
                 return pd.DataFrame()
@@ -1910,7 +2218,8 @@ def get_cached_data(symbol: str, period: str, max_age_hours: int = CACHE_MAX_AGE
                 cache_file.stat().st_mtime)).total_seconds() / 3600
             
             if age_hours <= max_age_hours:
-                return pd.read_pickle(cache_file)
+                cached = pd.read_pickle(cache_file)
+                return _normalize_prices_to_usd(symbol, cached)
             # else:
                 # print(f"💾 Cache obsolète pour {symbol} ({age_hours:.1f}h > {max_age_hours}h)")
         except Exception as e:
@@ -1923,6 +2232,7 @@ def get_cached_data(symbol: str, period: str, max_age_hours: int = CACHE_MAX_AGE
         data = yf.download(symbol, period=period, progress=False, multi_level_index=False)
         
         if not data.empty:
+            data = _normalize_prices_to_usd(symbol, data)
             data.to_pickle(cache_file)
             return data
         else:
@@ -1936,7 +2246,8 @@ def get_cached_data(symbol: str, period: str, max_age_hours: int = CACHE_MAX_AGE
         if cache_file.exists():
             try:
                 # print(f"🔄 Utilisation cache obsolète pour {symbol}")
-                return pd.read_pickle(cache_file)
+                stale = pd.read_pickle(cache_file)
+                return _normalize_prices_to_usd(symbol, stale)
             except Exception:
                 pass
         
@@ -1967,7 +2278,7 @@ def download_stock_data(symbols: List[str], period: str) -> Dict[str, Dict[str, 
         return {}
     
     # ÉTAPE 1: VALIDATION ET NETTOYAGE
-    valid_periods = ['1d', '5d', '1mo', '3mo', '6mo', '12mo', '1y', "18mo", "24mo", '2y', '3y', '4y', '5y', '10y', 'ytd', 'max']
+    valid_periods = ['1d', '5d', '1mo', '3mo', '6mo', '12mo', '15mo', '1y', "18mo", "24mo", '2y', '3y', '4y', '5y', '10y', 'ytd', 'max']
     if period not in valid_periods:
         print(f"🚨 Période invalide: {period}. Valeurs possibles: {valid_periods}")
         return {}
@@ -2025,14 +2336,18 @@ def download_stock_data(symbols: List[str], period: str) -> Dict[str, Dict[str, 
             data = get_cached_data(symbol, period, max_age_hours, force_offline=False)
             if not data.empty and 'Close' in data.columns and 'Volume' in data.columns:
                 if len(data) >= 50:
-                    clean_data = data[['Close', 'Volume']].copy()
+                    cols = ['Close', 'Volume'] + [c for c in ('Close_native', 'Currency', 'FxRateToUSD') if c in data.columns]
+                    clean_data = data[cols].copy()
                     clean_data['Close'] = clean_data['Close'].ffill()
                     clean_data['Volume'] = clean_data['Volume'].fillna(0)
+                    clean_data = _normalize_prices_to_usd(symbol, clean_data)
 
                     if not clean_data['Close'].isna().all():
                         valid_data[symbol] = {
                             'Close': clean_data['Close'].squeeze(),
-                            'Volume': clean_data['Volume'].squeeze()
+                            'Volume': clean_data['Volume'].squeeze(),
+                            'Currency': str(clean_data['Currency'].iloc[-1]) if 'Currency' in clean_data.columns and len(clean_data) else 'USD',
+                            'FxRateToUSD': _safe_float(clean_data['FxRateToUSD'].iloc[-1], 1.0) if 'FxRateToUSD' in clean_data.columns and len(clean_data) else 1.0,
                         }
                         continue
         except Exception:
@@ -2092,18 +2407,22 @@ def download_stock_data(symbols: List[str], period: str) -> Dict[str, Dict[str, 
                             if 'Close' in data.columns and 'Volume' in data.columns:
                                 if len(data) >= 50:  # Minimum requis pour get_trading_signal
                                     # Nettoyage des NaN
-                                    clean_data = data[['Close', 'Volume']].copy()
+                                    cols = ['Close', 'Volume'] + [c for c in ('Close_native', 'Currency', 'FxRateToUSD') if c in data.columns]
+                                    clean_data = data[cols].copy()
                                     clean_data['Close'] = clean_data['Close'].ffill()
                                     clean_data['Volume'] = clean_data['Volume'].fillna(0)
+                                    clean_data = _normalize_prices_to_usd(symbol, clean_data)
                                     
                                     if not clean_data['Close'].isna().all():
                                         # Sauvegarde en cache
-                                        cache_file = CACHE_DIR / f"{symbol}_{period}.pkl"
+                                        cache_file = _get_price_cache_file(symbol, period)
                                         clean_data.to_pickle(cache_file)
                                         
                                         valid_data[symbol] = {
                                             'Close': clean_data['Close'].squeeze(),
-                                            'Volume': clean_data['Volume'].squeeze()
+                                            'Volume': clean_data['Volume'].squeeze(),
+                                            'Currency': str(clean_data['Currency'].iloc[-1]) if 'Currency' in clean_data.columns and len(clean_data) else 'USD',
+                                            'FxRateToUSD': _safe_float(clean_data['FxRateToUSD'].iloc[-1], 1.0) if 'FxRateToUSD' in clean_data.columns and len(clean_data) else 1.0,
                                         }
                     except Exception as e:
                         # print(f"⚠️ Erreur traitement {symbol}: {e}")
@@ -2118,14 +2437,18 @@ def download_stock_data(symbols: List[str], period: str) -> Dict[str, Dict[str, 
                         data = get_cached_data(symbol, period, max_age_hours, force_offline=False)
                         if not data.empty and 'Close' in data.columns and 'Volume' in data.columns and len(data) >= 50:
                             # Nettoyage
-                            clean_data = data[['Close', 'Volume']].copy()
+                            cols = ['Close', 'Volume'] + [c for c in ('Close_native', 'Currency', 'FxRateToUSD') if c in data.columns]
+                            clean_data = data[cols].copy()
                             clean_data['Close'] = clean_data['Close'].ffill()
                             clean_data['Volume'] = clean_data['Volume'].fillna(0)
+                            clean_data = _normalize_prices_to_usd(symbol, clean_data)
                             
                             if not clean_data['Close'].isna().all():
                                 valid_data[symbol] = {
                                     'Close': clean_data['Close'].squeeze(),
-                                    'Volume': clean_data['Volume'].squeeze()
+                                    'Volume': clean_data['Volume'].squeeze(),
+                                    'Currency': str(clean_data['Currency'].iloc[-1]) if 'Currency' in clean_data.columns and len(clean_data) else 'USD',
+                                    'FxRateToUSD': _safe_float(clean_data['FxRateToUSD'].iloc[-1], 1.0) if 'FxRateToUSD' in clean_data.columns and len(clean_data) else 1.0,
                                 }
                     except Exception as e2:
                         # print(f"⚠️ Fallback échoué {symbol}: {e2}")
@@ -2216,7 +2539,7 @@ def plot_unified_chart(symbol, prices, volumes, ax, show_xaxis=False, score_over
     if not sma50.empty:
         ax.plot(sma50.index, sma50, label='SMA50', linestyle=':', color='green', linewidth=1.4)
 
-    ax.set_ylabel('Prix', color=color, fontsize=10)
+    ax.set_ylabel('Prix (USD)', color=color, fontsize=10)
     ax.tick_params(axis='y', labelcolor=color)
     ax.grid(True, linestyle='--', alpha=0.6)
 
@@ -2340,7 +2663,7 @@ def plot_unified_chart(symbol, prices, volumes, ax, show_xaxis=False, score_over
         # Compose a compact derivative summary for the title
         score_display = score_override if score_override is not None else score
         title = (
-            f"{symbol} | Prix: {last_price:.2f} | Signal: {signal} ({score_display}) | "
+            f"{symbol} | Prix (USD): ${last_price:.2f} | Signal: {signal} ({score_display}) | "
             f"Tendance: {trend_symbol} | RSI: {last_rsi:.1f} ({rsi_status}) | "
             f"Progression: {progression:+.2f}% | Vol. moyen: {volume_moyen:,.0f} units"
         )
@@ -2819,12 +3142,14 @@ def analyse_signaux_populaires(
                     'Signal': signal,
                     'Score': score,
                     'Prix': last_price,
+                    'Devise': str(stock_data.get('Currency', 'USD')),
+                    'FxRateToUSD': float(stock_data.get('FxRateToUSD', 1.0) or 1.0),
                     'Tendance': "Hausse" if trend else "Baisse",
                     'RSI': last_rsi,
                     'Domaine': domaine,
                     'CapRange': cap_range,
                     'ParamKey': selected_key,
-                    'Volume moyen': volume_mean,
+                    'Volume moyen': float(derivatives.get('volume_mean_usd', volume_mean * last_price)),
                     'Consensus': consensus.get('label', 'Neutre'),
                     'ConsensusMean': consensus.get('mean', None),
                     # 🔧 CORRECTION: Ajouter les seuils utilisés pour synchronisation à l'affichage
@@ -2834,10 +3159,12 @@ def analyse_signaux_populaires(
                     'dPrice': round((derivatives.get('price_slope_rel') or 0.0) * 100, 2),
                     'Var5j (%)': round(float(derivatives.get('var_5j_pct') or 0.0), 2),
                     'dRSI': round((derivatives.get('rsi_slope_rel') or 0.0) * 100, 2),
-                    'dVolRel': round((derivatives.get('volume_slope_rel') or 0.0) * 100, 2),
+                    'dVolRel': round((derivatives['volume_slope_rel_usd'] if 'volume_slope_rel_usd' in derivatives else derivatives.get('volume_slope_rel', 0.0) or 0.0) * 100, 2),
                     'Rev. Growth (%)': round(float(derivatives.get('rev_growth_val') or 0.0), 2),
                     'EBITDA Yield (%)': round(float(derivatives.get('ebitda_yield_pct') or 0.0), 2),
                     'FCF Yield (%)': round(float(derivatives.get('fcf_yield_pct') or 0.0), 2),
+                    'FCF (B$)': round(float(derivatives.get('fcf_val') or 0.0), 2),
+                    'EBITDA (B$)': round(float(derivatives.get('ebitda_val') or 0.0), 2),
                     'D/E Ratio': round(float(derivatives.get('debt_to_equity') or 0.0), 2),
                     'Market Cap (B$)': round(float(derivatives.get('market_cap_val') or 0.0), 2),
                     'ROE (%)': round(float(derivatives.get('roe_val') or 0.0), 2)
@@ -2895,7 +3222,7 @@ def analyse_signaux_populaires(
             print("\n" + "=" * 115)
             print("RÉSULTATS DES SIGNEAUX")
             print("=" * 115)
-            print(f"{'Symbole':<8} {'Signal':<8} {'Score':<7} {'Prix':<10} {'Tendance':<10} {'RSI':<6} {'Volume moyen':<15} {'Domaine':<24} Analyse")
+            print(f"{'Symbole':<8} {'Signal':<8} {'Score':<7} {'Prix($)':<10} {'Tendance':<10} {'RSI':<6} {'Volume moyen':<15} {'Domaine':<24} Analyse")
             print("-" * 115)
 
         for s in signals:
@@ -2997,7 +3324,9 @@ def analyse_signaux_populaires(
                 "gain_moyen": resultats['gain_moyen'],
                 "drawdown_max": resultats['drawdown_max'],
                 "Domaine": domaine,
-                "events": events
+                "events": events,
+                "score_dates": resultats.get('score_dates', []),
+                "score_values": resultats.get('score_values', []),
             })
 
             total_trades += resultats['trades']
@@ -3185,7 +3514,7 @@ def analyse_signaux_populaires(
         # todo: ajuster le texte selon les conditions appliquées ci-dessus
         print(f"SIGNES UNIQUEMENT POUR ACTIONS FIABLES (>={taux_reussite_min}% taux de réussite) OU NON ÉVALUÉES")
         print("=" * 115)
-        print(f"{'Symbole':<8} {'Signal':<8} {'Score':<7} {'Prix':<10} {'Tendance':<10} {'RSI':<6} {'Volume moyen':<15} {'Domaine':<24} Analyse")
+        print(f"{'Symbole':<8} {'Signal':<8} {'Score':<7} {'Prix($)':<10} {'Tendance':<10} {'RSI':<6} {'Volume moyen':<15} {'Domaine':<24} Analyse")
         print("-" * 115)
 
         for signal_type in ["ACHAT", "VENTE"]:
@@ -3335,7 +3664,7 @@ def analyse_signaux_populaires(
                 special_marker = " ‼️" if s['Symbole'] in mes_symbols else ""
 
                 title = (
-                    f"{special_marker} {s['Symbole']} | Prix: {last_price:.2f} | Signal: {signal}({score}) {fiabilite_str} | "
+                    f"{special_marker} {s['Symbole']} | Prix (USD): ${last_price:.2f} | Signal: {signal}({score}) {fiabilite_str} | "
                     f"Tendance: {trend_symbol} | RSI: {last_rsi:.1f} ({rsi_status}) | "
                     f"Progression: {progression:+.2f}% | Vol. moyen: {s['Volume moyen']:,.0f} units {special_marker}"
                 )
@@ -3410,7 +3739,7 @@ def analyse_signaux_populaires(
                 special_marker = " ‼️" if s['Symbole'] in mes_symbols else ""
 
                 title = (
-                    f"{special_marker} {s['Symbole']} | Prix: {last_price:.2f} | Signal: {signal}({score}) {fiabilite_str} | "
+                    f"{special_marker} {s['Symbole']} | Prix (USD): ${last_price:.2f} | Signal: {signal}({score}) {fiabilite_str} | "
                     f"Tendance: {trend_symbol} | RSI: {last_rsi:.1f} ({rsi_status}) | "
                     f"Progression: {progression:+.2f}% | Vol. moyen: {s['Volume moyen']:,.0f} units {special_marker}"
                 )
@@ -3428,9 +3757,13 @@ def analyse_signaux_populaires(
         sig.setdefault('Var5j (%)', 0.0)
         sig.setdefault('dRSI', 0.0)
         sig.setdefault('dVolRel', 0.0)
+        sig.setdefault('Devise', 'USD')
+        sig.setdefault('FxRateToUSD', 1.0)
         sig.setdefault('Rev. Growth (%)', 0.0)
         sig.setdefault('EBITDA Yield (%)', 0.0)
         sig.setdefault('FCF Yield (%)', 0.0)
+        sig.setdefault('FCF (B$)', 0.0)
+        sig.setdefault('EBITDA (B$)', 0.0)
         sig.setdefault('D/E Ratio', 0.0)
         sig.setdefault('Market Cap (B$)', 0.0)
         sig.setdefault('ROE (%)', 0.0)

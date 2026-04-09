@@ -246,7 +246,7 @@ def classify_cap_range(symbol: str) -> str:
 # ----------------------------
 def clean_sector_cap_groups(sector_cap_ranges: Dict[str, Dict[str, List[str]]],
                             ttl_days: int = 10,
-                            min_symbols: int = 6,
+                            min_symbols: int = 7,
                             min_total: int = 400,
                             max_symbols: int = 12,
                             fixed_ratio: float = 0.6) -> Dict[str, Dict[str, List[str]]]:
@@ -401,7 +401,7 @@ def clean_sector_cap_groups(sector_cap_ranges: Dict[str, Dict[str, List[str]]],
             cap = sym_to_cap.get(s, 'Unknown')
             cap_groups.setdefault(cap, []).append(s)
         
-        # ── Compléter les cap_ranges < 6 avec des populaires du même secteur+cap ──
+        # ── Compléter les cap_ranges < 7 avec des populaires du même secteur+cap ──
         already_used = set(selected)
         for cap in list(cap_groups.keys()):
             if len(cap_groups[cap]) < min_symbols:
@@ -420,7 +420,7 @@ def clean_sector_cap_groups(sector_cap_ranges: Dict[str, Dict[str, List[str]]],
                 except Exception:
                     pass
         
-        # ── Fusion des cap_ranges encore < 6 après complément ──
+        # ── Fusion des cap_ranges encore < 7 après complément ──
         # Ordre de fusion : Small → Mid → Large → Mega → Unknown
         CAP_ORDER = ['Small', 'Mid', 'Large', 'Mega', 'Unknown']
         # Add any cap_range not in CAP_ORDER at the end
@@ -2047,7 +2047,7 @@ if __name__ == "__main__":
             sys.exit(0)
 
     # Budget final
-    budget_base = 15000
+    budget_base = 30000
     if precision == 1:
         budget_evaluations = int(budget_base * 0.5)
     elif precision == 3:

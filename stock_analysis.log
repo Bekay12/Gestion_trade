@@ -5999,3 +5999,82 @@
 2026-04-09 21:45:24,904 - ERROR - 
 1 Failed download:
 2026-04-09 21:45:24,904 - ERROR - ['CEI']: possibly delisted; no price data found  (period=5y) (Yahoo error = "No data found, symbol may be delisted")
+2026-04-09 23:17:50,102 - ERROR - $SGL: possibly delisted; no price data found  (period=3mo)
+2026-04-09 23:17:50,104 - ERROR - 
+1 Failed download:
+2026-04-09 23:17:50,104 - ERROR - ['SGL']: possibly delisted; no price data found  (period=3mo)
+2026-04-09 23:17:51,146 - ERROR - $SGL: possibly delisted; no price data found  (period=3mo)
+2026-04-09 23:17:51,152 - ERROR - 
+1 Failed download:
+2026-04-09 23:17:51,152 - ERROR - ['SGL']: possibly delisted; no price data found  (period=3mo)
+2026-04-09 23:26:50,535 - ERROR - HTTP Error 401: {"finance":{"result":null,"error":{"code":"Unauthorized","description":"Invalid Crumb"}}}
+2026-04-09 23:31:05,733 - ERROR - $HDLV: possibly delisted; no price data found  (period=15mo)
+2026-04-09 23:31:05,737 - ERROR - 
+1 Failed download:
+2026-04-09 23:31:05,737 - ERROR - ['HDLV']: possibly delisted; no price data found  (period=15mo)
+2026-04-09 23:31:07,509 - ERROR - $HDLV: possibly delisted; no price data found  (period=15mo)
+2026-04-09 23:31:07,514 - ERROR - 
+1 Failed download:
+2026-04-09 23:31:07,514 - ERROR - ['HDLV']: possibly delisted; no price data found  (period=15mo)
+2026-04-09 23:31:15,244 - ERROR - $DTY: possibly delisted; no price data found  (period=15mo)
+2026-04-09 23:31:15,245 - ERROR - 
+1 Failed download:
+2026-04-09 23:31:15,245 - ERROR - ['DTY']: possibly delisted; no price data found  (period=15mo)
+2026-04-09 23:31:15,662 - ERROR - $DTY: possibly delisted; no price data found  (period=15mo)
+2026-04-09 23:31:15,671 - ERROR - 
+1 Failed download:
+2026-04-09 23:31:15,671 - ERROR - ['DTY']: possibly delisted; no price data found  (period=15mo)
+2026-04-09 23:34:07,612 - ERROR - HTTP Error 404: {"quoteSummary":{"result":null,"error":{"code":"Not Found","description":"Quote not found for symbol: CDTX"}}}
+2026-04-09 23:34:08,183 - ERROR - $CDTX: possibly delisted; no price data found  (period=15mo) (Yahoo error = "No data found, symbol may be delisted")
+2026-04-09 23:34:08,189 - ERROR - 
+1 Failed download:
+2026-04-09 23:34:08,189 - ERROR - ['CDTX']: possibly delisted; no price data found  (period=15mo) (Yahoo error = "No data found, symbol may be delisted")
+2026-04-09 23:34:08,696 - ERROR - HTTP Error 404: {"quoteSummary":{"result":null,"error":{"code":"Not Found","description":"Quote not found for symbol: CDTX"}}}
+2026-04-09 23:34:09,035 - ERROR - $CDTX: possibly delisted; no price data found  (period=15mo) (Yahoo error = "No data found, symbol may be delisted")
+2026-04-09 23:34:09,038 - ERROR - 
+1 Failed download:
+2026-04-09 23:34:09,038 - ERROR - ['CDTX']: possibly delisted; no price data found  (period=15mo) (Yahoo error = "No data found, symbol may be delisted")
+2026-04-10 00:50:26,900 - ERROR - $PFV: possibly delisted; no price data found  (period=15mo)
+2026-04-10 00:50:26,909 - ERROR - 
+1 Failed download:
+2026-04-10 00:50:26,909 - ERROR - ['PFV']: possibly delisted; no price data found  (period=15mo)
+2026-04-10 00:50:27,193 - ERROR - $PJS1: possibly delisted; no price data found  (period=15mo)
+2026-04-10 00:50:27,199 - ERROR - 
+1 Failed download:
+2026-04-10 00:50:27,200 - ERROR - ['PJS1']: possibly delisted; no price data found  (period=15mo)
+2026-04-10 00:50:27,998 - ERROR - $PSM: possibly delisted; no price data found  (period=15mo)
+2026-04-10 00:50:28,003 - ERROR - 
+1 Failed download:
+2026-04-10 00:50:28,003 - ERROR - ['PSM']: possibly delisted; no price data found  (period=15mo)
+2026-04-10 00:50:28,437 - ERROR - $PSM: possibly delisted; no price data found  (period=15mo)
+2026-04-10 00:50:28,443 - ERROR - $PFV: possibly delisted; no price data found  (period=15mo)
+2026-04-10 00:50:28,445 - ERROR - $PJS1: possibly delisted; no price data found  (period=15mo)
+2026-04-10 00:50:28,450 - ERROR - 
+3 Failed downloads:
+2026-04-10 00:50:28,450 - ERROR - ['PSM', 'PFV', 'PJS1']: possibly delisted; no price data found  (period=15mo)
+2026-04-10 00:53:37,747 - ERROR - $AGS: possibly delisted; no price data found  (period=15mo) (Yahoo error = "No data found, symbol may be delisted")
+2026-04-10 00:53:37,757 - ERROR - 
+1 Failed download:
+2026-04-10 00:53:37,757 - ERROR - ['AGS']: possibly delisted; no price data found  (period=15mo) (Yahoo error = "No data found, symbol may be delisted")
+2026-04-10 00:53:38,981 - ERROR - $AGS: possibly delisted; no price data found  (period=15mo) (Yahoo error = "No data found, symbol may be delisted")
+2026-04-10 00:53:38,986 - ERROR - 
+1 Failed download:
+2026-04-10 00:53:38,986 - ERROR - ['AGS']: possibly delisted; no price data found  (period=15mo) (Yahoo error = "No data found, symbol may be delisted")
+2026-04-10 00:59:16,358 - ERROR - HTTP Error 404: {"quoteSummary":{"result":null,"error":{"code":"Not Found","description":"Quote not found for symbol: V721"}}}
+2026-04-10 00:59:17,013 - ERROR - HTTP Error 404: {"quoteSummary":{"result":null,"error":{"code":"Not Found","description":"Quote not found for symbol: V721"}}}
+2026-04-10 01:42:56,809 - ERROR - $SAND: possibly delisted; no price data found  (period=5y) (Yahoo error = "No data found, symbol may be delisted")
+2026-04-10 01:42:56,814 - ERROR - 
+1 Failed download:
+2026-04-10 01:42:56,814 - ERROR - ['SAND']: possibly delisted; no price data found  (period=5y) (Yahoo error = "No data found, symbol may be delisted")
+2026-04-10 01:42:57,542 - ERROR - $SAND: possibly delisted; no price data found  (period=5y) (Yahoo error = "No data found, symbol may be delisted")
+2026-04-10 01:42:57,543 - ERROR - 
+1 Failed download:
+2026-04-10 01:42:57,543 - ERROR - ['SAND']: possibly delisted; no price data found  (period=5y) (Yahoo error = "No data found, symbol may be delisted")
+2026-04-10 01:48:48,969 - ERROR - $SAND: possibly delisted; no price data found  (period=5y) (Yahoo error = "No data found, symbol may be delisted")
+2026-04-10 01:48:48,970 - ERROR - 
+1 Failed download:
+2026-04-10 01:48:48,970 - ERROR - ['SAND']: possibly delisted; no price data found  (period=5y) (Yahoo error = "No data found, symbol may be delisted")
+2026-04-10 01:48:49,851 - ERROR - $SAND: possibly delisted; no price data found  (period=5y) (Yahoo error = "No data found, symbol may be delisted")
+2026-04-10 01:48:49,858 - ERROR - 
+1 Failed download:
+2026-04-10 01:48:49,858 - ERROR - ['SAND']: possibly delisted; no price data found  (period=5y) (Yahoo error = "No data found, symbol may be delisted")
