@@ -47,7 +47,7 @@ def diagnose_symbol(symbol, sector="Technology"):
         print(f"\n   Dernier prix: {last_close}")
         
         # RSI
-        rsi = ta.momentum.RSIIndicator(close=prices, window=17).rsi()
+        rsi = ta.momentum.RSIIndicator(close=prices, window=15).rsi()
         last_rsi = float(rsi.iloc[-1])
         prev_rsi = float(rsi.iloc[-2])
         print(f"   RSI (dernier): {last_rsi:.2f}, (prev): {prev_rsi:.2f}")

@@ -47,7 +47,7 @@ try:
     from symbol_manager import (
         init_symbols_table, sync_txt_to_sqlite, 
         get_symbols_by_list_type, get_symbols_by_sector_and_cap,
-        classify_cap_range
+        classify_cap_range, get_symbol_info_from_db
     )
 except ImportError:
     print("⚠️ symbol_manager non disponible, utilisation de la méthode txt")
@@ -175,11 +175,17 @@ def save_to_evolutive_csv(signals, filename="signaux_trading.csv"):
 from typing import Tuple, Dict, Union, List
 
 # Extras for parameters beyond the legacy 8 coeffs/8 thresholds.
-# Always includes price-related params when available; defaults otherwise.
+# Price extras are controlled by a single flag: use_price_extras.
 BEST_PARAM_EXTRAS: Dict[str, Dict[str, Union[int, float]]] = {}
 
+# Fenêtre homogène pour les features price (sauf Var5j qui reste 5 jours).
+PRICE_FEATURE_WINDOW = 15
+PRICE_FEATURE_ACCEL_WINDOW = 15
+
 # Cache léger des dérivées de prix par symbole et longueur de série
-# Clé: (symbol, len(prices)) → valeurs: {'price_slope_rel': float, 'price_acc_rel': float}
+# Clé: (symbol, len(prices)) → valeurs:
+# {'price_slope_rel': float, 'price_acc_rel': float,
+#  'rsi_slope_rel': float, 'volume_slope_rel': float}
 DERIV_CACHE: Dict[tuple, Dict[str, float]] = {}
 
 # Cache des indicateurs techniques (instantanés scalaires) par symbole et longueur
@@ -222,9 +228,18 @@ def extract_best_parameters(db_path: str = None) -> Dict[str, Tuple[Tuple[float,
         cursor.execute("PRAGMA table_info(optimization_runs)")
         colnames = {row[1] for row in cursor.fetchall()}
         
-        # Récupérer la dernière ligne (plus récente) pour chaque secteur
-        # Sélectionner TOUS les champs, y compris price (a9, a10, th9, th10, use_price_*) et fundamentals (a11-a15, th11-th15, use_fundamentals)
-        cursor.execute('''
+        # Récupérer la dernière ligne (plus récente) pour chaque secteur.
+        # Les colonnes étendues price peuvent ne pas exister: on injecte NULL AS <col>.
+        optional_price_cols = [
+            'a16', 'a17', 'a18',
+            'th16', 'th17', 'th18',
+            'use_price_extras',
+        ]
+        optional_price_select = ",\n                ".join(
+            [col if col in colnames else f"NULL AS {col}" for col in optional_price_cols]
+        )
+
+        cursor.execute(f'''
             SELECT 
                 sector,
                 COALESCE(market_cap_range, 'Unknown') AS market_cap_range,
@@ -233,6 +248,7 @@ def extract_best_parameters(db_path: str = None) -> Dict[str, Tuple[Tuple[float,
                 th1, th2, th3, th4, th5, th6, th7, th8,
                 seuil_achat, seuil_vente,
                 a9, a10, th9, th10, use_price_slope, use_price_acc,
+                {optional_price_select},
                 a11, a12, a13, a14, a15, th11, th12, th13, th14, th15, use_fundamentals,
                 timestamp
             FROM optimization_runs
@@ -276,12 +292,25 @@ def extract_best_parameters(db_path: str = None) -> Dict[str, Tuple[Tuple[float,
                     return default
 
             price_extras = {
-                'use_price_slope': _read_int('use_price_slope', 0),
-                'use_price_acc': _read_int('use_price_acc', 0),
+                'use_price_extras': _read_int('use_price_extras', 0) or int(
+                    any(_read_int(col, 0) for col in (
+                        'use_price_slope',
+                        'use_price_acc',
+                        'use_price_rsi_slope',
+                        'use_price_vol_slope',
+                        'use_price_var5j',
+                    ))
+                ),
                 'a_price_slope': _read_num('a9', 0.0),
                 'a_price_acc': _read_num('a10', 0.0),
                 'th_price_slope': _read_num('th9', 0.0),
                 'th_price_acc': _read_num('th10', 0.0),
+                'a_price_rsi_slope': _read_num('a16', 0.0),
+                'a_price_vol_slope': _read_num('a17', 0.0),
+                'a_price_var5j': _read_num('a18', 0.0),
+                'th_price_rsi_slope': _read_num('th16', 0.0),
+                'th_price_vol_slope': _read_num('th17', 0.0),
+                'th_price_var5j': _read_num('th18', 0.0),
             }
             
             # Extract fundamentals extras (optional, defaults to 0 if not present)
@@ -360,7 +389,7 @@ def get_trading_signal(prices, volumes, domaine, domain_coeffs=None, domain_thre
         return_derivatives: Retourner les dérivées des indicateurs
         symbol: Symbole de l'action
         cap_range: Tranche de capitalisation
-        price_extras: Dict avec use_price_slope, use_price_acc, a_price_slope, a_price_acc, th_price_slope, th_price_acc
+        price_extras: Dict avec features price activables (pente/acc prix, pente RSI, pente volume, Var5j)
         fundamentals_extras: Dict avec use_fundamentals, a_rev_growth, a_eps_growth, a_roe, a_fcf_yield, a_de_ratio, 
                             th_rev_growth, th_eps_growth, th_roe, th_fcf_yield, th_de_ratio
         seuil_achat: Seuil global pour signal ACHAT (défaut: 4.2)
@@ -686,17 +715,32 @@ def get_trading_signal(prices, volumes, domaine, domain_coeffs=None, domain_thre
                 extras = BEST_PARAM_EXTRAS.get(selected_key or domaine, {})
             except Exception:
                 extras = {}
-        use_ps = int(extras.get('use_price_slope', 0) or 0)
-        use_pa = int(extras.get('use_price_acc', 0) or 0)
+        use_price_extras = int(extras.get('use_price_extras', 0) or 0)
+        if not use_price_extras:
+            use_price_extras = int(any(int(extras.get(k, 0) or 0) for k in (
+                'use_price_slope',
+                'use_price_acc',
+                'use_price_rsi_slope',
+                'use_price_vol_slope',
+                'use_price_var5j',
+            )))
         a_ps = float(extras.get('a_price_slope', 0.0) or 0.0)
         a_pa = float(extras.get('a_price_acc', 0.0) or 0.0)
+        a_prsi = float(extras.get('a_price_rsi_slope', 0.0) or 0.0)
+        a_pvol = float(extras.get('a_price_vol_slope', 0.0) or 0.0)
+        a_pv5 = float(extras.get('a_price_var5j', 0.0) or 0.0)
         th_ps = float(extras.get('th_price_slope', 0.0) or 0.0)
         th_pa = float(extras.get('th_price_acc', 0.0) or 0.0)
+        th_prsi = float(extras.get('th_price_rsi_slope', 0.0) or 0.0)
+        th_pvol = float(extras.get('th_price_vol_slope', 0.0) or 0.0)
+        th_pv5 = float(extras.get('th_price_var5j', 0.0) or 0.0)
 
-        if use_ps or use_pa:
+        if use_price_extras:
             # ⚡ Cache des dérivées de prix par symbole + longueur
             price_slope_rel = 0.0
             price_acc_rel = 0.0
+            rsi_slope_rel = 0.0
+            volume_slope_rel = 0.0
             cache_key = None
             if symbol:
                 try:
@@ -711,65 +755,106 @@ def get_trading_signal(prices, volumes, domaine, domain_coeffs=None, domain_thre
             if cached is not None:
                 price_slope_rel = float(cached.get('price_slope_rel', 0.0) or 0.0)
                 price_acc_rel = float(cached.get('price_acc_rel', 0.0) or 0.0)
+                rsi_slope_rel = float(cached.get('rsi_slope_rel', 0.0) or 0.0)
+                volume_slope_rel = float(cached.get('volume_slope_rel', 0.0) or 0.0)
             else:
                 try:
                     arr = np.asarray(prices.dropna().values.astype(float)) if isinstance(prices, (pd.Series, pd.DataFrame)) else np.asarray(prices)
                     n = len(arr)
-                    # slope relatifs (fenêtre 8)
-                    if n >= 2:
-                        k = min(8, n)
-                        y = arr[-k:]
+
+                    def _relative_slope(values: np.ndarray, window: int) -> float:
+                        m = len(values)
+                        if m < 2:
+                            return 0.0
+                        k = min(window, m)
+                        y = values[-k:]
                         x = np.arange(k, dtype=float)
                         try:
                             p = np.polyfit(x, y, 1)
-                            slope = float(p[0])
+                            slope_val = float(p[0])
                         except Exception:
-                            slope = float(y[-1] - y[-2]) if k >= 2 else 0.0
-                        last = float(arr[-1]) if n > 0 else 0.0
-                        price_slope_rel = float(slope / last) if last != 0 else 0.0
+                            slope_val = float(y[-1] - y[-2]) if k >= 2 else 0.0
+                        last_val = float(values[-1]) if m > 0 else 0.0
+                        return float(slope_val / last_val) if last_val != 0 else 0.0
+
+                    # slope relatif prix (fenêtre 15)
+                    if n >= 2:
+                        price_slope_rel = _relative_slope(arr, PRICE_FEATURE_WINDOW)
                     else:
                         price_slope_rel = 0.0
 
-                    # acceleration relative (diff de pente sur deux fenêtres adjacentes)
-                    if use_pa and n >= 16:
-                        y_recent = arr[-8:]
-                        x_recent = np.arange(8, dtype=float)
-                        y_prev = arr[-16:-8]
-                        x_prev = np.arange(8, dtype=float)
+                    # acceleration relative (diff de pente sur deux fenêtres adjacentes de 10j)
+                    w = PRICE_FEATURE_ACCEL_WINDOW
+                    if n >= (2 * w):
+                        y_recent = arr[-w:]
+                        x_recent = np.arange(w, dtype=float)
+                        y_prev = arr[-(2 * w):-w]
+                        x_prev = np.arange(w, dtype=float)
                         try:
                             p_recent = np.polyfit(x_recent, y_recent, 1)
                             p_prev = np.polyfit(x_prev, y_prev, 1)
                             slope_recent = float(p_recent[0])
                             slope_prev = float(p_prev[0])
                         except Exception:
-                            slope_recent = float(y_recent[-1] - y_recent[-2]) if len(y_recent) >= 2 else 0.0
-                            slope_prev = float(y_prev[-1] - y_prev[-2]) if len(y_prev) >= 2 else 0.0
+                            slope_recent = float(y_recent[-1] - y_recent[-2]) if w >= 2 else 0.0
+                            slope_prev = float(y_prev[-1] - y_prev[-2]) if w >= 2 else 0.0
                         acc_abs = slope_recent - slope_prev
                         last = float(arr[-1]) if n > 0 else 0.0
                         price_acc_rel = float(acc_abs / last) if last != 0 else 0.0
                     else:
                         price_acc_rel = 0.0
+
+                    # slope relatif RSI (fenêtre 10)
+                    try:
+                        rsi_series_full = ta.momentum.RSIIndicator(close=prices, window=17).rsi()
+                        arr_rsi = np.asarray(rsi_series_full.dropna().values.astype(float))
+                        rsi_slope_rel = _relative_slope(arr_rsi, PRICE_FEATURE_WINDOW)
+                    except Exception:
+                        rsi_slope_rel = 0.0
+
+                    # slope relatif volume (fenêtre 10)
+                    try:
+                        arr_vol = np.asarray(volumes.dropna().values.astype(float)) if isinstance(volumes, (pd.Series, pd.DataFrame)) else np.asarray(volumes)
+                        volume_slope_rel = _relative_slope(arr_vol, PRICE_FEATURE_WINDOW)
+                    except Exception:
+                        volume_slope_rel = 0.0
                 except Exception:
                     price_slope_rel = 0.0
                     price_acc_rel = 0.0
+                    rsi_slope_rel = 0.0
+                    volume_slope_rel = 0.0
 
                 # Stocker en cache
                 if cache_key is not None:
                     DERIV_CACHE[cache_key] = {
                         'price_slope_rel': price_slope_rel,
                         'price_acc_rel': price_acc_rel,
+                        'rsi_slope_rel': rsi_slope_rel,
+                        'volume_slope_rel': volume_slope_rel,
                     }
 
-            if use_ps:
+            if use_price_extras:
                 if price_slope_rel > th_ps:
                     score += a_ps
                 else:
                     score -= a_ps
-            if use_pa:
                 if price_acc_rel > th_pa:
                     score += a_pa
                 else:
                     score -= a_pa
+                if rsi_slope_rel > th_prsi:
+                    score += a_prsi
+                else:
+                    score -= a_prsi
+                if volume_slope_rel > th_pvol:
+                    score += a_pvol
+                else:
+                    score -= a_pvol
+                v5 = float(variation_5j) if not np.isnan(variation_5j) else 0.0
+                if v5 > th_pv5:
+                    score += a_pv5
+                else:
+                    score -= a_pv5
     except Exception:
         pass
 
@@ -925,7 +1010,7 @@ def get_trading_signal(prices, volumes, domaine, domain_coeffs=None, domain_thre
 
     # Helper: compute a simple second-order effect (acceleration)
     # using difference of slopes across two adjacent windows.
-    def compute_accelerations(series_dict, window: int = 5):
+    def compute_accelerations(series_dict, window: int = PRICE_FEATURE_ACCEL_WINDOW):
         """
         Approximate acceleration as the difference between the most recent
         slope over the last `window` points and the slope over the preceding
@@ -975,7 +1060,7 @@ def get_trading_signal(prices, volumes, domaine, domain_coeffs=None, domain_thre
                 'macd': macd_series,
                 'rsi': rsi_series,
                 'volume': volumes
-            }, window=5)
+            }, window=PRICE_FEATURE_WINDOW)
             derivatives.update(technical_derivatives)
             # Ajouter également les accélérations (deuxième dérivée approximative)
             technical_acc = compute_accelerations({
@@ -983,7 +1068,7 @@ def get_trading_signal(prices, volumes, domaine, domain_coeffs=None, domain_thre
                 'macd': macd_series,
                 'rsi': rsi_series,
                 'volume': volumes
-            }, window=5)
+            }, window=PRICE_FEATURE_ACCEL_WINDOW)
             derivatives.update(technical_acc)
         except Exception as e:
             print(f"⚠️ Erreur calcul dérivées techniques: {e}")
@@ -1433,6 +1518,103 @@ def get_cap_range_for_symbol(symbol: str) -> str:
     # Étape 3️⃣: Fallback
     return 'Unknown'
 
+
+def resolve_symbol_scoring_context(
+    symbol: str,
+    domaine: str = None,
+    cap_range: str = None,
+    best_params: dict = None,
+    allow_cap_fallback: bool = True,
+) -> dict:
+    """Résout un contexte de scoring unique et précis pour un symbole.
+
+    Le but est d'utiliser partout la même combinaison:
+    - secteur normalisé
+    - cap_range le plus fiable disponible
+    - clé de paramètres optimisés la plus spécifique
+    - seuils globaux et extras dédiés au symbole
+    """
+    resolved_best_params = best_params or extract_best_parameters()
+    db_info = {}
+
+    try:
+        if get_symbol_info_from_db is not None:
+            db_info = get_symbol_info_from_db(symbol) or {}
+    except Exception:
+        db_info = {}
+
+    resolved_domaine = domaine or db_info.get('sector') or 'Inconnu'
+    resolved_cap_range = cap_range or db_info.get('cap_range') or 'Unknown'
+
+    try:
+        if resolved_domaine and resolved_domaine != 'Inconnu':
+            from sector_normalizer import normalize_sector
+            resolved_domaine = normalize_sector(resolved_domaine)
+    except Exception:
+        pass
+
+    # Si la DB a une market cap exploitable, s'en servir pour dériver une tranche plus précise
+    try:
+        market_cap_b = float(db_info.get('market_cap_b') or 0.0)
+        if (not resolved_cap_range or resolved_cap_range == 'Unknown') and market_cap_b > 0:
+            inferred_cap = classify_cap_range(market_cap_b)
+            if inferred_cap and inferred_cap != 'Unknown':
+                resolved_cap_range = inferred_cap
+    except Exception:
+        pass
+
+    # Fallback cap_range sur la base des clés réellement disponibles dans les paramètres optimisés
+    if allow_cap_fallback and (not resolved_cap_range or resolved_cap_range == 'Unknown'):
+        for candidate_cap in ('Small', 'Mid', 'Large', 'Mega'):
+            candidate_key = f"{resolved_domaine}_{candidate_cap}"
+            if candidate_key in resolved_best_params:
+                resolved_cap_range = candidate_cap
+                break
+
+    selected_key = None
+    if resolved_cap_range and resolved_cap_range != 'Unknown':
+        candidate_key = f"{resolved_domaine}_{resolved_cap_range}"
+        if candidate_key in resolved_best_params:
+            selected_key = candidate_key
+    if not selected_key and resolved_domaine in resolved_best_params:
+        selected_key = resolved_domaine
+
+    seuil_achat = None
+    seuil_vente = None
+    price_extras = None
+    coeffs = None
+    thresholds = None
+
+    if selected_key and selected_key in resolved_best_params:
+        params = resolved_best_params[selected_key]
+        if len(params) > 0:
+            coeffs = params[0]
+        if len(params) > 1:
+            thresholds = params[1]
+        if len(params) > 2 and params[2]:
+            globals_th = params[2]
+            if isinstance(globals_th, (tuple, list)) and len(globals_th) >= 2:
+                seuil_achat = float(globals_th[0])
+                seuil_vente = float(globals_th[1])
+        if len(params) > 4 and isinstance(params[4], dict):
+            price_extras = params[4]
+
+    if price_extras is None:
+        price_extras = BEST_PARAM_EXTRAS.get(selected_key or resolved_domaine, {}) if isinstance(BEST_PARAM_EXTRAS, dict) else {}
+
+    return {
+        'symbol': symbol,
+        'domaine': resolved_domaine,
+        'cap_range': resolved_cap_range,
+        'selected_key': selected_key,
+        'coeffs': coeffs,
+        'thresholds': thresholds,
+        'seuil_achat': seuil_achat,
+        'seuil_vente': seuil_vente,
+        'price_extras': price_extras or {},
+        'best_params': resolved_best_params,
+    }
+
 # ===================================================================
 # CONSENSUS ANALYSTES ET SENTIMENT ACTUALITÉ
 # ===================================================================
@@ -1502,11 +1684,12 @@ def compute_simple_sentiment(prices: pd.Series) -> str:
 # ===================================================================
 
 # Configuration du cache pour les données boursières
-CACHE_DIR = Path("data_cache")
-CACHE_DIR.mkdir(exist_ok=True)
+# CACHE_DIR importé depuis config pour cohérence globale
+# DATA_CACHE_DIR est utilisé pour les données OHLCV
+# Utiliser l'import provenant de config.py (ligne 37)
 
 # Âge maximum d'un cache avant re-téléchargement (heures)
-CACHE_MAX_AGE_HOURS = 2 #5
+CACHE_MAX_AGE_HOURS = 14  # Augmenté de 2h à 24h pour sets de symboles volumineux
 
 # Configuration globale pour le mode offline
 OFFLINE_MODE = False  # Mettre à True pour forcer le mode hors-ligne
@@ -2104,8 +2287,17 @@ def plot_unified_chart(symbol, prices, volumes, ax, show_xaxis=False, score_over
             else:
                 domaine = "Inconnu"
         else:
-            info = yf.Ticker(symbol).info
-            domaine = info.get("sector", "Inconnu")
+            # Utiliser DB cache plutôt que yfinance (zéro latence)
+            db_info = get_symbol_info_from_db(symbol)
+            if db_info.get('sector') and db_info['sector'] != 'Inconnu':
+                domaine = db_info['sector']
+            else:
+                # Fallback yfinance si DB vide (rare après import initial)
+                try:
+                    info = yf.Ticker(symbol).info
+                    domaine = info.get("sector", "Inconnu")
+                except Exception:
+                    domaine = "Inconnu"
     except Exception:
         domaine = "Inconnu"
 
@@ -2206,8 +2398,17 @@ def analyse_et_affiche(symbols, period="12mo"):
                     else:
                         domaine = "Inconnu"
                 else:
-                    info = yf.Ticker(symbol).info
-                    domaine = info.get("sector", "Inconnu")
+                    # Utiliser DB cache plutôt que yfinance (zéro latence)
+                    db_info = get_symbol_info_from_db(symbol)
+                    if db_info.get('sector') and db_info['sector'] != 'Inconnu':
+                        domaine = db_info['sector']
+                    else:
+                        # Fallback yfinance si DB vide (rare après import initial)
+                        try:
+                            info = yf.Ticker(symbol).info
+                            domaine = info.get("sector", "Inconnu")
+                        except Exception:
+                            domaine = "Inconnu"
             except Exception:
                 domaine = "Inconnu"
 
@@ -2565,67 +2766,14 @@ def analyse_signaux_populaires(
             if len(prices) < 50:
                 return None
 
-            # Récupération du secteur et cap_range depuis la DB d'abord (rapide)
-            db_info = get_symbol_info_from_db(symbol)
-            domaine = db_info['sector'] if db_info['sector'] else None
-            cap_range = db_info['cap_range']
-            
-            # Si la DB n'a pas le secteur, fallback yfinance ou cache
-            if not domaine:
-                try:
-                    if OFFLINE_MODE:
-                        if get_pickle_cache is not None:
-                            fin_cache = get_pickle_cache(symbol, 'financial', ttl_hours=24*365)
-                            domaine = fin_cache.get('sector', 'Inconnu') if fin_cache else "Inconnu"
-                        else:
-                            domaine = "Inconnu"
-                    else:
-                        info = yf.Ticker(symbol).info
-                        domaine = info.get("sector", "Inconnu")
-                        # Sauvegarder en DB pour les prochaines fois
-                        mc_raw = info.get('marketCap')
-                        mc_b = float(mc_raw) / 1e9 if mc_raw else 0.0
-                        if mc_b > 0 and (cap_range == 'Unknown' or not cap_range):
-                            cap_range = classify_cap_range(mc_b)
-                        update_symbol_info_in_db(symbol, sector=domaine, cap_range=cap_range, market_cap_b=mc_b)
-                except Exception:
-                    domaine = "Inconnu"
-            
-            # 🔧 CORRECTION: Normaliser le secteur dès le départ pour cohérence
-            try:
-                from sector_normalizer import normalize_sector
-                domaine_raw = domaine
-                domaine = normalize_sector(domaine)
-                if domaine_raw != domaine and verbose:
-                    print(f"   🔄 {symbol}: Secteur normalisé '{domaine_raw}' → '{domaine}'")
-            except Exception:
-                # Si normalize_sector n'existe pas ou erreur, continuer avec le secteur raw
-                pass
-            
-            # Recherche de la clé de paramètres optimisés
-            selected_key = None
-            if cap_range and cap_range != "Unknown":
-                comp_key = f"{domaine}_{cap_range}"
-                if comp_key in best_params:
-                    selected_key = comp_key
-            if not selected_key and domaine in best_params:
-                selected_key = domaine
-            
-            # ✅ Extraire les seuils globaux optimisés depuis best_params
-            seuil_achat_opt = None
-            seuil_vente_opt = None
-            if selected_key and selected_key in best_params:
-                params = best_params[selected_key]
-                if len(params) > 2 and params[2]:
-                    globals_th = params[2]
-                    if isinstance(globals_th, (tuple, list)) and len(globals_th) >= 2:
-                        seuil_achat_opt = float(globals_th[0])
-                        seuil_vente_opt = float(globals_th[1])
-
-            # 🔧 Récupérer les extras depuis les paramètres
-            extras_to_use = None
-            if selected_key and selected_key in best_params and len(best_params[selected_key]) > 4:
-                extras_to_use = best_params[selected_key][4]
+            # Résoudre le contexte exact une seule fois, puis l'utiliser pour le score et les dérivées
+            scoring_context = resolve_symbol_scoring_context(symbol, best_params=best_params)
+            domaine = scoring_context['domaine']
+            cap_range = scoring_context['cap_range']
+            selected_key = scoring_context['selected_key']
+            seuil_achat_opt = scoring_context['seuil_achat']
+            seuil_vente_opt = scoring_context['seuil_vente']
+            extras_to_use = scoring_context['price_extras']
             
             # Récupération du signal et des dérivés avec seuils globaux optimisés + extras
             signal, last_price, trend, last_rsi, volume_mean, score, derivatives = get_trading_signal(
@@ -2824,13 +2972,19 @@ def analyse_signaux_populaires(
             feature_thresholds = thresholds[:8] if thresholds and len(thresholds) >= 8 else None
             domain_thresholds = {domaine: feature_thresholds} if feature_thresholds else None
 
+            # Seuils globaux dédiés symbole/secteur/cap_range
+            seuil_achat_opt = float(globals_thresholds[0]) if globals_thresholds and len(globals_thresholds) >= 2 else 4.2
+            seuil_vente_opt = float(globals_thresholds[1]) if globals_thresholds and len(globals_thresholds) >= 2 else -0.5
+
             # Récupérer les extras fondamentaux pour activer le PIT dans le backtest
-            fund_extras_bt = extras if isinstance(extras, dict) else {}
+            extras_bt = extras if isinstance(extras, dict) else {}
 
             resultats, events = backtest_signals_with_events(
                 prices, volumes, domaine, montant=50,
                 domain_coeffs=domain_coeffs, domain_thresholds=domain_thresholds,
-                fundamentals_extras=fund_extras_bt, symbol_name=s['Symbole'],
+                seuil_achat=seuil_achat_opt, seuil_vente=seuil_vente_opt,
+                extra_params=extras_bt, cap_range=cap_range,
+                fundamentals_extras=extras_bt, symbol_name=s['Symbole'],
                 min_holding_bars=max(1, int(min_holding_days)),
             )
 
@@ -3134,11 +3288,16 @@ def analyse_signaux_populaires(
 
             # Dessiner les marqueurs d'achat/vente
             try:
-                try:
-                    info = yf.Ticker(s['Symbole']).info
-                    domaine = info.get("sector", "Inconnu")
-                except Exception:
-                    domaine = "Inconnu"
+                # Récupérer le secteur depuis la DB cache, fallback yfinance
+                db_info = get_symbol_info_from_db(s['Symbole'])
+                if db_info.get('sector') and db_info['sector'] != 'Inconnu':
+                    domaine = db_info['sector']
+                else:
+                    try:
+                        info = yf.Ticker(s['Symbole']).info
+                        domaine = info.get("sector", "Inconnu")
+                    except Exception:
+                        domaine = "Inconnu"
 
                 events = generate_trade_events(prices, volumes, domaine)
                 for ev in events:
@@ -3204,11 +3363,16 @@ def analyse_signaux_populaires(
 
             # Dessiner les marqueurs d'achat/vente
             try:
-                try:
-                    info = yf.Ticker(s['Symbole']).info
-                    domaine = info.get("sector", "Inconnu")
-                except Exception:
-                    domaine = "Inconnu"
+                # Récupérer le secteur depuis la DB cache, fallback yfinance
+                db_info = get_symbol_info_from_db(s['Symbole'])
+                if db_info.get('sector') and db_info['sector'] != 'Inconnu':
+                    domaine = db_info['sector']
+                else:
+                    try:
+                        info = yf.Ticker(s['Symbole']).info
+                        domaine = info.get("sector", "Inconnu")
+                    except Exception:
+                        domaine = "Inconnu"
 
                 events = generate_trade_events(prices, volumes, domaine)
                 for ev in events:

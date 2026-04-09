@@ -100,7 +100,7 @@ def get_trading_signal(prices, volumes, variation_seuil=-20, volume_seuil=100000
     # Calcul des indicateurs
     macd, signal_line = calculate_macd(prices)
     #rsi = ta.momentum.RSIIndicator(close=prices, window=14).rsi()
-    rsi = ta.momentum.RSIIndicator(close=prices, window=17).rsi()
+    rsi = ta.momentum.RSIIndicator(close=prices, window=15).rsi()
     
     # Validation des derniers points
     if len(macd) < 2 or len(rsi) < 1:

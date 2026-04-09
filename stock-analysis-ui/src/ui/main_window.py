@@ -11,6 +11,7 @@ import io
 from matplotlib.backends.backend_qt5agg import FigureCanvasQTAgg as FigureCanvas
 from matplotlib.figure import Figure
 from matplotlib import dates as mdates
+from concurrent.futures import ThreadPoolExecutor, TimeoutError as FuturesTimeoutError
 import sys
 import os
 import math
@@ -22,21 +23,66 @@ PROJECT_SRC = os.path.abspath(os.path.join(os.path.dirname(__file__), '..'))
 if PROJECT_SRC not in sys.path:
     sys.path.insert(0, PROJECT_SRC)
 from qsi import analyse_signaux_populaires, analyse_et_affiche, load_symbols_from_txt, period
-from qsi import download_stock_data, backtest_signals, plot_unified_chart, get_trading_signal
+from qsi import download_stock_data, backtest_signals, plot_unified_chart, get_trading_signal, resolve_symbol_scoring_context
 import qsi
 from trading_c_acceleration.qsi_optimized import extract_best_parameters
 
 try:
-    from symbol_manager import get_symbols_by_list_type, get_recent_symbols
+    from symbol_manager import get_symbols_by_list_type, get_recent_symbols, get_symbol_info_from_db
     SYMBOL_MANAGER_AVAILABLE = True
 except ImportError:
     SYMBOL_MANAGER_AVAILABLE = False
+    get_symbol_info_from_db = None
+
+
+def _fetch_yf_info_with_timeout(symbol: str, timeout_sec: float = 2.0) -> dict:
+    """Récupère yfinance.info avec timeout court pour éviter les blocages prolongés."""
+    executor = ThreadPoolExecutor(max_workers=1)
+    future = executor.submit(lambda: yf.Ticker(symbol).info)
+    try:
+        info = future.result(timeout=timeout_sec)
+        return info if isinstance(info, dict) else {}
+    except (FuturesTimeoutError, Exception):
+        return {}
+    finally:
+        future.cancel()
+        executor.shutdown(wait=False, cancel_futures=True)
+
+
+def _get_sector_cache_first(symbol: str) -> str:
+    """Récupère le secteur en priorité DB/cache local, puis fallback yfinance timeout court."""
+    try:
+        if get_symbol_info_from_db:
+            db_info = get_symbol_info_from_db(symbol) or {}
+            sector = db_info.get('sector')
+            if sector and sector != 'Inconnu':
+                return sector
+    except Exception:
+        pass
+
+    try:
+        if getattr(qsi, 'get_pickle_cache', None) is not None:
+            fin_cache = qsi.get_pickle_cache(symbol, 'financial', ttl_hours=24 * 365)
+            if isinstance(fin_cache, dict):
+                sector = fin_cache.get('sector')
+                if sector and sector != 'Inconnu':
+                    return sector
+    except Exception:
+        pass
+
+    if getattr(qsi, 'OFFLINE_MODE', False):
+        return 'Inconnu'
+
+    info = _fetch_yf_info_with_timeout(symbol, timeout_sec=2.0)
+    sector = info.get('sector', 'Inconnu') if isinstance(info, dict) else 'Inconnu'
+    return sector if sector else 'Inconnu'
 
 
 class AnalysisThread(QThread):
     finished = pyqtSignal(dict)
     error = pyqtSignal(str)
     progress = pyqtSignal(str)
+
     def __init__(self, symbols, mes_symbols, period="12mo", analysis_id=0, min_holding_days=7):
         super().__init__()
         self.symbols = symbols
@@ -45,14 +91,15 @@ class AnalysisThread(QThread):
         self._stop_requested = False
         self.analysis_id = analysis_id  # 🔧 Identifiant d'analyse
         self.min_holding_days = max(1, int(min_holding_days))
+
     def run(self):
         try:
             import builtins
             original_print = print
+
             def custom_print(*args, **kwargs):
                 message = ' '.join(str(arg) for arg in args)
                 self.progress.emit(message)
-                # Force flush to keep console output visible when running UI from a terminal
                 kwargs_with_flush = dict(kwargs)
                 kwargs_with_flush.setdefault('flush', True)
                 original_print(*args, **kwargs_with_flush)
@@ -60,16 +107,13 @@ class AnalysisThread(QThread):
             builtins.print = custom_print
 
             while not self._stop_requested:
-                # Run analysis without opening matplotlib GUIs; keep verbose to surface progress
-                # Get the reliability threshold from the main window spinbox if available
-                fiab_threshold = 30  # Default value
+                fiab_threshold = 30
                 try:
-                    # Access the spinbox value from main window (passed via parent reference)
                     if hasattr(self, 'parent') and hasattr(self.parent(), 'fiab_threshold_spin'):
                         fiab_threshold = self.parent().fiab_threshold_spin.value()
                 except Exception:
                     pass
-                
+
                 result = analyse_signaux_populaires(
                     self.symbols,
                     self.mes_symbols,
@@ -78,13 +122,12 @@ class AnalysisThread(QThread):
                     plot_all=False,
                     verbose=True,
                     taux_reussite_min=fiab_threshold,
-                    min_holding_days=self.min_holding_days
+                    min_holding_days=self.min_holding_days,
                 )
                 if not self._stop_requested:
-                    # 🔧 Ajouter l'identifiant d'analyse au résultat
                     result['_analysis_id'] = self.analysis_id
                     self.finished.emit(result)
-                break  # ou return
+                break
         except Exception as e:
             if not self._stop_requested:
                 self.error.emit(str(e))
@@ -93,6 +136,7 @@ class AnalysisThread(QThread):
                 builtins.print = original_print
             except Exception:
                 pass
+
     def stop(self):
         self._stop_requested = True
 
@@ -115,10 +159,10 @@ class DownloadThread(QThread):
     def run(self):
         try:
             original_print = print
+
             def custom_print(*args, **kwargs):
                 message = ' '.join(str(arg) for arg in args)
                 self.progress.emit(message)
-                # Force flush to keep console output visible when running UI from a terminal
                 kwargs_with_flush = dict(kwargs)
                 kwargs_with_flush.setdefault('flush', True)
                 original_print(*args, **kwargs_with_flush)
@@ -129,9 +173,9 @@ class DownloadThread(QThread):
             try:
                 if self._stop_requested:
                     return
-                    
+
                 data = download_stock_data(self.symbols, self.period)
-                result = { 'data': data }
+                result = {'data': data}
 
                 if self._stop_requested:
                     return
@@ -141,45 +185,37 @@ class DownloadThread(QThread):
                     for symbol, stock_data in data.items():
                         if self._stop_requested:
                             return
-                            
+
                         try:
                             prices = stock_data['Close']
                             volumes = stock_data['Volume']
-                            # domain info best-effort
-                            try:
-                                import yfinance as yf
-                                info = yf.Ticker(symbol).info
-                                domaine = info.get('sector', 'Inconnu')
-                            except Exception:
-                                domaine = 'Inconnu'
+                            score_context = resolve_symbol_scoring_context(
+                                symbol,
+                                domaine=_get_sector_cache_first(symbol),
+                                cap_range=qsi.get_cap_range_for_symbol(symbol),
+                                best_params=qsi.extract_best_parameters(),
+                            )
 
-                            # ✨ Extraire les paramètres optimisés depuis la SQLite
-                            try:
-                                best_params = extract_best_parameters()
-                            except Exception:
-                                best_params = {}
+                            coeffs, feature_thresholds, _globals_thresholds, _, _ = score_context['best_params'].get(
+                                score_context['selected_key'] or score_context['domaine'],
+                                (None, None, (4.2, -0.5), None, {}),
+                            )
+                            domain_coeffs = {score_context['domaine']: coeffs} if coeffs else None
 
-                            coeffs, feature_thresholds, globals_thresholds, _, _ = best_params.get(domaine, (None, None, (4.2, -0.5), None, {}))
-                            domain_coeffs = {domaine: coeffs} if coeffs else None
-                            
-                            # ✨ V2.0: Utiliser les paramètres optimisés si disponibles
-                            backtest_kwargs = {
-                                'prices': prices,
-                                'volumes': volumes,
-                                'domaine': domaine,
-                                'montant': 50,
-                                'domain_coeffs': domain_coeffs,
-                                'domain_thresholds': {domaine: feature_thresholds} if feature_thresholds else None,
-                                'min_holding_bars': self.min_holding_days,
-                            }
-                            
-                            bt = backtest_signals(**backtest_kwargs)
-                            
-                            # Debug: vérifier si le backtest retourne des trades
+                            bt = backtest_signals(
+                                prices=prices,
+                                volumes=volumes,
+                                domaine=score_context['domaine'],
+                                montant=50,
+                                domain_coeffs=domain_coeffs,
+                                domain_thresholds={score_context['domaine']: feature_thresholds} if feature_thresholds else None,
+                                min_holding_bars=self.min_holding_days,
+                            )
+
                             if bt.get('trades', 0) == 0:
-                                self.progress.emit(f"  ⚠️ {symbol}: Aucun trade détecté (domaine={domaine})")
-                            
-                            backtests.append({ 'Symbole': symbol, **bt })
+                                self.progress.emit(f"  ⚠️ {symbol}: Aucun trade détecté (domaine={score_context['domaine']})")
+
+                            backtests.append({'Symbole': symbol, **bt})
                         except Exception as e:
                             self.progress.emit(f"  ⚠️ Erreur backtest {symbol}: {e}")
                             continue
@@ -187,7 +223,6 @@ class DownloadThread(QThread):
                     result['backtest_results'] = backtests
 
                 if not self._stop_requested:
-                    # 🔧 Ajouter l'identifiant d'analyse au résultat
                     result['_analysis_id'] = self.analysis_id
                     self.finished.emit(result)
             finally:
@@ -242,6 +277,7 @@ class MainWindow(QMainWindow):
         super().__init__()
         self.setWindowTitle("Stock Analysis Tool")
         self.setGeometry(100, 100, 1200, 800)
+        self.debug_mode_enabled = False
 
         # 🔄 Synchroniser personal et optimization vers popular au démarrage
         if SYMBOL_MANAGER_AVAILABLE:
@@ -318,6 +354,11 @@ class MainWindow(QMainWindow):
         """Ajouter un message à l'onglet Logs (sans redirection de stdout)."""
         if hasattr(self, 'logs_text'):
             self.logs_text.append(message)
+
+    def _debug_log(self, message: str):
+        """Affiche un log uniquement si le mode debug est actif."""
+        if self.debug_mode_enabled:
+            print(message)
 
     def _load_symbols_preferred(self, filename: str, list_type: str):
         """Charge depuis SQLite si possible, sinon depuis le fichier txt."""
@@ -496,6 +537,7 @@ class MainWindow(QMainWindow):
             ("3mo",  "3 mois   — ~63 points (journalier)"),
             ("6mo",  "6 mois   — ~126 points (journalier)"),
             ("1y",   "1 an     — ~252 points (journalier)"),
+            ("15mo", "15 mois  — ~315 points (journalier)"),
             ("18mo", "18 mois  — ~378 points (journalier)"),
             ("2y",   "2 ans    — ~504 points (journalier)"),
             ("3y",   "3 ans    — ~756 points (journalier)"),
@@ -563,6 +605,15 @@ class MainWindow(QMainWindow):
         self.offline_mode_btn.clicked.connect(self.toggle_offline_mode)
         self.offline_mode_btn.setStyleSheet("QPushButton { background-color: #4CAF50; color: white; font-weight: bold; }")
         top_controls.addWidget(self.offline_mode_btn)
+
+        # Bouton mode debug (désactive les logs en boucle par défaut)
+        self.debug_mode_btn = QPushButton("🐞 Debug: OFF")
+        self.debug_mode_btn.setCheckable(True)
+        self.debug_mode_btn.setChecked(False)
+        self.debug_mode_btn.clicked.connect(self.toggle_debug_mode)
+        self.debug_mode_btn.setStyleSheet("QPushButton { background-color: #9E9E9E; color: white; font-weight: bold; }")
+        self.debug_mode_btn.setToolTip("Active les logs détaillés (secteur, seuils, diagnostics)")
+        top_controls.addWidget(self.debug_mode_btn)
         
         # 💾 Bouton pour sauvegarder les graphiques en PDF
         self.save_pdf_btn = QPushButton("💾 Sauvegarder (PDF)")
@@ -685,13 +736,17 @@ class MainWindow(QMainWindow):
     
     def validate_ticker(self, symbol):
         """Validation rapide mais moins fiable"""
-        import yfinance as yf
         try:
-            ticker = yf.Ticker(symbol)
-            info = ticker.info
+            # DB/cache d'abord
+            sector = _get_sector_cache_first(symbol)
+            if sector and sector != 'Inconnu':
+                return True
+
+            # Fallback strict yfinance timeout court
+            info = _fetch_yf_info_with_timeout(symbol, timeout_sec=2.0)
             # Vérifier juste la présence de 'regularMarketPrice' ou 'symbol'
             return info.get('regularMarketPrice') is not None or info.get('symbol') is not None
-        except:
+        except Exception:
             return False
 
 
@@ -1140,27 +1195,19 @@ class MainWindow(QMainWindow):
                 
                 # Récupérer le secteur depuis le cache ou yfinance
                 try:
-                    if qsi.OFFLINE_MODE:
-                        if qsi.get_pickle_cache is not None:
-                            fin_cache = qsi.get_pickle_cache(symbol, 'financial', ttl_hours=24*365)
-                            domaine = fin_cache.get('sector', 'Inconnu') if fin_cache else "Inconnu"
-                        else:
-                            domaine = "Inconnu"
-                    else:
-                        info = yf.Ticker(symbol).info
-                        domaine = info.get("sector", "Inconnu")
+                    domaine = _get_sector_cache_first(symbol)
                     
-                    # 🔧 CORRECTION: Normaliser le secteur systématiquement pour cohérence
+                    # 🔧 CORRECTION: Normaliser le secteur syst\u00e9matiquement pour coh\u00e9rence
                     from sector_normalizer import normalize_sector
                     domaine_raw = domaine
                     domaine = normalize_sector(domaine)
                     if domaine_raw != domaine:
-                        print(f"🔄 {symbol}: Secteur normalisé: '{domaine_raw}' -> '{domaine}'")
+                        self._debug_log(f"🔄 {symbol}: Secteur normalisé: '{domaine_raw}' -> '{domaine}'")
                     else:
-                        print(f"🔍 DEBUG {symbol}: secteur = {domaine}")
+                        self._debug_log(f"🔍 DEBUG {symbol}: secteur = {domaine}")
                 except Exception as e:
                     domaine = "Inconnu"
-                    print(f"⚠️ DEBUG {symbol}: erreur récupération secteur: {e}")
+                    self._debug_log(f"⚠️ DEBUG {symbol}: erreur récupération secteur: {e}")
                 
                 # ✅ NEW: Améliorer le fallback cap_range en 2 étapes
                 from config import CAP_FALLBACK_ENABLED
@@ -1170,7 +1217,7 @@ class MainWindow(QMainWindow):
                     best_params_all = qsi.extract_best_parameters()
                     
                     # ✅ ÉTAPE 1: Essayer de trouver dans la DB les cap_ranges valides pour ce secteur
-                    print(f"🔍 {symbol}: Recherche cap_range pour {domaine}...")
+                    self._debug_log(f"🔍 {symbol}: Recherche cap_range pour {domaine}...")
                     try:
                         import sqlite3
                         db_path = 'symbols.db'
@@ -1192,10 +1239,10 @@ class MainWindow(QMainWindow):
                                     test_key = f"{domaine}_{cap}"
                                     if test_key in best_params_all:
                                         cap_range = cap
-                                        print(f"✅ {symbol}: Cap_range trouvé en DB: {cap}")
+                                        self._debug_log(f"✅ {symbol}: Cap_range trouvé en DB: {cap}")
                                         break
                     except Exception as e:
-                        print(f"⚠️ {symbol}: Erreur recherche DB cap_range: {e}")
+                        self._debug_log(f"⚠️ {symbol}: Erreur recherche DB cap_range: {e}")
                     
                     # ✅ ÉTAPE 2: Si toujours Unknown, essayer les fallbacks standards
                     if cap_range == "Unknown" or not cap_range:
@@ -1203,11 +1250,11 @@ class MainWindow(QMainWindow):
                             test_key = f"{domaine}_{fallback_cap}"
                             if test_key in best_params_all:
                                 cap_range = fallback_cap
-                                print(f"✅ {symbol}: Cap_range fallback: {fallback_cap}")
+                                self._debug_log(f"✅ {symbol}: Cap_range fallback: {fallback_cap}")
                                 break
                     
                     if cap_range != original_cap_range:
-                        print(f"🔄 {symbol}: Cap_range ajusté: '{original_cap_range}' -> '{cap_range}'")
+                            self._debug_log(f"🔄 {symbol}: Cap_range ajusté: '{original_cap_range}' -> '{cap_range}'")
                 
                 # ✅ Appliquer fallback universel pour "Inconnu" (même logique que backtest) - configurable
                 original_domaine = domaine
@@ -1221,11 +1268,12 @@ class MainWindow(QMainWindow):
                     if domaine == "Inconnu" and best_params_all:
                         first_key = list(best_params_all.keys())[0]
                         domaine = first_key.split('_')[0] if '_' in first_key else first_key
-                    print(f"🔄 DEBUG {symbol}: fallback appliqué {original_domaine} -> {domaine}")
+                    self._debug_log(f"🔄 DEBUG {symbol}: fallback appliqué {original_domaine} -> {domaine}")
                 
                 # ✅ Extraire les seuils globaux optimisés
                 seuil_achat_opt = None
                 seuil_vente_opt = None
+                extras_to_use = None
                 best_params_all = qsi.extract_best_parameters()
                 # Chercher la clé optimale : secteur_cap ou secteur seul
                 param_key = None
@@ -1243,29 +1291,36 @@ class MainWindow(QMainWindow):
                         if isinstance(globals_th, (tuple, list)) and len(globals_th) >= 2:
                             seuil_achat_opt = float(globals_th[0])
                             seuil_vente_opt = float(globals_th[1])
+                    if len(params) > 4 and isinstance(params[4], dict):
+                        extras_to_use = params[4]
                 
                 try:
-                    # Un seul appel avec le bon domaine (ou fallback) et seuils globaux optimisés
+                    # Un seul appel avec le bon domaine/cap_range et les mêmes paramètres que le pipeline backtest
                     sig, last_price, trend, last_rsi, volume_mean, score, derivatives = get_trading_signal(
                         prices, volumes, domaine=domaine, return_derivatives=True, symbol=symbol, cap_range=cap_range,
-                        seuil_achat=seuil_achat_opt, seuil_vente=seuil_vente_opt
+                        seuil_achat=seuil_achat_opt, seuil_vente=seuil_vente_opt,
+                        price_extras=extras_to_use
                     )
                     
                     # � SYNC: Log les paramètres utilisés pour auditer les décalages
                     if symbol in ['KIM', 'AEP'] or symbol.endswith('.HK'):  # Debug stocks spécifiques
-                        print(f"✅ {symbol} SYNC: cap_range={cap_range} | domaine={domaine} | "
-                              f"score={score:.3f} | seuil={derivatives.get('_seuil_achat_used', 'N/A'):.2f}")
+                        self._debug_log(
+                            f"✅ {symbol} SYNC: cap_range={cap_range} | domaine={domaine} | "
+                            f"score={score:.3f} | seuil={derivatives.get('_seuil_achat_used', 'N/A'):.2f}"
+                        )
                     
                     # �🔍 Debug: vérifier si les métriques financières sont présentes
                     if not derivatives.get('rev_growth_val') and not derivatives.get('market_cap_val'):
-                        print(f"⚠️ {symbol}: Métriques financières manquantes dans derivatives")
-                        print(f"   Clés disponibles: {list(derivatives.keys())}")
+                        self._debug_log(f"⚠️ {symbol}: Métriques financières manquantes dans derivatives")
+                        self._debug_log(f"   Clés disponibles: {list(derivatives.keys())}")
                 except Exception as e:
                     # Log l'erreur mais continue avec les valeurs par défaut
                     print(f"⚠️ Erreur get_trading_signal pour {symbol}: {e}")
                     import traceback
                     traceback.print_exc()
                     derivatives = {}
+
+                consensus_data = qsi.get_consensus(symbol) or {}
 
                 row_info = {
                     'Symbole': symbol,
@@ -1279,8 +1334,8 @@ class MainWindow(QMainWindow):
                     'CapRange': cap_range,
                     'Volume moyen': volume_mean,
                     # Consensus (stable via cache/offline fallback)
-                    'Consensus': (qsi.get_consensus(symbol) or {}).get('label', 'Neutre'),
-                    'ConsensusMean': (qsi.get_consensus(symbol) or {}).get('mean', None),
+                    'Consensus': consensus_data.get('label', 'Neutre'),
+                    'ConsensusMean': consensus_data.get('mean', None),
                     'dPrice': round((derivatives.get('price_slope_rel') or 0.0) * 100, 2),
                     'Var5j (%)': round(float((derivatives.get('var_5j_pct') or 0.0)), 2),
                     'dRSI': round((derivatives.get('rsi_slope_rel') or 0.0) * 100, 2),
@@ -1415,13 +1470,14 @@ class MainWindow(QMainWindow):
                 fig = self._build_symbol_figure_with_score(sym, prices, volumes, precomp=precomp, events=[])
 
                 canvas = FigureCanvas(fig)
-                canvas.setMinimumHeight(340)
+                # Hauteur plus généreuse pour éviter la coupure des titres
+                canvas.setMinimumHeight(520)
                 self.plots_layout.addWidget(canvas)
         except Exception:
             # Fallback: external plotting (analyse_et_affiche shows plots in separate windows)
             try:
                 if filtered_symbols:
-                    analyse_et_affiche(filtered_symbols, period=self.period_input.currentData() or '12mo')
+                    analyse_et_affiche(filtered_symbols, period=self.period_input.currentData() or '15mo')
             except Exception:
                 pass
 
@@ -1552,7 +1608,7 @@ class MainWindow(QMainWindow):
                         stock_data = existing_data.get(sym)
                         if stock_data is None:
                             # Seulement télécharger si vraiment absent
-                            stock_data = download_stock_data([sym], self.period_input.currentData() or '12mo').get(sym)
+                            stock_data = download_stock_data([sym], self.period_input.currentData() or '15mo').get(sym)
                         
                         if stock_data is None:
                             continue
@@ -1560,12 +1616,21 @@ class MainWindow(QMainWindow):
                         prices = stock_data['Close']
                         volumes = stock_data['Volume']
                         try:
+                            score_context = qsi.resolve_symbol_scoring_context(
+                                sym,
+                                domaine=r.get('Domaine', 'Inconnu'),
+                                cap_range=r.get('CapRange'),
+                                best_params=self.best_parameters,
+                            )
                             _sig, _last_price, _trend, _last_rsi, _vol_mean, _score, derivatives = get_trading_signal(
                                 prices, volumes,
-                                domaine=r.get('Domaine', 'Inconnu'),
+                                domaine=score_context['domaine'],
                                 return_derivatives=True,
                                 symbol=sym,
-                                cap_range=r.get('CapRange')
+                                cap_range=score_context['cap_range'],
+                                seuil_achat=score_context['seuil_achat'],
+                                seuil_vente=score_context['seuil_vente'],
+                                price_extras=score_context['price_extras'],
                             )
                         except Exception:
                             derivatives = {}
@@ -1606,6 +1671,13 @@ class MainWindow(QMainWindow):
             # 🔧 Map des événements issus du backtest (même source que les stats)
             backtests = result.get('backtest_results', []) if isinstance(result, dict) else []
             events_map = {bt.get('Symbole'): bt.get('events', []) for bt in backtests}
+            score_series_map = {
+                bt.get('Symbole'): {
+                    'score_dates': bt.get('score_dates', []),
+                    'score_values': bt.get('score_values', []),
+                }
+                for bt in backtests
+            }
 
             # ✅ OPTIMISATION: Récupérer les données existantes
             existing_data = result.get('data', {}) if isinstance(result, dict) else {}
@@ -1621,7 +1693,7 @@ class MainWindow(QMainWindow):
                         stock_data = existing_data.get(sym)
                         if stock_data is None:
                             # Seulement télécharger si vraiment absent
-                            stock_data = download_stock_data([sym], period=self.period_input.currentData() or '12mo').get(sym)
+                            stock_data = download_stock_data([sym], period=self.period_input.currentData() or '15mo').get(sym)
                         if not stock_data:
                             continue
                         prices = stock_data['Close']
@@ -1639,6 +1711,8 @@ class MainWindow(QMainWindow):
                             'score': score_val,
                             'domaine': pre_row.get('Domaine'),
                             'cap_range': pre_row.get('CapRange'),
+                            'score_dates': score_series_map.get(sym, {}).get('score_dates', []),
+                            'score_values': score_series_map.get(sym, {}).get('score_values', []),
                         }
 
                         # Add trade markers based on events déjà calculés par le backtest
@@ -1651,7 +1725,8 @@ class MainWindow(QMainWindow):
                         fig = self._build_symbol_figure_with_score(sym, prices, volumes, precomp=precomp, events=events)
 
                         canvas = FigureCanvas(fig)
-                        canvas.setMinimumHeight(340)
+                        # Hauteur plus généreuse pour éviter la coupure des titres
+                        canvas.setMinimumHeight(520)
                         self.plots_layout.addWidget(canvas)
                     except Exception:
                         continue
@@ -2504,6 +2579,18 @@ class MainWindow(QMainWindow):
             self.offline_mode_btn.setStyleSheet("QPushButton { background-color: #4CAF50; color: white; font-weight: bold; }")
             self.summary_text.append("\n✅ Mode ONLINE activé - Téléchargement si cache obsolète")
 
+    def toggle_debug_mode(self):
+        """Active/désactive les logs debug en boucle."""
+        self.debug_mode_enabled = self.debug_mode_btn.isChecked()
+        if self.debug_mode_enabled:
+            self.debug_mode_btn.setText("🐞 Debug: ON")
+            self.debug_mode_btn.setStyleSheet("QPushButton { background-color: #E65100; color: white; font-weight: bold; }")
+            self.summary_text.append("\n🐞 Mode DEBUG activé - logs détaillés affichés")
+        else:
+            self.debug_mode_btn.setText("🐞 Debug: OFF")
+            self.debug_mode_btn.setStyleSheet("QPushButton { background-color: #9E9E9E; color: white; font-weight: bold; }")
+            self.summary_text.append("\n✅ Mode DEBUG désactivé - logs en boucle masqués")
+
     def render_backtest_summary_and_table(self, backtest_results: list, signals: list):
         """Build the summary text and populate an internal backtest map used by the merged table.
 
@@ -2643,13 +2730,18 @@ class MainWindow(QMainWindow):
         if len(prices) <= start_idx:
             return score_dates, score_values
 
-        # 🔧 GUARD: Valider les paramètres à l'entrée
-        if not domaine or domaine == 'Inconnu':
-            domaine = 'Technology'  # Fallback de sécurité
-        
-        # ✅ CRÍTICO: cap_range ne doit JAMAIS changer dans cette fonction
-        original_cap_range = cap_range
-        original_domaine = domaine
+        # Résoudre une seule fois le contexte exact du symbole
+        score_context = qsi.resolve_symbol_scoring_context(
+            symbol or '',
+            domaine=domaine,
+            cap_range=cap_range,
+            best_params=getattr(self, 'best_parameters', None) or qsi.extract_best_parameters(),
+        )
+        original_cap_range = score_context['cap_range']
+        original_domaine = score_context['domaine']
+        seuil_achat = score_context['seuil_achat']
+        seuil_vente = score_context['seuil_vente']
+        price_extras = score_context['price_extras']
 
         # Precision maximale: calcul quotidien (chaque jour actif) pour eviter
         # les artefacts visuels d'interpolation sur les seuils.
@@ -2663,12 +2755,15 @@ class MainWindow(QMainWindow):
                     domaine=original_domaine,  # ✅ Toujours utiliser ORIGINAL
                     cap_range=original_cap_range,  # ✅ Toujours utiliser ORIGINAL
                     symbol=symbol,
+                    seuil_achat=seuil_achat,
+                    seuil_vente=seuil_vente,
+                    price_extras=price_extras,
                     return_derivatives=True,
                 )
                 # 🔍 Assertion de sécurité
                 used_cap = derivatives.get('_cap_range_used', original_cap_range)
                 if used_cap != original_cap_range and original_cap_range is not None:
-                    print(f"⚠️ {symbol}: cap_range décalé de {original_cap_range} à {used_cap} à l'itération {i}")
+                    self._debug_log(f"⚠️ {symbol}: cap_range décalé de {original_cap_range} à {used_cap} à l'itération {i}")
                 
                 score_dates.append(prices.index[i])
                 score_values.append(float(score))
@@ -2684,6 +2779,9 @@ class MainWindow(QMainWindow):
                     domaine=original_domaine,
                     cap_range=original_cap_range,
                     symbol=symbol,
+                    seuil_achat=seuil_achat,
+                    seuil_vente=seuil_vente,
+                    price_extras=price_extras,
                     return_derivatives=True,
                 )
                 score_dates.append(prices.index[-1])
@@ -2720,7 +2818,7 @@ class MainWindow(QMainWindow):
                 
                 # 🔍 Debug log pour tracer les seuils utilisés
                 if domaine in ['Real Estate', 'Utilities'] or (cap_range and cap_range != 'Unknown'):
-                    print(f"✅ SEUILS: cap_range={cap_range}, key={selected_key} → buy={buy_thr:.2f}, sell={sell_thr:.2f}")
+                    self._debug_log(f"✅ SEUILS: cap_range={cap_range}, key={selected_key} → buy={buy_thr:.2f}, sell={sell_thr:.2f}")
                 
                 return buy_thr, sell_thr
         except Exception as e:
@@ -2733,8 +2831,8 @@ class MainWindow(QMainWindow):
         precomp = precomp or {}
         events = events or []
 
-        fig = Figure(figsize=(10, 7.2))
-        gs = fig.add_gridspec(2, 1, height_ratios=[3.0, 1.2], hspace=0.18)
+        fig = Figure(figsize=(10, 8.4))
+        gs = fig.add_gridspec(2, 1, height_ratios=[3.2, 1.25], hspace=0.20)
         ax_main = fig.add_subplot(gs[0, 0])
         ax_score = fig.add_subplot(gs[1, 0], sharex=ax_main)
 
@@ -2758,13 +2856,16 @@ class MainWindow(QMainWindow):
             elif ev.get('type') == 'SELL':
                 ax_main.scatter(ev['date'], ev['price'], marker='v', s=80, color='red', edgecolor='black', zorder=6)
 
-        score_dates, score_values = self._compute_score_series(
-            prices,
-            volumes,
-            domaine=precomp.get('domaine', 'Inconnu'),
-            cap_range=precomp.get('cap_range'),
-            symbol=sym,
-        )
+        score_dates = precomp.get('score_dates') or []
+        score_values = precomp.get('score_values') or []
+        if not score_dates or not score_values:
+            score_dates, score_values = self._compute_score_series(
+                prices,
+                volumes,
+                domaine=precomp.get('domaine', 'Inconnu'),
+                cap_range=precomp.get('cap_range'),
+                symbol=sym,
+            )
         buy_thr, sell_thr = self._get_global_thresholds_for_symbol(
             domaine=precomp.get('domaine', 'Inconnu'),
             cap_range=precomp.get('cap_range'),
@@ -2796,7 +2897,9 @@ class MainWindow(QMainWindow):
         ax_score.xaxis.set_major_formatter(mdates.ConciseDateFormatter(ax_score.xaxis.get_major_locator()))
         ax_score.tick_params(axis='x', labelrotation=0, labelsize=8)
         ax_score.grid(True, alpha=0.25)
-        fig.tight_layout()
+        # Evite le warning Matplotlib avec axes jumeles (plot_unified_chart utilise twinx)
+        # et réserve plus d'espace en haut pour les titres longs.
+        fig.subplots_adjust(left=0.07, right=0.93, top=0.90, bottom=0.08, hspace=0.24)
         return fig
 
 
@@ -2920,7 +3023,7 @@ class MainWindow(QMainWindow):
             
             # Calculer la rentabilité annualisée en % par secteur
             # Capital investi: 50€ par stock
-            period_str = self.period_input.currentData() if hasattr(self, 'period_input') else "12mo"
+            period_str = self.period_input.currentData() if hasattr(self, 'period_input') else "15mo"
             
             # Convertir la période en années
             if 'y' in period_str:

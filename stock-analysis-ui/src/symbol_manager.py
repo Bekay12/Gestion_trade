@@ -139,15 +139,42 @@ def sync_txt_to_sqlite(txt_file: str, list_type: str = 'popular', force_refresh:
             # Vérifier si le symbole existe déjà dans la DB (avec OU sans métadonnées)
             if not force_refresh:
                 cursor.execute('''
-                    SELECT sector, market_cap_range, market_cap_value 
+                    SELECT sector, market_cap_range, market_cap_value, last_checked
                     FROM symbols 
                     WHERE symbol = ?
                 ''', (symbol,))
                 existing = cursor.fetchone()
                 
                 if existing:
-                    # ✅ Le symbole existe déjà en DB — ne PAS re-fetcher même si sector='Unknown'
-                    # (ETFs, futures, cryptos n'ont pas de secteur — c'est normal)
+                    sector_db, cap_range_db, cap_value_db, last_checked_db = existing
+
+                    # Si les metadonnees cap sont incomplètes, re-fetch periodique pour eviter
+                    # de garder "Unknown" indefiniment apres import massif.
+                    cap_incomplete = (
+                        (cap_range_db is None or str(cap_range_db).strip() == '' or str(cap_range_db).strip().lower() == 'unknown')
+                        and (cap_value_db is None or float(cap_value_db) <= 0)
+                    )
+                    stale_or_never_checked = (
+                        last_checked_db is None
+                    )
+                    if not stale_or_never_checked and cap_incomplete:
+                        try:
+                            # last_checked est souvent ISO8601; comparaison tolérante coté SQLite
+                            cursor.execute("""
+                                SELECT CASE
+                                    WHEN datetime(?) IS NULL THEN 1
+                                    WHEN datetime(?) <= datetime('now', '-14 days') THEN 1
+                                    ELSE 0
+                                END
+                            """, (last_checked_db, last_checked_db))
+                            stale_or_never_checked = bool(cursor.fetchone()[0])
+                        except Exception:
+                            stale_or_never_checked = True
+
+                    if cap_incomplete and stale_or_never_checked:
+                        needs_fetch.append(symbol)
+
+                    # Garder le symbole actif et rattache a la liste
                     cursor.execute('UPDATE symbols SET is_active = 1 WHERE symbol = ?', (symbol,))
                     cursor.execute('''
                         INSERT OR IGNORE INTO symbol_lists (symbol, list_type)
@@ -510,8 +537,46 @@ def get_symbol_count(list_type: str = None, active_only: bool = True) -> int:
     
     return count
 
+def get_symbol_info_from_db(symbol: str) -> dict:
+    """Récupère les infos d'un symbole depuis la DB cache.
+    
+    Returns:
+        dict avec keys: sector, market_cap_range, market_cap_value (ou vide si not found)
+    """
+    try:
+        conn = sqlite3.connect(DB_PATH)
+        cursor = conn.cursor()
+        cursor.execute(
+            'SELECT sector, market_cap_range, market_cap_value FROM symbols WHERE symbol = ?',
+            (symbol.upper(),)
+        )
+        row = cursor.fetchone()
+        conn.close()
+        
+        if row:
+            sector, cap_range, cap_value = row
+            return {
+                'sector': sector if sector and sector != 'Inconnu' else 'Inconnu',
+                'market_cap_range': cap_range if cap_range else 'Unknown',
+                'market_cap_value': cap_value
+            }
+        return {}
+    except Exception:
+        return {}
+
 def _get_sector_safe(symbol: str) -> str:
-    """Récupère le secteur d'une action avec gestion d'erreur."""
+    """Récupère le secteur depuis le cache DB, avec fallback yfinance.
+    
+    Priorité:
+    1. Database cache (local DB)
+    2. yfinance API (online)
+    """
+    # Essayer la DB d'abord (zéro latence)
+    info = get_symbol_info_from_db(symbol)
+    if info.get('sector') and info['sector'] != 'Inconnu':
+        return info['sector']
+    
+    # Fallback: yfinance
     try:
         ticker = yf.Ticker(symbol)
         sector = ticker.info.get('sector', 'Unknown')
@@ -520,7 +585,18 @@ def _get_sector_safe(symbol: str) -> str:
         return 'Unknown'
 
 def _get_cap_range_safe(symbol: str) -> Tuple[str, float]:
-    """Récupère la gamme de capitalisation et la valeur en milliards."""
+    """Récupère la gamme de capitalisation depuis le cache DB, avec fallback yfinance.
+    
+    Priorité:
+    1. Database cache (local DB)
+    2. yfinance API (online)
+    """
+    # Essayer la DB d'abord (zéro latence)
+    info = get_symbol_info_from_db(symbol)
+    if info.get('market_cap_range') and info['market_cap_range'] != 'Unknown':
+        return info['market_cap_range'], info.get('market_cap_value')
+    
+    # Fallback: yfinance
     try:
         ticker = yf.Ticker(symbol)
         market_cap = ticker.info.get('marketCap')

@@ -121,32 +121,61 @@ double get_trading_signal_score(TechnicalIndicators *indicators, TradingCoeffici
     if (buy_conditions) score += coeffs->a8;
     if (sell_conditions) score -= coeffs->a8;
     
-    // 🚀 PRICE FEATURES (nouveau - identique à Python)
-    if (coeffs->use_price_slope && current_idx >= 10) {
-        // Calcul price_slope_rel = (prix_actuel - prix_10j) / prix_10j
-        double price_10d_ago = prices[current_idx - 10];
-        if (price_10d_ago > 0) {
-            double price_slope_rel = (last_close - price_10d_ago) / price_10d_ago;
-            if (price_slope_rel > coeffs->th_price_slope) {
-                score += coeffs->a_price_slope;
-            } else if (price_slope_rel < -coeffs->th_price_slope) {
-                score -= coeffs->a_price_slope;
+    // 🚀 PRICE FEATURES (fenêtres homogènes 10j, Var5j conservé)
+    if (coeffs->use_price_extras) {
+        if (current_idx >= 10) {
+            double price_10d_ago = prices[current_idx - 10];
+            if (price_10d_ago > 0) {
+                double price_slope_rel = (last_close - price_10d_ago) / price_10d_ago;
+                if (price_slope_rel > coeffs->th_price_slope) {
+                    score += coeffs->a_price_slope;
+                } else {
+                    score -= coeffs->a_price_slope;
+                }
             }
         }
-    }
-    
-    if (coeffs->use_price_acc && current_idx >= 20) {
-        // Calcul price_acc_rel = slope_recent - slope_ancien
-        double price_10d_ago = prices[current_idx - 10];
-        double price_20d_ago = prices[current_idx - 20];
-        if (price_10d_ago > 0 && price_20d_ago > 0) {
-            double slope_recent = (last_close - price_10d_ago) / price_10d_ago;
-            double slope_old = (price_10d_ago - price_20d_ago) / price_20d_ago;
-            double price_acc_rel = slope_recent - slope_old;
-            if (price_acc_rel > coeffs->th_price_acc) {
-                score += coeffs->a_price_acc;
-            } else if (price_acc_rel < -coeffs->th_price_acc) {
-                score -= coeffs->a_price_acc;
+
+        if (current_idx >= 20) {
+            double price_10d_ago = prices[current_idx - 10];
+            double price_20d_ago = prices[current_idx - 20];
+            if (price_10d_ago > 0 && price_20d_ago > 0) {
+                double slope_recent = (last_close - price_10d_ago) / price_10d_ago;
+                double slope_old = (price_10d_ago - price_20d_ago) / price_20d_ago;
+                double price_acc_rel = slope_recent - slope_old;
+                if (price_acc_rel > coeffs->th_price_acc) {
+                    score += coeffs->a_price_acc;
+                } else {
+                    score -= coeffs->a_price_acc;
+                }
+            }
+        }
+
+        if (current_idx >= 10) {
+            double rsi_now = indicators->rsi[current_idx];
+            double rsi_10d_ago = indicators->rsi[current_idx - 10];
+            double price_rsi_slope_rel = (rsi_now - rsi_10d_ago) / (fabs(rsi_10d_ago) > 1e-9 ? fabs(rsi_10d_ago) : 1.0);
+            if (price_rsi_slope_rel > coeffs->th_price_rsi_slope) {
+                score += coeffs->a_price_rsi_slope;
+            } else {
+                score -= coeffs->a_price_rsi_slope;
+            }
+
+            double vol_now = volumes[current_idx];
+            double vol_10d_ago = volumes[current_idx - 10];
+            double price_vol_slope_rel = (vol_now - vol_10d_ago) / (fabs(vol_10d_ago) > 1e-9 ? fabs(vol_10d_ago) : 1.0);
+            if (price_vol_slope_rel > coeffs->th_price_vol_slope) {
+                score += coeffs->a_price_vol_slope;
+            } else {
+                score -= coeffs->a_price_vol_slope;
+            }
+        }
+
+        if (current_idx >= 5 && prices[current_idx - 5] > 0.0) {
+            double var5j_pct = ((last_close - prices[current_idx - 5]) / prices[current_idx - 5]) * 100.0;
+            if (var5j_pct > coeffs->th_price_var5j) {
+                score += coeffs->a_price_var5j;
+            } else {
+                score -= coeffs->a_price_var5j;
             }
         }
     }
@@ -218,7 +247,7 @@ BacktestResult backtest_symbol_c(double *prices, double *volumes, int length,
     int position_open = 0;
     double entry_price = 0.0;
     int entry_idx = -1;
-    int last_exit_idx = -1000000;
+    int last_exit_idx = -100000;
     double *gains = malloc(length * sizeof(double));
     int gain_count = 0;
     double *portfolio_values = malloc(length * sizeof(double));

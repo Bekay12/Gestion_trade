@@ -190,7 +190,16 @@ def extract_best_parameters(db_path: str = None) -> Dict[str, Tuple[Tuple[float,
         cursor.execute("PRAGMA table_info(optimization_runs)")
         colnames = {row[1] for row in cursor.fetchall()}
 
-        cursor.execute('''
+        optional_price_cols = [
+            'a16', 'a17', 'a18',
+            'th16', 'th17', 'th18',
+            'use_price_extras',
+        ]
+        optional_price_select = ",\n                ".join(
+            [col if col in colnames else f"NULL AS {col}" for col in optional_price_cols]
+        )
+
+        cursor.execute(f'''
             SELECT 
                 sector,
                 COALESCE(market_cap_range, 'Unknown') AS market_cap_range,
@@ -199,6 +208,7 @@ def extract_best_parameters(db_path: str = None) -> Dict[str, Tuple[Tuple[float,
                 th1, th2, th3, th4, th5, th6, th7, th8,
                 seuil_achat, seuil_vente,
                 a9, a10, th9, th10, use_price_slope, use_price_acc,
+                {optional_price_select},
                 a11, a12, a13, a14, a15, th11, th12, th13, th14, th15, use_fundamentals,
                 timestamp
             FROM optimization_runs
@@ -242,12 +252,19 @@ def extract_best_parameters(db_path: str = None) -> Dict[str, Tuple[Tuple[float,
                     return default
 
             price_extras = {
-                'use_price_slope': _read_int('use_price_slope', 0),
-                'use_price_acc': _read_int('use_price_acc', 0),
+                'use_price_extras': _read_int('use_price_extras', 0) or int(any(_read_int(col, 0) for col in (
+                    'use_price_slope', 'use_price_acc', 'use_price_rsi_slope', 'use_price_vol_slope', 'use_price_var5j'
+                ))),
                 'a_price_slope': _read_num('a9', 0.0),
                 'a_price_acc': _read_num('a10', 0.0),
                 'th_price_slope': _read_num('th9', 0.0),
                 'th_price_acc': _read_num('th10', 0.0),
+                'a_price_rsi_slope': _read_num('a16', 0.0),
+                'a_price_vol_slope': _read_num('a17', 0.0),
+                'a_price_var5j': _read_num('a18', 0.0),
+                'th_price_rsi_slope': _read_num('th16', 0.0),
+                'th_price_vol_slope': _read_num('th17', 0.0),
+                'th_price_var5j': _read_num('th18', 0.0),
             }
             
             # Extract fundamentals extras (optional, defaults to 0 if not present)
@@ -335,7 +352,7 @@ def backtest_signals_c_extended(prices: Union[pd.Series, pd.DataFrame], volumes:
             symbol_name=symbol_name
         )
         return result_dict
-    
+
     try:
         # Nettoyage des données
         clean_prices = prices.fillna(method='ffill').fillna(method='bfill')
@@ -345,25 +362,35 @@ def backtest_signals_c_extended(prices: Union[pd.Series, pd.DataFrame], volumes:
         volumes_array = np.array(clean_volumes.values, dtype=np.float64)
         
         # Construction du tuple étendu pour C
-        # Format: (a1-a8, buy_th, sell_th, price_features[6], fund_features[11], fund_metrics[5])
+        # Format: (a1-a8, buy_th, sell_th, price_features[11], fund_features[11], fund_metrics[5])
         
         # Base: 8 coeffs + 2 seuils
         extended_tuple = list(coeffs[:8]) + [seuil_achat, seuil_vente]
         
-        # Price features (indices 10-15)
+        # Price features (indices 10-20)
         if price_extras:
+            use_price_extras = int(price_extras.get('use_price_extras', 0) or 0)
+            if not use_price_extras:
+                use_price_extras = int(any(int(price_extras.get(k, 0) or 0) for k in (
+                    'use_price_slope', 'use_price_acc', 'use_price_rsi_slope', 'use_price_vol_slope', 'use_price_var5j'
+                )))
             extended_tuple.extend([
-                int(price_extras.get('use_price_slope', 0)),
-                int(price_extras.get('use_price_acc', 0)),
+                use_price_extras,
                 float(price_extras.get('a_price_slope', 0.0)),
                 float(price_extras.get('a_price_acc', 0.0)),
                 float(price_extras.get('th_price_slope', 0.0)),
                 float(price_extras.get('th_price_acc', 0.0)),
+                float(price_extras.get('a_price_rsi_slope', 0.0)),
+                float(price_extras.get('a_price_vol_slope', 0.0)),
+                float(price_extras.get('a_price_var5j', 0.0)),
+                float(price_extras.get('th_price_rsi_slope', 0.0)),
+                float(price_extras.get('th_price_vol_slope', 0.0)),
+                float(price_extras.get('th_price_var5j', 0.0)),
             ])
         else:
-            extended_tuple.extend([0, 0, 0.0, 0.0, 0.0, 0.0])
+            extended_tuple.extend([0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0])
         
-        # Fundamentals features (indices 16-26)
+        # Fundamentals features (indices 21-31)
         if fundamentals_extras:
             extended_tuple.extend([
                 int(fundamentals_extras.get('use_fundamentals', 0)),
@@ -381,7 +408,7 @@ def backtest_signals_c_extended(prices: Union[pd.Series, pd.DataFrame], volumes:
         else:
             extended_tuple.extend([0, 0.0, 0.0, 0.0, 0.0, 0.0, 10.0, 10.0, 15.0, 5.0, 1.0])
         
-        # Métriques fondamentales réelles (indices 27-31)
+        # Métriques fondamentales réelles (indices 32-36)
         if fundamentals_extras and fundamentals_extras.get('use_fundamentals', 0) and symbol_name:
             try:
                 from fundamentals_cache import get_fundamental_metrics
@@ -570,6 +597,8 @@ def backtest_signals_with_events(prices, volumes, domaine, montant=50, transacti
     # 🚀 PRÉ-CALCULER tous les signaux une seule fois (OPTIMISATION MAJEURE)
     signals = []
     prices_vals = []
+    score_dates = []
+    score_values = []
     
     # ── Point-in-time (PIT) fondamentaux : charger tous les trimestres + annuels une seule fois ──
     use_fund = int(fundamentals_extras.get('use_fundamentals', 0)) if fundamentals_extras else 0
@@ -635,29 +664,38 @@ def backtest_signals_with_events(prices, volumes, domaine, montant=50, transacti
                     pit_timeline_data = timeline_cache_instance.get_pit_timeline_data(symbol_name, bar_date)
                     _timeline_pit_cache[bar_date] = pit_timeline_data
 
-            sig, last_close, _, _, _, _, _ = qsi_get_trading_signal(
+            sig, last_close, _, _, _, score_val, _ = qsi_get_trading_signal(
                 prices.iloc[:i+1], volumes.iloc[:i+1], domaine,
                 domain_coeffs=domain_coeffs, domain_thresholds=domain_thresholds,
                 cap_range=cap_range, price_extras=extra_params, fundamentals_extras=fundamentals_extras,
+                seuil_achat=seuil_achat, seuil_vente=seuil_vente,
                 timeline_extras=pit_timeline_data,
                 symbol=symbol_name, fin_data_override=pit_fin_data
             )
             signals.append(sig)
             prices_vals.append(last_close)
+            score_dates.append(prices.index[i])
+            score_values.append(float(score_val) if score_val is not None else 0.0)
         except TypeError:
             # older signature without fin_data_override
             try:
-                sig, last_close, _, _, _, _, _ = qsi_get_trading_signal(
+                sig, last_close, _, _, _, score_val, _ = qsi_get_trading_signal(
                     prices.iloc[:i+1], volumes.iloc[:i+1], domaine, domain_coeffs=domain_coeffs
                 )
                 signals.append(sig)
                 prices_vals.append(last_close)
+                score_dates.append(prices.index[i])
+                score_values.append(float(score_val) if score_val is not None else 0.0)
             except Exception:
                 signals.append('NEUTRE')
                 prices_vals.append(float(prices.iloc[i]))
+                score_dates.append(prices.index[i])
+                score_values.append(0.0)
         except Exception:
             signals.append('NEUTRE')
             prices_vals.append(float(prices.iloc[i]))
+            score_dates.append(prices.index[i])
+            score_values.append(0.0)
 
     # 🚀 Backtest rapide sur les signaux pré-calculés
     position = 0
@@ -718,7 +756,9 @@ def backtest_signals_with_events(prices, volumes, domaine, montant=50, transacti
         "taux_reussite": taux_reussite,
         "gain_total": gain_total,
         "gain_moyen": gain_moyen,
-        "drawdown_max": drawdown_max
+        "drawdown_max": drawdown_max,
+        "score_dates": score_dates,
+        "score_values": score_values,
     }
     
     return result, events
