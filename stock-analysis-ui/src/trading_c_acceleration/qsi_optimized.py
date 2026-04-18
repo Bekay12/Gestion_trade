@@ -35,6 +35,12 @@ _module_dir = os.path.dirname(os.path.abspath(__file__))
 if _module_dir not in sys.path:
     sys.path.insert(0, _module_dir)
 
+
+def _is_c_acceleration_disabled() -> bool:
+    """Allow forcing Python fallback to avoid native crashes in specific runtimes."""
+    val = str(os.environ.get('QSI_DISABLE_C_ACCELERATION', '')).strip().lower()
+    return val in {'1', 'true', 'yes', 'on'}
+
 def _diagnose_import(module_name: str):
     """Tentative d'import et diagnostic si échec."""
     try:
@@ -74,11 +80,15 @@ def _diagnose_import(module_name: str):
         return None, False
 
 
-# Try import with diagnostics
-trading_c, C_ACCELERATION = _diagnose_import('trading_c')
-if not C_ACCELERATION:
-    print("⚠️ Module C non disponible - Mode Python standard")
-    print("   Compilez avec: python setup.py build_ext --inplace")
+# Try import with diagnostics (unless explicitly disabled)
+if _is_c_acceleration_disabled():
+    trading_c, C_ACCELERATION = None, False
+    print("⚠️ Accélération C désactivée via QSI_DISABLE_C_ACCELERATION=1")
+else:
+    trading_c, C_ACCELERATION = _diagnose_import('trading_c')
+    if not C_ACCELERATION:
+        print("⚠️ Module C non disponible - Mode Python standard")
+        print("   Compilez avec: python setup.py build_ext --inplace")
 
 warnings.filterwarnings("ignore", category=FutureWarning)
 logging.basicConfig(level=logging.INFO, filename='stock_analysis.log', filemode='a', format='%(asctime)s - %(levelname)s - %(message)s')

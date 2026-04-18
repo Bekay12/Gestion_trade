@@ -1479,28 +1479,28 @@ def optimize_sector_coefficients_hybrid(
 
     if  strategy == 'genetic': # or strategy == 'hybrid':
         # Algorithmes génétiques - 🔧 Augmenter max pop_size selon budget
-        pop_size = min(100, adjusted_budget // 20)  # Max 100 au lieu de 50
-        generations = min(50, adjusted_budget // pop_size)  # Generations aussi augmentées
+        pop_size = min(300, adjusted_budget // 20)  # Max 300 au lieu de 100
+        generations = min(100, adjusted_budget // pop_size)  # Generations aussi augmentées
         params_ga, score_ga = optimizer.genetic_algorithm(pop_size, generations)
         results.append(('Genetic Algorithm', params_ga, score_ga))
 
     if strategy == 'hybrid' or strategy == 'differential':
         # Évolution différentielle - 🔧 Augmenter max pop_size selon budget
-        pop_size = min(90, adjusted_budget // 25)  # Max 90 au lieu de 45
-        max_iter = min(100, adjusted_budget // pop_size)
+        pop_size = min(200, adjusted_budget // 25)  # Max 200 au lieu de 90
+        max_iter = min(200, adjusted_budget // pop_size)
         params_de, score_de = optimizer.differential_evolution_opt(pop_size, max_iter)
         results.append(('Differential Evolution', params_de, score_de))
 
     if strategy == 'hybrid' or strategy == 'pso':
         # PSO - 🔧 Augmenter max particules selon budget
-        n_particles = min(50, adjusted_budget // 30)  # Max 50 au lieu de 30
-        max_iter = min(100, adjusted_budget // n_particles)
+        n_particles = min(100, adjusted_budget // 30)  # Max 100 au lieu de 50
+        max_iter = min(120, adjusted_budget // n_particles)
         params_pso, score_pso = optimizer.particle_swarm_optimization(n_particles, max_iter)
         results.append(('PSO', params_pso, score_pso))
 
     if strategy == 'hybrid' or strategy == 'lhs':
         # Latin Hypercube Sampling - 🔧 Utiliser pleinement le budget
-        n_samples = min(500, adjusted_budget // 2)  # Max 500 au lieu de 200
+        n_samples = min(1200, adjusted_budget // 2)  # Max 1200 au lieu de 500
         params_lhs, score_lhs = optimizer.latin_hypercube_sampling(n_samples)
         results.append(('Latin Hypercube', params_lhs, score_lhs))
 

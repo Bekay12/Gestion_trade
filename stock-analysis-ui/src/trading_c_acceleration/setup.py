@@ -4,12 +4,26 @@ import sys
 import os
 
 # Configuration pour différents OS
+# DEBUG MODE: Compiler avec flags de debug et AddressSanitizer pour détecter les erreurs mémoire
+DEBUG_MODE = os.environ.get('QSI_DEBUG_C_MODE', '0') == '1'
+USE_ASAN = os.environ.get('QSI_USE_ASAN', '0') == '1'
+
 if sys.platform.startswith('win'):
     extra_compile_args = ['/O2', '/fp:fast']
     extra_link_args = []
 else:  # Linux/Mac
-    extra_compile_args = ['-O3', '-march=native', '-ffast-math', '-funroll-loops']
-    extra_link_args = ['-O3']
+    if DEBUG_MODE:
+        # Compilation debug: priorité à la lisibilité du stack trace
+        extra_compile_args = ['-g', '-O0', '-fno-omit-frame-pointer']
+        extra_link_args = ['-g']
+        if USE_ASAN:
+            extra_compile_args.append('-fsanitize=address')
+            extra_link_args.append('-fsanitize=address')
+        print("⚠️  DEBUG MODE ACTIF: Compilation avec symbols de debug et ASan")
+    else:
+        # Compilation optimisée (production)
+        extra_compile_args = ['-O3', '-march=native', '-ffast-math', '-funroll-loops']
+        extra_link_args = ['-O3']
 
 # Extension C pour l'optimisation de trading
 trading_extension = Extension(

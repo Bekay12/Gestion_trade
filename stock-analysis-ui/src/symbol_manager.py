@@ -170,9 +170,14 @@ def sync_txt_to_sqlite(txt_file: str, list_type: str = 'popular', force_refresh:
 
                     # Si les metadonnees cap sont incomplètes, re-fetch periodique pour eviter
                     # de garder "Unknown" indefiniment apres import massif.
+                    cap_range_unknown = (
+                        cap_range_db is None
+                        or str(cap_range_db).strip() == ''
+                        or str(cap_range_db).strip().lower() == 'unknown'
+                    )
+                    cap_value_missing = (cap_value_db is None or float(cap_value_db) <= 0)
                     cap_incomplete = (
-                        (cap_range_db is None or str(cap_range_db).strip() == '' or str(cap_range_db).strip().lower() == 'unknown')
-                        and (cap_value_db is None or float(cap_value_db) <= 0)
+                        cap_range_unknown or cap_value_missing
                     )
                     stale_or_never_checked = (
                         last_checked_db is None
@@ -222,6 +227,10 @@ def sync_txt_to_sqlite(txt_file: str, list_type: str = 'popular', force_refresh:
                 sector = _get_sector_safe(symbol)
                 cap_range, market_cap = _get_cap_range_safe(symbol)
                 currency = _get_currency_safe(symbol)
+
+                # Backfill: si seule la market cap est connue, dériver la tranche.
+                if (not cap_range or str(cap_range).strip().lower() == 'unknown') and market_cap and float(market_cap) > 0:
+                    cap_range = classify_cap_range(float(market_cap))
                 
                 # Insérer ou mettre à jour les métadonnées du symbole
                 cursor.execute('''
@@ -237,7 +246,16 @@ def sync_txt_to_sqlite(txt_file: str, list_type: str = 'popular', force_refresh:
                 ''', (symbol, list_type))
                 added += 1
             except Exception:
-                pass
+                # Même si l'enrichissement distant échoue, garder une ligne cohérente en DB.
+                cursor.execute('''
+                    INSERT OR IGNORE INTO symbols 
+                    (symbol, sector, market_cap_range, market_cap_value, currency, last_checked, is_active)
+                    VALUES (?, ?, ?, ?, ?, ?, 1)
+                ''', (symbol, 'Unknown', 'Unknown', 0.0, 'USD', datetime.now().isoformat()))
+                cursor.execute('''
+                    INSERT OR IGNORE INTO symbol_lists (symbol, list_type)
+                    VALUES (?, ?)
+                ''', (symbol, list_type))
     
     # ✅ CORRIGÉ: Supprimer de la liste SQLite les symboles qui ne sont plus dans le fichier txt
     # (sinon les symboles supprimés par l'utilisateur reviennent au redémarrage)
@@ -578,9 +596,15 @@ def get_symbol_info_from_db(symbol: str) -> dict:
         
         if row:
             sector, cap_range, cap_value, currency = row
+            inferred_cap_range = cap_range if cap_range else 'Unknown'
+            try:
+                if (not inferred_cap_range or str(inferred_cap_range).lower() == 'unknown') and cap_value and float(cap_value) > 0:
+                    inferred_cap_range = classify_cap_range(float(cap_value))
+            except Exception:
+                inferred_cap_range = cap_range if cap_range else 'Unknown'
             return {
                 'sector': sector if sector and sector != 'Inconnu' else 'Inconnu',
-                'market_cap_range': cap_range if cap_range else 'Unknown',
+                'market_cap_range': inferred_cap_range,
                 'market_cap_value': cap_value,
                 'currency': currency if currency else 'USD'
             }
@@ -625,6 +649,9 @@ def _get_cap_range_safe(symbol: str) -> Tuple[str, float]:
         ticker = yf.Ticker(symbol)
         info = ticker.info or {}
         market_cap = info.get('marketCap')
+        # Pour certains fonds/ETF, marketCap est absent mais totalAssets est disponible.
+        if market_cap is None:
+            market_cap = info.get('totalAssets')
         if market_cap is None:
             return 'Unknown', None
 

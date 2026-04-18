@@ -5,9 +5,14 @@ from PyQt5.QtWidgets import (
     QTableWidgetItem, QComboBox, QHeaderView, QSpinBox, QCheckBox, QTabWidget, QTextEdit
 )
 from PyQt5.QtWidgets import QAbstractItemView
-from PyQt5.QtCore import QThread, pyqtSignal, Qt
+from PyQt5.QtCore import QThread, pyqtSignal, Qt, QObject, QTimer
 from PyQt5.QtGui import QColor
 import io
+import base64
+import pickle
+import json
+import tempfile
+import textwrap
 from matplotlib.backends.backend_qt5agg import FigureCanvasQTAgg as FigureCanvas
 from matplotlib.figure import Figure
 from matplotlib import dates as mdates
@@ -15,6 +20,10 @@ from concurrent.futures import ThreadPoolExecutor, TimeoutError as FuturesTimeou
 import sys
 import os
 import math
+import traceback
+import threading
+import subprocess
+import faulthandler
 from datetime import datetime
 import pandas as pd
 import yfinance as yf
@@ -23,10 +32,70 @@ import yfinance as yf
 PROJECT_SRC = os.path.abspath(os.path.join(os.path.dirname(__file__), '..'))
 if PROJECT_SRC not in sys.path:
     sys.path.insert(0, PROJECT_SRC)
+
+# Segfault mitigation: force Python backtest path in desktop UI unless user overrides.
+os.environ.setdefault('QSI_DISABLE_C_ACCELERATION', '1')
+# Segfault mitigation: avoid curl_cffi/yfinance recommendation fetches in desktop callbacks.
+os.environ.setdefault('QSI_CONSENSUS_OFFLINE', '1')
+# Stability mitigation: run heavy analysis in a subprocess to isolate native teardown.
+os.environ.setdefault('QSI_ANALYSIS_SUBPROCESS', '1')
+
 from qsi import analyse_signaux_populaires, analyse_et_affiche, load_symbols_from_txt, period
 from qsi import download_stock_data, backtest_signals, plot_unified_chart, get_trading_signal, resolve_symbol_scoring_context
 import qsi
 from trading_c_acceleration.qsi_optimized import extract_best_parameters
+
+
+_CRASH_LOG_FILE = None
+
+
+def _install_runtime_diagnostics():
+    """Installe des hooks pour capturer les crashs/erreurs non gérées dans un fichier."""
+    global _CRASH_LOG_FILE
+    if _CRASH_LOG_FILE is not None:
+        return
+
+    try:
+        logs_dir = os.path.abspath(os.path.join(os.path.dirname(__file__), '..', '..', 'cache_logs'))
+        os.makedirs(logs_dir, exist_ok=True)
+        log_path = os.path.join(logs_dir, 'desktop_runtime_crash.log')
+        _CRASH_LOG_FILE = open(log_path, 'a', encoding='utf-8', buffering=1)
+        _CRASH_LOG_FILE.write("\n\n=== Session start: " + datetime.now().isoformat() + " ===\n")
+    except Exception:
+        _CRASH_LOG_FILE = None
+        return
+
+    old_excepthook = sys.excepthook
+
+    def _log_exception(exc_type, exc_value, exc_tb):
+        try:
+            _CRASH_LOG_FILE.write("\n[Unhandled exception]\n")
+            traceback.print_exception(exc_type, exc_value, exc_tb, file=_CRASH_LOG_FILE)
+            _CRASH_LOG_FILE.flush()
+        except Exception:
+            pass
+        old_excepthook(exc_type, exc_value, exc_tb)
+
+    sys.excepthook = _log_exception
+
+    if hasattr(threading, 'excepthook'):
+        old_thread_excepthook = threading.excepthook
+
+        def _thread_excepthook(args):
+            try:
+                _CRASH_LOG_FILE.write(f"\n[Unhandled thread exception] thread={getattr(args.thread, 'name', 'unknown')}\n")
+                traceback.print_exception(args.exc_type, args.exc_value, args.exc_traceback, file=_CRASH_LOG_FILE)
+                _CRASH_LOG_FILE.flush()
+            except Exception:
+                pass
+            old_thread_excepthook(args)
+
+        threading.excepthook = _thread_excepthook
+
+    try:
+        faulthandler.enable(file=_CRASH_LOG_FILE, all_threads=True)
+    except Exception:
+        pass
 
 try:
     from symbol_manager import get_symbols_by_list_type, get_recent_symbols, get_symbol_info_from_db
@@ -46,8 +115,24 @@ def _fetch_yf_info_with_timeout(symbol: str, timeout_sec: float = 2.0) -> dict:
     except (FuturesTimeoutError, Exception):
         return {}
     finally:
-        future.cancel()
-        executor.shutdown(wait=False, cancel_futures=True)
+        executor.shutdown(wait=True, cancel_futures=False)
+
+
+def _is_valid_ticker_info(symbol: str, info: dict) -> bool:
+    """Vérifie si un ticker a au moins des données de prix dans yfinance.info."""
+    # Cherche des indicateurs qu'il y a des prix réelles (pas de ticker invalide/délisté)
+    try:
+        # Un ticker valide doit avoir au minimum un prix ou une cap de marché
+        has_market_price = info.get('regularMarketPrice') is not None or \
+                          info.get('currentPrice') is not None or \
+                          info.get('lastPrice') is not None
+        has_market_cap = info.get('marketCap') is not None or \
+                        info.get('totalAssets') is not None
+        has_symbol = info.get('symbol') == symbol
+        
+        return bool(has_symbol and (has_market_price or has_market_cap))
+    except Exception:
+        return False
 
 
 def _get_sector_cache_first(symbol: str) -> str:
@@ -79,10 +164,118 @@ def _get_sector_cache_first(symbol: str) -> str:
     return sector if sector else 'Inconnu'
 
 
-class AnalysisThread(QThread):
-    finished = pyqtSignal(dict)
+def _run_analysis_in_subprocess(symbols, mes_symbols, period_value, fiab_threshold, min_holding_days):
+    """Run analyse_signaux_populaires in a separate Python process.
+
+    This isolates sqlite/native object lifetimes from the GUI process and avoids
+    intermittent thread-state teardown crashes.
+    """
+    payload = {
+        'symbols': symbols,
+        'mes_symbols': mes_symbols,
+        'period': period_value,
+        'fiab_threshold': int(fiab_threshold),
+        'min_holding_days': int(min_holding_days),
+    }
+
+    in_path = None
+    out_path = None
+    try:
+        with tempfile.NamedTemporaryFile(mode='w', suffix='_analysis_in.json', delete=False, encoding='utf-8') as f_in:
+            json.dump(payload, f_in)
+            in_path = f_in.name
+
+        with tempfile.NamedTemporaryFile(mode='wb', suffix='_analysis_out.pkl', delete=False) as f_out:
+            out_path = f_out.name
+
+        runner_code = textwrap.dedent(
+            """
+            import json
+            import pickle
+            import traceback
+            import sys
+
+            from qsi import analyse_signaux_populaires
+
+            in_file = sys.argv[1]
+            out_file = sys.argv[2]
+
+            try:
+                with open(in_file, 'r', encoding='utf-8') as f:
+                    payload = json.load(f)
+
+                result = analyse_signaux_populaires(
+                    payload['symbols'],
+                    payload['mes_symbols'],
+                    period=payload['period'],
+                    afficher_graphiques=False,
+                    plot_all=False,
+                    verbose=True,
+                    taux_reussite_min=payload['fiab_threshold'],
+                    min_holding_days=payload['min_holding_days'],
+                )
+
+                with open(out_file, 'wb') as f:
+                    pickle.dump({'ok': True, 'result': result}, f, protocol=pickle.HIGHEST_PROTOCOL)
+            except Exception as e:
+                with open(out_file, 'wb') as f:
+                    pickle.dump(
+                        {
+                            'ok': False,
+                            'error': str(e),
+                            'traceback': traceback.format_exc(),
+                        },
+                        f,
+                        protocol=pickle.HIGHEST_PROTOCOL,
+                    )
+            """
+        )
+
+        child_env = os.environ.copy()
+        child_env['PYTHONPATH'] = PROJECT_SRC + os.pathsep + child_env.get('PYTHONPATH', '')
+        # Keep C acceleration disabled in child to avoid known native instability.
+        child_env['QSI_DISABLE_C_ACCELERATION'] = '1'
+        child_env['QSI_CONSENSUS_OFFLINE'] = '1'
+
+        completed = subprocess.run(
+            [sys.executable, '-X', 'faulthandler', '-c', runner_code, in_path, out_path],
+            cwd=PROJECT_SRC,
+            env=child_env,
+            check=False,
+        )
+
+        if completed.returncode != 0:
+            raise RuntimeError(f"Sous-processus d'analyse terminé avec code {completed.returncode}")
+
+        with open(out_path, 'rb') as f:
+            result_payload = pickle.load(f)
+
+        if not result_payload.get('ok'):
+            err = result_payload.get('error', 'Erreur inconnue')
+            tb = result_payload.get('traceback', '')
+            raise RuntimeError(f"Analyse subprocess échouée: {err}\n{tb}")
+
+        return result_payload.get('result', {})
+    finally:
+        for p in (in_path, out_path):
+            if not p:
+                continue
+            try:
+                os.remove(p)
+            except Exception:
+                pass
+
+
+class AnalysisWorker(QObject):
+    """Worker QObject executed inside a native QThread.
+
+    This avoids overriding QThread.run() in Python, which can destabilize
+    SIP/PyQt teardown in long-running mixed Python/native workloads.
+    """
+    result_ready = pyqtSignal(dict)
     error = pyqtSignal(str)
     progress = pyqtSignal(str)
+    finished = pyqtSignal()
 
     def __init__(self, symbols, mes_symbols, period="12mo", analysis_id=0, min_holding_days=7):
         super().__init__()
@@ -90,31 +283,27 @@ class AnalysisThread(QThread):
         self.mes_symbols = mes_symbols
         self.period = period
         self._stop_requested = False
-        self.analysis_id = analysis_id  # 🔧 Identifiant d'analyse
+        self.analysis_id = analysis_id
         self.min_holding_days = max(1, int(min_holding_days))
 
-    def run(self):
+    def process(self):
         try:
-            import builtins
-            original_print = print
+            self.progress.emit("Analyse en cours...")
+            if self._stop_requested:
+                return
 
-            def custom_print(*args, **kwargs):
-                message = ' '.join(str(arg) for arg in args)
-                self.progress.emit(message)
-                kwargs_with_flush = dict(kwargs)
-                kwargs_with_flush.setdefault('flush', True)
-                original_print(*args, **kwargs_with_flush)
-
-            builtins.print = custom_print
-
-            while not self._stop_requested:
-                fiab_threshold = 30
-                try:
-                    if hasattr(self, 'parent') and hasattr(self.parent(), 'fiab_threshold_spin'):
-                        fiab_threshold = self.parent().fiab_threshold_spin.value()
-                except Exception:
-                    pass
-
+            fiab_threshold = 30
+            use_subprocess = os.environ.get('QSI_ANALYSIS_SUBPROCESS', '1') == '1'
+            if use_subprocess:
+                self.progress.emit("Analyse isolée dans un sous-processus...")
+                result = _run_analysis_in_subprocess(
+                    self.symbols,
+                    self.mes_symbols,
+                    self.period,
+                    fiab_threshold,
+                    self.min_holding_days,
+                )
+            else:
                 result = analyse_signaux_populaires(
                     self.symbols,
                     self.mes_symbols,
@@ -125,132 +314,132 @@ class AnalysisThread(QThread):
                     taux_reussite_min=fiab_threshold,
                     min_holding_days=self.min_holding_days,
                 )
-                if not self._stop_requested:
-                    result['_analysis_id'] = self.analysis_id
-                    self.finished.emit(result)
-                break
+            if not self._stop_requested:
+                result['_analysis_id'] = self.analysis_id
+                self.result_ready.emit(result)
         except Exception as e:
             if not self._stop_requested:
                 self.error.emit(str(e))
         finally:
-            try:
-                builtins.print = original_print
-            except Exception:
-                pass
+            self.finished.emit()
 
     def stop(self):
         self._stop_requested = True
 
 
-class DownloadThread(QThread):
-    """Thread to download stock data and run backtests with V2.0 optimized parameters"""
-    finished = pyqtSignal(dict)
+class DownloadWorker(QObject):
+    """Worker QObject for download/backtest executed in a native QThread."""
+    result_ready = pyqtSignal(dict)
     error = pyqtSignal(str)
     progress = pyqtSignal(str)
+    finished = pyqtSignal()
 
-    def __init__(self, symbols, period="12mo", do_backtest=False, analysis_id=0, min_holding_days=7):
+    def __init__(self, symbols, period="12mo", do_backtest=False, analysis_id=0, min_holding_days=7, best_parameters_snapshot=None):
         super().__init__()
         self.symbols = symbols
         self.period = period
         self.do_backtest = do_backtest
         self._stop_requested = False
-        self.analysis_id = analysis_id  # 🔧 Identifiant d'analyse
+        self.analysis_id = analysis_id
         self.min_holding_days = max(1, int(min_holding_days))
+        self.best_parameters_snapshot = best_parameters_snapshot or {}
 
-    def run(self):
+    def process(self):
         try:
-            original_print = print
+            self.progress.emit("Téléchargement des données...")
 
-            def custom_print(*args, **kwargs):
-                message = ' '.join(str(arg) for arg in args)
-                self.progress.emit(message)
-                kwargs_with_flush = dict(kwargs)
-                kwargs_with_flush.setdefault('flush', True)
-                original_print(*args, **kwargs_with_flush)
+            if self._stop_requested:
+                return
 
-            import builtins
-            builtins.print = custom_print
+            data = download_stock_data(self.symbols, self.period)
+            result = {'data': data}
 
-            try:
-                if self._stop_requested:
-                    return
+            if self._stop_requested:
+                return
 
-                data = download_stock_data(self.symbols, self.period)
-                result = {'data': data}
+            if self.do_backtest and data:
+                backtests = []
+                best_params_cached = self.best_parameters_snapshot or {}
+                for symbol, stock_data in data.items():
+                    if self._stop_requested:
+                        return
 
-                if self._stop_requested:
-                    return
+                    try:
+                        prices = stock_data['Close']
+                        volumes = stock_data['Volume']
+                        score_context = resolve_symbol_scoring_context(
+                            symbol,
+                            domaine=_get_sector_cache_first(symbol),
+                            cap_range=stock_data.get('CapRange', 'Unknown') if isinstance(stock_data, dict) else 'Unknown',
+                            best_params=best_params_cached,
+                        )
 
-                if self.do_backtest and data:
-                    backtests = []
-                    for symbol, stock_data in data.items():
-                        if self._stop_requested:
-                            return
+                        coeffs, feature_thresholds, _globals_thresholds, _, _ = score_context['best_params'].get(
+                            score_context['selected_key'] or score_context['domaine'],
+                            (None, None, (4.2, -0.5), None, {}),
+                        )
+                        domain_coeffs = {score_context['domaine']: coeffs} if coeffs else None
 
-                        try:
-                            prices = stock_data['Close']
-                            volumes = stock_data['Volume']
-                            score_context = resolve_symbol_scoring_context(
-                                symbol,
-                                domaine=_get_sector_cache_first(symbol),
-                                cap_range=qsi.get_cap_range_for_symbol(symbol),
-                                best_params=qsi.extract_best_parameters(),
-                            )
+                        bt = backtest_signals(
+                            prices=prices,
+                            volumes=volumes,
+                            domaine=score_context['domaine'],
+                            montant=50,
+                            domain_coeffs=domain_coeffs,
+                            domain_thresholds={score_context['domaine']: feature_thresholds} if feature_thresholds else None,
+                            min_holding_bars=self.min_holding_days,
+                        )
 
-                            coeffs, feature_thresholds, _globals_thresholds, _, _ = score_context['best_params'].get(
-                                score_context['selected_key'] or score_context['domaine'],
-                                (None, None, (4.2, -0.5), None, {}),
-                            )
-                            domain_coeffs = {score_context['domaine']: coeffs} if coeffs else None
+                        if bt.get('trades', 0) == 0:
+                            self.progress.emit(f"  ⚠️ {symbol}: Aucun trade détecté (domaine={score_context['domaine']})")
 
-                            bt = backtest_signals(
-                                prices=prices,
-                                volumes=volumes,
-                                domaine=score_context['domaine'],
-                                montant=50,
-                                domain_coeffs=domain_coeffs,
-                                domain_thresholds={score_context['domaine']: feature_thresholds} if feature_thresholds else None,
-                                min_holding_bars=self.min_holding_days,
-                            )
+                        backtests.append({'Symbole': symbol, **bt})
+                    except Exception as e:
+                        self.progress.emit(f"  ⚠️ Erreur backtest {symbol}: {e}")
+                        continue
 
-                            if bt.get('trades', 0) == 0:
-                                self.progress.emit(f"  ⚠️ {symbol}: Aucun trade détecté (domaine={score_context['domaine']})")
+                result['backtest_results'] = backtests
 
-                            backtests.append({'Symbole': symbol, **bt})
-                        except Exception as e:
-                            self.progress.emit(f"  ⚠️ Erreur backtest {symbol}: {e}")
-                            continue
-
-                    result['backtest_results'] = backtests
-
-                if not self._stop_requested:
-                    result['_analysis_id'] = self.analysis_id
-                    self.finished.emit(result)
-            finally:
-                builtins.print = original_print
+            if not self._stop_requested:
+                result['_analysis_id'] = self.analysis_id
+                self.result_ready.emit(result)
 
         except Exception as e:
             if not self._stop_requested:
                 self.error.emit(str(e))
+        finally:
+            self.finished.emit()
 
     def stop(self):
-        """Stop the thread gracefully"""
         self._stop_requested = True
 
 class LogCapture:
     """Captures stdout/stderr and writes both to QTextEdit and to original stdout/stderr.
-    Thread-safe implementation using direct append (QTextEdit is thread-safe for append)."""
+    Uses a Qt signal to marshal UI writes back to the GUI thread."""
+    class _Emitter(QObject):
+        message = pyqtSignal(str)
+
     def __init__(self, text_edit):
         self.text_edit = text_edit
         self.original_stdout = sys.__stdout__
         self.original_stderr = sys.__stderr__
+        self._emitter = self._Emitter()
+        self._emitter.message.connect(self._append_message)
+
+    def _append_message(self, message):
+        """Append only from GUI thread via queued Qt signal delivery."""
+        try:
+            self.text_edit.append(message)
+        except Exception:
+            # Widget can be deleted while background logs are still flushing.
+            pass
     
     def write(self, message):
         """Write message to QTextEdit and original stdout."""
         try:
             if message and message.strip():
-                # Append to QTextEdit (thread-safe)
-                self.text_edit.append(message.rstrip())
+                # Marshal UI updates to Qt main thread.
+                self._emitter.message.emit(message.rstrip())
                 # Also print to original stdout (terminal)
                 self.original_stdout.write(message)
                 self.original_stdout.flush()
@@ -279,6 +468,12 @@ class MainWindow(QMainWindow):
         self.setWindowTitle("Stock Analysis Tool")
         self.setGeometry(100, 100, 1200, 800)
         self.debug_mode_enabled = False
+        self._analysis_running = False
+        self._active_analysis_thread = None
+        self.analysis_qthread = None
+        self.analysis_worker = None
+        self.download_qthread = None
+        self.download_worker = None
 
         # 🔄 Synchroniser personal et optimization vers popular au démarrage
         if SYMBOL_MANAGER_AVAILABLE:
@@ -293,11 +488,16 @@ class MainWindow(QMainWindow):
         # Charger les listes au démarrage (SQLite si dispo, sinon txt)
         self.popular_symbols_data = self._load_symbols_preferred("popular_symbols.txt", "popular")
         self.mes_symbols_data = self._load_symbols_preferred("mes_symbols.txt", "personal")
+        self.coko_symbols_data = self._load_symbols_preferred("coko_symbols.txt", "coko")
         self.optim_symbols_data = self._load_symbols_preferred("optimisation_symbols.txt", "optimization")
         
         # Tabs-based UI: results-focused navigation
         self.tabs = QTabWidget()
         self.setCentralWidget(self.tabs)
+        self._charts_dirty = False
+        self._charts_refresh_scheduled = False
+        self._comparisons_dirty = False
+        self._comparisons_refresh_scheduled = False
 
         # Tab 1: Analyze (input + quick summary)
         self.analyze_container = QWidget()
@@ -335,6 +535,7 @@ class MainWindow(QMainWindow):
         self.logs_layout.addWidget(QLabel("📝 Logs du système"))
         self.logs_layout.addWidget(self.logs_text)
         self.tabs.addTab(self.logs_container, "Logs")
+        self.tabs.currentChanged.connect(self._on_tab_changed)
         
         # Setup log capture to redirect stdout/stderr to logs_text AND terminal
         try:
@@ -350,6 +551,225 @@ class MainWindow(QMainWindow):
 
         self.current_results = []
         self._analysis_id = 0  # 🔧 Identifiant unique pour chaque analyse
+        self.best_parameters = {}
+
+    def _get_best_parameters_cached(self, force_refresh: bool = False):
+        """Return the in-memory best-parameter cache without refreshing native state."""
+        if not getattr(self, 'best_parameters', None):
+            self.best_parameters = {}
+        return self.best_parameters
+
+    def _on_tab_changed(self, index: int):
+        """Refresh heavy tabs only when user actually opens them."""
+        try:
+            current_widget = self.tabs.widget(index)
+            if current_widget is self.charts_container and self._charts_dirty:
+                self._schedule_charts_refresh()
+            elif current_widget is self.comparisons_container and self._comparisons_dirty:
+                self._schedule_comparisons_refresh()
+        except Exception:
+            pass
+
+    def _schedule_charts_refresh(self):
+        """Queue charts refresh on the next GUI loop turn to avoid re-entrancy crashes."""
+        if getattr(self, '_charts_refresh_scheduled', False):
+            return
+        self._charts_refresh_scheduled = True
+        QTimer.singleShot(0, self._refresh_charts_tab_safe)
+
+    def _refresh_charts_tab_safe(self):
+        self._charts_refresh_scheduled = False
+        try:
+            # Only render charts when the charts tab is active.
+            if self.tabs.currentWidget() is not self.charts_container:
+                self._charts_dirty = True
+                return
+            self.populate_charts_tab()
+            self._charts_dirty = False
+        except Exception as e:
+            print(f"⚠️ Erreur lors de la mise à jour de l'onglet Graphiques: {e}")
+
+    def _schedule_comparisons_refresh(self):
+        """Queue comparisons refresh on next GUI loop turn to avoid re-entrancy crashes."""
+        if getattr(self, '_comparisons_refresh_scheduled', False):
+            return
+        self._comparisons_refresh_scheduled = True
+        QTimer.singleShot(0, self._refresh_comparisons_tab_safe)
+
+    def _refresh_comparisons_tab_safe(self):
+        self._comparisons_refresh_scheduled = False
+        try:
+            if self.tabs.currentWidget() is not self.comparisons_container:
+                self._comparisons_dirty = True
+                return
+            self.populate_comparisons_tab()
+            self._comparisons_dirty = False
+        except Exception as e:
+            print(f"⚠️ Erreur lors de la mise à jour de l'onglet Comparaisons: {e}")
+
+    def _schedule_result_visuals_refresh(self, result, mode: str):
+        """Queue heavy chart rendering after the current event loop turn."""
+        self._pending_visuals_result = result
+        self._pending_visuals_mode = mode
+        if getattr(self, '_result_visuals_refresh_scheduled', False):
+            return
+        self._result_visuals_refresh_scheduled = True
+        QTimer.singleShot(0, self._refresh_result_visuals_safe)
+
+    def _refresh_result_visuals_safe(self):
+        self._result_visuals_refresh_scheduled = False
+        result = getattr(self, '_pending_visuals_result', None)
+        mode = getattr(self, '_pending_visuals_mode', '')
+        if result is None:
+            return
+
+        try:
+            if mode == 'download':
+                self._render_download_result_visuals(result)
+            else:
+                self._render_analysis_result_visuals(result)
+            # Domain charts tab must be recomputed after results visuals update.
+            self._charts_dirty = True
+            if self.tabs.currentWidget() is self.charts_container:
+                self._schedule_charts_refresh()
+        except Exception as e:
+            print(f"⚠️ Erreur lors du rendu différé des graphiques: {e}")
+
+    def _render_download_result_visuals(self, result):
+        """Render the downloadable analysis charts outside the completion callback."""
+        try:
+            self.clear_plots()
+
+            if not isinstance(result, dict):
+                return
+
+            filtered = getattr(self, 'current_results', []) or []
+            data = result.get('data', {}) or {}
+
+            # Keep only symbols that passed the current fiabilité filter.
+            min_val = self.fiab_threshold_spin.value() if hasattr(self, 'fiab_threshold_spin') else 30
+            include_none_val = True
+            filtered_symbols = []
+            for r in filtered:
+                fiab = r.get('Fiabilite', 'N/A')
+                nb_trades = r.get('NbTrades', 0)
+                try:
+                    if int(nb_trades) > 0 and int(nb_trades) < min_val and not include_none_val:
+                        continue
+                except Exception:
+                    if not include_none_val:
+                        continue
+                try:
+                    if fiab == 'N/A':
+                        if include_none_val:
+                            filtered_symbols.append(r.get('Symbole'))
+                    elif float(fiab) >= float(min_val):
+                        filtered_symbols.append(r.get('Symbole'))
+                except Exception:
+                    if include_none_val:
+                        filtered_symbols.append(r.get('Symbole'))
+
+            rendered_count = 0
+            for sym in [s for s in filtered_symbols if s]:
+                stock_data = data.get(sym)
+                if not stock_data:
+                    continue
+                prices = stock_data['Close']
+                volumes = stock_data['Volume']
+                row = next((r for r in filtered if r.get('Symbole') == sym), {})
+                precomp = {
+                    'signal': row.get('Signal'),
+                    'last_price': row.get('Prix'),
+                    'trend': row.get('Tendance'),
+                    'last_rsi': row.get('RSI'),
+                    'volume_moyen': row.get('Volume moyen'),
+                    'score': row.get('Score'),
+                    'domaine': row.get('Domaine'),
+                    'cap_range': row.get('CapRange'),
+                }
+                fig = self._build_symbol_figure_with_score(sym, prices, volumes, precomp=precomp, events=[])
+                canvas = FigureCanvas(fig)
+                canvas.setMinimumHeight(520)
+                self.plots_layout.addWidget(canvas)
+                rendered_count += 1
+
+            if filtered_symbols and rendered_count == 0:
+                self.plots_layout.addWidget(QLabel("Aucun graphe integre n'a pu etre affiche pour cette analyse."))
+        except Exception:
+            pass
+
+    def _render_analysis_result_visuals(self, result):
+        """Render the final backtest charts outside the completion callback."""
+        try:
+            self.clear_plots()
+
+            top_buys = result.get('top_achats_fiables', []) if isinstance(result, dict) else []
+            top_sells = result.get('top_ventes_fiables', []) if isinstance(result, dict) else []
+            backtests = result.get('backtest_results', []) if isinstance(result, dict) else []
+            events_map = {bt.get('Symbole'): bt.get('events', []) for bt in backtests}
+            score_series_map = {
+                bt.get('Symbole'): {
+                    'score_dates': bt.get('score_dates', []),
+                    'score_values': bt.get('score_values', []),
+                    'seuil_achat': bt.get('seuil_achat'),
+                    'seuil_vente': bt.get('seuil_vente'),
+                }
+                for bt in backtests
+            }
+            existing_data = result.get('data', {}) if isinstance(result, dict) else {}
+
+            def _get_stock_data_for_symbol(sym):
+                stock_data = existing_data.get(sym)
+                if stock_data:
+                    return stock_data
+                # Fallback minimal when analysis payload does not include data.
+                try:
+                    return download_stock_data([sym], period=self.period_input.currentData() or '15mo').get(sym)
+                except Exception:
+                    return None
+
+            def embed_symbol_list(symbol_list):
+                if not symbol_list:
+                    return
+                for s in symbol_list:
+                    sym = s['Symbole'] if isinstance(s, dict) and 'Symbole' in s else s
+                    try:
+                        stock_data = _get_stock_data_for_symbol(sym)
+                        if not stock_data:
+                            continue
+                        prices = stock_data['Close']
+                        volumes = stock_data['Volume']
+                        pre_row = next((r for r in self.current_results if r.get('Symbole') == sym), s if isinstance(s, dict) else {})
+                        precomp = {
+                            'signal': pre_row.get('Signal'),
+                            'last_price': pre_row.get('Prix'),
+                            'trend': pre_row.get('Tendance'),
+                            'last_rsi': pre_row.get('RSI'),
+                            'volume_moyen': pre_row.get('Volume moyen'),
+                            'score': pre_row.get('Score'),
+                            'domaine': pre_row.get('Domaine'),
+                            'cap_range': pre_row.get('CapRange'),
+                            'score_dates': score_series_map.get(sym, {}).get('score_dates', []),
+                            'score_values': score_series_map.get(sym, {}).get('score_values', []),
+                            'seuil_achat': score_series_map.get(sym, {}).get('seuil_achat'),
+                            'seuil_vente': score_series_map.get(sym, {}).get('seuil_vente'),
+                        }
+                        events = events_map.get(sym, [])
+                        if len(events) == 0:
+                            print(f"⚠️ {sym}: Aucun événement généré")
+                        else:
+                            print(f"✅ {sym}: {len(events)} événement(s) trouvé(s)")
+                        fig = self._build_symbol_figure_with_score(sym, prices, volumes, precomp=precomp, events=events)
+                        canvas = FigureCanvas(fig)
+                        canvas.setMinimumHeight(520)
+                        self.plots_layout.addWidget(canvas)
+                    except Exception:
+                        continue
+
+            embed_symbol_list(top_buys)
+            embed_symbol_list(top_sells)
+        except Exception:
+            pass
     
     def add_log(self, message: str):
         """Ajouter un message à l'onglet Logs (sans redirection de stdout)."""
@@ -461,6 +881,39 @@ class MainWindow(QMainWindow):
 
         lists_container.addItem(QSpacerItem(48, 20, QSizePolicy.MinimumExpanding, QSizePolicy.Minimum))
 
+        # Liste coko
+        coko_sorted = sorted(self.coko_symbols_data)
+        coko_layout = QHBoxLayout()
+        coko_listcol = QVBoxLayout()
+        self.coko_label = QLabel()
+        self.coko_label.setAlignment(Qt.AlignCenter)
+        self.coko_label.setWordWrap(True)
+        coko_layout.addWidget(self.coko_label)
+        self.coko_list = QListWidget()
+        self.coko_list.setMaximumHeight(70)
+        for s in coko_sorted:
+            if s:
+                item = QListWidgetItem(s)
+                item.setData(Qt.UserRole, s)
+                self.coko_list.addItem(item)
+        self.coko_list.setSelectionMode(QAbstractItemView.ExtendedSelection)
+        coko_listcol.addWidget(self.coko_list)
+        coko_layout.addLayout(coko_listcol)
+
+        coko_btns = QVBoxLayout()
+        coko_btns.setSpacing(2)
+        self.coko_add_btn = QPushButton("Ajouter")
+        self.coko_del_btn = QPushButton("Supprimer")
+        self.coko_show_btn = QPushButton("Afficher")
+        coko_btns.addWidget(self.coko_add_btn)
+        coko_btns.addWidget(self.coko_del_btn)
+        coko_btns.addWidget(self.coko_show_btn)
+        coko_layout.addLayout(coko_btns)
+
+        lists_container.addLayout(coko_layout)
+
+        lists_container.addItem(QSpacerItem(48, 20, QSizePolicy.MinimumExpanding, QSizePolicy.Minimum))
+
         # ========== NOUVELLES LISTES OPTIMISATION ==========
         # Liste 1 : 30 symboles ALÉATOIRES
         random_layout = QHBoxLayout()
@@ -517,15 +970,6 @@ class MainWindow(QMainWindow):
         
         lists_container.addItem(QSpacerItem(48, 20, QSizePolicy.MinimumExpanding, QSizePolicy.Minimum))
         
-        # Bouton OPTIMISATION HYBRIDE (ouvre la fenêtre dédiée)
-        optim_button_layout = QVBoxLayout()
-        self.optimization_window_btn = QPushButton("🚀 OPTIMISATION HYBRIDE")
-        self.optimization_window_btn.setStyleSheet(
-            "background-color: #FF9800; color: white; font-weight: bold; padding: 12px; font-size: 13px;"
-        )
-        self.optimization_window_btn.clicked.connect(self.open_optimization_window)
-        optim_button_layout.addWidget(self.optimization_window_btn)
-        lists_container.addLayout(optim_button_layout)
         self.layout.addLayout(lists_container)
 
         top_controls = QHBoxLayout()
@@ -589,10 +1033,6 @@ class MainWindow(QMainWindow):
         top_controls.addWidget(self.min_hold_days_spin)
 
         top_controls.addSpacing(24)  # Petit espace pour l'esthétique
-
-        self.popular_signals_button = QPushButton("Analyse de mes symboles")
-        self.popular_signals_button.clicked.connect(self.analyze_popular_signals)
-        top_controls.addWidget(self.popular_signals_button)
 
         self.toggle_bottom_btn = QPushButton("Masquer détails")
         self.toggle_bottom_btn.setCheckable(True)
@@ -724,6 +1164,9 @@ class MainWindow(QMainWindow):
         self.mes_add_btn.clicked.connect(lambda: self.add_symbol(self.mes_list, "mes_symbols.txt"))
         self.mes_del_btn.clicked.connect(lambda: self.remove_selected(self.mes_list, "mes_symbols.txt"))
         self.mes_show_btn.clicked.connect(lambda: self.show_selected(self.mes_list))
+        self.coko_add_btn.clicked.connect(lambda: self.add_symbol(self.coko_list, "coko_symbols.txt"))
+        self.coko_del_btn.clicked.connect(lambda: self.remove_selected(self.coko_list, "coko_symbols.txt"))
+        self.coko_show_btn.clicked.connect(lambda: self.show_selected(self.coko_list))
         
         # Callbacks pour les nouvelles listes
         self.random_show_btn.clicked.connect(lambda: self.show_selected(self.random_list))
@@ -736,17 +1179,25 @@ class MainWindow(QMainWindow):
         self.load_recent_symbols()
     
     def validate_ticker(self, symbol):
-        """Validation rapide mais moins fiable"""
+        """Validation: ticker valide s'il existe dans yfinance avec prix/marketcap."""
         try:
-            # DB/cache d'abord
-            sector = _get_sector_cache_first(symbol)
-            if sector and sector != 'Inconnu':
-                return True
+            # En mode offline, on se limite aux infos locales
+            if getattr(qsi, 'OFFLINE_MODE', False):
+                sector = _get_sector_cache_first(symbol)
+                return bool(sector and sector != 'Inconnu')
 
-            # Fallback strict yfinance timeout court
+            # Récupère les infos yfinance (une seule fois)
             info = _fetch_yf_info_with_timeout(symbol, timeout_sec=2.0)
-            # Vérifier juste la présence de 'regularMarketPrice' ou 'symbol'
-            return info.get('regularMarketPrice') is not None or info.get('symbol') is not None
+            
+            # Valide que le ticker est réel et a au moins des prix ou une marketcap
+            is_valid = _is_valid_ticker_info(symbol, info)
+            
+            # Si yfinance timeout, fallback au cache/DB
+            if not is_valid:
+                sector = _get_sector_cache_first(symbol)
+                is_valid = bool(sector and sector != 'Inconnu')
+            
+            return is_valid
         except Exception:
             return False
 
@@ -755,6 +1206,8 @@ class MainWindow(QMainWindow):
         lower = filename.lower()
         if 'mes_symbol' in lower:
             return 'personal'
+        if 'coko_symbol' in lower:
+            return 'coko'
         if 'optimisation' in lower or 'optimization' in lower:
             return 'optimization'
         return 'popular'
@@ -774,8 +1227,9 @@ class MainWindow(QMainWindow):
         if ok and text:
             # Identifier si c'est la liste mes_symbols
             is_mes_list = (list_widget == self.mes_list)
+            is_coko_list = hasattr(self, 'coko_list') and (list_widget == self.coko_list)
             main_list = list_widget
-            secondary_list = self.popular_list if is_mes_list else None
+            secondary_list = self.popular_list if (is_mes_list or is_coko_list) else None
             
             # Parser les symboles séparés par des virgules
             symbols = [s.strip().upper() for s in text.split(",") if s.strip()]
@@ -833,7 +1287,7 @@ class MainWindow(QMainWindow):
                 added_symbols.append(symbol)
                 
                 # Si c'est mes_symbols, ajouter aussi automatiquement aux populaires
-                if is_mes_list and secondary_list:
+                if (is_mes_list or is_coko_list) and secondary_list:
                     exists_secondary = any(
                         secondary_list.item(i).text() == symbol 
                         for i in range(secondary_list.count())
@@ -927,11 +1381,14 @@ class MainWindow(QMainWindow):
         try:
             pop_count = self.popular_list.count() if hasattr(self, "popular_list") else 0
             mes_count = self.mes_list.count() if hasattr(self, "mes_list") else 0
+            coko_count = self.coko_list.count() if hasattr(self, "coko_list") else 0
             optim_count = self.optim_list.count() if hasattr(self, "optim_list") else 0
             if hasattr(self, "popular_label"):
                 self.popular_label.setText(f"Symboles\npopulaires ({pop_count})")
             if hasattr(self, "mes_label"):
                 self.mes_label.setText(f"Mes\nsymboles ({mes_count})")
+            if hasattr(self, "coko_label"):
+                self.coko_label.setText(f"Symboles\ncoko ({coko_count})")
             if hasattr(self, "optim_label"):
                 self.optim_label.setText(f"Symboles\noptimisation ({optim_count})")
         except Exception:
@@ -1074,71 +1531,6 @@ class MainWindow(QMainWindow):
         except Exception as e:
             QMessageBox.critical(self, "Erreur", f"Impossible d'afficher l'aperçu du nettoyage: {e}")
 
-    def analyze_popular_signals(self):
-        # Analyse + Backtest uniquement sur mes symboles
-        selected_mes = [it.data(Qt.UserRole) if it.data(Qt.UserRole) is not None else it.text() for it in self.mes_list.selectedItems()]
-        mes_symbols = selected_mes if selected_mes else [self.mes_list.item(i).text() for i in range(self.mes_list.count())]
-        
-        period = self.period_input.currentData()
-        
-        if not period:
-            QMessageBox.warning(self, "Erreur", "Veuillez sélectionner une période d'analyse")
-            return
-        
-        if not mes_symbols:
-            QMessageBox.warning(self, "Erreur", "Aucun symbole disponible dans 'Mes symboles'")
-            return
-        
-        # 🔧 Incrémenter l'ID d'analyse et stopper les threads précédents
-        self._analysis_id += 1
-        current_id = self._analysis_id
-        print(f"\n🚀 Nouvelle analyse populaire lancée #ID={current_id}")
-        
-        # 🔧 Réinitialiser les données complètement
-        self.current_results = []
-        if hasattr(self, 'filtered_results'):
-            delattr(self, 'filtered_results')
-        if hasattr(self, 'backtest_map'):
-            delattr(self, 'backtest_map')
-        
-        # Stop any running analysis thread before starting a new one
-        if hasattr(self, 'analysis_thread') and self.analysis_thread is not None:
-            try:
-                # Disconnect signals to prevent old thread from updating UI
-                self.analysis_thread.finished.disconnect()
-                self.analysis_thread.error.disconnect()
-                self.analysis_thread.progress.disconnect()
-            except Exception:
-                pass
-            
-            # Stop the thread
-            if self.analysis_thread.isRunning():
-                self.analysis_thread.stop()
-                self.analysis_thread.wait(2000)  # Wait max 2 seconds
-                print(f"⚠️ Ancien analysis thread arrêté")
-        
-        # Disable buttons during analysis
-        self.analyze_button.setEnabled(False)
-        self.backtest_button.setEnabled(False)
-        self.popular_signals_button.setEnabled(False)
-        
-        # Afficher la progression
-        self.progress = QProgressDialog("Analyse + Backtest de mes symboles en cours...", "Annuler", 0, 0, self)
-        self.progress.setWindowTitle("Analyse de mes symboles")
-        self.progress.setWindowModality(Qt.WindowModal)
-        self.progress.setMinimumDuration(0)
-        self.progress.setAutoClose(False)
-        self.progress.setMinimumWidth(400)
-        
-        # Lancer l'analyse+backtest dans un thread (mes_symbols en premier arg, [] en deuxième)
-        min_holding_days = self.min_hold_days_spin.value() if hasattr(self, 'min_hold_days_spin') else 7
-        self.analysis_thread = AnalysisThread(mes_symbols, [], period, analysis_id=current_id, min_holding_days=min_holding_days)
-        self.analysis_thread.finished.connect(self.on_analysis_complete)
-        self.analysis_thread.error.connect(self.on_analysis_error)
-        self.analysis_thread.progress.connect(self.on_analysis_progress)
-        self.analysis_thread.start()
-        print(f"📊 Analysis thread démarré avec ID={current_id}")
-
     def clear_plots(self):
         # remove all widgets from plots_layout
         for i in reversed(range(self.plots_layout.count())):
@@ -1160,12 +1552,14 @@ class MainWindow(QMainWindow):
         if received_id != self._analysis_id:
             print(f"⚠️ Résultat ignoré: ID={received_id}, ID actuel={self._analysis_id}")
             return
+
+        self._analysis_running = False
+        self._active_analysis_thread = None
         
         # Called when the DownloadThread finishes
         # Re-enable buttons
         self.analyze_button.setEnabled(True)
         self.backtest_button.setEnabled(True)
-        self.popular_signals_button.setEnabled(True)
 
         if self.progress:
             self.progress.close()
@@ -1176,6 +1570,7 @@ class MainWindow(QMainWindow):
 
         data = result.get('data', {}) if isinstance(result, dict) else {}
         backtests = result.get('backtest_results', []) if isinstance(result, dict) else []
+        best_params_all = self.best_parameters or {}
         # Build result rows (collect data first, then filter & render plots only for filtered symbols)
         self.current_results = []
 
@@ -1192,7 +1587,7 @@ class MainWindow(QMainWindow):
                 volume_mean = float(volumes.mean()) if len(volumes) > 0 else 0.0
                 score = 0.0
                 derivatives = {}
-                cap_range = qsi.get_cap_range_for_symbol(symbol)
+                cap_range = stock_data.get('CapRange', 'Unknown') if isinstance(stock_data, dict) else 'Unknown'
                 
                 # Récupérer le secteur depuis le cache ou yfinance
                 try:
@@ -1215,8 +1610,6 @@ class MainWindow(QMainWindow):
                 original_cap_range = cap_range
                 
                 if CAP_FALLBACK_ENABLED and (cap_range == "Unknown" or not cap_range):
-                    best_params_all = qsi.extract_best_parameters()
-                    
                     # ✅ ÉTAPE 1: Essayer de trouver dans la DB les cap_ranges valides pour ce secteur
                     self._debug_log(f"🔍 {symbol}: Recherche cap_range pour {domaine}...")
                     try:
@@ -1261,7 +1654,6 @@ class MainWindow(QMainWindow):
                 original_domaine = domaine
                 from config import DOMAIN_FALLBACK_ENABLED
                 if DOMAIN_FALLBACK_ENABLED and domaine == "Inconnu":
-                    best_params_all = qsi.extract_best_parameters()
                     for fallback_sector in ["Technology", "Healthcare", "Financial Services"]:
                         if fallback_sector in best_params_all:
                             domaine = fallback_sector
@@ -1275,7 +1667,6 @@ class MainWindow(QMainWindow):
                 seuil_achat_opt = None
                 seuil_vente_opt = None
                 extras_to_use = None
-                best_params_all = qsi.extract_best_parameters()
                 # Chercher la clé optimale : secteur_cap ou secteur seul
                 param_key = None
                 if cap_range and cap_range != "Unknown":
@@ -1369,7 +1760,7 @@ class MainWindow(QMainWindow):
                         'Tendance': 'N/A',
                         'RSI': 0.0,
                         'Domaine': 'Inconnu',
-                        'CapRange': qsi.get_cap_range_for_symbol(symbol),
+                        'CapRange': cap_range if 'cap_range' in locals() and cap_range else 'Unknown',
                         'Volume moyen': 0.0,
                         'dPrice': 0.0,
                         'Var5j (%)': 0.0,
@@ -1452,43 +1843,7 @@ class MainWindow(QMainWindow):
                 if include_none_val:
                     filtered.append(r)
 
-        # Render plots only for filtered symbols (embedded).
-        self.clear_plots()
-        filtered_symbols = [r['Symbole'] for r in filtered]
-        rendered_count = 0
-        try:
-            for i, sym in enumerate(filtered_symbols):
-                stock_data = data.get(sym)
-                if not stock_data:
-                    continue
-                prices = stock_data['Close']
-                volumes = stock_data['Volume']
-
-                row = next((r for r in filtered if r.get('Symbole') == sym), {})
-                score_val = row.get('Score')
-                precomp = {
-                    'signal': row.get('Signal'),
-                    'last_price': row.get('Prix'),
-                    'trend': row.get('Tendance'),
-                    'last_rsi': row.get('RSI'),
-                    'volume_moyen': row.get('Volume moyen'),
-                    'score': score_val,
-                    'domaine': row.get('Domaine'),
-                    'cap_range': row.get('CapRange'),
-                }
-
-                fig = self._build_symbol_figure_with_score(sym, prices, volumes, precomp=precomp, events=[])
-
-                canvas = FigureCanvas(fig)
-                # Hauteur plus généreuse pour éviter la coupure des titres
-                canvas.setMinimumHeight(520)
-                self.plots_layout.addWidget(canvas)
-                rendered_count += 1
-        except Exception:
-            pass
-
-        if filtered_symbols and rendered_count == 0:
-            self.plots_layout.addWidget(QLabel("Aucun graphe integre n'a pu etre affiche pour cette analyse."))
+        self._schedule_result_visuals_refresh(result, mode='download')
 
         # NOTE: Do not replace the user's popular/mes lists with filtered results.
         # Instead, we can optionally update item tooltips to show fiabilité without
@@ -1513,6 +1868,15 @@ class MainWindow(QMainWindow):
                     item.setToolTip(f"Fiabilité: {fiab_map[sym]}")
                 else:
                     item.setToolTip("")
+            # And for coko_list
+            if hasattr(self, 'coko_list'):
+                for i in range(self.coko_list.count()):
+                    item = self.coko_list.item(i)
+                    sym = item.data(Qt.UserRole) if item.data(Qt.UserRole) is not None else item.text()
+                    if sym in fiab_map:
+                        item.setToolTip(f"Fiabilité: {fiab_map[sym]}")
+                    else:
+                        item.setToolTip("")
         except Exception:
             pass
 
@@ -1530,19 +1894,35 @@ class MainWindow(QMainWindow):
     def on_analysis_progress(self, message):
         if self.progress:
             self.progress.setLabelText(message)
-            QApplication.processEvents()
+
+    def _on_analysis_qthread_finished(self):
+        """Nettoie les références du pipeline d'analyse quand le thread natif s'arrête."""
+        self.analysis_qthread = None
+        self.analysis_worker = None
+
+    def _on_download_qthread_finished(self):
+        """Nettoie les références du pipeline de téléchargement quand le thread natif s'arrête."""
+        self.download_qthread = None
+        self.download_worker = None
 
     def on_analysis_complete(self, result):
+        sender = self.sender()
+        if sender is not None and sender is not getattr(self, '_active_analysis_thread', None):
+            print("⚠️ Résultat ignoré: thread inactif")
+            return
+
         # 🔧 Vérifier que ce résultat appartient à l'analyse actuelle
         received_id = result.get('_analysis_id', 0) if isinstance(result, dict) else 0
         if received_id != self._analysis_id:
             print(f"⚠️ Résultat ignoré: ID={received_id}, ID actuel={self._analysis_id}")
             return
+
+        self._analysis_running = False
+        self._active_analysis_thread = None
         
         # Re-enable all buttons
         self.analyze_button.setEnabled(True)
         self.backtest_button.setEnabled(True)
-        self.popular_signals_button.setEnabled(True)
         
         if self.progress:
             self.progress.close()
@@ -1579,7 +1959,8 @@ class MainWindow(QMainWindow):
         
         # 🔧 Initialiser les colonnes par défaut pour tous les signaux
         for r in self.current_results:
-            r.setdefault('CapRange', qsi.get_cap_range_for_symbol(r.get('Symbole', '')))
+            if not r.get('CapRange'):
+                r['CapRange'] = 'Unknown'
             r.setdefault('Devise', 'USD')
             r.setdefault('FxRateToUSD', 1.0)
             r.setdefault('dPrice', 0.0)
@@ -1595,11 +1976,9 @@ class MainWindow(QMainWindow):
             r.setdefault('Market Cap (B$)', 0.0)
             r.setdefault('ROE (%)', 0.0)
         
-        # 🔧 Charger les meilleurs paramètres une seule fois
-        try:
-            from qsi import extract_best_parameters
-            self.best_parameters = extract_best_parameters()
-        except Exception:
+        # Réutiliser le cache déjà présent pour éviter un refresh SQLite natif
+        # dans le callback de fin, qui a déjà provoqué des SIGSEGV.
+        if not getattr(self, 'best_parameters', None):
             self.best_parameters = {}
         
         # ✅ OPTIMISATION: Réutiliser les données déjà téléchargées depuis result
@@ -1617,11 +1996,9 @@ class MainWindow(QMainWindow):
                 need_financials = not r.get('Market Cap (B$)') or float(r.get('Market Cap (B$)', 0)) == 0.0
                 if need_derivatives or need_financials:
                     try:
-                        # Réutiliser les données en mémoire au lieu de re-télécharger
+                        # Réutiliser strictement les données en mémoire pour éviter
+                        # les appels réseau dans le callback UI final.
                         stock_data = existing_data.get(sym)
-                        if stock_data is None:
-                            # Seulement télécharger si vraiment absent
-                            stock_data = download_stock_data([sym], self.period_input.currentData() or '15mo').get(sym)
                         
                         if stock_data is None:
                             continue
@@ -1673,83 +2050,7 @@ class MainWindow(QMainWindow):
 
         # Afficher les résultats
         self.update_results_table()
-        # Also embed the final analysis charts (top buys / sells) returned by the analysis
-        try:
-            # Clear existing plots
-            self.clear_plots()
-
-            top_buys = result.get('top_achats_fiables', []) if isinstance(result, dict) else []
-            top_sells = result.get('top_ventes_fiables', []) if isinstance(result, dict) else []
-
-            # 🔧 Map des événements issus du backtest (même source que les stats)
-            backtests = result.get('backtest_results', []) if isinstance(result, dict) else []
-            events_map = {bt.get('Symbole'): bt.get('events', []) for bt in backtests}
-            score_series_map = {
-                bt.get('Symbole'): {
-                    'score_dates': bt.get('score_dates', []),
-                    'score_values': bt.get('score_values', []),
-                }
-                for bt in backtests
-            }
-
-            # ✅ OPTIMISATION: Récupérer les données existantes
-            existing_data = result.get('data', {}) if isinstance(result, dict) else {}
-            
-            # Helper to embed a list of symbols as canvases
-            def embed_symbol_list(symbol_list, title_prefix=""):
-                if not symbol_list:
-                    return
-                for i, s in enumerate(symbol_list):
-                    sym = s['Symbole'] if isinstance(s, dict) and 'Symbole' in s else s
-                    try:
-                        # Réutiliser les données en mémoire
-                        stock_data = existing_data.get(sym)
-                        if stock_data is None:
-                            # Seulement télécharger si vraiment absent
-                            stock_data = download_stock_data([sym], period=self.period_input.currentData() or '15mo').get(sym)
-                        if not stock_data:
-                            continue
-                        prices = stock_data['Close']
-                        volumes = stock_data['Volume']
-
-                        # Prélever les données pré-calculées (table ou item courant)
-                        pre_row = next((r for r in self.current_results if r.get('Symbole') == sym), s if isinstance(s, dict) else {})
-                        score_val = pre_row.get('Score')
-                        precomp = {
-                            'signal': pre_row.get('Signal'),
-                            'last_price': pre_row.get('Prix'),
-                            'trend': pre_row.get('Tendance'),
-                            'last_rsi': pre_row.get('RSI'),
-                            'volume_moyen': pre_row.get('Volume moyen'),
-                            'score': score_val,
-                            'domaine': pre_row.get('Domaine'),
-                            'cap_range': pre_row.get('CapRange'),
-                            'score_dates': score_series_map.get(sym, {}).get('score_dates', []),
-                            'score_values': score_series_map.get(sym, {}).get('score_values', []),
-                        }
-
-                        # Add trade markers based on events déjà calculés par le backtest
-                        events = events_map.get(sym, [])
-                        if len(events) == 0:
-                            print(f"⚠️ {sym}: Aucun événement généré")
-                        else:
-                            print(f"✅ {sym}: {len(events)} événement(s) trouvé(s)")
-
-                        fig = self._build_symbol_figure_with_score(sym, prices, volumes, precomp=precomp, events=events)
-
-                        canvas = FigureCanvas(fig)
-                        # Hauteur plus généreuse pour éviter la coupure des titres
-                        canvas.setMinimumHeight(520)
-                        self.plots_layout.addWidget(canvas)
-                    except Exception:
-                        continue
-
-            # Embed buys then sells (if any)
-            embed_symbol_list(top_buys, "Top ACHAT")
-            embed_symbol_list(top_sells, "Top VENTE")
-        except Exception:
-            # If anything fails, silently ignore — table already updated
-            pass
+        self._schedule_result_visuals_refresh(result, mode='analysis')
         # Render backtest summary/table if present in the result
         try:
             backtests = result.get('backtest_results', []) if isinstance(result, dict) else []
@@ -1760,13 +2061,24 @@ class MainWindow(QMainWindow):
             pass
 
     def on_analysis_error(self, error_msg):
+        sender = self.sender()
+        if sender is not None and sender is not getattr(self, '_active_analysis_thread', None):
+            return
+
+        self._analysis_running = False
+        self._active_analysis_thread = None
         self.analyze_button.setEnabled(True)
+        self.backtest_button.setEnabled(True)
         if self.progress:
             self.progress.close()
         
         QMessageBox.critical(self, "Erreur", f"Erreur pendant l'analyse:\n{error_msg}")
 
     def analyze_stock(self):
+        if self._analysis_running:
+            QMessageBox.information(self, "Analyse en cours", "Une analyse est déjà en cours. Attends la fin avant d'en lancer une autre.")
+            return
+
         # Get list of symbols from input or from selection in lists
         symbols = [s.strip().upper() for s in self.symbol_input.text().split(",") if s.strip()]
         if not symbols:
@@ -1774,6 +2086,8 @@ class MainWindow(QMainWindow):
             selected = [it.data(Qt.UserRole) if it.data(Qt.UserRole) is not None else it.text() for it in self.popular_list.selectedItems()]
             if not selected:
                 selected = [it.data(Qt.UserRole) if it.data(Qt.UserRole) is not None else it.text() for it in self.mes_list.selectedItems()]
+            if not selected and hasattr(self, 'coko_list'):
+                selected = [it.data(Qt.UserRole) if it.data(Qt.UserRole) is not None else it.text() for it in self.coko_list.selectedItems()]
             symbols = [s.strip().upper() for s in selected if s]
         if not symbols:
             QMessageBox.warning(self, "Erreur", "Veuillez entrer au moins un symbole")
@@ -1797,26 +2111,9 @@ class MainWindow(QMainWindow):
         if hasattr(self, 'backtest_map'):
             delattr(self, 'backtest_map')
         
-        # Stop any running download thread before starting a new one
-        if hasattr(self, 'download_thread') and self.download_thread is not None:
-            try:
-                # Disconnect signals to prevent old thread from updating UI
-                self.download_thread.finished.disconnect()
-                self.download_thread.error.disconnect()
-                self.download_thread.progress.disconnect()
-            except Exception:
-                pass
-            
-            # Stop the thread
-            if self.download_thread.isRunning():
-                self.download_thread.stop()
-                self.download_thread.wait(2000)  # Wait max 2 seconds
-                print(f"⚠️ Ancien download thread arrêté")
-
         # Disable buttons during analysis
         self.analyze_button.setEnabled(False)
         self.backtest_button.setEnabled(False)
-        self.popular_signals_button.setEnabled(False)
 
         # Progress dialog
         self.progress = QProgressDialog("Téléchargement et analyse...", "Annuler", 0, 0, self)
@@ -1826,16 +2123,48 @@ class MainWindow(QMainWindow):
         self.progress.setAutoClose(False)
         self.progress.setMinimumWidth(400)
 
-        # Launch download thread (no backtest)
+        # Launch download worker (no backtest) in a native QThread.
         min_holding_days = self.min_hold_days_spin.value() if hasattr(self, 'min_hold_days_spin') else 7
-        self.download_thread = DownloadThread(symbols, period, do_backtest=False, analysis_id=current_id, min_holding_days=min_holding_days)
-        self.download_thread.finished.connect(self.on_download_complete)
-        self.download_thread.error.connect(self.on_analysis_error)
-        self.download_thread.progress.connect(self.on_analysis_progress)
-        self.download_thread.start()
-        print(f"📥 Download thread démarré avec ID={current_id}")
+        try:
+            if self.download_worker is not None:
+                self.download_worker.stop()
+            if self.download_qthread is not None and self.download_qthread.isRunning():
+                self.download_qthread.quit()
+                self.download_qthread.wait(1000)
+        except Exception:
+            pass
+
+        self.download_qthread = QThread(self)
+        self.download_qthread.setObjectName("DownloadQThread")
+        self.download_worker = DownloadWorker(
+            symbols,
+            period,
+            do_backtest=False,
+            analysis_id=current_id,
+            min_holding_days=min_holding_days,
+            best_parameters_snapshot=self.best_parameters,
+        )
+        self.download_worker.moveToThread(self.download_qthread)
+
+        self.download_qthread.started.connect(self.download_worker.process)
+        self.download_worker.result_ready.connect(self.on_download_complete)
+        self.download_worker.error.connect(self.on_analysis_error)
+        self.download_worker.progress.connect(self.on_analysis_progress)
+        self.download_worker.finished.connect(self.download_qthread.quit)
+        self.download_worker.finished.connect(self.download_worker.deleteLater)
+        self.download_qthread.finished.connect(self.download_qthread.deleteLater)
+        self.download_qthread.finished.connect(self._on_download_qthread_finished)
+
+        self._analysis_running = True
+        self._active_analysis_thread = self.download_worker
+        self.download_qthread.start()
+        print(f"📥 Download worker démarré avec ID={current_id}")
 
     def analyse_and_backtest(self):
+        if self._analysis_running:
+            QMessageBox.information(self, "Analyse en cours", "Une analyse est déjà en cours. Attends la fin avant d'en lancer une autre.")
+            return
+
         # For consistency with 'Analyser mouvements fiables', run the full
         # analyse_signaux_populaires pipeline (which includes backtests) and
         # embed the same charts + detailed backtest info in the UI.
@@ -1846,6 +2175,8 @@ class MainWindow(QMainWindow):
             selected = [it.data(Qt.UserRole) if it.data(Qt.UserRole) is not None else it.text() for it in self.popular_list.selectedItems()]
             if not selected:
                 selected = [it.data(Qt.UserRole) if it.data(Qt.UserRole) is not None else it.text() for it in self.mes_list.selectedItems()]
+            if not selected and hasattr(self, 'coko_list'):
+                selected = [it.data(Qt.UserRole) if it.data(Qt.UserRole) is not None else it.text() for it in self.coko_list.selectedItems()]
             symbols = [s.strip().upper() for s in selected if s]
         if not symbols:
             QMessageBox.warning(self, "Erreur", "Veuillez entrer au moins un symbole")
@@ -1868,26 +2199,9 @@ class MainWindow(QMainWindow):
         if hasattr(self, 'backtest_map'):
             delattr(self, 'backtest_map')
         
-        # Stop any running analysis thread before starting a new one
-        if hasattr(self, 'analysis_thread') and self.analysis_thread is not None:
-            try:
-                # Disconnect signals to prevent old thread from updating UI
-                self.analysis_thread.finished.disconnect()
-                self.analysis_thread.error.disconnect()
-                self.analysis_thread.progress.disconnect()
-            except Exception:
-                pass
-            
-            # Stop the thread
-            if self.analysis_thread.isRunning():
-                self.analysis_thread.stop()
-                self.analysis_thread.wait(2000)  # Wait max 2 seconds
-                print(f"⚠️ Ancien analysis thread arrêté")
-
         # Disable buttons during analysis
         self.analyze_button.setEnabled(False)
         self.backtest_button.setEnabled(False)
-        self.popular_signals_button.setEnabled(False)
 
         # Progress dialog
         self.progress = QProgressDialog("Analyse et backtest en cours...", "Annuler", 0, 0, self)
@@ -1897,25 +2211,53 @@ class MainWindow(QMainWindow):
         self.progress.setAutoClose(False)
         self.progress.setMinimumWidth(400)
 
-        # Use the AnalysisThread which calls analyse_signaux_populaires (no plt.show()
-        # in background). Pass the selected symbols as the "popular_symbols" input
-        # so the function analyzes/backtests those symbols and returns the same
-        # result structure used for the "Analyser mouvements fiables" flow.
         selected_pop = symbols
         selected_mes = []
 
         min_holding_days = self.min_hold_days_spin.value() if hasattr(self, 'min_hold_days_spin') else 7
-        self.analysis_thread = AnalysisThread(selected_pop, selected_mes, period, analysis_id=current_id, min_holding_days=min_holding_days)
-        self.analysis_thread.finished.connect(self.on_analysis_complete)
-        self.analysis_thread.error.connect(self.on_analysis_error)
-        self.analysis_thread.progress.connect(self.on_analysis_progress)
-        self.analysis_thread.start()
-        print(f"📊 Analysis backtest thread démarré avec ID={current_id}")
+
+        # Si un ancien worker est encore en fermeture, le terminer proprement.
+        try:
+            if self.analysis_worker is not None:
+                self.analysis_worker.stop()
+            if self.analysis_qthread is not None and self.analysis_qthread.isRunning():
+                self.analysis_qthread.quit()
+                self.analysis_qthread.wait(1000)
+        except Exception:
+            pass
+
+        # Native QThread + QObject worker pattern for better teardown stability.
+        self.analysis_qthread = QThread(self)
+        self.analysis_qthread.setObjectName("AnalysisQThread")
+        self.analysis_worker = AnalysisWorker(
+            selected_pop,
+            selected_mes,
+            period,
+            analysis_id=current_id,
+            min_holding_days=min_holding_days,
+        )
+        self.analysis_worker.moveToThread(self.analysis_qthread)
+
+        self.analysis_qthread.started.connect(self.analysis_worker.process)
+        self.analysis_worker.result_ready.connect(self.on_analysis_complete)
+        self.analysis_worker.error.connect(self.on_analysis_error)
+        self.analysis_worker.progress.connect(self.on_analysis_progress)
+        self.analysis_worker.finished.connect(self.analysis_qthread.quit)
+        self.analysis_worker.finished.connect(self.analysis_worker.deleteLater)
+        self.analysis_qthread.finished.connect(self.analysis_qthread.deleteLater)
+        self.analysis_qthread.finished.connect(self._on_analysis_qthread_finished)
+
+        self._analysis_running = True
+        self._active_analysis_thread = self.analysis_worker
+        self.analysis_qthread.start()
+        print(f"📊 Analysis worker démarré avec ID={current_id}")
 
     def update_results_table(self):
-        """Fill the merged table (`self.merged_table`) with current results plus backtest metrics.
-        Numeric values are stored via Qt.EditRole to enable correct numeric sorting."""
-        if not hasattr(self, 'current_results'):
+        """Fill the merged table (`self.merged_table`) with current results plus backtest metrics."""
+        if not hasattr(self, 'current_results') or not hasattr(self, 'merged_table'):
+            return
+
+        if getattr(self, '_updating_results_table', False):
             return
 
         def _parse_numeric(val, default=None):
@@ -1934,594 +2276,178 @@ class MainWindow(QMainWindow):
             except Exception:
                 return default
 
-        sorting_was_enabled = self.merged_table.isSortingEnabled()
-        if sorting_was_enabled:
-            self.merged_table.setSortingEnabled(False)
-
-        self.merged_table.setRowCount(0)
-        # 🔧 Toujours utiliser current_results (filtered_results est supprimé à chaque nouvelle analyse)
-        raw_results = self.current_results
-        
-        # Appliquer le filtre de fiabilité minimum si un seuil est défini
-        min_fiab_threshold = self.fiab_threshold_spin.value() if hasattr(self, 'fiab_threshold_spin') else 30
-        filtered_results = []
-        for r in raw_results:
-            if not isinstance(r, dict):
-                continue
-            fiab_val = r.get('Fiabilite', 'N/A')
-            if fiab_val == 'N/A':
-                # Toujours inclure si pas de données de fiabilité
-                filtered_results.append(r)
-            else:
-                fiab_num = _parse_numeric(fiab_val, None)
-                if fiab_num is not None:
-                    if fiab_num >= min_fiab_threshold:
-                        filtered_results.append(r)
-                else:
-                    # Inclure si conversion échoue
-                    filtered_results.append(r)
-        
-        results_to_display = [r for r in filtered_results if str(r.get('Symbole', '')).strip()]
-        # 🔧 Garantir les champs backtest et dérivées pour éviter des cellules vides
-        for r in results_to_display:
-            r.setdefault('Fiabilite', 'N/A')
-            r.setdefault('NbTrades', 0)
-            r.setdefault('Gagnants', 0)
-            r.setdefault('Gain_total', 0.0)
-            r.setdefault('Gain_moyen', 0.0)
-            r.setdefault('Drawdown_max', 0.0)
-            # Dérivées techniques
-            r.setdefault('dPrice', 0.0)
-            r.setdefault('Var5j (%)', 0.0)
-            r.setdefault('dRSI', 0.0)
-            r.setdefault('dVolRel', 0.0)
-            # Données financières
-            r.setdefault('Rev. Growth (%)', 0.0)
-            r.setdefault('EBITDA Yield (%)', 0.0)
-            r.setdefault('FCF Yield (%)', 0.0)
-            r.setdefault('EBITDA (B$)', 0.0)
-            r.setdefault('FCF (B$)', 0.0)
-            r.setdefault('D/E Ratio', 0.0)
-            r.setdefault('Market Cap (B$)', 0.0)
-            r.setdefault('ROE (%)', 0.0)
-        
-        bt_map = getattr(self, 'backtest_map', {})
-
-        # Helper de conversion robuste pour éviter qu'une valeur vide casse la ligne
-        def safe_float(val, default=0.0):
-            try:
-                if val is None:
-                    return default
-                if isinstance(val, str):
-                    raw = val.strip()
-                    if raw == '' or raw.upper() == 'N/A':
-                        return default
-                    raw = raw.replace('%', '').replace('$', '').replace(',', '').replace('x', '').strip()
-                    if raw == '':
-                        return default
-                    return float(raw)
-                return float(val)
-            except Exception:
-                return default
-
-        def safe_int(val, default=0):
-            try:
-                if val is None:
-                    return default
-                if isinstance(val, str) and val.strip() == '':
-                    return default
-                return int(val)
-            except Exception:
-                return default
-
-        def sentiment_to_color(sentiment: float) -> QColor:
-            """Mappe un score de sentiment [-1, 1] vers une couleur Rouge->Orange->Vert."""
-            try:
-                s = max(-1.0, min(1.0, float(sentiment)))
-            except Exception:
-                s = 0.0
-
-            if s >= 0:
-                # Orange (0) -> Vert (1)
-                t = s
-                r = int(255 + (0 - 255) * t)
-                g = int(165 + (128 - 165) * t)
-                b = int(0)
-            else:
-                # Rouge (-1) -> Orange (0)
-                t = s + 1.0
-                r = int(255)
-                g = int(0 + (165 - 0) * t)
-                b = int(0)
-            return QColor(r, g, b)
-
-        def score_sentiment_from_thresholds(score_val: float, buy_thr: float, sell_thr: float) -> float:
-            """Sentiment symétrique basé sur les seuils [vente, achat].
-            -1: score très orienté vente, +1: score très orienté achat, 0: zone intermédiaire."""
-            try:
-                s = float(score_val)
-                b = float(buy_thr)
-                v = float(sell_thr)
-            except Exception:
-                return 0.0
-
-            # Cas limite: seuils invalides
-            if b == v:
-                return 0.0
-
-            # Bornes min/max pour garder une interpolation robuste
-            lo = min(v, b)
-            hi = max(v, b)
-
-            # Interpolation linéaire entre les seuils: lo->-1, hi->+1
-            if s <= lo:
-                return -1.0
-            if s >= hi:
-                return 1.0
-
-            # Position normalisée [0,1] puis transformée en [-1,1]
-            pos = (s - lo) / (hi - lo)
-            return max(-1.0, min(1.0, (pos * 2.0) - 1.0))
-
-        for signal in results_to_display:
-            row = -1
-            try:
-                row = self.merged_table.rowCount()
-                self.merged_table.insertRow(row)
-                sym = signal.get('Symbole', '')
-                feature_sentiments = []
-
-                # Résoudre les seuils du sous-domaine (domaine + cap range) pour colorisation cohérente
-                score_val = safe_float(signal.get('Score', 0.0))
-                domaine = str(signal.get('Domaine', ''))
-                cap_range = str(signal.get('CapRange', ''))
-                seuil_achat = signal.get('_seuil_achat_used')
-                seuil_vente = signal.get('_seuil_vente_used')
-                if seuil_achat is None or seuil_vente is None:
-                    seuil_achat = 4.2
-                    seuil_vente = -0.5
-                    try:
-                        best_params_all = getattr(self, 'best_parameters', {})
-                        param_key = None
-                        if cap_range and cap_range != "Unknown":
-                            test_key = f"{domaine}_{cap_range}"
-                            if test_key in best_params_all:
-                                param_key = test_key
-                        if not param_key and domaine in best_params_all:
-                            param_key = domaine
-                        if param_key and param_key in best_params_all:
-                            params = best_params_all[param_key]
-                            if len(params) > 2 and params[2]:
-                                globals_th = params[2]
-                                if isinstance(globals_th, (tuple, list)) and len(globals_th) >= 2:
-                                    seuil_achat = float(globals_th[0]) if globals_th[0] else 4.2
-                                    seuil_vente = float(globals_th[1]) if globals_th[1] else -0.5
-                    except Exception:
-                        pass
-                score_sent = score_sentiment_from_thresholds(score_val, seuil_achat, seuil_vente)
-
-                # Basic columns
-                self.merged_table.setItem(row, 0, QTableWidgetItem(str(sym)))
-                self.merged_table.setItem(row, 1, QTableWidgetItem(str(signal.get('Signal', ''))))
-
-                if signal.get('Signal', '') == 'ACHAT':
-                    self.merged_table.item(row, 1).setForeground(sentiment_to_color(max(0.35, score_sent)))
-                    feature_sentiments.append(max(0.35, score_sent))
-                elif signal.get('Signal', '') == 'VENTE':
-                    self.merged_table.item(row, 1).setForeground(sentiment_to_color(min(-0.35, score_sent)))
-                    feature_sentiments.append(min(-0.35, score_sent))
-                else:
-                    self.merged_table.item(row, 1).setForeground(QColor(255, 165, 0))
-                    feature_sentiments.append(score_sent * 0.5)
-
-                item = QTableWidgetItem(f"{score_val:.2f}")
-                item.setData(Qt.EditRole, score_val)
-                item.setForeground(sentiment_to_color(score_sent))
-                feature_sentiments.append(score_sent)
-                self.merged_table.setItem(row, 2, item)
-
-                prix = safe_float(signal.get('Prix', 0.0))
-                item = QTableWidgetItem(f"${prix:.2f}")
-                item.setData(Qt.EditRole, prix)
-                item.setForeground(QColor(0, 0, 0))
-                self.merged_table.setItem(row, 3, item)
-
-                tendance_text = str(signal.get('Tendance', ''))
-                tendance_item = QTableWidgetItem(tendance_text)
-                tendance_item.setForeground(QColor(0, 0, 0))
-                self.merged_table.setItem(row, 4, tendance_item)
-
-                rsi = safe_float(signal.get('RSI', 0.0))
-                item = QTableWidgetItem(f"{rsi:.2f}")
-                item.setData(Qt.EditRole, rsi)
-                # RSI: < 30 = excellent (survente, opportunité achat), 30-40 = bon, 40-60 = neutre, 60-70 = attention, > 70 = mauvais (surachat)
-                if rsi < 30:
-                    item.setForeground(QColor(0, 128, 0))  # Vert foncé : excellent (survente)
-                    feature_sentiments.append(0.9)
-                elif rsi < 40:
-                    item.setForeground(QColor(34, 139, 34))  # Vert : bon
-                    feature_sentiments.append(0.6)
-                elif rsi <= 60:
-                    item.setForeground(QColor(255, 165, 0))  # Orange : zone neutre
-                    feature_sentiments.append(0.0)
-                elif rsi <= 70:
-                    item.setForeground(QColor(255, 100, 0))  # Orange foncé : attention (surachat imminent)
-                    feature_sentiments.append(-0.4)
-                else:
-                    item.setForeground(QColor(255, 0, 0))  # Rouge : mauvais (surachat)
-                    feature_sentiments.append(-0.9)
-                self.merged_table.setItem(row, 5, item)
-
-                vol = safe_float(signal.get('Volume moyen', 0.0))
-                item = QTableWidgetItem(f"{vol:,.0f}")
-                item.setData(Qt.EditRole, float(vol))
-                item.setForeground(QColor(0, 0, 0))
-                self.merged_table.setItem(row, 6, item)
-
-                domain_item = QTableWidgetItem(str(signal.get('Domaine', '')))
-                domain_item.setForeground(QColor(0, 0, 0))
-                self.merged_table.setItem(row, 7, domain_item)
-
-                cap_item = QTableWidgetItem(str(signal.get('CapRange', '')))
-                cap_item.setForeground(QColor(0, 0, 0))
-                self.merged_table.setItem(row, 8, cap_item)
-
-                
-                # Score/Seuil ratio - 🔧 CORRECTION: Utiliser les seuils stockés au calcul, pas recalculer
-                # Calculer le ratio selon le signe du score
+        def _set_item(row: int, col: int, value, *, numeric: bool = False):
+            item = QTableWidgetItem(str(value))
+            if numeric:
                 try:
-                    if score_val > 0:
-                        ratio = score_val / seuil_achat if seuil_achat and seuil_achat != 0 else 0.0
-                    elif score_val < 0:
-                        ratio = score_val / seuil_vente if seuil_vente and seuil_vente != 0 else 0.0
-                    else:
-                        ratio = 0.0
-                except Exception as e:
-                    print(f"⚠️ Erreur calcul ratio pour {sym}: {e}")
-                    ratio = 0.0
-                
-                item = QTableWidgetItem(f"{ratio:.2f}")
-                item.setData(Qt.EditRole, ratio)
-                item.setForeground(sentiment_to_color(score_sent))
-                feature_sentiments.append(score_sent)
-                self.merged_table.setItem(row, 9, item)
-                
-                # Fiabilite and NbTrades (from signal or backtest)
-                try:
-                    fiab = signal.get('Fiabilite')
-                    nb_trades = signal.get('NbTrades')
-                    # if missing, check backtest map
-                    bt = bt_map.get(sym, {})
-                    if (fiab is None or fiab == 'N/A') and bt:
-                        fiab = bt.get('taux_reussite', 'N/A')
-                    if (nb_trades is None or nb_trades == 0) and bt:
-                        nb_trades = bt.get('trades', 0)
-
-                    # Fiabilité display
-                    if fiab is None or fiab == 'N/A':
-                        fiab_text = 'N/A'
-                        fiab_val = None
-                    else:
-                        fiab_val = safe_float(fiab, None)
-                        if fiab_val is not None:
-                            fiab_text = f"{fiab_val:.2f}%"
-                        else:
-                            fiab_text = str(fiab)
-
-                    item = QTableWidgetItem(fiab_text)
-                    if fiab_val is not None:
-                        item.setData(Qt.EditRole, fiab_val)
-                        # Harmoniser : >75% excellent, 50-75% bon, 30-50% moyen, <30% mauvais
-                        if fiab_val >= 75:
-                            item.setForeground(QColor(0, 128, 0))  # Vert foncé : excellent
-                            feature_sentiments.append(0.9)
-                        elif fiab_val >= 50:
-                            item.setForeground(QColor(34, 139, 34))  # Vert : bon
-                            feature_sentiments.append(0.6)
-                        elif fiab_val >= 30:
-                            item.setForeground(QColor(255, 165, 0))  # Orange : moyen
-                            feature_sentiments.append(0.1)
-                        else:
-                            item.setForeground(QColor(255, 0, 0))  # Rouge : mauvais
-                            feature_sentiments.append(-0.7)
-                    else:
-                        feature_sentiments.append(0.0)
-                    self.merged_table.setItem(row, 10, item)
-                except Exception as e:
-                    print(f"⚠️ Erreur colonne Fiabilité (10) pour {sym}: {e}")
-                    self.merged_table.setItem(row, 10, QTableWidgetItem("N/A"))
-
-                # NbTrades
-                try:
-                    nb_int = safe_int(nb_trades, 0)
-                    item = QTableWidgetItem(str(nb_int))
-                    item.setData(Qt.EditRole, nb_int)
-                    item.setForeground(QColor(0, 0, 0))
-                    self.merged_table.setItem(row, 11, item)
-                except Exception as e:
-                    print(f"⚠️ Erreur colonne NbTrades (11) pour {sym}: {e}")
-                    self.merged_table.setItem(row, 11, QTableWidgetItem("0"))
-
-                # Gagnants
-                try:
-                    gagnants = int(bt.get('gagnants', 0)) if bt else 0
-                    item = QTableWidgetItem(str(gagnants))
-                    item.setData(Qt.EditRole, gagnants)
-                    item.setForeground(QColor(0, 0, 0))
-                    self.merged_table.setItem(row, 12, item)
-                except Exception as e:
-                    print(f"⚠️ Erreur colonne Gagnants (12) pour {sym}: {e}")
-                    self.merged_table.setItem(row, 12, QTableWidgetItem("0"))
-                
-                # Colonnes Financières simples
-                # Colonne 13: Rev. Growth (%)
-                rev_growth = safe_float(signal.get('Rev. Growth (%)', 0.0))
-                item = QTableWidgetItem(f"{rev_growth:.2f}")
-                item.setData(Qt.EditRole, rev_growth)
-                # Harmoniser : croissance revenue positive = bon
-                if rev_growth > 20:
-                    item.setForeground(QColor(0, 128, 0))  # Vert foncé : excellent
-                    feature_sentiments.append(0.9)
-                elif rev_growth > 5:
-                    item.setForeground(QColor(34, 139, 34))  # Vert : bon
-                    feature_sentiments.append(0.6)
-                elif rev_growth > 0:
-                    item.setForeground(QColor(255, 165, 0))  # Orange : moyen
-                    feature_sentiments.append(0.1)
-                else:
-                    item.setForeground(QColor(255, 0, 0))  # Rouge : mauvais (négatif)
-                    feature_sentiments.append(-0.8)
-                self.merged_table.setItem(row, 13, item)
-
-                # Colonne 14: EBITDA Yield (%) - avec couleurs
-                ebitda = safe_float(signal.get('EBITDA Yield (%)', 0.0))
-                item = QTableWidgetItem(f"{ebitda:.2f}")
-                item.setData(Qt.EditRole, ebitda)
-                # Harmoniser : EBITDA positif élevé = bon
-                if ebitda > 15:
-                    item.setForeground(QColor(0, 128, 0))  # Vert foncé : excellent
-                    feature_sentiments.append(0.9)
-                elif ebitda > 8:
-                    item.setForeground(QColor(34, 139, 34))  # Vert : bon
-                    feature_sentiments.append(0.6)
-                elif ebitda > 0:
-                    item.setForeground(QColor(255, 165, 0))  # Orange : moyen
-                    feature_sentiments.append(0.1)
-                else:
-                    item.setForeground(QColor(255, 0, 0))  # Rouge : mauvais (négatif)
-                    feature_sentiments.append(-0.8)
-                self.merged_table.setItem(row, 14, item)
-
-                # Colonne 15: FCF Yield (%)
-                fcf = safe_float(signal.get('FCF Yield (%)', 0.0))
-                item = QTableWidgetItem(f"{fcf:.2f}")
-                item.setData(Qt.EditRole, fcf)
-                # Harmoniser : FCF positif = bon
-                if fcf > 10:
-                    item.setForeground(QColor(0, 128, 0))  # Vert foncé : excellent
-                    feature_sentiments.append(0.9)
-                elif fcf > 3:
-                    item.setForeground(QColor(34, 139, 34))  # Vert : bon
-                    feature_sentiments.append(0.6)
-                elif fcf > 0:
-                    item.setForeground(QColor(255, 165, 0))  # Orange : moyen
-                    feature_sentiments.append(0.1)
-                else:
-                    item.setForeground(QColor(255, 0, 0))  # Rouge : mauvais (négatif)
-                    feature_sentiments.append(-0.8)
-                self.merged_table.setItem(row, 15, item)
-
-                # Colonne 16: D/E Ratio (bas = bon)
-                de_ratio = safe_float(signal.get('D/E Ratio', 0.0))
-                item = QTableWidgetItem(f"{de_ratio:.2f}")
-                item.setData(Qt.EditRole, de_ratio)
-                # Harmoniser : ratio bas = excellent (moins d'endettement), ratio haut = mauvais
-                if de_ratio < 0.5:
-                    item.setForeground(QColor(0, 128, 0))  # Vert foncé : excellent
-                    feature_sentiments.append(0.9)
-                elif de_ratio < 1.5:
-                    item.setForeground(QColor(34, 139, 34))  # Vert : bon
-                    feature_sentiments.append(0.6)
-                elif de_ratio < 2.5:
-                    item.setForeground(QColor(255, 165, 0))  # Orange : moyen
-                    feature_sentiments.append(0.1)
-                else:
-                    item.setForeground(QColor(255, 0, 0))  # Rouge : mauvais (trop endetté)
-                    feature_sentiments.append(-0.8)
-                self.merged_table.setItem(row, 16, item)
-
-                # Colonne 16: Market Cap (B$)
-                market_cap = safe_float(signal.get('Market Cap (B$)', 0.0))
-                item = QTableWidgetItem(f"{market_cap:.2f}")
-                item.setData(Qt.EditRole, market_cap)
-                item.setForeground(QColor(0, 0, 0))
-                self.merged_table.setItem(row, 17, item)
-
-                # Colonne 17: ROE (%)
-                roe = safe_float(signal.get('ROE (%)', 0.0))
-                item = QTableWidgetItem(f"{roe:.2f}")
-                item.setData(Qt.EditRole, roe)
-                # Colorer basé sur ROE : vert si > 15%, orange si 10-15%, rouge si < 10%
-                if roe > 15:
-                    item.setForeground(QColor(0, 128, 0))  # Vert : excellent
-                    feature_sentiments.append(0.8)
-                elif roe > 10:
-                    item.setForeground(QColor(255, 165, 0))  # Orange : bon
-                    feature_sentiments.append(0.3)
-                elif roe > 5:
-                    item.setForeground(QColor(255, 140, 0))  # Orange clair : acceptable
-                    feature_sentiments.append(0.0)
-                else:
-                    item.setForeground(QColor(255, 0, 0))  # Rouge : faible
-                    feature_sentiments.append(-0.8)
-                self.merged_table.setItem(row, 18, item)
-
-                # Derivatives (colonnes 19-22)
-                dprice = safe_float(signal.get('dPrice', 0.0))
-                item = QTableWidgetItem(f"{dprice:.2f}")
-                item.setData(Qt.EditRole, dprice)
-                if dprice > 0.4:
-                    item.setForeground(QColor(34, 139, 34))
-                    feature_sentiments.append(0.4)
-                elif dprice < -0.4:
-                    item.setForeground(QColor(255, 0, 0))
-                    feature_sentiments.append(-0.4)
-                else:
-                    item.setForeground(QColor(255, 165, 0))
-                    feature_sentiments.append(0.0)
-                self.merged_table.setItem(row, 19, item)
-
-                var5j = safe_float(signal.get('Var5j (%)', 0.0))
-                item = QTableWidgetItem(f"{var5j:.2f}")
-                item.setData(Qt.EditRole, var5j)
-                # Contrarien: baisse hebdo = opportunité d'achat, hausse forte = prudence
-                if var5j <= -5.0:
-                    item.setForeground(QColor(0, 128, 0))
-                    feature_sentiments.append(0.9)
-                elif var5j <= -2.0:
-                    item.setForeground(QColor(34, 139, 34))
-                    feature_sentiments.append(0.6)
-                elif var5j < 2.0:
-                    item.setForeground(QColor(255, 165, 0))
-                    feature_sentiments.append(0.1)
-                elif var5j < 5.0:
-                    item.setForeground(QColor(255, 100, 0))
-                    feature_sentiments.append(-0.5)
-                else:
-                    item.setForeground(QColor(255, 0, 0))
-                    feature_sentiments.append(-0.9)
-                self.merged_table.setItem(row, 20, item)
-
-                drsi = safe_float(signal.get('dRSI', 0.0))
-                item = QTableWidgetItem(f"{drsi:.2f}")
-                item.setData(Qt.EditRole, drsi)
-                # Contrarien RSI slope: baisse RSI = meilleure probabilité de creux
-                if drsi <= -2.0:
-                    item.setForeground(QColor(34, 139, 34))
-                    feature_sentiments.append(0.5)
-                elif drsi >= 2.0:
-                    item.setForeground(QColor(255, 0, 0))
-                    feature_sentiments.append(-0.5)
-                else:
-                    item.setForeground(QColor(255, 165, 0))
-                    feature_sentiments.append(0.0)
-                self.merged_table.setItem(row, 21, item)
-
-                dvol = safe_float(signal.get('dVolRel', 0.0))
-                item = QTableWidgetItem(f"{dvol:.2f}")
-                item.setData(Qt.EditRole, dvol)
-                if dvol > 0.5:
-                    item.setForeground(QColor(34, 139, 34))
-                    feature_sentiments.append(0.4)
-                elif dvol < -0.5:
-                    item.setForeground(QColor(255, 0, 0))
-                    feature_sentiments.append(-0.4)
-                else:
-                    item.setForeground(QColor(255, 165, 0))
-                    feature_sentiments.append(0.0)
-                self.merged_table.setItem(row, 22, item)
-
-                # Backtest metrics (if available)
-                # Colonnes 23-24 pour Gain total et Gain moyen
-                try:
-                    trades = int(bt.get('trades', 0)) if bt else 0
-                    taux = float(bt.get('taux_reussite', 0.0)) if bt else 0.0
-                    gain_total = float(bt.get('gain_total', 0.0)) if bt else 0.0
-                    gain_moy = float(bt.get('gain_moyen', 0.0)) if bt else 0.0
-
-                    item = QTableWidgetItem(f"{gain_total:.2f}")
-                    item.setData(Qt.EditRole, gain_total)
-                    # Harmoniser : gain > 0 = bon
-                    if gain_total > 200:
-                        item.setForeground(QColor(0, 128, 0))  # Vert foncé : excellent
-                        feature_sentiments.append(0.9)
-                    elif gain_total > 50:
-                        item.setForeground(QColor(34, 139, 34))  # Vert : bon
-                        feature_sentiments.append(0.6)
-                    elif gain_total > 0:
-                        item.setForeground(QColor(255, 165, 0))  # Orange : moyen
-                        feature_sentiments.append(0.1)
-                    else:
-                        item.setForeground(QColor(255, 0, 0))  # Rouge : mauvais
-                        feature_sentiments.append(-0.8)
-                    self.merged_table.setItem(row, 23, item)
-
-                    item = QTableWidgetItem(f"{gain_moy:.2f}")
-                    item.setData(Qt.EditRole, gain_moy)
-                    # Harmoniser : gain moyen > 0 = bon
-                    if gain_moy > 20:
-                        item.setForeground(QColor(0, 128, 0))  # Vert foncé : excellent
-                        feature_sentiments.append(0.9)
-                    elif gain_moy > 5:
-                        item.setForeground(QColor(34, 139, 34))  # Vert : bon
-                        feature_sentiments.append(0.6)
-                    elif gain_moy > 0:
-                        item.setForeground(QColor(255, 165, 0))  # Orange : moyen
-                        feature_sentiments.append(0.1)
-                    else:
-                        item.setForeground(QColor(255, 0, 0))  # Rouge : mauvais
-                        feature_sentiments.append(-0.8)
-                    self.merged_table.setItem(row, 24, item)
-                except Exception as e:
-                    print(f"⚠️ Erreur colonnes Gain (23-24) pour {sym}: {e}")
-                    self.merged_table.setItem(row, 23, QTableWidgetItem("0.00"))
-                    self.merged_table.setItem(row, 24, QTableWidgetItem("0.00"))
-
-                # Consensus (text column at index 25)
-                consensus = signal.get('Consensus', 'N/A')
-                # Debug: vérifier si le Consensus existe vraiment
-                if row == 0:  # Afficher seulement pour la première ligne
-                    print(f"🔍 DEBUG Consensus - Symbol: {signal.get('Symbole')}, Consensus value: '{consensus}'")
-                item = QTableWidgetItem(str(consensus))
-                # Colorer selon consensus
-                consensus_lower = str(consensus).lower()
-                if 'strong buy' in consensus_lower or 'achat fort' in consensus_lower:
-                    item.setForeground(QColor(0, 128, 0))  # Vert foncé : excellent
-                elif 'buy' in consensus_lower or 'achat' in consensus_lower:
-                    item.setForeground(QColor(34, 139, 34))  # Vert : bon
-                elif 'hold' in consensus_lower or 'conserver' in consensus_lower or 'neutre' in consensus_lower:
-                    item.setForeground(QColor(255, 165, 0))  # Orange : neutre
-                elif 'sell' in consensus_lower or 'vente' in consensus_lower:
-                    item.setForeground(QColor(255, 0, 0))  # Rouge : mauvais
-                self.merged_table.setItem(row, 25, item)
-
-                # Couleur moyenne du symbole basée sur l'ensemble des features colorisées
-                try:
-                    if feature_sentiments:
-                        avg_sentiment = sum(feature_sentiments) / len(feature_sentiments)
-                    else:
-                        avg_sentiment = 0.0
-                    symbol_item = self.merged_table.item(row, 0)
-                    if symbol_item is not None:
-                        symbol_item.setForeground(sentiment_to_color(avg_sentiment))
+                    item.setData(2, float(value))
                 except Exception:
                     pass
+            self.merged_table.setItem(row, col, item)
 
-                # item = QTableWidgetItem(f"{drawdown:.2f}")
-                # item.setData(Qt.EditRole, drawdown)
-                # self.merged_table.setItem(row, 19, item)
+        def _colorize(item, kind: str, value):
+            try:
+                if kind == 'signal':
+                    text = str(value).lower()
+                    if 'buy' in text or 'achat' in text:
+                        item.setForeground(QColor(34, 139, 34))
+                    elif 'sell' in text or 'vente' in text:
+                        item.setForeground(QColor(255, 0, 0))
+                    else:
+                        item.setForeground(QColor(255, 165, 0))
+                elif kind == 'fiab':
+                    v = float(value)
+                    if v >= 75:
+                        item.setForeground(QColor(0, 128, 0))
+                    elif v >= 50:
+                        item.setForeground(QColor(34, 139, 34))
+                    elif v >= 30:
+                        item.setForeground(QColor(255, 165, 0))
+                    else:
+                        item.setForeground(QColor(255, 0, 0))
+                elif kind in {'good_high', 'gain', 'positive'}:
+                    v = float(value)
+                    if v > 0:
+                        item.setForeground(QColor(34, 139, 34))
+                    elif v < 0:
+                        item.setForeground(QColor(255, 0, 0))
+                    else:
+                        item.setForeground(QColor(255, 165, 0))
+                elif kind == 'ratio_low':
+                    v = float(value)
+                    if v < 0.5:
+                        item.setForeground(QColor(0, 128, 0))
+                    elif v < 1.5:
+                        item.setForeground(QColor(34, 139, 34))
+                    elif v < 2.5:
+                        item.setForeground(QColor(255, 165, 0))
+                    else:
+                        item.setForeground(QColor(255, 0, 0))
+                elif kind == 'trend':
+                    if str(value).lower().startswith('hausse'):
+                        item.setForeground(QColor(34, 139, 34))
+                    elif str(value).lower().startswith('baisse'):
+                        item.setForeground(QColor(255, 0, 0))
+                    else:
+                        item.setForeground(QColor(255, 165, 0))
+            except Exception:
+                pass
 
-            except Exception as e:
-                print(f"❌ Erreur remplissage table pour {signal.get('Symbole', '?')}: {e}")
-                import traceback
-                traceback.print_exc()
-                if row >= 0:
-                    self.merged_table.removeRow(row)
-                continue
-
-        if sorting_was_enabled:
-            self.merged_table.setSortingEnabled(True)
-        
-        # Mettre à jour les onglets Graphiques et Comparaisons après remplissage de la table
+        self._updating_results_table = True
+        sorting_was_enabled = self.merged_table.isSortingEnabled()
+        self.merged_table.setUpdatesEnabled(False)
         try:
-            self.populate_charts_tab()
-        except Exception as e:
-            print(f"⚠️ Erreur lors de la mise à jour de l'onglet Graphiques: {e}")
-        
-        try:
-            self.populate_comparisons_tab()
-        except Exception as e:
-            print(f"⚠️ Erreur lors de la mise à jour de l'onglet Comparaisons: {e}")
+            if sorting_was_enabled:
+                self.merged_table.setSortingEnabled(False)
+
+            min_fiab_threshold = self.fiab_threshold_spin.value() if hasattr(self, 'fiab_threshold_spin') else 30
+            bt_map = getattr(self, 'backtest_map', {}) or {}
+            results_to_display = []
+
+            for result in self.current_results:
+                if not isinstance(result, dict):
+                    continue
+                fiab_val = result.get('Fiabilite', 'N/A')
+                if fiab_val == 'N/A':
+                    results_to_display.append(result)
+                    continue
+                fiab_num = _parse_numeric(fiab_val, None)
+                if fiab_num is None or fiab_num >= min_fiab_threshold:
+                    results_to_display.append(result)
+
+            self.merged_table.setRowCount(len(results_to_display))
+
+            for row, signal in enumerate(results_to_display):
+                sym = str(signal.get('Symbole', '')).strip()
+                if not sym:
+                    continue
+
+                bt = bt_map.get(sym, {})
+                score = _parse_numeric(signal.get('Score', 0.0), 0.0) or 0.0
+                seuil_achat = _parse_numeric(signal.get('Seuil_Achat', signal.get('seuil_achat', 4.2)), 4.2) or 4.2
+                seuil_vente = _parse_numeric(signal.get('Seuil_Vente', signal.get('seuil_vente', -0.5)), -0.5) or -0.5
+
+                fiab = signal.get('Fiabilite', bt.get('taux_reussite', 'N/A') if bt else 'N/A')
+                nb_trades = signal.get('NbTrades', bt.get('trades', 0) if bt else 0)
+                gagnants = signal.get('Gagnants', bt.get('gagnants', 0) if bt else 0)
+                gain_total = signal.get('Gain_total', bt.get('gain_total', 0.0) if bt else 0.0)
+                gain_moyen = signal.get('Gain_moyen', bt.get('gain_moyen', 0.0) if bt else 0.0)
+
+                values = {
+                    0: sym,
+                    1: signal.get('Signal', 'N/A'),
+                    2: signal.get('Score', 0.0),
+                    3: signal.get('Prix', 0.0),
+                    4: signal.get('Tendance', 'N/A'),
+                    5: signal.get('RSI', 0.0),
+                    6: signal.get('Volume moyen', 0.0),
+                    7: signal.get('Domaine', 'Inconnu'),
+                    8: signal.get('CapRange', 'Unknown'),
+                    9: score / seuil_achat if score >= 0 and seuil_achat else (score / seuil_vente if score < 0 and seuil_vente else 0.0),
+                    10: fiab,
+                    11: nb_trades,
+                    12: gagnants,
+                    13: signal.get('Rev. Growth (%)', 0.0),
+                    14: signal.get('EBITDA Yield (%)', 0.0),
+                    15: signal.get('FCF Yield (%)', 0.0),
+                    16: signal.get('D/E Ratio', 0.0),
+                    17: signal.get('Market Cap (B$)', 0.0),
+                    18: signal.get('ROE (%)', 0.0),
+                    19: signal.get('dPrice', 0.0),
+                    20: signal.get('Var5j (%)', 0.0),
+                    21: signal.get('dRSI', 0.0),
+                    22: signal.get('dVolRel', 0.0),
+                    23: gain_total,
+                    24: gain_moyen,
+                    25: signal.get('Consensus', 'N/A'),
+                }
+
+                numeric_cols = {2, 3, 5, 6, 9, 10, 11, 12, 13, 14, 15, 16, 17, 18, 19, 20, 21, 22, 23, 24}
+                for col, value in values.items():
+                    _set_item(row, col, value, numeric=col in numeric_cols)
+
+                _colorize(self.merged_table.item(row, 1), 'signal', values[1])
+                _colorize(self.merged_table.item(row, 4), 'trend', values[4])
+                _colorize(self.merged_table.item(row, 10), 'fiab', values[10] if values[10] != 'N/A' else 0)
+                _colorize(self.merged_table.item(row, 13), 'gain', values[13])
+                _colorize(self.merged_table.item(row, 14), 'gain', values[14])
+                _colorize(self.merged_table.item(row, 15), 'gain', values[15])
+                _colorize(self.merged_table.item(row, 16), 'ratio_low', values[16])
+                _colorize(self.merged_table.item(row, 18), 'gain', values[18])
+                _colorize(self.merged_table.item(row, 19), 'positive', values[19])
+                _colorize(self.merged_table.item(row, 20), 'positive', values[20])
+                _colorize(self.merged_table.item(row, 21), 'positive', values[21])
+                _colorize(self.merged_table.item(row, 22), 'positive', values[22])
+                _colorize(self.merged_table.item(row, 23), 'gain', values[23])
+                _colorize(self.merged_table.item(row, 24), 'gain', values[24])
+
+                consensus_item = self.merged_table.item(row, 25)
+                if consensus_item is not None:
+                    consensus_lower = str(values[25]).lower()
+                    if 'strong buy' in consensus_lower or 'achat fort' in consensus_lower:
+                        consensus_item.setForeground(QColor(0, 128, 0))
+                    elif 'buy' in consensus_lower or 'achat' in consensus_lower:
+                        consensus_item.setForeground(QColor(34, 139, 34))
+                    elif 'hold' in consensus_lower or 'conserver' in consensus_lower or 'neutre' in consensus_lower:
+                        consensus_item.setForeground(QColor(255, 165, 0))
+                    elif 'sell' in consensus_lower or 'vente' in consensus_lower:
+                        consensus_item.setForeground(QColor(255, 0, 0))
+
+                if row == 0:
+                    pass
+
+            self._charts_dirty = True
+            self._comparisons_dirty = True
+
+            if hasattr(self, 'charts_container'):
+                self._schedule_charts_refresh()
+            if hasattr(self, 'comparisons_container'):
+                self._schedule_comparisons_refresh()
+        finally:
+            if sorting_was_enabled:
+                self.merged_table.setSortingEnabled(True)
+            self.merged_table.setUpdatesEnabled(True)
+            self._updating_results_table = False
     
     def sort_results(self, index):
         if not hasattr(self, 'current_results'):
@@ -2712,12 +2638,6 @@ class MainWindow(QMainWindow):
 
             self.summary_text.setPlainText('\n'.join(lines))
 
-            # Refresh merged table to display updated fiabilite/nb trades
-            try:
-                self.update_results_table()
-            except Exception:
-                pass
-
         except Exception:
             try:
                 self.summary_text.setPlainText('')
@@ -2725,17 +2645,40 @@ class MainWindow(QMainWindow):
                 pass
     
     def closeEvent(self, event):
+        # Restore standard streams before widgets are torn down.
+        try:
+            sys.stdout = sys.__stdout__
+            sys.stderr = sys.__stderr__
+        except Exception:
+            pass
+
         # Stop analysis thread if running
         try:
-            if hasattr(self, 'analysis_thread') and self.analysis_thread.isRunning():
-                self.analysis_thread.stop()
-                self.analysis_thread.wait(2000)
+            if getattr(self, 'analysis_worker', None) is not None:
+                self.analysis_worker.stop()
         except Exception:
             pass
         try:
-            if hasattr(self, 'download_thread') and self.download_thread.isRunning():
-                self.download_thread.quit()
-                self.download_thread.wait(2000)
+            if getattr(self, 'analysis_qthread', None) is not None and self.analysis_qthread.isRunning():
+                self.analysis_qthread.quit()
+                self.analysis_qthread.wait(3000)
+        except Exception:
+            pass
+        try:
+            if getattr(self, 'download_worker', None) is not None:
+                self.download_worker.stop()
+        except Exception:
+            pass
+        try:
+            if getattr(self, 'download_qthread', None) is not None and self.download_qthread.isRunning():
+                self.download_qthread.quit()
+                self.download_qthread.wait(3000)
+        except Exception:
+            pass
+
+        try:
+            if _CRASH_LOG_FILE is not None:
+                _CRASH_LOG_FILE.flush()
         except Exception:
             pass
         event.accept()
@@ -2771,7 +2714,7 @@ class MainWindow(QMainWindow):
             symbol or '',
             domaine=domaine,
             cap_range=cap_range,
-            best_params=getattr(self, 'best_parameters', None) or qsi.extract_best_parameters(),
+            best_params=self._get_best_parameters_cached(),
         )
         original_cap_range = score_context['cap_range']
         original_domaine = score_context['domaine']
@@ -2835,7 +2778,7 @@ class MainWindow(QMainWindow):
         default_buy = 4.2
         default_sell = -0.5
         try:
-            best_params = getattr(self, 'best_parameters', None) or extract_best_parameters()
+            best_params = self._get_best_parameters_cached()
             selected_key = None
 
             # ✅ ORDRE CRITIQUE: Chercher d'abord cap_range+domaine, sinon juste domaine
@@ -2898,10 +2841,22 @@ class MainWindow(QMainWindow):
         # Hide x labels on top panel only; keep bottom panel date labels visible.
         ax_main.tick_params(axis='x', which='both', bottom=False, top=False, labelbottom=False)
 
-        buy_thr, sell_thr = self._get_global_thresholds_for_symbol(
-            domaine=precomp.get('domaine', 'Inconnu'),
-            cap_range=precomp.get('cap_range'),
-        )
+        buy_thr = precomp.get('seuil_achat')
+        sell_thr = precomp.get('seuil_vente')
+        if buy_thr is None or sell_thr is None:
+            buy_thr, sell_thr = self._get_global_thresholds_for_symbol(
+                domaine=precomp.get('domaine', 'Inconnu'),
+                cap_range=precomp.get('cap_range'),
+            )
+        else:
+            try:
+                buy_thr = float(buy_thr)
+                sell_thr = float(sell_thr)
+            except Exception:
+                buy_thr, sell_thr = self._get_global_thresholds_for_symbol(
+                    domaine=precomp.get('domaine', 'Inconnu'),
+                    cap_range=precomp.get('cap_range'),
+                )
 
         for ev in events:
             if ev.get('type') == 'BUY':
@@ -2913,6 +2868,31 @@ class MainWindow(QMainWindow):
             ax_score.plot(score_dates, score_values, color='#1565C0', linewidth=1.6, label='Score')
             ax_score.axhline(y=buy_thr, color='green', linestyle='--', alpha=0.5, linewidth=1.0, label=f'Seuil Achat ({buy_thr:.2f})')
             ax_score.axhline(y=sell_thr, color='red', linestyle='--', alpha=0.5, linewidth=1.0, label=f'Seuil Vente ({sell_thr:.2f})')
+
+            # Affiche les BUY/SELL directement sur la courbe de score pour garantir
+            # la correspondance visuelle entre positions et historique de score.
+            try:
+                idx = pd.to_datetime(score_dates, errors='coerce')
+                score_index = pd.Index(idx)
+                score_vals = list(score_values)
+                for ev in events:
+                    ev_type = str(ev.get('type', '')).upper()
+                    ev_date = ev.get('date')
+                    if not ev_date or ev_type not in {'BUY', 'SELL'}:
+                        continue
+                    ts = pd.to_datetime(ev_date, errors='coerce')
+                    if pd.isna(ts) or score_index.empty:
+                        continue
+                    pos = score_index.get_indexer([ts], method='nearest')[0]
+                    if pos < 0 or pos >= len(score_vals):
+                        continue
+                    y = float(score_vals[pos])
+                    marker = '^' if ev_type == 'BUY' else 'v'
+                    color = 'green' if ev_type == 'BUY' else 'red'
+                    ax_score.scatter(score_dates[pos], y, marker=marker, s=48, color=color, edgecolor='black', zorder=7)
+            except Exception:
+                pass
+
             ax_score.legend(loc='upper left', fontsize=8, frameon=True)
         else:
             ax_score.text(0.5, 0.5, 'Score indisponible', transform=ax_score.transAxes,
@@ -3373,6 +3353,29 @@ class MainWindow(QMainWindow):
 
             def clone_table_item(source_item, fallback_text=''):
                 text = source_item.text() if source_item else fallback_text
+
+                def _format_numeric_like_source(display_text, numeric_value):
+                    """Format all numeric display values with at most 2 decimals in comparison table."""
+                    txt = str(display_text or '')
+                    if numeric_value is None:
+                        return txt
+                    if '$' in txt:
+                        return f"${float(numeric_value):.2f}"
+                    if '%' in txt:
+                        return f"{float(numeric_value):.2f}%"
+                    if txt.strip().endswith('x'):
+                        return f"{float(numeric_value):.2f}x"
+
+                    clean_txt = txt.strip().replace(',', '')
+                    if '.' in clean_txt or 'e' in clean_txt.lower():
+                        return f"{float(numeric_value):.2f}"
+                    return txt
+
+                if source_item:
+                    edit_value = source_item.data(Qt.EditRole)
+                    if isinstance(edit_value, (int, float)):
+                        text = _format_numeric_like_source(text, edit_value)
+
                 item = QTableWidgetItem(text)
                 if source_item:
                     # Keep the already-formatted text from source_item to preserve UI rounding.
@@ -3858,7 +3861,7 @@ class MainWindow(QMainWindow):
                 
                 # Performance
                 perf = data['Performance (%)']
-                item = QTableWidgetItem(f"{perf:+.1f}%")
+                item = QTableWidgetItem(f"{perf:+.2f}%")
                 item.setData(Qt.EditRole, perf)
                 if perf > 0:
                     item.setForeground(QColor(0, 128, 0))  # Vert
@@ -3868,7 +3871,7 @@ class MainWindow(QMainWindow):
                 
                 # RSI
                 rsi = data['RSI']
-                item = QTableWidgetItem(f"{rsi:.1f}")
+                item = QTableWidgetItem(f"{rsi:.2f}")
                 item.setData(Qt.EditRole, rsi)
                 if rsi < 30 or rsi > 70:
                     item.setForeground(QColor(255, 140, 0))  # Orange (extrême)
@@ -4041,15 +4044,6 @@ class MainWindow(QMainWindow):
         except Exception as e:
             QMessageBox.warning(self, "Erreur", f"Impossible de charger les symboles récents: {e}")
     
-    def open_optimization_window(self):
-        """Ouvrir la fenêtre dédiée à l'optimisation hybride."""
-        try:
-            from optimization_window import OptimizationWindow
-            self.optim_window = OptimizationWindow(parent=self)
-            self.optim_window.show()
-        except Exception as e:
-            QMessageBox.critical(self, "Erreur", f"Impossible d'ouvrir la fenêtre d'optimisation: {e}")
-
     def _select_all_items(self, list_widget):
         """Sélectionner tous les éléments d'une QListWidget"""
         list_widget.selectAll()
@@ -4324,6 +4318,7 @@ class MainWindow(QMainWindow):
 
 # Ensure the application only launches when run directly
 if __name__ == "__main__":
+    _install_runtime_diagnostics()
     app = QApplication(sys.argv)
     window = MainWindow()
     window.setWindowTitle("Stock Analysis Tool")

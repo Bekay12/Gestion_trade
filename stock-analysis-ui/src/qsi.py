@@ -1572,6 +1572,13 @@ def update_symbol_info_in_db(symbol: str, sector: str = None, cap_range: str = N
         
         conn = sqlite3.connect(DB_PATH)
         cursor = conn.cursor()
+
+        inferred_cap_range = cap_range
+        try:
+            if (not inferred_cap_range or inferred_cap_range == 'Unknown') and market_cap_b and float(market_cap_b) > 0:
+                inferred_cap_range = classify_cap_range(float(market_cap_b))
+        except Exception:
+            inferred_cap_range = cap_range
         
         # Vérifier si le symbole existe
         cursor.execute("SELECT id FROM symbols WHERE symbol = ?", (symbol,))
@@ -1584,9 +1591,9 @@ def update_symbol_info_in_db(symbol: str, sector: str = None, cap_range: str = N
             if sector:
                 updates.append("sector = ?")
                 params.append(sector)
-            if cap_range and cap_range != 'Unknown':
+            if inferred_cap_range and inferred_cap_range != 'Unknown':
                 updates.append("market_cap_range = ?")
-                params.append(cap_range)
+                params.append(inferred_cap_range)
             if market_cap_b and market_cap_b > 0:
                 updates.append("market_cap_value = ?")
                 params.append(market_cap_b)
@@ -1602,7 +1609,7 @@ def update_symbol_info_in_db(symbol: str, sector: str = None, cap_range: str = N
             cursor.execute("""
                 INSERT INTO symbols (symbol, sector, market_cap_range, market_cap_value, currency, is_active)
                 VALUES (?, ?, ?, ?, ?, 1)
-            """, (symbol, sector, cap_range, market_cap_b or 0.0, str(currency or 'USD').upper()))
+            """, (symbol, sector, inferred_cap_range, market_cap_b or 0.0, str(currency or 'USD').upper()))
         
         conn.commit()
         conn.close()
@@ -1610,7 +1617,7 @@ def update_symbol_info_in_db(symbol: str, sector: str = None, cap_range: str = N
         # Mettre à jour le cache mémoire
         _SYMBOL_INFO_CACHE[symbol] = {
             'sector': sector or _SYMBOL_INFO_CACHE.get(symbol, {}).get('sector'),
-            'cap_range': cap_range or _SYMBOL_INFO_CACHE.get(symbol, {}).get('cap_range', 'Unknown'),
+            'cap_range': inferred_cap_range or _SYMBOL_INFO_CACHE.get(symbol, {}).get('cap_range', 'Unknown'),
             'market_cap_b': market_cap_b or _SYMBOL_INFO_CACHE.get(symbol, {}).get('market_cap_b', 0.0),
             'currency': str(currency or _SYMBOL_INFO_CACHE.get(symbol, {}).get('currency', 'USD')).upper(),
         }
@@ -1632,27 +1639,62 @@ def get_cap_range_for_symbol(symbol: str) -> str:
     db_info = get_symbol_info_from_db(symbol)
     if db_info['cap_range'] and db_info['cap_range'] != 'Unknown':
         return db_info['cap_range']
-    
-    # Étape 2️⃣: Essayer le cache pickle
+
+    # Si la market cap est connue en DB, reconstruire la tranche directement.
     try:
+        market_cap_b = float(db_info.get('market_cap_b') or 0.0)
+        if market_cap_b > 0:
+            inferred = classify_cap_range(market_cap_b)
+            if inferred and inferred != 'Unknown':
+                return inferred
+    except Exception:
+        pass
+    
+    # Étape 2️⃣: Essayer les caches pickle financiers (data_cache puis cache_data)
+    try:
+        def _infer_from_market_cap(mc_b: float) -> str:
+            try:
+                from symbol_manager import classify_cap_range
+                return classify_cap_range(mc_b)
+            except Exception:
+                if mc_b < 2.0:
+                    return 'Small'
+                if mc_b < 10.0:
+                    return 'Mid'
+                if mc_b < 200.0:
+                    return 'Large'
+                return 'Mega'
+
+        candidates = []
+
+        # 2a) cache standard via config.get_pickle_cache -> data_cache/<symbol>_financial.pkl
         if get_pickle_cache is not None:
             d = get_pickle_cache(symbol, 'financial', ttl_hours=24*365)
-            if d is not None and isinstance(d, dict):
-                mc_b = float(d.get('market_cap_val', 0.0) or 0.0)
-                if mc_b > 0:
-                    try:
-                        from symbol_manager import classify_cap_range
-                        result = classify_cap_range(mc_b)
-                        if result and result != 'Unknown':
-                            return result
-                    except Exception:
-                        if mc_b < 2.0:
-                            return 'Small'
-                        if mc_b < 10.0:
-                            return 'Mid'
-                        if mc_b < 200.0:
-                            return 'Large'
-                        return 'Mega'
+            if isinstance(d, dict):
+                candidates.append(d)
+
+        # 2b) fallback legacy/local -> cache_data/<symbol>_financial.pkl
+        legacy_file = CACHE_DIR / f"{symbol}_financial.pkl"
+        if legacy_file.exists():
+            try:
+                d2 = pd.read_pickle(legacy_file)
+                if isinstance(d2, dict):
+                    candidates.append(d2)
+            except Exception:
+                pass
+
+        for d in candidates:
+            mc_b = float(d.get('market_cap_val', 0.0) or 0.0)
+            if mc_b <= 0:
+                continue
+            result = _infer_from_market_cap(mc_b)
+            if result and result != 'Unknown':
+                # Backfill opportuniste pour corriger progressivement la DB.
+                try:
+                    update_symbol_info_in_db(symbol, cap_range=result, market_cap_b=mc_b)
+                except Exception:
+                    pass
+                return result
     except Exception:
         pass
     
@@ -1773,7 +1815,10 @@ def get_consensus(symbol: str) -> dict:
             return cached
     
     # En mode offline, retourner neutre si pas de cache
-    if OFFLINE_MODE:
+    consensus_offline = str(os.environ.get('QSI_CONSENSUS_OFFLINE', '')).strip().lower() in {
+        '1', 'true', 'yes', 'on'
+    }
+    if OFFLINE_MODE or consensus_offline:
         return { 'label': 'Neutre', 'mean': None }
 
     label = 'Neutre'
@@ -1968,10 +2013,18 @@ def _normalize_prices_to_usd(symbol: str, df: pd.DataFrame) -> pd.DataFrame:
 
     out = df.copy()
     try:
+        # Certains flux yfinance gardent un dernier point NaN (session en cours / clôture non publiée).
+        # On nettoie systématiquement la série native avant conversion devise.
         if 'Close_native' in out.columns:
-            close_native = out['Close_native'].astype(float)
+            close_native = pd.to_numeric(out['Close_native'], errors='coerce')
+            if close_native.isna().any() and 'Close' in out.columns:
+                close_native = close_native.fillna(pd.to_numeric(out['Close'], errors='coerce'))
         else:
-            close_native = out['Close'].astype(float)
+            close_native = pd.to_numeric(out['Close'], errors='coerce')
+
+        close_native = close_native.ffill().bfill()
+        if close_native.isna().all():
+            return df
 
         currency = None
         if 'Currency' in out.columns and len(out):
@@ -3324,6 +3377,8 @@ def analyse_signaux_populaires(
                 "gain_moyen": resultats['gain_moyen'],
                 "drawdown_max": resultats['drawdown_max'],
                 "Domaine": domaine,
+                "seuil_achat": seuil_achat_opt,
+                "seuil_vente": seuil_vente_opt,
                 "events": events,
                 "score_dates": resultats.get('score_dates', []),
                 "score_values": resultats.get('score_values', []),
