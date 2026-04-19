@@ -7727,3 +7727,181 @@
 2026-04-18 18:32:34,195 - ERROR - 
 1 Failed download:
 2026-04-18 18:32:34,195 - ERROR - ['EMG']: possibly delisted; no price data found  (period=18mo)
+2026-04-18 19:11:23,627 - ERROR - $YOC: possibly delisted; no price data found  (period=5d)
+2026-04-18 19:11:24,265 - ERROR - $CFLT: possibly delisted; no price data found  (period=5d)
+2026-04-18 19:11:25,618 - ERROR - $DBK: possibly delisted; no price data found  (period=5d)
+2026-04-18 19:11:26,704 - ERROR - 
+3 Failed downloads:
+2026-04-18 19:11:26,704 - ERROR - ['YOC', 'CFLT', 'DBK']: possibly delisted; no price data found  (period=5d)
+2026-04-18 19:11:27,617 - ERROR - $MNG: possibly delisted; no price data found  (period=5d)
+2026-04-18 19:11:27,695 - ERROR - $MCRO: possibly delisted; no price data found  (period=5d)
+2026-04-18 19:11:27,696 - ERROR - $IXI: possibly delisted; no price data found  (period=5d)
+2026-04-18 19:11:27,735 - ERROR - $PTEC: possibly delisted; no price data found  (period=5d)
+2026-04-18 19:11:28,077 - ERROR - $IUSA: possibly delisted; no price data found  (period=5d)
+2026-04-18 19:11:28,503 - ERROR - $PSM: possibly delisted; no price data found  (period=5d)
+2026-04-18 19:11:28,538 - ERROR - $JPNL: possibly delisted; no price data found  (period=5d)
+2026-04-18 19:11:28,805 - ERROR - $PJS1: possibly delisted; no price data found  (period=5d)
+2026-04-18 19:11:29,130 - ERROR - $PFV: possibly delisted; no price data found  (period=5d)
+2026-04-18 19:11:29,139 - ERROR - $MTRO: possibly delisted; no price data found  (period=5d)
+2026-04-18 19:11:29,140 - ERROR - $PBB: possibly delisted; no price data found  (period=5d)
+2026-04-18 19:11:29,197 - ERROR - 
+11 Failed downloads:
+2026-04-18 19:11:29,197 - ERROR - ['MNG', 'MCRO', 'IXI', 'PTEC', 'IUSA', 'PSM', 'JPNL', 'PJS1', 'PFV', 'MTRO', 'PBB']: possibly delisted; no price data found  (period=5d)
+2026-04-18 19:11:29,835 - ERROR - $GSX: possibly delisted; no price data found  (period=5d)
+2026-04-18 19:11:30,152 - ERROR - $HYLD: possibly delisted; no price data found  (period=5d)
+2026-04-18 19:11:30,161 - ERROR - $EMG: possibly delisted; no price data found  (period=5d)
+2026-04-18 19:11:30,179 - ERROR - $IPF: possibly delisted; no price data found  (period=5d)
+2026-04-18 19:11:30,451 - ERROR - $ENG: possibly delisted; no price data found  (period=5d)
+2026-04-18 19:11:30,526 - ERROR - $IPU: possibly delisted; no price data found  (period=5d)
+2026-04-18 19:11:30,801 - ERROR - $HDLV: possibly delisted; no price data found  (period=5d)
+2026-04-18 19:11:42,821 - ERROR - 
+7 Failed downloads:
+2026-04-18 19:11:42,821 - ERROR - ['GSX', 'HYLD', 'EMG', 'IPF', 'ENG', 'IPU', 'HDLV']: possibly delisted; no price data found  (period=5d)
+2026-04-18 19:11:43,133 - ERROR - $DGE: possibly delisted; no price data found  (period=5d)
+2026-04-18 19:11:43,147 - ERROR - $ELG: possibly delisted; no price data found  (period=5d)
+2026-04-18 19:11:43,205 - ERROR - $DTY: possibly delisted; no price data found  (period=5d)
+2026-04-18 19:11:43,420 - ERROR - $DGAZ: possibly delisted; no price data found  (period=5d)
+2026-04-18 19:11:43,500 - ERROR - $EVAL: possibly delisted; no price data found  (period=5d)
+2026-04-18 19:11:43,983 - ERROR - $CYBR: possibly delisted; no price data found  (period=5d) (Yahoo error = "No data found, symbol may be delisted")
+2026-04-18 19:11:44,449 - ERROR - $CEY: possibly delisted; no price data found  (period=5d)
+2026-04-18 19:11:45,194 - ERROR - $CPI: possibly delisted; no price data found  (period=5d)
+2026-04-18 19:11:45,200 - ERROR - $BOSS: possibly delisted; no price data found  (period=5d)
+2026-04-18 19:11:45,342 - ERROR - $BFIT: possibly delisted; no price data found  (period=5d)
+2026-04-18 19:11:52,397 - ERROR - 
+10 Failed downloads:
+2026-04-18 19:11:52,398 - ERROR - ['DGE', 'ELG', 'DTY', 'DGAZ', 'EVAL', 'CEY', 'CPI', 'BOSS', 'BFIT']: possibly delisted; no price data found  (period=5d)
+2026-04-18 19:11:52,398 - ERROR - ['CYBR']: possibly delisted; no price data found  (period=5d) (Yahoo error = "No data found, symbol may be delisted")
+2026-04-18 19:11:52,722 - ERROR - $AGT: possibly delisted; no price data found  (period=5d)
+2026-04-18 19:11:53,563 - ERROR - $AXL: possibly delisted; no price data found  (period=5d) (Yahoo error = "No data found, symbol may be delisted")
+2026-04-18 19:11:53,681 - ERROR - $CASC: possibly delisted; no price data found  (period=5d)
+2026-04-18 19:11:54,192 - ERROR - $AL: possibly delisted; no price data found  (period=5d)
+2026-04-18 19:11:54,883 - ERROR - $ALEX: possibly delisted; no price data found  (period=5d)
+2026-04-18 19:12:04,281 - ERROR - 
+5 Failed downloads:
+2026-04-18 19:12:04,281 - ERROR - ['AGT', 'CASC', 'AL', 'ALEX']: possibly delisted; no price data found  (period=5d)
+2026-04-18 19:12:04,281 - ERROR - ['AXL']: possibly delisted; no price data found  (period=5d) (Yahoo error = "No data found, symbol may be delisted")
+2026-04-18 19:12:04,969 - ERROR - $EB: possibly delisted; no price data found  (period=5d)
+2026-04-18 19:12:06,280 - ERROR - $NKLA: possibly delisted; no price data found  (period=5d)
+2026-04-18 19:12:06,813 - ERROR - 
+2 Failed downloads:
+2026-04-18 19:12:06,813 - ERROR - ['EB', 'NKLA']: possibly delisted; no price data found  (period=5d)
+2026-04-18 19:12:09,967 - ERROR - $KCO: possibly delisted; no price data found  (period=5d)
+2026-04-18 19:12:10,240 - ERROR - $RKN: possibly delisted; no price data found  (period=5d)
+2026-04-18 19:12:10,260 - ERROR - $PELI: possibly delisted; no price data found  (period=5d)
+2026-04-18 19:12:10,310 - ERROR - $GXI: possibly delisted; no price data found  (period=5d)
+2026-04-18 19:12:12,027 - ERROR - $19V.DE: possibly delisted; no price data found  (period=5d) (Yahoo error = "No data found, symbol may be delisted")
+2026-04-18 19:12:12,409 - ERROR - $ZEAL: possibly delisted; no price data found  (period=5d) (Yahoo error = "No data found, symbol may be delisted")
+2026-04-18 19:12:12,867 - ERROR - $AMPS: possibly delisted; no price data found  (period=5d) (Yahoo error = "No data found, symbol may be delisted")
+2026-04-18 19:12:12,870 - ERROR - $CHRO: possibly delisted; no price data found  (period=5d) (Yahoo error = "No data found, symbol may be delisted")
+2026-04-18 19:12:12,873 - ERROR - $ELB: possibly delisted; no price data found  (period=5d) (Yahoo error = "No data found, symbol may be delisted")
+2026-04-18 19:12:13,062 - ERROR - $GTN.A: possibly delisted; no price data found  (period=5d) (Yahoo error = "No data found, symbol may be delisted")
+2026-04-18 19:12:22,820 - ERROR - 
+10 Failed downloads:
+2026-04-18 19:12:22,820 - ERROR - ['KCO', 'RKN', 'PELI', 'GXI']: possibly delisted; no price data found  (period=5d)
+2026-04-18 19:12:22,821 - ERROR - ['19V.DE', 'ZEAL', 'AMPS', 'CHRO', 'ELB', 'GTN.A']: possibly delisted; no price data found  (period=5d) (Yahoo error = "No data found, symbol may be delisted")
+2026-04-18 19:12:23,662 - ERROR - $DVAX: possibly delisted; no price data found  (period=5d) (Yahoo error = "No data found, symbol may be delisted")
+2026-04-18 19:12:23,846 - ERROR - $JBSAY: possibly delisted; no price data found  (period=5d) (Yahoo error = "No data found, symbol may be delisted")
+2026-04-18 19:12:23,848 - ERROR - $DBN.DE: possibly delisted; no price data found  (period=5d) (Yahoo error = "No data found, symbol may be delisted")
+2026-04-18 19:12:24,269 - ERROR - $SBER.ME: possibly delisted; no price data found  (period=5d)
+2026-04-18 19:12:24,757 - ERROR - $GASI.MI: possibly delisted; no price data found  (period=5d)
+2026-04-18 19:12:24,854 - ERROR - $GAZP.ME: possibly delisted; no price data found  (period=5d)
+2026-04-18 19:12:24,984 - ERROR - $LKOH.ME: possibly delisted; no price data found  (period=5d)
+2026-04-18 19:12:25,571 - ERROR - $EDF.PA: possibly delisted; no price data found  (period=5d) (Yahoo error = "No data found, symbol may be delisted")
+2026-04-18 19:12:25,575 - ERROR - $UN01.DE: possibly delisted; no price data found  (period=5d) (Yahoo error = "No data found, symbol may be delisted")
+2026-04-18 19:12:25,582 - ERROR - $SGL: possibly delisted; no price data found  (period=5d)
+2026-04-18 19:12:25,656 - ERROR - $VTBR.ME: possibly delisted; no price data found  (period=5d)
+2026-04-18 19:12:26,440 - ERROR - $ROSN.ME: possibly delisted; no price data found  (period=5d)
+2026-04-18 19:12:26,811 - ERROR - $B4B.DE: possibly delisted; no price data found  (period=5d) (Yahoo error = "No data found, symbol may be delisted")
+2026-04-18 19:12:26,818 - ERROR - 
+13 Failed downloads:
+2026-04-18 19:12:26,818 - ERROR - ['DVAX', 'JBSAY', 'DBN.DE', 'EDF.PA', 'UN01.DE', 'B4B.DE']: possibly delisted; no price data found  (period=5d) (Yahoo error = "No data found, symbol may be delisted")
+2026-04-18 19:12:26,818 - ERROR - ['SBER.ME', 'GASI.MI', 'GAZP.ME', 'LKOH.ME', 'SGL', 'VTBR.ME', 'ROSN.ME']: possibly delisted; no price data found  (period=5d)
+2026-04-18 19:12:27,503 - ERROR - $1COV.DE: possibly delisted; no price data found  (period=5d)
+2026-04-18 19:12:28,431 - ERROR - $SAND: possibly delisted; no price data found  (period=5d) (Yahoo error = "No data found, symbol may be delisted")
+2026-04-18 19:12:28,947 - ERROR - $CDTX: possibly delisted; no price data found  (period=5d) (Yahoo error = "No data found, symbol may be delisted")
+2026-04-18 19:12:29,712 - ERROR - $RAPT: possibly delisted; no price data found  (period=5d)
+2026-04-18 19:12:29,803 - ERROR - 
+4 Failed downloads:
+2026-04-18 19:12:29,803 - ERROR - ['1COV.DE', 'RAPT']: possibly delisted; no price data found  (period=5d)
+2026-04-18 19:12:29,803 - ERROR - ['SAND', 'CDTX']: possibly delisted; no price data found  (period=5d) (Yahoo error = "No data found, symbol may be delisted")
+2026-04-18 19:12:31,416 - ERROR - $0011.HK: possibly delisted; no price data found  (period=5d) (Yahoo error = "No data found, symbol may be delisted")
+2026-04-18 19:12:32,614 - ERROR - 
+1 Failed download:
+2026-04-18 19:12:32,614 - ERROR - ['0011.HK']: possibly delisted; no price data found  (period=5d) (Yahoo error = "No data found, symbol may be delisted")
+2026-04-18 19:12:33,571 - ERROR - $COMP-USD: possibly delisted; no price data found  (period=5d)
+2026-04-18 19:12:34,319 - ERROR - $CCRD: possibly delisted; no price data found  (period=5d) (Yahoo error = "No data found, symbol may be delisted")
+2026-04-18 19:12:34,939 - ERROR - $AGS: possibly delisted; no price data found  (period=5d) (Yahoo error = "No data found, symbol may be delisted")
+2026-04-18 19:12:35,240 - ERROR - $ERJ: possibly delisted; no price data found  (period=5d) (Yahoo error = "No data found, symbol may be delisted")
+2026-04-18 19:12:35,836 - ERROR - $EXAS: possibly delisted; no price data found  (period=5d)
+2026-04-18 19:12:35,902 - ERROR - 
+5 Failed downloads:
+2026-04-18 19:12:35,903 - ERROR - ['COMP-USD', 'EXAS']: possibly delisted; no price data found  (period=5d)
+2026-04-18 19:12:35,903 - ERROR - ['CCRD', 'AGS', 'ERJ']: possibly delisted; no price data found  (period=5d) (Yahoo error = "No data found, symbol may be delisted")
+2026-04-18 19:15:40,340 - ERROR - $DBK: possibly delisted; no price data found  (period=5d)
+2026-04-18 19:15:40,674 - ERROR - $YOC: possibly delisted; no price data found  (period=5d)
+2026-04-18 19:15:41,530 - ERROR - $CFLT: possibly delisted; no price data found  (period=5d)
+2026-04-18 19:15:55,375 - ERROR - 
+3 Failed downloads:
+2026-04-18 19:15:55,375 - ERROR - ['DBK', 'YOC', 'CFLT']: possibly delisted; no price data found  (period=5d)
+2026-04-18 19:15:56,040 - ERROR - $IXI: possibly delisted; no price data found  (period=5d)
+2026-04-18 19:15:56,063 - ERROR - $PTEC: possibly delisted; no price data found  (period=5d)
+2026-04-18 19:15:56,067 - ERROR - $MCRO: possibly delisted; no price data found  (period=5d)
+2026-04-18 19:15:56,335 - ERROR - $IUSA: possibly delisted; no price data found  (period=5d)
+2026-04-18 19:15:56,356 - ERROR - $PFV: possibly delisted; no price data found  (period=5d)
+2026-04-18 19:15:56,980 - ERROR - $PJS1: possibly delisted; no price data found  (period=5d)
+2026-04-18 19:15:56,994 - ERROR - $MNG: possibly delisted; no price data found  (period=5d)
+2026-04-18 19:15:57,576 - ERROR - $JPNL: possibly delisted; no price data found  (period=5d)
+2026-04-18 19:15:57,642 - ERROR - $PSM: possibly delisted; no price data found  (period=5d)
+2026-04-18 19:15:57,642 - ERROR - $MTRO: possibly delisted; no price data found  (period=5d)
+2026-04-18 19:15:57,674 - ERROR - $PBB: possibly delisted; no price data found  (period=5d)
+2026-04-18 19:15:57,893 - ERROR - 
+11 Failed downloads:
+2026-04-18 19:15:57,894 - ERROR - ['IXI', 'PTEC', 'MCRO', 'IUSA', 'PFV', 'PJS1', 'MNG', 'JPNL', 'PSM', 'MTRO', 'PBB']: possibly delisted; no price data found  (period=5d)
+2026-04-18 19:15:58,257 - ERROR - $EMG: possibly delisted; no price data found  (period=5d)
+2026-04-18 19:15:58,523 - ERROR - $IPF: possibly delisted; no price data found  (period=5d)
+2026-04-18 19:15:58,762 - ERROR - $ENG: possibly delisted; no price data found  (period=5d)
+2026-04-18 19:16:00,006 - ERROR - $GSX: possibly delisted; no price data found  (period=5d)
+2026-04-18 19:16:00,119 - ERROR - $IPU: possibly delisted; no price data found  (period=5d)
+2026-04-18 19:16:00,166 - ERROR - $HDLV: possibly delisted; no price data found  (period=5d)
+2026-04-18 19:16:00,349 - ERROR - $HYLD: possibly delisted; no price data found  (period=5d)
+2026-04-18 19:16:00,458 - ERROR - 
+7 Failed downloads:
+2026-04-18 19:16:00,458 - ERROR - ['EMG', 'IPF', 'ENG', 'GSX', 'IPU', 'HDLV', 'HYLD']: possibly delisted; no price data found  (period=5d)
+2026-04-18 19:16:00,770 - ERROR - $ELG: possibly delisted; no price data found  (period=5d)
+2026-04-18 19:16:01,499 - ERROR - $CPI: possibly delisted; no price data found  (period=5d)
+2026-04-18 19:16:01,720 - ERROR - $CEY: possibly delisted; no price data found  (period=5d)
+2026-04-18 19:16:01,972 - ERROR - $BFIT: possibly delisted; no price data found  (period=5d)
+2026-04-18 19:16:02,187 - ERROR - $DTY: possibly delisted; no price data found  (period=5d)
+2026-04-18 19:16:02,749 - ERROR - $DGE: possibly delisted; no price data found  (period=5d)
+2026-04-18 19:16:02,757 - ERROR - $EVAL: possibly delisted; no price data found  (period=5d)
+2026-04-18 19:16:02,854 - ERROR - $BOSS: possibly delisted; no price data found  (period=5d)
+2026-04-18 19:16:02,976 - ERROR - $DGAZ: possibly delisted; no price data found  (period=5d)
+2026-04-18 19:16:03,248 - ERROR - $CYBR: possibly delisted; no price data found  (period=5d) (Yahoo error = "No data found, symbol may be delisted")
+2026-04-18 19:16:03,253 - ERROR - 
+10 Failed downloads:
+2026-04-18 19:16:03,253 - ERROR - ['ELG', 'CPI', 'CEY', 'BFIT', 'DTY', 'DGE', 'EVAL', 'BOSS', 'DGAZ']: possibly delisted; no price data found  (period=5d)
+2026-04-18 19:16:03,253 - ERROR - ['CYBR']: possibly delisted; no price data found  (period=5d) (Yahoo error = "No data found, symbol may be delisted")
+2026-04-18 19:16:03,591 - ERROR - $AL: possibly delisted; no price data found  (period=5d)
+2026-04-18 19:16:04,718 - ERROR - $CASC: possibly delisted; no price data found  (period=5d)
+2026-04-18 19:16:04,810 - ERROR - $ALEX: possibly delisted; no price data found  (period=5d)
+2026-04-18 19:16:05,362 - ERROR - $AXL: possibly delisted; no price data found  (period=5d) (Yahoo error = "No data found, symbol may be delisted")
+2026-04-18 19:16:05,604 - ERROR - $AGT: possibly delisted; no price data found  (period=5d)
+2026-04-19 20:11:25,977 - ERROR - $SMSN.L: possibly delisted; no price data found  (period=5d)
+2026-04-19 23:07:10,068 - ERROR - HTTP Error 404: {"quoteSummary":{"result":null,"error":{"code":"Not Found","description":"Quote not found for symbol: SOL"}}}
+2026-04-19 23:07:10,538 - ERROR - $SOL: possibly delisted; no price data found  (period=15mo) (Yahoo error = "No data found, symbol may be delisted")
+2026-04-19 23:07:10,544 - ERROR - 
+1 Failed download:
+2026-04-19 23:07:10,544 - ERROR - ['SOL']: possibly delisted; no price data found  (period=15mo) (Yahoo error = "No data found, symbol may be delisted")
+2026-04-19 23:07:12,088 - ERROR - HTTP Error 404: {"quoteSummary":{"result":null,"error":{"code":"Not Found","description":"Quote not found for symbol: SOL"}}}
+2026-04-19 23:07:12,377 - ERROR - $SOL: possibly delisted; no price data found  (period=15mo) (Yahoo error = "No data found, symbol may be delisted")
+2026-04-19 23:07:12,379 - ERROR - 
+1 Failed download:
+2026-04-19 23:07:12,379 - ERROR - ['SOL']: possibly delisted; no price data found  (period=15mo) (Yahoo error = "No data found, symbol may be delisted")
+2026-04-19 23:12:33,132 - ERROR - $CHRO: possibly delisted; no price data found  (period=15mo) (Yahoo error = "No data found, symbol may be delisted")
+2026-04-19 23:12:33,138 - ERROR - 
+1 Failed download:
+2026-04-19 23:12:33,138 - ERROR - ['CHRO']: possibly delisted; no price data found  (period=15mo) (Yahoo error = "No data found, symbol may be delisted")
+2026-04-19 23:12:34,692 - ERROR - $CHRO: possibly delisted; no price data found  (period=15mo) (Yahoo error = "No data found, symbol may be delisted")
+2026-04-19 23:12:34,699 - ERROR - 
+1 Failed download:
+2026-04-19 23:12:34,700 - ERROR - ['CHRO']: possibly delisted; no price data found  (period=15mo) (Yahoo error = "No data found, symbol may be delisted")

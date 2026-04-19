@@ -14,7 +14,6 @@ import pandas as pd
 import numpy as np
 import ta
 import time
-from matplotlib import dates as mdates
 import logging
 import warnings
 import json
@@ -26,12 +25,10 @@ import sys
 import os
 import sqlite3
 import yfinance as yf
-# Use Path for cross-platform compatibility
-from pathlib import Path
 _trading_accel_path = Path(__file__).parent / "trading_c_acceleration"
 if _trading_accel_path.exists():
     sys.path.insert(0, str(_trading_accel_path.parent))
-from trading_c_acceleration.qsi_optimized import backtest_signals, extract_best_parameters, backtest_signals_with_events
+from trading_c_acceleration.qsi_optimized import backtest_signals, backtest_signals_with_events
 
 # Import config et cache utilities
 try:
@@ -48,7 +45,7 @@ try:
     from symbol_manager import (
         init_symbols_table, sync_txt_to_sqlite, 
         get_symbols_by_list_type, get_symbols_by_sector_and_cap,
-        classify_cap_range, get_symbol_info_from_db
+        classify_cap_range
     )
 except ImportError:
     print("⚠️ symbol_manager non disponible, utilisation de la méthode txt")
@@ -174,7 +171,7 @@ def save_to_evolutive_csv(signals, filename="signaux_trading.csv"):
     except Exception as e:
         print(f"🚨 Erreur sauvegarde CSV: {e}")
 
-from typing import Tuple, Dict, Union, List
+from typing import Tuple
 
 # Extras for parameters beyond the legacy 8 coeffs/8 thresholds.
 # Price extras are controlled by a single flag: use_price_extras.
@@ -1162,94 +1159,6 @@ def get_trading_signal(prices, volumes, domaine, domain_coeffs=None, domain_thre
 # MÉTRIQUES FINANCIÈRES CLÉS ET LEURS DÉRIVÉES
 # =======================================================================
 
-def get_financial_metrics(symbol: str) -> dict:
-    """
-    Récupère les 5 métriques financières clés d'une action via yfinance.
-    
-    Retourne un dictionnaire avec:
-    - revenue_growth: Croissance du chiffre d'affaires (%)
-    - gross_margin: Marge brute (%)
-    - free_cash_flow: Free Cash Flow (milliards $)
-    - debt_to_equity: Ratio Dette/Équité
-    - market_cap: Capitalisation boursière (milliards $)
-    """
-    metrics = {
-        'revenue_growth': None,
-        'gross_margin': None,
-        'free_cash_flow': None,
-        'debt_to_equity': None,
-        'market_cap': None,
-        'currency': 'USD',
-        'fx_rate_to_usd': 1.0,
-        'values_in_usd': True,
-    }
-    
-    try:
-        import yfinance as yf  # Import paresseux
-        ticker = yf.Ticker(symbol)
-        info = ticker.info
-
-        quote_currency = str(info.get('currency') or 'USD').upper()
-        fin_currency = str(info.get('financialCurrency') or quote_currency or 'USD').upper()
-        fx_quote_to_usd = _get_rate_to_usd(quote_currency, source_symbol=symbol)
-        fx_fin_to_usd = _get_rate_to_usd(fin_currency, source_symbol=symbol)
-        metrics['currency'] = fin_currency
-        metrics['fx_rate_to_usd'] = fx_fin_to_usd
-        
-        # 1. Capitalisation boursière
-        market_cap = info.get('marketCap')
-        if market_cap:
-            metrics['market_cap'] = (float(market_cap) * fx_quote_to_usd) / 1e9
-        
-        # 2. Ratio Dette/Équité
-        debt_to_equity = info.get('debtToEquity')
-        if debt_to_equity:
-            metrics['debt_to_equity'] = float(debt_to_equity)
-        
-        # États financiers trimestriels
-        financials = ticker.quarterly_financials
-        cashflow = ticker.quarterly_cashflow
-        
-        if not financials.empty:
-            # 3. Croissance du chiffre d'affaires
-            try:
-                revenues = financials.loc['Total Revenue']
-                if len(revenues) >= 2:
-                    # ✅ CORRECTION 1: Ajouter  pour accéder à la première valeur
-                    rev_growth = (((revenues.iloc[0] - revenues.iloc[-1]) / revenues.iloc[-1]) * 100)
-                    metrics['revenue_growth'] = rev_growth
-            except Exception:
-                pass
-            
-            # 4. Marge brute
-            try:
-                gross_profit = financials.loc['Gross Profit']
-                total_revenue = financials.loc['Total Revenue']
-                if not gross_profit.empty and not total_revenue.empty:
-                    # ✅ CORRECTION 2 & 3: Ajouter  pour accéder aux premières valeurs
-                    latest_gp = gross_profit.iloc[0]
-                    latest_rev = total_revenue.iloc[0]
-                    if latest_rev != 0:
-                        margin = (latest_gp / latest_rev * 100)
-                        metrics['gross_margin'] = margin
-            except Exception:
-                pass
-        
-        # 5. Free Cash Flow
-        if not cashflow.empty:
-            try:
-                if 'Free Cash Flow' in cashflow.index:
-                    # ✅ CORRECTION 4: Ajouter  pour accéder à la première valeur
-                    fcf = cashflow.loc['Free Cash Flow'].iloc[0]
-                    metrics['free_cash_flow'] = (float(fcf) * fx_fin_to_usd) / 1e9
-            except Exception:
-                pass
-    
-    except Exception:
-        pass
-    
-    return metrics
-
 def compute_financial_derivatives(symbol: str, lookback_quarters: int = 4) -> dict:
     """
     Calcule les métriques financières de manière RAPIDE et SIMPLE.
@@ -1290,7 +1199,9 @@ def compute_financial_derivatives(symbol: str, lookback_quarters: int = 4) -> di
                 return 'Small'
             if market_cap_b < 10.0:
                 return 'Mid'
-            return 'Large'
+            if market_cap_b < 100.0:
+                return 'Large'
+            return 'Mega'
         except Exception:
             return 'Unknown'
 
@@ -1845,26 +1756,6 @@ def get_consensus(symbol: str) -> dict:
     
     return result
 
-def compute_simple_sentiment(prices: pd.Series) -> str:
-    """Sentiment très simple basé sur variation récente et RSI."""
-    try:
-        if isinstance(prices, pd.DataFrame):
-            prices = prices.squeeze()
-        valid = prices.replace(0, np.nan).dropna()
-        if len(valid) < 10:
-            return 'Neutre'
-        pct = float((valid.iloc[-1] - valid.iloc[-10]) / valid.iloc[-10] * 100)
-        try:
-            rsi = ta.momentum.RSIIndicator(close=valid, window=14).rsi().iloc[-1]
-        except Exception:
-            rsi = 50.0
-        if pct > 2 and rsi >= 50:
-            return 'Bon'
-        if pct < -2 and rsi < 50:
-            return 'Mauvais'
-        return 'Neutre'
-    except Exception:
-        return 'Neutre'
 # ===================================================================
 # SYSTÈME DE CACHE INTELLIGENT INTÉGRÉ
 # ===================================================================
@@ -2579,7 +2470,7 @@ def plot_unified_chart(symbol, prices, volumes, ax, show_xaxis=False, score_over
 
     # Calcul du RSI avec vérification des données
     try:
-        rsi = ta.momentum.RSIIndicator(close=prices, window=14).rsi()
+        rsi = ta.momentum.RSIIndicator(close=prices, window=17).rsi()
     except Exception as e:
         print(f"⚠️ Erreur RSI pour {symbol}: {str(e)}")
         rsi = pd.Series(np.zeros(len(prices)), index=prices.index)
@@ -2788,14 +2679,6 @@ def analyse_et_affiche(symbols, period="12mo"):
             except Exception:
                 domaine = "Inconnu"
 
-            events = generate_trade_events(prices, volumes, domaine)
-            for ev in events:
-                if ev.get('type') == 'BUY':
-                    axes[i].scatter(ev['date'], ev['price'], marker='^', s=80, color='green', edgecolor='black', zorder=6)
-                    axes[i].annotate('BUY', (ev['date'], ev['price']), textcoords='offset points', xytext=(0,8), ha='center', fontsize=8, color='green')
-                elif ev.get('type') == 'SELL':
-                    axes[i].scatter(ev['date'], ev['price'], marker='v', s=80, color='red', edgecolor='black', zorder=6)
-                    axes[i].annotate('SELL', (ev['date'], ev['price']), textcoords='offset points', xytext=(0,-10), ha='center', fontsize=8, color='red')
         except Exception:
             pass
 
@@ -2879,207 +2762,6 @@ def load_symbols_from_txt(filename: str, use_sqlite: bool = True) -> List[str]:
     except Exception as e:
         print(f"Erreur de lecture du fichier {filename} : {e}")
         return []
-
-def modify_symbols_file(filename: str, symbols_to_change: List[str], action: str):
-    """Modifie un fichier de symboles (ajout/suppression)"""
-    try:
-        # Charger les symboles existants
-        with open(filename, 'r', encoding='utf-8') as f:
-            existing_symbols = set(line.strip() for line in f if line.strip())
-
-        initial_count = len(existing_symbols)
-        added, removed = 0, 0
-
-        if action == "add":
-            for symbol in symbols_to_change:
-                if symbol not in existing_symbols:
-                    existing_symbols.add(symbol)
-                    added += 1
-        elif action == "remove":
-            for symbol in symbols_to_change:
-                if symbol in existing_symbols:
-                    existing_symbols.remove(symbol)
-                    removed += 1
-        else:
-            print("⚠️ Action invalide. Utilise 'add' ou 'remove'.")
-            return
-
-        # Sauvegarder la nouvelle liste
-        with open(filename, 'w', encoding='utf-8') as f:
-            for symbol in sorted(existing_symbols):
-                f.write(symbol + '\n')
-
-        print(f"✅ Fichier mis à jour : {filename}")
-        print(f"🔼 Symboles ajoutés : {added}")
-        print(f"🔽 Symboles retirés : {removed}")
-        print(f"📊 Total actuel : {len(existing_symbols)} symboles")
-
-    except Exception as e:
-        print(f"❌ Erreur lors de la modification du fichier : {e}")
-
-# ===================================================================
-# FONCTIONS UTILITAIRES POUR MAINTENANCE DU CACHE
-# ===================================================================
-
-def cache_status_report():
-    """Affiche un rapport détaillé de l'état du cache"""
-    print("📊 RAPPORT ÉTAT DU CACHE")
-    print("=" * 50)
-    
-    if not CACHE_DIR.exists():
-        print("❌ Dossier cache inexistant")
-        return
-    
-    cache_files = list(CACHE_DIR.glob("*.pkl"))
-    print(f"💾 Total fichiers cache: {len(cache_files)}")
-    
-    if not cache_files:
-        print("📁 Cache vide")
-        return
-    
-    # Analyse par âge
-    now = datetime.now()
-    age_categories = {"< 6h": 0, "6h-24h": 0, "1-7j": 0, "> 7j": 0}
-    total_size = 0
-    
-    for cache_file in cache_files:
-        try:
-            age_hours = (now - datetime.fromtimestamp(cache_file.stat().st_mtime)).total_seconds() / 3600
-            size_mb = cache_file.stat().st_size / (1024 * 1024)
-            total_size += size_mb
-            
-            if age_hours < 6:
-                age_categories["< 6h"] += 1
-            elif age_hours < 24:
-                age_categories["6h-24h"] += 1
-            elif age_hours < 168:  # 7 jours
-                age_categories["1-7j"] += 1
-            else:
-                age_categories["> 7j"] += 1
-        except Exception:
-            continue
-    
-    print(f"📈 Répartition par âge:")
-    for category, count in age_categories.items():
-        print(f"   {category}: {count} fichiers")
-    
-    print(f"💽 Taille totale: {total_size:.2f} MB")
-    
-    # Symboles les plus récents
-    recent_files = sorted(cache_files, key=lambda f: f.stat().st_mtime, reverse=True)[:10]
-    print(f"\n🔥 10 plus récents:")
-    for cache_file in recent_files:
-        try:
-            age_hours = (now - datetime.fromtimestamp(cache_file.stat().st_mtime)).total_seconds() / 3600
-            symbol = cache_file.stem.split('_')[0]
-            print(f"   {symbol}: {age_hours:.1f}h")
-        except Exception:
-            continue
-
-def cleanup_cache(max_age_days: int = 30):
-    """Nettoie les fichiers cache trop anciens"""
-    print(f"🧹 NETTOYAGE CACHE (> {max_age_days} jours)")
-    print("=" * 40)
-    
-    if not CACHE_DIR.exists():
-        print("❌ Dossier cache inexistant")
-        return
-    
-    cutoff_time = datetime.now() - timedelta(days=max_age_days)
-    cache_files = list(CACHE_DIR.glob("*.pkl"))
-    
-    cleaned_count = 0
-    cleaned_size = 0
-    
-    for cache_file in cache_files:
-        try:
-            file_time = datetime.fromtimestamp(cache_file.stat().st_mtime)
-            if file_time < cutoff_time:
-                size_mb = cache_file.stat().st_size / (1024 * 1024)
-                cache_file.unlink()
-                cleaned_count += 1
-                cleaned_size += size_mb
-        except Exception as e:
-            print(f"⚠️ Erreur suppression {cache_file.name}: {e}")
-    
-    print(f"✅ Nettoyé: {cleaned_count} fichiers ({cleaned_size:.2f} MB)")
-
-def warmup_cache(symbol_lists: List[str] = None, period: str = "1y"):
-    """Pré-chauffe le cache avec les symboles des listes importantes"""
-    if symbol_lists is None:
-        symbol_lists = ["mes_symbols.txt", "popular_symbols.txt"]
-    
-    print("🔥 PRÉ-CHAUFFAGE DU CACHE")
-    print("=" * 30)
-    
-    all_symbols = set()
-    for list_file in symbol_lists:
-        try:
-            symbols = load_symbols_from_txt(list_file)
-            all_symbols.update(symbols)
-            print(f"📋 {list_file}: {len(symbols)} symboles")
-        except Exception as e:
-            print(f"⚠️ Erreur {list_file}: {e}")
-    
-    if not all_symbols:
-        print("❌ Aucun symbole à pré-charger")
-        return
-    
-    print(f"🚀 Pré-chargement de {len(all_symbols)} symboles...")
-    
-    # Pré-chargement avec barre de progression
-    successful = 0
-    for symbol in all_symbols:
-        try:
-            data = get_cached_data(symbol, period, max_age_hours=CACHE_MAX_AGE_HOURS)
-            if not data.empty:
-                successful += 1
-            print(f"\r🔄 Progression: {successful}/{len(all_symbols)}", end="", flush=True)
-        except Exception:
-            continue
-    
-    print(f"\n✅ Pré-chargement terminé: {successful}/{len(all_symbols)} réussis")
-
-# ===================================================================
-# NOUVELLES FONCTIONS D'ANALYSE DES LOGS
-# ===================================================================
-
-def analyze_new_symbols_usage():
-    """Analyse les nouveaux symboles les plus utilisés"""
-    log_file = Path("cache_logs/nouveaux_symboles.log")
-    
-    if not log_file.exists():
-        print("📊 Aucun log de nouveaux symboles trouvé")
-        return
-    
-    print("📊 ANALYSE NOUVEAUX SYMBOLES")
-    print("=" * 40)
-    
-    try:
-        import pandas as pd
-        df = pd.read_csv(log_file, names=['timestamp', 'symbol', 'context'])
-        
-        # Symboles les plus fréquents
-        symbol_counts = df['symbol'].value_counts().head(10)
-        print("🔥 Top 10 nouveaux symboles:")
-        for symbol, count in symbol_counts.items():
-            print(f"   {symbol}: {count} utilisations")
-        
-        # Usage par contexte
-        print(f"\n📋 Usage par contexte:")
-        context_counts = df['context'].value_counts()
-        for context, count in context_counts.items():
-            print(f"   {context}: {count} utilisations")
-        
-        # Suggestions d'ajout
-        frequent_symbols = symbol_counts[symbol_counts >= 3].index.tolist()
-        if frequent_symbols:
-            print(f"\n💡 Suggérer d'ajouter aux listes:")
-            for symbol in frequent_symbols[:5]:
-                print(f"   {symbol} → Utilisé {symbol_counts[symbol]} fois")
-        
-    except Exception as e:
-        print(f"⚠️ Erreur analyse: {e}")
 
 # ======================================================================
 # CONFIGURATION PRINCIPALE
@@ -3348,9 +3030,12 @@ def analyse_signaux_populaires(
                 selected_key = domaine
 
             coeffs, thresholds, globals_thresholds, _, extras = best_params.get(selected_key or domaine, (None, None, (4.2, -0.5), None, {}))
-            domain_coeffs = {domaine: coeffs} if coeffs else None
+            # Use selected_key (e.g. "Industrials_Large") as dict key so that
+            # get_trading_signal's internal composite-key lookup finds it.
+            _coeffs_key = selected_key or domaine
+            domain_coeffs = {_coeffs_key: coeffs} if coeffs else None
             feature_thresholds = thresholds[:8] if thresholds and len(thresholds) >= 8 else None
-            domain_thresholds = {domaine: feature_thresholds} if feature_thresholds else None
+            domain_thresholds = {_coeffs_key: feature_thresholds} if feature_thresholds else None
 
             # Seuils globaux dédiés symbole/secteur/cap_range
             seuil_achat_opt = float(globals_thresholds[0]) if globals_thresholds and len(globals_thresholds) >= 2 else 4.2
@@ -3670,42 +3355,13 @@ def analyse_signaux_populaires(
             show_xaxis = (i == len(top_achats_fiables) - 1)  # True seulement pour le dernier subplot
             plot_unified_chart(s['Symbole'], prices, volumes, axes[i], show_xaxis=show_xaxis)
 
-            # Dessiner les marqueurs d'achat/vente
-            try:
-                # Récupérer le secteur depuis la DB cache, fallback yfinance
-                db_info = get_symbol_info_from_db(s['Symbole'])
-                if db_info.get('sector') and db_info['sector'] != 'Inconnu':
-                    domaine = db_info['sector']
-                else:
-                    try:
-                        info = yf.Ticker(s['Symbole']).info
-                        domaine = info.get("sector", "Inconnu")
-                    except Exception:
-                        domaine = "Inconnu"
-
-                events = generate_trade_events(prices, volumes, domaine)
-                for ev in events:
-                    if ev.get('type') == 'BUY':
-                        axes[i].scatter(ev['date'], ev['price'], marker='^', s=80, color='green', edgecolor='black', zorder=6)
-                        axes[i].annotate('BUY', (ev['date'], ev['price']), textcoords='offset points', xytext=(0,8), ha='center', fontsize=8, color='green')
-                    elif ev.get('type') == 'SELL':
-                        axes[i].scatter(ev['date'], ev['price'], marker='v', s=80, color='red', edgecolor='black', zorder=6)
-                        axes[i].annotate('SELL', (ev['date'], ev['price']), textcoords='offset points', xytext=(0,-10), ha='center', fontsize=8, color='red')
-            except Exception:
-                pass
-
             valid = prices.replace(0, np.nan).dropna()
             if len(valid) > 1:
                 progression = float((valid.iloc[-1] - valid.iloc[0]) / valid.iloc[0] * 100)
             else:
                 progression = 0.0
 
-            try:
-                info = yf.Ticker(s['Symbole']).info
-                domaine = info.get("sector", "Inconnu")
-            except Exception:
-                domaine = "Inconnu"
-
+            domaine = s.get('Domaine', 'Inconnu')
             cap_range = get_cap_range_for_symbol(s['Symbole'])
             signal, last_price, trend, last_rsi, volume_mean, score, _ = get_trading_signal(prices, volumes, domaine=domaine, cap_range=cap_range)
 
@@ -3714,7 +3370,7 @@ def analyse_signaux_populaires(
 
             if last_price is not None:
                 trend_symbol = "Haussière" if trend else "Baissière"
-                rsi_status = "SURACH" if last_rsi > 72.5 else "SURVENTE" if last_rsi < 30 else "NEUTRE"
+                rsi_status = "SURACH" if last_rsi > 70 else "SURVENTE" if last_rsi < 30 else "NEUTRE"
                 signal_color = 'green' if signal == "ACHAT" else 'red' if signal == "VENTE" else 'black'
                 special_marker = " ‼️" if s['Symbole'] in mes_symbols else ""
 
@@ -3745,42 +3401,13 @@ def analyse_signaux_populaires(
             show_xaxis = (i == len(top_ventes_fiables) - 1)  # True seulement pour le dernier subplot
             plot_unified_chart(s['Symbole'], prices, volumes, axes[i], show_xaxis=show_xaxis)
 
-            # Dessiner les marqueurs d'achat/vente
-            try:
-                # Récupérer le secteur depuis la DB cache, fallback yfinance
-                db_info = get_symbol_info_from_db(s['Symbole'])
-                if db_info.get('sector') and db_info['sector'] != 'Inconnu':
-                    domaine = db_info['sector']
-                else:
-                    try:
-                        info = yf.Ticker(s['Symbole']).info
-                        domaine = info.get("sector", "Inconnu")
-                    except Exception:
-                        domaine = "Inconnu"
-
-                events = generate_trade_events(prices, volumes, domaine)
-                for ev in events:
-                    if ev.get('type') == 'BUY':
-                        axes[i].scatter(ev['date'], ev['price'], marker='^', s=80, color='green', edgecolor='black', zorder=6)
-                        axes[i].annotate('BUY', (ev['date'], ev['price']), textcoords='offset points', xytext=(0,8), ha='center', fontsize=8, color='green')
-                    elif ev.get('type') == 'SELL':
-                        axes[i].scatter(ev['date'], ev['price'], marker='v', s=80, color='red', edgecolor='black', zorder=6)
-                        axes[i].annotate('SELL', (ev['date'], ev['price']), textcoords='offset points', xytext=(0,-10), ha='center', fontsize=8, color='red')
-            except Exception:
-                pass
-
             valid = prices.replace(0, np.nan).dropna()
             if len(valid) > 1:
                 progression = float((valid.iloc[-1] - valid.iloc[0]) / valid.iloc[0] * 100)
             else:
                 progression = 0.0
 
-            try:
-                info = yf.Ticker(s['Symbole']).info
-                domaine = info.get("sector", "Inconnu")
-            except Exception:
-                domaine = "Inconnu"
-
+            domaine = s.get('Domaine', 'Inconnu')
             cap_range = get_cap_range_for_symbol(s['Symbole'])
             signal, last_price, trend, last_rsi, volume_mean, score, _ = get_trading_signal(prices, volumes, domaine=domaine, cap_range=cap_range)
 

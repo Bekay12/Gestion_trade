@@ -7,22 +7,14 @@ from PyQt5.QtWidgets import (
 from PyQt5.QtWidgets import QAbstractItemView
 from PyQt5.QtCore import QThread, pyqtSignal, Qt, QObject, QTimer
 from PyQt5.QtGui import QColor
-import io
-import base64
-import pickle
-import json
-import tempfile
-import textwrap
 from matplotlib.backends.backend_qt5agg import FigureCanvasQTAgg as FigureCanvas
 from matplotlib.figure import Figure
 from matplotlib import dates as mdates
 from concurrent.futures import ThreadPoolExecutor, TimeoutError as FuturesTimeoutError
 import sys
 import os
-import math
 import traceback
 import threading
-import subprocess
 import faulthandler
 from datetime import datetime
 import pandas as pd
@@ -37,8 +29,6 @@ if PROJECT_SRC not in sys.path:
 os.environ.setdefault('QSI_DISABLE_C_ACCELERATION', '1')
 # Segfault mitigation: avoid curl_cffi/yfinance recommendation fetches in desktop callbacks.
 os.environ.setdefault('QSI_CONSENSUS_OFFLINE', '1')
-# Stability mitigation: run heavy analysis in a subprocess to isolate native teardown.
-os.environ.setdefault('QSI_ANALYSIS_SUBPROCESS', '1')
 
 from qsi import analyse_signaux_populaires, analyse_et_affiche, load_symbols_from_txt, period
 from qsi import download_stock_data, backtest_signals, plot_unified_chart, get_trading_signal, resolve_symbol_scoring_context
@@ -164,118 +154,11 @@ def _get_sector_cache_first(symbol: str) -> str:
     return sector if sector else 'Inconnu'
 
 
-def _run_analysis_in_subprocess(symbols, mes_symbols, period_value, fiab_threshold, min_holding_days):
-    """Run analyse_signaux_populaires in a separate Python process.
-
-    This isolates sqlite/native object lifetimes from the GUI process and avoids
-    intermittent thread-state teardown crashes.
-    """
-    payload = {
-        'symbols': symbols,
-        'mes_symbols': mes_symbols,
-        'period': period_value,
-        'fiab_threshold': int(fiab_threshold),
-        'min_holding_days': int(min_holding_days),
-    }
-
-    in_path = None
-    out_path = None
-    try:
-        with tempfile.NamedTemporaryFile(mode='w', suffix='_analysis_in.json', delete=False, encoding='utf-8') as f_in:
-            json.dump(payload, f_in)
-            in_path = f_in.name
-
-        with tempfile.NamedTemporaryFile(mode='wb', suffix='_analysis_out.pkl', delete=False) as f_out:
-            out_path = f_out.name
-
-        runner_code = textwrap.dedent(
-            """
-            import json
-            import pickle
-            import traceback
-            import sys
-
-            from qsi import analyse_signaux_populaires
-
-            in_file = sys.argv[1]
-            out_file = sys.argv[2]
-
-            try:
-                with open(in_file, 'r', encoding='utf-8') as f:
-                    payload = json.load(f)
-
-                result = analyse_signaux_populaires(
-                    payload['symbols'],
-                    payload['mes_symbols'],
-                    period=payload['period'],
-                    afficher_graphiques=False,
-                    plot_all=False,
-                    verbose=True,
-                    taux_reussite_min=payload['fiab_threshold'],
-                    min_holding_days=payload['min_holding_days'],
-                )
-
-                with open(out_file, 'wb') as f:
-                    pickle.dump({'ok': True, 'result': result}, f, protocol=pickle.HIGHEST_PROTOCOL)
-            except Exception as e:
-                with open(out_file, 'wb') as f:
-                    pickle.dump(
-                        {
-                            'ok': False,
-                            'error': str(e),
-                            'traceback': traceback.format_exc(),
-                        },
-                        f,
-                        protocol=pickle.HIGHEST_PROTOCOL,
-                    )
-            """
-        )
-
-        child_env = os.environ.copy()
-        child_env['PYTHONPATH'] = PROJECT_SRC + os.pathsep + child_env.get('PYTHONPATH', '')
-        # Keep C acceleration disabled in child to avoid known native instability.
-        child_env['QSI_DISABLE_C_ACCELERATION'] = '1'
-        child_env['QSI_CONSENSUS_OFFLINE'] = '1'
-
-        completed = subprocess.run(
-            [sys.executable, '-X', 'faulthandler', '-c', runner_code, in_path, out_path],
-            cwd=PROJECT_SRC,
-            env=child_env,
-            check=False,
-        )
-
-        if completed.returncode != 0:
-            raise RuntimeError(f"Sous-processus d'analyse terminé avec code {completed.returncode}")
-
-        with open(out_path, 'rb') as f:
-            result_payload = pickle.load(f)
-
-        if not result_payload.get('ok'):
-            err = result_payload.get('error', 'Erreur inconnue')
-            tb = result_payload.get('traceback', '')
-            raise RuntimeError(f"Analyse subprocess échouée: {err}\n{tb}")
-
-        return result_payload.get('result', {})
-    finally:
-        for p in (in_path, out_path):
-            if not p:
-                continue
-            try:
-                os.remove(p)
-            except Exception:
-                pass
-
-
-class AnalysisWorker(QObject):
-    """Worker QObject executed inside a native QThread.
-
-    This avoids overriding QThread.run() in Python, which can destabilize
-    SIP/PyQt teardown in long-running mixed Python/native workloads.
-    """
+class AnalysisThread(QThread):
+    """Runs analyse_signaux_populaires in a subprocess for memory isolation."""
     result_ready = pyqtSignal(dict)
     error = pyqtSignal(str)
     progress = pyqtSignal(str)
-    finished = pyqtSignal()
 
     def __init__(self, symbols, mes_symbols, period="12mo", analysis_id=0, min_holding_days=7):
         super().__init__()
@@ -285,133 +168,139 @@ class AnalysisWorker(QObject):
         self._stop_requested = False
         self.analysis_id = analysis_id
         self.min_holding_days = max(1, int(min_holding_days))
+        self._process = None
 
-    def process(self):
+    def run(self):
+        import subprocess, pickle, tempfile
+        args_file = result_file = None
         try:
             self.progress.emit("Analyse en cours...")
+            fiab_threshold = 30
+            args = {
+                'task': 'analyse_signaux',
+                'symbols': self.symbols,
+                'mes_symbols': self.mes_symbols,
+                'period': self.period,
+                'taux_reussite_min': fiab_threshold,
+                'min_holding_days': self.min_holding_days,
+            }
+            fd_a, args_file = tempfile.mkstemp(suffix='_args.pkl')
+            fd_r, result_file = tempfile.mkstemp(suffix='_result.pkl')
+            os.close(fd_a); os.close(fd_r)
+            with open(args_file, 'wb') as f:
+                pickle.dump(args, f)
+
+            worker_script = os.path.join(PROJECT_SRC, '_subprocess_worker.py')
+            self._process = subprocess.Popen(
+                [sys.executable, '-u', worker_script, args_file, result_file],
+                stdout=subprocess.PIPE, stderr=subprocess.STDOUT,
+                text=True, bufsize=1, cwd=PROJECT_SRC,
+            )
+            for line in self._process.stdout:
+                if self._stop_requested:
+                    self._process.terminate()
+                    break
+                print(line, end='', flush=True)
+            self._process.wait()
+
             if self._stop_requested:
                 return
-
-            fiab_threshold = 30
-            use_subprocess = os.environ.get('QSI_ANALYSIS_SUBPROCESS', '1') == '1'
-            if use_subprocess:
-                self.progress.emit("Analyse isolée dans un sous-processus...")
-                result = _run_analysis_in_subprocess(
-                    self.symbols,
-                    self.mes_symbols,
-                    self.period,
-                    fiab_threshold,
-                    self.min_holding_days,
-                )
-            else:
-                result = analyse_signaux_populaires(
-                    self.symbols,
-                    self.mes_symbols,
-                    period=self.period,
-                    afficher_graphiques=False,
-                    plot_all=False,
-                    verbose=True,
-                    taux_reussite_min=fiab_threshold,
-                    min_holding_days=self.min_holding_days,
-                )
-            if not self._stop_requested:
+            if self._process.returncode != 0:
+                self.error.emit(f"Analyse subprocess failed (code {self._process.returncode})")
+                return
+            with open(result_file, 'rb') as f:
+                payload = pickle.load(f)
+            if payload.get('success'):
+                result = payload['result']
                 result['_analysis_id'] = self.analysis_id
                 self.result_ready.emit(result)
+            else:
+                self.error.emit(payload.get('error', 'Unknown subprocess error'))
         except Exception as e:
             if not self._stop_requested:
                 self.error.emit(str(e))
         finally:
-            self.finished.emit()
+            for fp in (args_file, result_file):
+                if fp:
+                    try: os.unlink(fp)
+                    except OSError: pass
 
     def stop(self):
         self._stop_requested = True
+        if self._process and self._process.poll() is None:
+            self._process.terminate()
 
 
-class DownloadWorker(QObject):
-    """Worker QObject for download/backtest executed in a native QThread."""
+class DownloadThread(QThread):
+    """Runs download_stock_data in a subprocess for memory isolation."""
     result_ready = pyqtSignal(dict)
     error = pyqtSignal(str)
     progress = pyqtSignal(str)
-    finished = pyqtSignal()
 
     def __init__(self, symbols, period="12mo", do_backtest=False, analysis_id=0, min_holding_days=7, best_parameters_snapshot=None):
         super().__init__()
         self.symbols = symbols
         self.period = period
-        self.do_backtest = do_backtest
         self._stop_requested = False
         self.analysis_id = analysis_id
         self.min_holding_days = max(1, int(min_holding_days))
-        self.best_parameters_snapshot = best_parameters_snapshot or {}
+        self._process = None
 
-    def process(self):
+    def run(self):
+        import subprocess, pickle, tempfile
+        args_file = result_file = None
         try:
             self.progress.emit("Téléchargement des données...")
+            args = {
+                'task': 'download',
+                'symbols': self.symbols,
+                'period': self.period,
+            }
+            fd_a, args_file = tempfile.mkstemp(suffix='_args.pkl')
+            fd_r, result_file = tempfile.mkstemp(suffix='_result.pkl')
+            os.close(fd_a); os.close(fd_r)
+            with open(args_file, 'wb') as f:
+                pickle.dump(args, f)
+
+            worker_script = os.path.join(PROJECT_SRC, '_subprocess_worker.py')
+            self._process = subprocess.Popen(
+                [sys.executable, '-u', worker_script, args_file, result_file],
+                stdout=subprocess.PIPE, stderr=subprocess.STDOUT,
+                text=True, bufsize=1, cwd=PROJECT_SRC,
+            )
+            for line in self._process.stdout:
+                if self._stop_requested:
+                    self._process.terminate()
+                    break
+                print(line, end='', flush=True)
+            self._process.wait()
 
             if self._stop_requested:
                 return
-
-            data = download_stock_data(self.symbols, self.period)
-            result = {'data': data}
-
-            if self._stop_requested:
+            if self._process.returncode != 0:
+                self.error.emit(f"Download subprocess failed (code {self._process.returncode})")
                 return
-
-            if self.do_backtest and data:
-                backtests = []
-                best_params_cached = self.best_parameters_snapshot or {}
-                for symbol, stock_data in data.items():
-                    if self._stop_requested:
-                        return
-
-                    try:
-                        prices = stock_data['Close']
-                        volumes = stock_data['Volume']
-                        score_context = resolve_symbol_scoring_context(
-                            symbol,
-                            domaine=_get_sector_cache_first(symbol),
-                            cap_range=stock_data.get('CapRange', 'Unknown') if isinstance(stock_data, dict) else 'Unknown',
-                            best_params=best_params_cached,
-                        )
-
-                        coeffs, feature_thresholds, _globals_thresholds, _, _ = score_context['best_params'].get(
-                            score_context['selected_key'] or score_context['domaine'],
-                            (None, None, (4.2, -0.5), None, {}),
-                        )
-                        domain_coeffs = {score_context['domaine']: coeffs} if coeffs else None
-
-                        bt = backtest_signals(
-                            prices=prices,
-                            volumes=volumes,
-                            domaine=score_context['domaine'],
-                            montant=50,
-                            domain_coeffs=domain_coeffs,
-                            domain_thresholds={score_context['domaine']: feature_thresholds} if feature_thresholds else None,
-                            min_holding_bars=self.min_holding_days,
-                        )
-
-                        if bt.get('trades', 0) == 0:
-                            self.progress.emit(f"  ⚠️ {symbol}: Aucun trade détecté (domaine={score_context['domaine']})")
-
-                        backtests.append({'Symbole': symbol, **bt})
-                    except Exception as e:
-                        self.progress.emit(f"  ⚠️ Erreur backtest {symbol}: {e}")
-                        continue
-
-                result['backtest_results'] = backtests
-
-            if not self._stop_requested:
+            with open(result_file, 'rb') as f:
+                payload = pickle.load(f)
+            if payload.get('success'):
+                result = payload['result']
                 result['_analysis_id'] = self.analysis_id
                 self.result_ready.emit(result)
-
+            else:
+                self.error.emit(payload.get('error', 'Unknown subprocess error'))
         except Exception as e:
             if not self._stop_requested:
                 self.error.emit(str(e))
         finally:
-            self.finished.emit()
+            for fp in (args_file, result_file):
+                if fp:
+                    try: os.unlink(fp)
+                    except OSError: pass
 
     def stop(self):
         self._stop_requested = True
+        if self._process and self._process.poll() is None:
+            self._process.terminate()
 
 class LogCapture:
     """Captures stdout/stderr and writes both to QTextEdit and to original stdout/stderr.
@@ -470,10 +359,6 @@ class MainWindow(QMainWindow):
         self.debug_mode_enabled = False
         self._analysis_running = False
         self._active_analysis_thread = None
-        self.analysis_qthread = None
-        self.analysis_worker = None
-        self.download_qthread = None
-        self.download_worker = None
 
         # 🔄 Synchroniser personal et optimization vers popular au démarrage
         if SYMBOL_MANAGER_AVAILABLE:
@@ -771,11 +656,6 @@ class MainWindow(QMainWindow):
         except Exception:
             pass
     
-    def add_log(self, message: str):
-        """Ajouter un message à l'onglet Logs (sans redirection de stdout)."""
-        if hasattr(self, 'logs_text'):
-            self.logs_text.append(message)
-
     def _debug_log(self, message: str):
         """Affiche un log uniquement si le mode debug est actif."""
         if self.debug_mode_enabled:
@@ -967,9 +847,23 @@ class MainWindow(QMainWindow):
         recent_layout.addLayout(recent_btns)
         
         lists_container.addLayout(recent_layout)
-        
-        lists_container.addItem(QSpacerItem(48, 20, QSizePolicy.MinimumExpanding, QSizePolicy.Minimum))
-        
+
+        # Raccourcis top movers placés à l'extrême droite de la ligne des listes
+        lists_container.addItem(QSpacerItem(80, 20, QSizePolicy.Expanding, QSizePolicy.Minimum))
+        movers_layout = QVBoxLayout()
+        movers_layout.setSpacing(6)
+        movers_layout.addWidget(QLabel("Top Movers (Jour)"))
+        self.top_winners_btn = QPushButton("Top 30 Winners")
+        self.top_winners_btn.setToolTip("Charge les 30 plus fortes hausses du jour")
+        self.top_winners_btn.clicked.connect(lambda: self._show_top_daily_movers('winners'))
+        movers_layout.addWidget(self.top_winners_btn)
+
+        self.top_losers_btn = QPushButton("Top 30 Losers")
+        self.top_losers_btn.setToolTip("Charge les 30 plus fortes baisses du jour")
+        self.top_losers_btn.clicked.connect(lambda: self._show_top_daily_movers('losers'))
+        movers_layout.addWidget(self.top_losers_btn)
+        lists_container.addLayout(movers_layout)
+
         self.layout.addLayout(lists_container)
 
         top_controls = QHBoxLayout()
@@ -1430,122 +1324,6 @@ class MainWindow(QMainWindow):
         symbols = [it.data(Qt.UserRole) if it.data(Qt.UserRole) is not None else it.text() for it in items]
         self.symbol_input.setText(", ".join(symbols))
 
-    def preview_cleaned_optimization(self):
-        """Affiche un aperçu des groupes nettoyés (sector × cap) en priorisant les symboles ajoutés manuellement."""
-        if not SYMBOL_MANAGER_AVAILABLE:
-            QMessageBox.warning(self, "SQLite requis", "Le nettoyage nécessite SQLite/symbol_manager.")
-            return
-        try:
-            from symbol_manager import (
-                get_all_sectors,
-                get_all_cap_ranges,
-                get_symbols_by_sector_and_cap,
-            )
-            from optimisateur_hybride import clean_sector_cap_groups
-
-            list_type = "optimization"
-            sectors = get_all_sectors(list_type=list_type)
-            caps = get_all_cap_ranges(list_type=list_type)
-
-            sector_cap_ranges = {}
-            for sec in sectors:
-                buckets = {}
-                for cap in caps:
-                    syms = get_symbols_by_sector_and_cap(sec, cap, list_type=list_type, active_only=True)
-                    if syms:
-                        buckets[cap] = syms
-                if buckets:
-                    sector_cap_ranges[sec] = buckets
-
-            if not sector_cap_ranges:
-                QMessageBox.information(self, "Aperçu nettoyage", "Aucune donnée d'optimisation trouvée.")
-                return
-
-            # Nouvelle logique : FIXE (mes_symbols) + ALÉATOIRE (popular), min=6, max=15
-            cleaned = clean_sector_cap_groups(sector_cap_ranges, ttl_days=0, min_symbols=6, max_symbols=15, fixed_ratio=0.18)
-
-            # Prioriser les symboles ajoutés manuellement : ils restent en tête et ne sont pas élagués en premier
-            manual_order = [self.optim_list.item(i).text() for i in range(self.optim_list.count())]
-            manual_set = set(manual_order)
-            for sec, buckets in cleaned.items():
-                for cap, syms in buckets.items():
-                    manual_first = [s for s in manual_order if s in syms]
-                    rest = [s for s in syms if s not in manual_set]
-                    cleaned[sec][cap] = manual_first + rest
-
-            # Aplatir en liste unique (ordre: secteurs triés, cap triés, avec priorité manuelle déjà appliquée)
-            seen = set()
-            flat_cleaned = []
-            for sec in sorted(cleaned.keys()):
-                for cap in sorted(cleaned[sec].keys()):
-                    for s in cleaned[sec][cap]:
-                        if s not in seen:
-                            seen.add(s)
-                            flat_cleaned.append(s)
-            
-            # Garantir minimum 300 symboles au total
-            MIN_TOTAL_SYMBOLS = 300
-            if len(flat_cleaned) < MIN_TOTAL_SYMBOLS:
-                needed = MIN_TOTAL_SYMBOLS - len(flat_cleaned)
-                try:
-                    from symbol_manager import get_all_popular_symbols
-                    import random
-                    all_popular = get_all_popular_symbols(max_count=1000, exclude_symbols=seen)
-                    random.shuffle(all_popular)  # Randomiser pour diversité
-                    additional = all_popular[:needed]
-                    flat_cleaned.extend(additional)
-                    print(f"   📊 Complément pour atteindre {MIN_TOTAL_SYMBOLS} symboles : +{len(additional)} depuis popular_symbols")
-                except Exception as e:
-                    print(f"   ⚠️ Impossible d'ajouter des symboles supplémentaires : {e}")
-
-            # Mettre à jour la QList optimisation avec la version nettoyée
-            self.optim_list.clear()
-            for s in flat_cleaned:
-                item = QListWidgetItem(s)
-                item.setData(Qt.UserRole, s)
-                self.optim_list.addItem(item)
-
-            # Sauvegarder dans le fichier + SQLite
-            try:
-                from qsi import save_symbols_to_txt
-                save_symbols_to_txt(flat_cleaned, "optimisation_symbols.txt")
-                if SYMBOL_MANAGER_AVAILABLE:
-                    from symbol_manager import sync_txt_to_sqlite
-                    sync_txt_to_sqlite("optimisation_symbols.txt", list_type="optimization")
-            except Exception as e:
-                QMessageBox.warning(self, "Avertissement", f"Nettoyage appliqué mais sauvegarde non confirmée: {e}")
-
-            # Rafraîchir compteurs
-            self._update_list_counts()
-
-            lines = [f"=== Résumé des groupes nettoyés (optimisation) ==="]
-            lines.append(f"TOTAL : {len(flat_cleaned)} symboles (minimum garanti : 300)")
-            lines.append("")
-            for sec in sorted(cleaned.keys()):
-                for cap in sorted(cleaned[sec].keys()):
-                    syms = cleaned[sec][cap]
-                    preview = ", ".join(syms[:18]) + (" …" if len(syms) > 18 else "")
-                    lines.append(f"{sec} × {cap}: {len(syms)} -> {preview}")
-
-            QMessageBox.information(self, "Nettoyage appliqué", "\n".join(lines))
-        except Exception as e:
-            QMessageBox.critical(self, "Erreur", f"Impossible d'afficher l'aperçu du nettoyage: {e}")
-
-    def clear_plots(self):
-        # remove all widgets from plots_layout
-        for i in reversed(range(self.plots_layout.count())):
-            w = self.plots_layout.itemAt(i).widget()
-            if w:
-                if hasattr(w, 'figure'):
-                    w.figure.clear()
-                    try:
-                        w.close()
-                    except Exception:
-                        pass
-                w.setParent(None)
-        import gc
-        gc.collect()
-
     def on_download_complete(self, result):
         # 🔧 Vérifier que ce résultat appartient à l'analyse actuelle
         received_id = result.get('_analysis_id', 0) if isinstance(result, dict) else 0
@@ -1895,22 +1673,7 @@ class MainWindow(QMainWindow):
         if self.progress:
             self.progress.setLabelText(message)
 
-    def _on_analysis_qthread_finished(self):
-        """Nettoie les références du pipeline d'analyse quand le thread natif s'arrête."""
-        self.analysis_qthread = None
-        self.analysis_worker = None
-
-    def _on_download_qthread_finished(self):
-        """Nettoie les références du pipeline de téléchargement quand le thread natif s'arrête."""
-        self.download_qthread = None
-        self.download_worker = None
-
     def on_analysis_complete(self, result):
-        sender = self.sender()
-        if sender is not None and sender is not getattr(self, '_active_analysis_thread', None):
-            print("⚠️ Résultat ignoré: thread inactif")
-            return
-
         # 🔧 Vérifier que ce résultat appartient à l'analyse actuelle
         received_id = result.get('_analysis_id', 0) if isinstance(result, dict) else 0
         if received_id != self._analysis_id:
@@ -2061,14 +1824,9 @@ class MainWindow(QMainWindow):
             pass
 
     def on_analysis_error(self, error_msg):
-        sender = self.sender()
-        if sender is not None and sender is not getattr(self, '_active_analysis_thread', None):
-            return
-
         self._analysis_running = False
         self._active_analysis_thread = None
         self.analyze_button.setEnabled(True)
-        self.backtest_button.setEnabled(True)
         if self.progress:
             self.progress.close()
         
@@ -2123,42 +1881,20 @@ class MainWindow(QMainWindow):
         self.progress.setAutoClose(False)
         self.progress.setMinimumWidth(400)
 
-        # Launch download worker (no backtest) in a native QThread.
+        # Launch download thread (no backtest)
         min_holding_days = self.min_hold_days_spin.value() if hasattr(self, 'min_hold_days_spin') else 7
-        try:
-            if self.download_worker is not None:
-                self.download_worker.stop()
-            if self.download_qthread is not None and self.download_qthread.isRunning():
-                self.download_qthread.quit()
-                self.download_qthread.wait(1000)
-        except Exception:
-            pass
-
-        self.download_qthread = QThread(self)
-        self.download_qthread.setObjectName("DownloadQThread")
-        self.download_worker = DownloadWorker(
+        self.download_thread = DownloadThread(
             symbols,
             period,
-            do_backtest=False,
             analysis_id=current_id,
-            min_holding_days=min_holding_days,
-            best_parameters_snapshot=self.best_parameters,
         )
-        self.download_worker.moveToThread(self.download_qthread)
-
-        self.download_qthread.started.connect(self.download_worker.process)
-        self.download_worker.result_ready.connect(self.on_download_complete)
-        self.download_worker.error.connect(self.on_analysis_error)
-        self.download_worker.progress.connect(self.on_analysis_progress)
-        self.download_worker.finished.connect(self.download_qthread.quit)
-        self.download_worker.finished.connect(self.download_worker.deleteLater)
-        self.download_qthread.finished.connect(self.download_qthread.deleteLater)
-        self.download_qthread.finished.connect(self._on_download_qthread_finished)
-
+        self.download_thread.result_ready.connect(self.on_download_complete)
+        self.download_thread.error.connect(self.on_analysis_error)
+        self.download_thread.progress.connect(self.on_analysis_progress)
         self._analysis_running = True
-        self._active_analysis_thread = self.download_worker
-        self.download_qthread.start()
-        print(f"📥 Download worker démarré avec ID={current_id}")
+        self._active_analysis_thread = self.download_thread
+        self.download_thread.start()
+        print(f"📥 Download thread démarré avec ID={current_id}")
 
     def analyse_and_backtest(self):
         if self._analysis_running:
@@ -2211,46 +1947,22 @@ class MainWindow(QMainWindow):
         self.progress.setAutoClose(False)
         self.progress.setMinimumWidth(400)
 
+        # Use the AnalysisThread which calls analyse_signaux_populaires (no plt.show()
+        # in background). Pass the selected symbols as the "popular_symbols" input
+        # so the function analyzes/backtests those symbols and returns the same
+        # result structure used for the "Analyser mouvements fiables" flow.
         selected_pop = symbols
         selected_mes = []
 
         min_holding_days = self.min_hold_days_spin.value() if hasattr(self, 'min_hold_days_spin') else 7
-
-        # Si un ancien worker est encore en fermeture, le terminer proprement.
-        try:
-            if self.analysis_worker is not None:
-                self.analysis_worker.stop()
-            if self.analysis_qthread is not None and self.analysis_qthread.isRunning():
-                self.analysis_qthread.quit()
-                self.analysis_qthread.wait(1000)
-        except Exception:
-            pass
-
-        # Native QThread + QObject worker pattern for better teardown stability.
-        self.analysis_qthread = QThread(self)
-        self.analysis_qthread.setObjectName("AnalysisQThread")
-        self.analysis_worker = AnalysisWorker(
-            selected_pop,
-            selected_mes,
-            period,
-            analysis_id=current_id,
-            min_holding_days=min_holding_days,
-        )
-        self.analysis_worker.moveToThread(self.analysis_qthread)
-
-        self.analysis_qthread.started.connect(self.analysis_worker.process)
-        self.analysis_worker.result_ready.connect(self.on_analysis_complete)
-        self.analysis_worker.error.connect(self.on_analysis_error)
-        self.analysis_worker.progress.connect(self.on_analysis_progress)
-        self.analysis_worker.finished.connect(self.analysis_qthread.quit)
-        self.analysis_worker.finished.connect(self.analysis_worker.deleteLater)
-        self.analysis_qthread.finished.connect(self.analysis_qthread.deleteLater)
-        self.analysis_qthread.finished.connect(self._on_analysis_qthread_finished)
-
+        self.analysis_thread = AnalysisThread(selected_pop, selected_mes, period, analysis_id=current_id, min_holding_days=min_holding_days)
+        self.analysis_thread.result_ready.connect(self.on_analysis_complete)
+        self.analysis_thread.error.connect(self.on_analysis_error)
+        self.analysis_thread.progress.connect(self.on_analysis_progress)
         self._analysis_running = True
-        self._active_analysis_thread = self.analysis_worker
-        self.analysis_qthread.start()
-        print(f"📊 Analysis worker démarré avec ID={current_id}")
+        self._active_analysis_thread = self.analysis_thread
+        self.analysis_thread.start()
+        print(f"📊 Analysis backtest thread démarré avec ID={current_id}")
 
     def update_results_table(self):
         """Fill the merged table (`self.merged_table`) with current results plus backtest metrics."""
@@ -2449,61 +2161,6 @@ class MainWindow(QMainWindow):
             self.merged_table.setUpdatesEnabled(True)
             self._updating_results_table = False
     
-    def sort_results(self, index):
-        if not hasattr(self, 'current_results'):
-            return
-            
-        sort_options = {
-            0: ('Prix', False),      # Prix croissant
-            1: ('Prix', True),       # Prix décroissant
-            2: ('Score', False),     # Score croissant
-            3: ('Score', True),      # Score décroissant
-            4: ('RSI', False),       # RSI croissant
-            5: ('RSI', True),        # RSI décroissant
-            6: ('Volume moyen', False),  # Volume croissant
-            7: ('Volume moyen', True),    # Volume décroissant
-            8: ('Fiabilite', False),      # Fiabilité croissant
-            9: ('Fiabilite', True),       # Fiabilité décroissant
-            10: ('rev_growth_val', True),  # Rev. Growth décroissant
-            11: ('rev_growth_val', False), # Rev. Growth croissant
-            12: ('gross_margin_val', True),# Gross Margin décroissant
-            13: ('gross_margin_val', False),# Gross Margin croissant
-            14: ('market_cap_val', True),   # Market Cap décroissant
-            15: ('market_cap_val', False),  # Market Cap croissant
-            16: ('roe_val', True),         # ROE décroissant
-            17: ('roe_val', False),        # ROE croissant
-            18: ('fcf_val', True),         # FCF décroissant
-            19: ('debt_to_equity_val', False) # D/E Ratio croissant
-        }
-        
-        if index in sort_options:
-            key, reverse = sort_options[index]
-
-            def keyfn(x):
-                v = x.get(key, None)
-                # handle 'N/A' and missing
-                if v is None:
-                    return float('-inf') if not reverse else float('inf')
-                if isinstance(v, (int, float)):
-                    return float(v)
-                try:
-                    return float(v)
-                except Exception:
-                    # If Fiabilite is 'N/A' or other text - treat as very small
-                    return float('-inf') if not reverse else float('inf')
-
-            self.current_results.sort(key=keyfn, reverse=reverse)
-            self.update_results_table()
-
-            def keyfn(x):
-                v = x.get(key, None)
-                if v is None or v == 'N/A':
-                    return float('-inf') if not reverse else float('inf')
-                try:
-                    return float(v)
-                except Exception:
-                    return float('-inf') if not reverse else float('inf')
-
     def toggle_bottom(self, checked: bool):
         """Hide/show the bottom summary/backtest/results panel."""
         if checked:
@@ -2654,26 +2311,16 @@ class MainWindow(QMainWindow):
 
         # Stop analysis thread if running
         try:
-            if getattr(self, 'analysis_worker', None) is not None:
-                self.analysis_worker.stop()
-        except Exception:
+            if hasattr(self, 'analysis_thread') and self.analysis_thread.isRunning():
+                self.analysis_thread.stop()
+                self.analysis_thread.wait(2000)
+        except (RuntimeError, AttributeError):
             pass
         try:
-            if getattr(self, 'analysis_qthread', None) is not None and self.analysis_qthread.isRunning():
-                self.analysis_qthread.quit()
-                self.analysis_qthread.wait(3000)
-        except Exception:
-            pass
-        try:
-            if getattr(self, 'download_worker', None) is not None:
-                self.download_worker.stop()
-        except Exception:
-            pass
-        try:
-            if getattr(self, 'download_qthread', None) is not None and self.download_qthread.isRunning():
-                self.download_qthread.quit()
-                self.download_qthread.wait(3000)
-        except Exception:
+            if hasattr(self, 'download_thread') and self.download_thread.isRunning():
+                self.download_thread.stop()
+                self.download_thread.wait(2000)
+        except (RuntimeError, AttributeError):
             pass
 
         try:
@@ -2817,14 +2464,16 @@ class MainWindow(QMainWindow):
 
         score_dates = precomp.get('score_dates') or []
         score_values = precomp.get('score_values') or []
-        if not score_dates or not score_values:
-            score_dates, score_values = self._compute_score_series(
-                prices,
-                volumes,
-                domaine=precomp.get('domaine', 'Inconnu'),
-                cap_range=precomp.get('cap_range'),
-                symbol=sym,
-            )
+        # Toujours recalculer: les scores du backtest utilisent des fondamentaux
+        # point-in-time (PIT) qui diffèrent du pickle cache utilisé par le score
+        # affiché dans le titre.  Recalculer garantit la cohérence visuelle.
+        score_dates, score_values = self._compute_score_series(
+            prices,
+            volumes,
+            domaine=precomp.get('domaine', 'Inconnu'),
+            cap_range=precomp.get('cap_range'),
+            symbol=sym,
+        )
 
         score_val = precomp.get('score')
 
@@ -2948,8 +2597,8 @@ class MainWindow(QMainWindow):
                     gagnants_item = self.merged_table.item(row, 12)
                     gagnants = int(gagnants_item.data(Qt.EditRole)) if gagnants_item and gagnants_item.data(Qt.EditRole) is not None else 0
                     
-                    # Colonne 24: Gain total ($) ✅ FIX: était 22 (dRSI), maintenant 24 (Gain total)
-                    gain_item = self.merged_table.item(row, 24)
+                    # Colonne 23: Gain total ($)
+                    gain_item = self.merged_table.item(row, 23)
                     gain = float(gain_item.data(Qt.EditRole)) if gain_item and gain_item.data(Qt.EditRole) is not None else 0.0
                     
                     if domaine not in domain_stats:
@@ -4047,6 +3696,100 @@ class MainWindow(QMainWindow):
     def _select_all_items(self, list_widget):
         """Sélectionner tous les éléments d'une QListWidget"""
         list_widget.selectAll()
+
+    def _compute_daily_top_movers(self, top_n=30):
+        """Récupère les top movers Yahoo (day_gainers/day_losers) via yfinance.screen, sans dépendre des listes locales."""
+        now = datetime.now()
+        cached = getattr(self, '_daily_movers_cache', None)
+        if isinstance(cached, dict):
+            ts = cached.get('timestamp')
+            if isinstance(ts, datetime):
+                if (now - ts).total_seconds() <= 300:
+                    return cached
+
+        n = max(1, int(top_n))
+
+        def _extract_entries(screen_payload):
+            quotes = []
+            if isinstance(screen_payload, dict):
+                quotes = screen_payload.get('quotes') or []
+            extracted = []
+            for q in quotes:
+                if not isinstance(q, dict):
+                    continue
+                symbol = str(q.get('symbol') or '').strip().upper()
+                if not symbol:
+                    continue
+                pct = q.get('regularMarketChangePercent')
+                if isinstance(pct, dict):
+                    pct = pct.get('raw', pct.get('fmt'))
+                try:
+                    pct_val = float(pct)
+                except Exception:
+                    continue
+                extracted.append((symbol, pct_val))
+            return extracted
+
+        def _fetch_screeners():
+            winners_payload = yf.screen('day_gainers', count=n)
+            losers_payload = yf.screen('day_losers', count=n)
+            winners = _extract_entries(winners_payload)
+            losers = _extract_entries(losers_payload)
+            return winners, losers
+
+        executor = ThreadPoolExecutor(max_workers=1)
+        future = executor.submit(_fetch_screeners)
+        try:
+            winners, losers = future.result(timeout=12)
+        except FuturesTimeoutError:
+            raise TimeoutError("Timeout Yahoo Finance: impossible de récupérer les top movers dans le délai imparti.")
+        finally:
+            executor.shutdown(wait=False, cancel_futures=True)
+
+        cache_payload = {
+            'timestamp': now,
+            'winners': winners[:n],
+            'losers': losers[:n],
+        }
+        self._daily_movers_cache = cache_payload
+        return cache_payload
+
+    def _show_top_daily_movers(self, mover_type):
+        """Affiche les top movers du jour et injecte les symboles dans le champ d'analyse."""
+        mover_type = (mover_type or '').strip().lower()
+        if mover_type not in {'winners', 'losers'}:
+            mover_type = 'winners'
+
+        QApplication.setOverrideCursor(Qt.WaitCursor)
+        try:
+            top_data = self._compute_daily_top_movers(top_n=30)
+        except TimeoutError as e:
+            QMessageBox.warning(self, "Timeout", str(e))
+            return
+        except Exception as e:
+            QMessageBox.warning(self, "Erreur", f"Impossible de charger les top movers Yahoo: {e}")
+            return
+        finally:
+            QApplication.restoreOverrideCursor()
+
+        entries = top_data.get(mover_type, []) if isinstance(top_data, dict) else []
+        if not entries:
+            QMessageBox.information(
+                self,
+                "Information",
+                "Aucune donnée intraday/journalière disponible pour calculer les top movers.",
+            )
+            return
+
+        symbols = [sym for sym, _pct in entries]
+        self.symbol_input.setText(', '.join(symbols))
+
+        title = "Top 30 Winners du jour" if mover_type == 'winners' else "Top 30 Losers du jour"
+        lines = []
+        for idx, (sym, pct) in enumerate(entries, start=1):
+            lines.append(f"{idx:02d}. {sym:8s} {pct:+.2f}%")
+
+        QMessageBox.information(self, title, '\n'.join(lines))
 
     def _get_clean_columns_and_data(self):
         """Filtrer les colonnes vides ou contenant uniquement des 0"""
