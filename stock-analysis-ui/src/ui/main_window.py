@@ -439,9 +439,12 @@ class MainWindow(QMainWindow):
         self.best_parameters = {}
 
     def _get_best_parameters_cached(self, force_refresh: bool = False):
-        """Return the in-memory best-parameter cache without refreshing native state."""
-        if not getattr(self, 'best_parameters', None):
-            self.best_parameters = {}
+        """Return the in-memory best-parameter cache, lazy-loading from SQLite if empty."""
+        if not getattr(self, 'best_parameters', None) or force_refresh:
+            try:
+                self.best_parameters = qsi.extract_best_parameters()
+            except Exception:
+                self.best_parameters = {}
         return self.best_parameters
 
     def _on_tab_changed(self, index: int):
@@ -1348,7 +1351,7 @@ class MainWindow(QMainWindow):
 
         data = result.get('data', {}) if isinstance(result, dict) else {}
         backtests = result.get('backtest_results', []) if isinstance(result, dict) else []
-        best_params_all = self.best_parameters or {}
+        best_params_all = self._get_best_parameters_cached()
         # Build result rows (collect data first, then filter & render plots only for filtered symbols)
         self.current_results = []
 
@@ -1357,7 +1360,8 @@ class MainWindow(QMainWindow):
                 prices = stock_data['Close']
                 volumes = stock_data['Volume']
 
-                # ✅ Récupération du secteur AVANT l'analyse (cohérence avec backtest)
+                # ✅ Résolution unifiée via resolve_symbol_scoring_context
+                # (même logique que process_symbol et _compute_score_series)
                 sig = "NEUTRE"
                 last_price = float(prices.iloc[-1]) if len(prices) > 0 else 0.0
                 trend = False
@@ -1365,130 +1369,77 @@ class MainWindow(QMainWindow):
                 volume_mean = float(volumes.mean()) if len(volumes) > 0 else 0.0
                 score = 0.0
                 derivatives = {}
-                cap_range = stock_data.get('CapRange', 'Unknown') if isinstance(stock_data, dict) else 'Unknown'
-                
-                # Récupérer le secteur depuis le cache ou yfinance
-                try:
-                    domaine = _get_sector_cache_first(symbol)
-                    
-                    # 🔧 CORRECTION: Normaliser le secteur syst\u00e9matiquement pour coh\u00e9rence
-                    from sector_normalizer import normalize_sector
-                    domaine_raw = domaine
-                    domaine = normalize_sector(domaine)
-                    if domaine_raw != domaine:
-                        self._debug_log(f"🔄 {symbol}: Secteur normalisé: '{domaine_raw}' -> '{domaine}'")
-                    else:
-                        self._debug_log(f"🔍 DEBUG {symbol}: secteur = {domaine}")
-                except Exception as e:
-                    domaine = "Inconnu"
-                    self._debug_log(f"⚠️ DEBUG {symbol}: erreur récupération secteur: {e}")
-                
-                # ✅ NEW: Améliorer le fallback cap_range en 2 étapes
-                from config import CAP_FALLBACK_ENABLED
-                original_cap_range = cap_range
-                
-                if CAP_FALLBACK_ENABLED and (cap_range == "Unknown" or not cap_range):
-                    # ✅ ÉTAPE 1: Essayer de trouver dans la DB les cap_ranges valides pour ce secteur
-                    self._debug_log(f"🔍 {symbol}: Recherche cap_range pour {domaine}...")
-                    try:
-                        import sqlite3
-                        db_path = 'symbols.db'
-                        if os.path.exists(db_path):
-                            conn = sqlite3.connect(db_path)
-                            cursor = conn.cursor()
-                            cursor.execute("""
-                                SELECT DISTINCT cap_range FROM symbols 
-                                WHERE sector = ? AND cap_range IS NOT NULL AND cap_range != 'Unknown'
-                                LIMIT 10
-                            """, (domaine,))
-                            db_caps = [row[0] for row in cursor.fetchall()]
-                            conn.close()
-                            
-                            # Prioriser l'ordre logique: Small, Mid, Large, Mega
-                            cap_priority = ['Small', 'Mid', 'Large', 'Mega']
-                            for cap in cap_priority:
-                                if cap in db_caps:
-                                    test_key = f"{domaine}_{cap}"
-                                    if test_key in best_params_all:
-                                        cap_range = cap
-                                        self._debug_log(f"✅ {symbol}: Cap_range trouvé en DB: {cap}")
-                                        break
-                    except Exception as e:
-                        self._debug_log(f"⚠️ {symbol}: Erreur recherche DB cap_range: {e}")
-                    
-                    # ✅ ÉTAPE 2: Si toujours Unknown, essayer les fallbacks standards
-                    if cap_range == "Unknown" or not cap_range:
-                        for fallback_cap in ["Large", "Mid", "Small", "Mega"]:
-                            test_key = f"{domaine}_{fallback_cap}"
-                            if test_key in best_params_all:
-                                cap_range = fallback_cap
-                                self._debug_log(f"✅ {symbol}: Cap_range fallback: {fallback_cap}")
-                                break
-                    
-                    if cap_range != original_cap_range:
-                            self._debug_log(f"🔄 {symbol}: Cap_range ajusté: '{original_cap_range}' -> '{cap_range}'")
-                
-                # ✅ Appliquer fallback universel pour "Inconnu" (même logique que backtest) - configurable
+
+                score_context = qsi.resolve_symbol_scoring_context(
+                    symbol,
+                    best_params=best_params_all,
+                )
+                domaine = score_context['domaine']
+                cap_range = score_context['cap_range']
                 original_domaine = domaine
-                from config import DOMAIN_FALLBACK_ENABLED
-                if DOMAIN_FALLBACK_ENABLED and domaine == "Inconnu":
-                    for fallback_sector in ["Technology", "Healthcare", "Financial Services"]:
-                        if fallback_sector in best_params_all:
-                            domaine = fallback_sector
-                            break
-                    if domaine == "Inconnu" and best_params_all:
-                        first_key = list(best_params_all.keys())[0]
-                        domaine = first_key.split('_')[0] if '_' in first_key else first_key
-                    self._debug_log(f"🔄 DEBUG {symbol}: fallback appliqué {original_domaine} -> {domaine}")
-                
-                # ✅ Extraire les seuils globaux optimisés
-                seuil_achat_opt = None
-                seuil_vente_opt = None
-                extras_to_use = None
-                # Chercher la clé optimale : secteur_cap ou secteur seul
-                param_key = None
-                if cap_range and cap_range != "Unknown":
-                    test_key = f"{domaine}_{cap_range}"
-                    if test_key in best_params_all:
-                        param_key = test_key
-                if not param_key and domaine in best_params_all:
-                    param_key = domaine
-                
-                if param_key and param_key in best_params_all:
-                    params = best_params_all[param_key]
-                    if len(params) > 2 and params[2]:
-                        globals_th = params[2]
-                        if isinstance(globals_th, (tuple, list)) and len(globals_th) >= 2:
-                            seuil_achat_opt = float(globals_th[0])
-                            seuil_vente_opt = float(globals_th[1])
-                    if len(params) > 4 and isinstance(params[4], dict):
-                        extras_to_use = params[4]
-                
+                seuil_achat_opt = score_context['seuil_achat']
+                seuil_vente_opt = score_context['seuil_vente']
+                extras_to_use = score_context['price_extras']
+                self._debug_log(f"🔍 {symbol}: ctx domaine={domaine} cap={cap_range} key={score_context['selected_key']} seuils={seuil_achat_opt}/{seuil_vente_opt}")
+
                 try:
-                    # Un seul appel avec le bon domaine/cap_range et les mêmes paramètres que le pipeline backtest
                     sig, last_price, trend, last_rsi, volume_mean, score, derivatives = get_trading_signal(
                         prices, volumes, domaine=domaine, return_derivatives=True, symbol=symbol, cap_range=cap_range,
                         seuil_achat=seuil_achat_opt, seuil_vente=seuil_vente_opt,
                         price_extras=extras_to_use
                     )
-                    
-                    # � SYNC: Log les paramètres utilisés pour auditer les décalages
-                    if symbol in ['KIM', 'AEP'] or symbol.endswith('.HK'):  # Debug stocks spécifiques
-                        self._debug_log(
-                            f"✅ {symbol} SYNC: cap_range={cap_range} | domaine={domaine} | "
-                            f"score={score:.3f} | seuil={derivatives.get('_seuil_achat_used', 'N/A'):.2f}"
-                        )
-                    
-                    # �🔍 Debug: vérifier si les métriques financières sont présentes
-                    if not derivatives.get('rev_growth_val') and not derivatives.get('market_cap_val'):
-                        self._debug_log(f"⚠️ {symbol}: Métriques financières manquantes dans derivatives")
-                        self._debug_log(f"   Clés disponibles: {list(derivatives.keys())}")
                 except Exception as e:
-                    # Log l'erreur mais continue avec les valeurs par défaut
                     print(f"⚠️ Erreur get_trading_signal pour {symbol}: {e}")
                     import traceback
                     traceback.print_exc()
                     derivatives = {}
+
+                # ✅ Backfill DB + dériver cap_range si manquant, puis recomputer si contexte change
+                _ctx_changed = False
+                try:
+                    deriv_sector = derivatives.get('sector')
+                    deriv_mc = float(derivatives.get('market_cap_val') or 0)
+                    _need_update = False
+                    _s = None
+                    _c = None
+                    _m = None
+                    if deriv_sector and deriv_sector not in ('Inconnu', 'Unknown', '') and domaine in ('Inconnu', 'Unknown', '', None):
+                        from sector_normalizer import normalize_sector
+                        domaine = normalize_sector(deriv_sector)
+                        _s = domaine
+                        _need_update = True
+                        _ctx_changed = True
+                    if deriv_mc > 0:
+                        _m = deriv_mc
+                        if cap_range in ('Unknown', '', None):
+                            cap_range = qsi.classify_cap_range(deriv_mc)
+                            _ctx_changed = True
+                        _c = cap_range
+                        _need_update = True
+                    if _need_update:
+                        qsi.update_symbol_info_in_db(symbol, sector=_s, cap_range=_c, market_cap_b=_m)
+                except Exception:
+                    pass
+
+                # ✅ Si le contexte a changé (secteur ou cap dérivé), recomputer signal+score
+                if _ctx_changed:
+                    score_context2 = qsi.resolve_symbol_scoring_context(
+                        symbol, domaine=domaine, cap_range=cap_range, best_params=best_params_all,
+                    )
+                    domaine = score_context2['domaine']
+                    cap_range = score_context2['cap_range']
+                    seuil_achat_opt = score_context2['seuil_achat']
+                    seuil_vente_opt = score_context2['seuil_vente']
+                    extras_to_use = score_context2['price_extras']
+                    self._debug_log(f"🔄 {symbol}: recompute ctx domaine={domaine} cap={cap_range} key={score_context2['selected_key']} seuils={seuil_achat_opt}/{seuil_vente_opt}")
+                    try:
+                        sig, last_price, trend, last_rsi, volume_mean, score, derivatives = get_trading_signal(
+                            prices, volumes, domaine=domaine, return_derivatives=True, symbol=symbol, cap_range=cap_range,
+                            seuil_achat=seuil_achat_opt, seuil_vente=seuil_vente_opt,
+                            price_extras=extras_to_use
+                        )
+                    except Exception:
+                        pass
 
                 consensus_data = qsi.get_consensus(symbol) or {}
 
@@ -1739,10 +1690,8 @@ class MainWindow(QMainWindow):
             r.setdefault('Market Cap (B$)', 0.0)
             r.setdefault('ROE (%)', 0.0)
         
-        # Réutiliser le cache déjà présent pour éviter un refresh SQLite natif
-        # dans le callback de fin, qui a déjà provoqué des SIGSEGV.
-        if not getattr(self, 'best_parameters', None):
-            self.best_parameters = {}
+        # Charger les paramètres optimisés (lazy-load depuis SQLite si vide)
+        self._get_best_parameters_cached()
         
         # ✅ OPTIMISATION: Réutiliser les données déjà téléchargées depuis result
         try:
@@ -1801,6 +1750,11 @@ class MainWindow(QMainWindow):
                         r['FCF Yield (%)'] = round(derivatives.get('fcf_yield_pct', 0.0), 2)
                         r['D/E Ratio'] = round(derivatives.get('debt_to_equity', 0.0), 2)
                         r['Market Cap (B$)'] = round(derivatives.get('market_cap_val', 0.0), 2)
+
+                        # ✅ Dériver cap_range depuis market_cap si encore Unknown
+                        mc_val = derivatives.get('market_cap_val')
+                        if mc_val and float(mc_val) > 0 and r.get('CapRange') in ('Unknown', '', None):
+                            r['CapRange'] = qsi.classify_cap_range(float(mc_val))
                     except Exception:
                         # leave defaults
                         if need_derivatives:

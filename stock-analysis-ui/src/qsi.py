@@ -2850,6 +2850,35 @@ def analyse_signaux_populaires(
                         comp_key = f"{domaine}_{cap_range}"
                         if comp_key in best_params:
                             selected_key = comp_key
+
+            # ✅ Backfill DB: persister secteur/cap/market_cap récupérés par yfinance
+            # pour que les analyses futures n'aient plus 'Inconnu'/'Unknown'
+            _need_db_update = False
+            _db_sector = None
+            _db_cap = None
+            _db_mc = None
+            deriv_sector = derivatives.get('sector')
+            if deriv_sector and deriv_sector not in ('Inconnu', 'Unknown', '') and domaine in ('Inconnu', 'Unknown', '', None):
+                domaine = deriv_sector
+                try:
+                    from sector_normalizer import normalize_sector
+                    domaine = normalize_sector(domaine)
+                except Exception:
+                    pass
+                _db_sector = domaine
+                _need_db_update = True
+            deriv_mc = derivatives.get('market_cap_val')
+            if deriv_mc and float(deriv_mc) > 0:
+                _db_mc = float(deriv_mc)
+                if cap_range in ('Unknown', '', None):
+                    cap_range = classify_cap_range(_db_mc)
+                _db_cap = cap_range
+                _need_db_update = True
+            if _need_db_update:
+                try:
+                    update_symbol_info_in_db(symbol, sector=_db_sector, cap_range=_db_cap, market_cap_b=_db_mc)
+                except Exception:
+                    pass
             
             # 🔍 Debug: afficher le résultat pour comprendre le filtrage
             if verbose and signal == "NEUTRE":
