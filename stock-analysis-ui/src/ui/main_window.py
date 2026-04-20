@@ -35,6 +35,11 @@ from qsi import download_stock_data, backtest_signals, plot_unified_chart, get_t
 import qsi
 from trading_c_acceleration.qsi_optimized import extract_best_parameters
 
+try:
+    from cache_db import ensure_fx_rates_daily_history
+except Exception:
+    ensure_fx_rates_daily_history = None
+
 
 _CRASH_LOG_FILE = None
 
@@ -359,6 +364,18 @@ class MainWindow(QMainWindow):
         self.debug_mode_enabled = False
         self._analysis_running = False
         self._active_analysis_thread = None
+
+        # Prépare la table FX (10 devises, 5 ans) avec TTL 20h pour un backtest réaliste.
+        if ensure_fx_rates_daily_history is not None:
+            try:
+                fx_refresh = ensure_fx_rates_daily_history(min_refresh_hours=20, years=5, force=False)
+                print(
+                    "[FX] "
+                    f"{fx_refresh.get('status')} | rows={fx_refresh.get('rows_total')} "
+                    f"| added={fx_refresh.get('rows_added')}"
+                )
+            except Exception as e:
+                print(f"⚠️ Erreur refresh FX au démarrage: {e}")
 
         # 🔄 Synchroniser personal et optimization vers popular au démarrage
         if SYMBOL_MANAGER_AVAILABLE:

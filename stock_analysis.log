@@ -7905,3 +7905,12 @@
 2026-04-19 23:12:34,699 - ERROR - 
 1 Failed download:
 2026-04-19 23:12:34,700 - ERROR - ['CHRO']: possibly delisted; no price data found  (period=15mo) (Yahoo error = "No data found, symbol may be delisted")
+2026-04-25 12:30:38,555 - ERROR - HTTP Error 404: {"quoteSummary":{"result":null,"error":{"code":"Not Found","description":"Quote not found for symbol: 19V.DE"}}}
+2026-04-25 12:30:39,278 - ERROR - HTTP Error 404: {"quoteSummary":{"result":null,"error":{"code":"Not Found","description":"Quote not found for symbol: 19V.DE"}}}
+2026-04-25 12:30:50,401 - ERROR - HTTP Error 404: {"quoteSummary":{"result":null,"error":{"code":"Not Found","description":"Quote not found for symbol: GOGL.OL"}}}
+2026-04-25 12:30:51,010 - ERROR - HTTP Error 404: {"quoteSummary":{"result":null,"error":{"code":"Not Found","description":"Quote not found for symbol: GOGL.OL"}}}
+2026-04-25 12:30:55,344 - ERROR - HTTP Error 404: {"quoteSummary":{"result":null,"error":{"code":"Not Found","description":"Quote not found for symbol: MOH.BE"}}}
+2026-04-25 12:30:56,111 - ERROR - HTTP Error 404: {"quoteSummary":{"result":null,"error":{"code":"Not Found","description":"Quote not found for symbol: MOH.BE"}}}
+2026-04-25 12:30:56,882 - ERROR - HTTP Error 404: {"quoteSummary":{"result":null,"error":{"code":"Not Found","description":"Quote not found for symbol: PFC.L"}}}
+2026-04-25 12:30:57,660 - ERROR - HTTP Error 404: {"quoteSummary":{"result":null,"error":{"code":"Not Found","description":"Quote not found for symbol: PFC.L"}}}
+2026-04-25 12:30:59,176 - ERROR - HTTP Error 404: {"quoteSummary":{"result":null,"error":{"code":"Not Found","description":"Quote not found for symbol: PLL"}}}

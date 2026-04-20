@@ -21,9 +21,17 @@ os.chdir(SRC_DIR)
 from PyQt5.QtWidgets import QApplication
 from PyQt5.QtGui import QIcon
 from ui.main_window import MainWindow
+from cache_db import ensure_fx_rates_daily_history
 
 
 def main():
+    # Précharge les taux FX journaliers (5 ans) avec TTL de 20h pour le backtest.
+    try:
+        fx_refresh = ensure_fx_rates_daily_history(min_refresh_hours=20, years=5, force=False)
+        print(f"[FX] {fx_refresh.get('status')} | rows={fx_refresh.get('rows_total')} | added={fx_refresh.get('rows_added')}")
+    except Exception as exc:
+        print(f"[FX] refresh skipped due to error: {exc}")
+
     app = QApplication(sys.argv)
     
     # Nom de l'application visible dans la barre des tâches

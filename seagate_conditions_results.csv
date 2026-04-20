@@ -1,0 +1,31 @@
+ticker,nom,secteur,score,C1_CA_Growth,C1_ok,C2_Marge,C2_ok,C3_Valorisation,C3_ok,C4_Momentum,C4_ok,C5_Volume,C5_ok
+APP,Applovin Corporation,Communication Services,3,65.9%,True,87.9%,True,2/3 proxies,True,-16.3%,False,0.8x,False
+CRT,Cross Timbers Royalty Trust,Energy,3,11.2%,False,100.0%,True,1/3 proxies,False,23.5%,True,1.27x,True
+APO,"Apollo Global Management, Inc. ",Financial Services,3,87.7%,True,37.3%,True,2/3 proxies,True,-5.2%,False,1.11x,False
+ALAB,"Astera Labs, Inc.",Technology,3,91.8%,True,75.7%,True,0/3 proxies,False,30.4%,True,1.02x,False
+DTE,DTE Energy Company,Utilities,3,28.9%,True,30.3%,True,1/3 proxies,False,9.2%,True,0.74x,False
+CPG.L,COMPASS GROUP PLC ORD 11 1/20P,Consumer Cyclical,2,10.6%,False,72.9%,True,0/3 proxies,False,35.2%,True,0.85x,False
+ROST,"Ross Stores, Inc.",Consumer Cyclical,2,12.2%,False,32.6%,True,0/3 proxies,False,20.9%,True,0.95x,False
+ERII,"Energy Recovery, Inc.",Industrials,2,-0.3%,False,65.1%,True,1/3 proxies,False,-21.3%,False,1.34x,True
+ACMR,"ACM Research, Inc.",Technology,2,9.4%,False,44.4%,True,0/3 proxies,False,9.7%,True,0.75x,False
+AMCI,AMC Robotics Corporation,Technology,2,-41.0%,False,47.7%,True,1/3 proxies,False,11.1%,True,0.02x,False
+IMMR,Immersion Corporation,Technology,2,5.5%,False,23.2%,False,2/3 proxies,True,-9.4%,False,1.29x,True
+BLDP,"Ballard Power Systems, Inc.",Industrials,2,37.2%,True,5.5%,False,0/3 proxies,False,28.1%,True,1.11x,False
+KNX,Knight-Swift Transportation Hol,Industrials,1,1.4%,False,24.0%,False,1/3 proxies,False,16.3%,True,0.99x,False
+MTD,"Mettler-Toledo International, I",Healthcare,1,8.1%,False,59.4%,True,0/3 proxies,False,-10.0%,False,1.02x,False
+BMA,Banco Macro S.A.,Financial Services,1,-3.1%,False,0.0%,False,3/3 proxies,True,-23.5%,False,1.03x,False
+WIT,Wipro Limited,Technology,1,7.7%,False,25.4%,False,3/3 proxies,True,-21.8%,False,1.02x,False
+MOD,Modine Manufacturing Company,Consumer Cyclical,1,30.5%,True,23.8%,False,1/3 proxies,False,69.5%,False,0.75x,False
+REPL,"Replimune Group, Inc.",Healthcare,1,N/A,False,0.0%,False,1/3 proxies,False,-68.0%,False,2.21x,True
+CSTE,Caesarstone Ltd.,Industrials,1,-3.5%,False,19.0%,False,1/3 proxies,False,-27.7%,False,2.52x,True
+ARCT,Arcturus Therapeutics Holdings ,Healthcare,1,-68.4%,False,-36.8%,False,1/3 proxies,False,16.7%,True,0.96x,False
+2386.HK,SINOPEC SEG,Industrials,1,8.4%,False,7.4%,False,1/3 proxies,False,-6.8%,False,1.21x,True
+AAL,"American Airlines Group, Inc.",Industrials,1,10.8%,False,22.9%,False,2/3 proxies,True,-17.0%,False,0.98x,False
+ARR,"ARMOUR Residential REIT, Inc.",Real Estate,1,N/A,False,100.0%,True,1/3 proxies,False,0.4%,False,0.91x,False
+PSX,Phillips 66,Energy,1,1.3%,False,12.3%,False,2/3 proxies,True,17.0%,False,1.12x,False
+DAVA,Endava plc,Technology,1,-5.9%,False,24.2%,False,2/3 proxies,True,-37.5%,False,0.53x,False
+TBLA,Taboola.com Ltd.,Communication Services,0,6.4%,False,29.8%,False,0/3 proxies,False,-8.2%,False,0.94x,False
+BA.L,BAE SYSTEMS PLC ORD 2.5P,Industrials,0,6.7%,False,13.2%,False,0/3 proxies,False,2.4%,False,1.11x,False
+SPY,State Street SPDR S&P 500 ETF T,N/A,0,N/A,False,N/A,False,0/3 proxies,False,3.3%,False,0.98x,False
+WY,Weyerhaeuser Company,Real Estate,0,-9.8%,False,14.8%,False,0/3 proxies,False,-5.1%,False,0.74x,False
+MTRO,METRO ONE DEVELOPMENT INC,N/A,0,N/A,False,N/A,False,0/3 proxies,False,N/A,False,N/A,False

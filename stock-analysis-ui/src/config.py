@@ -14,6 +14,7 @@ _CONFIG_DIR = Path(__file__).parent.resolve()
 PROJECT_ROOT = _CONFIG_DIR  # Alias pour compatibilité
 DB_PATH = str(_CONFIG_DIR / "stock_analysis.db")
 OPTIMIZATION_DB_PATH = str(_CONFIG_DIR / "signaux" / "optimization_hist.db")
+MARKET_DATA_DB_PATH = DB_PATH
 CACHE_DIR = _CONFIG_DIR / "cache_data"
 DATA_CACHE_DIR = _CONFIG_DIR / "data_cache"
 CACHE_LOGS_DIR = _CONFIG_DIR / "cache_logs"
