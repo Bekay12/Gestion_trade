@@ -1,0 +1,5 @@
+type,ticker,titre,sentiment,intensite,horizon,resume,score_fondamental,catalyseur,lien,date
+ALERT_PORTFOLIO,DB,Gold is winning against the dollar as nations manage global strife. Deutsche Bank sees bullion prices surging,positif,modere,1-2sem,L'augmentation de l'or comme réserve de valeur par les banques centrales et la baisse de l'exposition aux devises américaines pourrait soutenir la performance de Deutsche Bank.,,macro,https://www.cnbc.com/2026/04/27/gold-is-winning-out-against-the-dollar-as-nations-manage-global-strife.html,2026-04-27 19:56:47
+ALERT_PORTFOLIO,AVGO,Broadcom's Q2 2026 Earnings: What to Expect,positif,fort,1-3mois,"La prévision de croissance des bénéfices pour Broadcom au cours du deuxième trimestre prochain est positive, anticipant une hausse significative du cours de l'action.",,earnings,https://www.barchart.com/story/news/1536788/broadcom-s-q2-2026-earnings-what-to-expect?.tsrc=rss,2026-04-27 19:56:49
+OPPORTUNITY,KGC,Kinross Gold Corporation,,,,Score 3/5,3/5,C1:True C2:True C3:True C4:False C5:False,,2026-04-27 21:56
+OPPORTUNITY,NVDA,NVIDIA Corporation,,,,Score 3/5,3/5,C1:True C2:True C3:False C4:True C5:False,,2026-04-27 21:56

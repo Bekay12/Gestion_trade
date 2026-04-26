@@ -1,0 +1,5 @@
+ticker,nom,secteur,score,C1_CA_Growth,C1_ok,C2_Marge,C2_ok,C3_Valorisation,C3_ok,C4_Momentum,C4_ok,C5_Volume,C5_ok
+PDFS,"PDF Solutions, Inc.",Technology,4,24.6%,True,72.3%,True,0/3 proxies,False,23.6%,True,1.24x,True
+SBAC,SBA Communications Corporation,Real Estate,3,3.7%,False,74.5%,True,1/3 proxies,False,16.7%,True,1.32x,True
+IPST,"IP Strategy Holdings, Inc.",Financial Services,3,53.3%,True,56.2%,True,1/3 proxies,False,-83.3%,False,2.7x,True
+GWRE,"Guidewire Software, Inc.",Technology,3,24.0%,True,63.8%,True,2/3 proxies,True,-13.5%,False,0.86x,False

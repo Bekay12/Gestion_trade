@@ -868,21 +868,32 @@ class MainWindow(QMainWindow):
         
         lists_container.addLayout(recent_layout)
 
-        # Raccourcis top movers placés à l'extrême droite de la ligne des listes
-        lists_container.addItem(QSpacerItem(80, 20, QSizePolicy.Expanding, QSizePolicy.Minimum))
-        movers_layout = QVBoxLayout()
-        movers_layout.setSpacing(6)
-        movers_layout.addWidget(QLabel("Top Movers (Jour)"))
-        self.top_winners_btn = QPushButton("Top 30 Winners")
-        self.top_winners_btn.setToolTip("Charge les 30 plus fortes hausses du jour")
-        self.top_winners_btn.clicked.connect(lambda: self._show_top_daily_movers('winners'))
-        movers_layout.addWidget(self.top_winners_btn)
-
-        self.top_losers_btn = QPushButton("Top 30 Losers")
-        self.top_losers_btn.setToolTip("Charge les 30 plus fortes baisses du jour")
-        self.top_losers_btn.clicked.connect(lambda: self._show_top_daily_movers('losers'))
-        movers_layout.addWidget(self.top_losers_btn)
-        lists_container.addLayout(movers_layout)
+        # ── Yahoo Screeners ─────────────────────────────────────────────────
+        lists_container.addItem(QSpacerItem(20, 20, QSizePolicy.Fixed, QSizePolicy.Minimum))
+        screener_layout = QVBoxLayout()
+        screener_layout.setSpacing(4)
+        screener_layout.addWidget(QLabel("Yahoo Screeners"))
+        self.screener_combo = QComboBox()
+        self.screener_combo.setMinimumWidth(185)
+        _SCREENER_LABELS = [
+            ("most_actives",           "Most Actives"),
+            ("day_gainers",            "Day Gainers"),
+            ("day_losers",             "Day Losers"),
+            ("growth_technology_stocks", "Growth Tech"),
+            ("aggressive_small_caps",  "Aggressive Small Caps"),
+            ("small_cap_gainers",      "Small Cap Gainers"),
+            ("undervalued_growth_stocks", "Undervalued Growth"),
+            ("undervalued_large_caps", "Undervalued Large Caps"),
+            ("most_shorted_stocks",    "Most Shorted"),
+        ]
+        for key, label in _SCREENER_LABELS:
+            self.screener_combo.addItem(label, userData=key)
+        screener_layout.addWidget(self.screener_combo)
+        self.screener_show_btn = QPushButton("Afficher")
+        self.screener_show_btn.setToolTip("Charge jusqu'à 30 symboles du screener sélectionné")
+        self.screener_show_btn.clicked.connect(self._show_yahoo_screener)
+        screener_layout.addWidget(self.screener_show_btn)
+        lists_container.addLayout(screener_layout)
 
         self.layout.addLayout(lists_container)
 
@@ -3761,6 +3772,54 @@ class MainWindow(QMainWindow):
             lines.append(f"{idx:02d}. {sym:8s} {pct:+.2f}%")
 
         QMessageBox.information(self, title, '\n'.join(lines))
+
+    def _show_yahoo_screener(self):
+        """Charge jusqu'à 30 symboles du screener Yahoo sélectionné et les injecte dans le champ d'analyse."""
+        screener_key = self.screener_combo.currentData()
+        screener_label = self.screener_combo.currentText()
+        if not screener_key:
+            return
+
+        QApplication.setOverrideCursor(Qt.WaitCursor)
+        try:
+            payload = yf.screen(screener_key, count=30)
+        except Exception as e:
+            QApplication.restoreOverrideCursor()
+            QMessageBox.warning(self, "Erreur", f"Impossible de charger le screener '{screener_label}': {e}")
+            return
+        finally:
+            QApplication.restoreOverrideCursor()
+
+        quotes = (payload or {}).get('quotes') or []
+        entries = []
+        for q in quotes:
+            if not isinstance(q, dict):
+                continue
+            symbol = str(q.get('symbol') or '').strip().upper()
+            if not symbol:
+                continue
+            pct = q.get('regularMarketChangePercent')
+            if isinstance(pct, dict):
+                pct = pct.get('raw', pct.get('fmt'))
+            try:
+                pct_val = float(pct)
+            except Exception:
+                pct_val = None
+            entries.append((symbol, pct_val))
+
+        entries = entries[:30]
+        if not entries:
+            QMessageBox.information(self, "Yahoo Screener", f"Aucun résultat pour le screener « {screener_label} ».")
+            return
+
+        symbols = [sym for sym, _ in entries]
+        self.symbol_input.setText(', '.join(symbols))
+
+        lines = []
+        for idx, (sym, pct) in enumerate(entries, start=1):
+            pct_str = f"{pct:+.2f}%" if pct is not None else "n/a"
+            lines.append(f"{idx:02d}. {sym:8s} {pct_str}")
+        QMessageBox.information(self, f"Yahoo Screener — {screener_label} (max 30)", '\n'.join(lines))
 
     def _get_clean_columns_and_data(self):
         """Filtrer les colonnes vides ou contenant uniquement des 0"""

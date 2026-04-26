@@ -3,6 +3,19 @@ import pandas as pd
 import warnings
 warnings.filterwarnings("ignore")
 
+
+def _f(value):
+    """Convertit en float ou retourne None si invalide/NaN."""
+    if value is None:
+        return None
+    try:
+        v = float(value)
+        import math
+        return v if math.isfinite(v) else None
+    except (TypeError, ValueError):
+        return None
+
+
 Random_List= [
     "SNDK", "STX", "WDC",
     "BE", "CEG", "VST",
@@ -21,9 +34,8 @@ Random_List= [
     
 ]
 
-p_Ticker = ["APP", "CPG.L", "KNX", "MTD", "ERII", "CRT", "CSTE", "ARCT", "BLDP", "REPL", "TBLA", "IMMR", "BA.L", "MOD", "AAL", "BMA", "2386.HK", "PSX", "WY", "SPY", "ROST", "DAVA", "ALAB", "DTE", "MTRO", "WIT", "AMCI", "APO", "ARR", "ACMR"]
-TICKERS = p_Ticker
-
+p_Ticker = ["LYTS", "MC", "SHIP","TTE", "AGEN", "ALB", "AMAT", "ASML", "AVGO", "AZN", "BABA", "BIDU", "CDNS", "CRWD", "DDOG", "DOCU", "ENPH", "EQIX", "FSLY", "GOOGL", "INTC", "JD", "LRCX", "MARA", "MCHP", "MSFT", "MTCH", "NFLX", "NVDA", "OKTA"]
+TICKERS = [ "INTC", "NVDA", "SMCI", "NOK", "AMD", "CPNG", "SNAP", "CTRA", "JOBY", "BBAI", "KEEL", "GRAB", "AAL", "PLUG", "IONQ", "SOFI", "IREN", "ACHR", "TSLA", "ONDS", "F", "CCL", "ITUB", "PLTR", "MARA", "OWL", "MU", "RIG", "SMR", "WULF"]
 # ─────────────────────────────────────────────────────────────
 # CONDITION 1 — Croissance structurelle du CA (>20% YoY)
 # ─────────────────────────────────────────────────────────────
@@ -31,7 +43,7 @@ TICKERS = p_Ticker
 # yfinance expose `revenueGrowth` = croissance YoY du dernier trimestre.
 # Seuil conservateur fixé à +20% pour capturer les cas "en accélération".
 def condition_1_revenue_growth(info):
-    rev_growth = info.get("revenueGrowth", None)
+    rev_growth = _f(info.get("revenueGrowth"))
     if rev_growth is None:
         return False, "N/A", "Donnée absente"
     passed = rev_growth > 0.20
@@ -47,7 +59,7 @@ def condition_1_revenue_growth(info):
 # Pour aller plus loin, on peut comparer grossMargins sur 2 trimestres
 # consécutifs via stock.quarterly_financials.
 def condition_2_gross_margin(info):
-    gm = info.get("grossMargins", None)
+    gm = _f(info.get("grossMargins"))
     if gm is None:
         return False, "N/A", "Donnée absente"
     passed = gm > 0.30
@@ -67,18 +79,18 @@ def condition_3_undervaluation(info, hist):
     score = 0
     details = []
 
-    pe = info.get("trailingPE", None)
-    if pe and 0 < pe < 25:
+    pe = _f(info.get("trailingPE"))
+    if pe is not None and 0 < pe < 25:
         score += 1
         details.append(f"P/E={round(pe,1)}")
 
-    peg = info.get("pegRatio", None)
-    if peg and 0 < peg < 1.5:
+    peg = _f(info.get("pegRatio"))
+    if peg is not None and 0 < peg < 1.5:
         score += 1
         details.append(f"PEG={round(peg,2)}")
 
-    high_52w = info.get("fiftyTwoWeekHigh", None)
-    price = info.get("currentPrice") or info.get("regularMarketPrice")
+    high_52w = _f(info.get("fiftyTwoWeekHigh"))
+    price = _f(info.get("currentPrice") or info.get("regularMarketPrice"))
     if high_52w and price:
         ratio = price / high_52w
         if ratio < 0.75:

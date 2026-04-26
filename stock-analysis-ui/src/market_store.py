@@ -1002,6 +1002,7 @@ def refresh_symbol_incremental(
     recalc_window_days: int = 420,
     bootstrap_start_date: str = DEFAULT_FEATURE_START_DATE,
     force: bool = False,
+    fast_bootstrap: bool = True,
 ) -> dict:
     ensure_market_data_schema()
     symbol = _normalize_symbol(symbol)
@@ -1041,6 +1042,35 @@ def refresh_symbol_incremental(
 
     if not info:
         info = _get_instrument_profile(symbol)
+
+    # Pour un nouveau symbole (jamais en DB), on commence par un téléchargement
+    # court (18 mois) identique à Big_Growth.py — beaucoup plus fiable sur les
+    # tickers étrangers ou peu liquides. Si ça réussit, on stocke et on retourne.
+    # Le remplissage historique complet depuis bootstrap_start_date peut se faire
+    # lors d'un run suivant (fast_bootstrap=False) ou en tâche de fond.
+    is_new_symbol = (latest_row is None)
+    if is_new_symbol and fast_bootstrap:
+        history = ticker.history(period="18mo", auto_adjust=False, actions=True)
+        if history is None or history.empty:
+            raise ValueError(f"No history available for {symbol}")
+        try:
+            get_fundamental_metrics(symbol, use_cache=True, allow_stale=False)
+        except Exception:
+            pass
+        upsert_instrument(symbol, info)
+        if info:
+            store_fundamental_snapshot(symbol, info)
+        currency = _safe_text(info.get("currency"))
+        price_rows = store_price_history(symbol, history, currency)
+        feature_frame = _build_daily_feature_frame(symbol, history, info)
+        feature_rows = store_daily_feature_series(symbol, feature_frame)
+        return {
+            "symbol": symbol,
+            "status": "bootstrapped_fast",
+            "price_rows": price_rows,
+            "feature_rows": feature_rows,
+            "last_trade_date": feature_frame["feature_date"].iloc[-1] if not feature_frame.empty else None,
+        }
 
     history = ticker.history(start=start_date, auto_adjust=False, actions=True)
     if history is None or history.empty:

@@ -1,0 +1,5 @@
+type,ticker,titre,sentiment,intensite,horizon,resume,score_fondamental,catalyseur,lien,date
+ALERT_PORTFOLIO,MU,Micron and Sandisk shares could soar further thanks to a software-like subscription model,positif,modere,1-2sem,"La mémoire est cruciale pour le développement de l'IA, et le passage vers un modèle de souscription logicielle pourrait stimuler les parts de Micron et Sandisk.",,produit,https://www.marketwatch.com/story/micron-and-sandisk-shares-could-soar-further-thanks-to-a-software-like-subscription-model-80534cd3?mod=mw_rss_topstories,2026-04-27 19:08:44
+OPPORTUNITY,MU,"Micron Technology, Inc.",,,,Score 5/5,5/5,C1:True C2:True C3:True C4:True C5:True,,2026-04-27 21:08
+OPPORTUNITY,NVDA,NVIDIA Corporation,,,,Score 3/5,3/5,C1:True C2:True C3:False C4:True C5:False,,2026-04-27 21:08
+OPPORTUNITY,MRVL,"Marvell Technology, Inc.",,,,Score 3/5,3/5,C1:True C2:True C3:False C4:False C5:True,,2026-04-27 21:08

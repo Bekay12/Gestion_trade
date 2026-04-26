@@ -53,6 +53,10 @@ logging.getLogger("peewee").setLevel(logging.CRITICAL)
 _throttle_lock = threading.Lock()
 _last_call_time = 0.0
 THROTTLE_DELAY = 0.25  # ~4 req/s max
+
+# Compteur thread-safe des raisons de skip
+_skip_lock = threading.Lock()
+_skip_reasons: dict[str, int] = {}
 USE_MARKET_DB = True
 DB_REFRESH_HOURS = 20
 DB_RECALC_WINDOW_DAYS = 420
@@ -372,6 +376,12 @@ def c5_volume_buildup(hist):
 # ─────────────────────────────────────────────────────────────
 # ANALYSE D'UN SYMBOLE
 # ─────────────────────────────────────────────────────────────
+def _record_skip(reason: str) -> None:
+    """Incrémente le compteur de skip pour une raison donnée (thread-safe)."""
+    with _skip_lock:
+        _skip_reasons[reason] = _skip_reasons.get(reason, 0) + 1
+
+
 def _throttle():
     """Limite globale du débit d'appels yfinance."""
     global _last_call_time
@@ -394,16 +404,19 @@ def analyze(ticker):
     stock = yf.Ticker(ticker)
     info = _fetch_info_with_retry(stock, ticker)
     if info is None:
+        _record_skip("Pas de données (yfinance)")
         return None
 
     # Vérifier que le ticker est valide et exploitable
     name = info.get("shortName") or info.get("longName") or info.get("symbol")
     price_probe = _safe_float(info.get("currentPrice") or info.get("regularMarketPrice") or info.get("previousClose"))
     if not name and (price_probe is None or price_probe <= 0):
+        _record_skip("Ticker invalide / introuvable")
         return None
 
     hist = _fetch_history_with_retry(stock)
     if hist is None:
+        _record_skip("Historique insuffisant (<130 jours)")
         return None
 
     r1 = c1_revenue_growth(info)
@@ -472,6 +485,7 @@ def analyze_safe(ticker):
                 if attempt < max_retries - 1:
                     time.sleep(2 ** (attempt + 1))  # 2s, 4s
                 else:
+                    _record_skip("Rate-limit yfinance (429)")
                     return None  # Abandon propre (pas d'erreur dans le résumé)
             elif attempt < max_retries - 1:
                 time.sleep(0.3 * (2 ** attempt))
@@ -542,6 +556,11 @@ def run_scan(symbols, max_workers=10, min_score=3, top_n=None, verbose=True):
 
     elapsed = time.time() - t0
     print(f"\n✅ Scan terminé en {elapsed:.0f}s — {len(df)} résultats (score >= {min_score})")
+    # Résumé des raisons de skip
+    if skipped > 0 and _skip_reasons:
+        print(f"\n⚠️  Raisons des {skipped} symboles ignorés :")
+        for reason, count in sorted(_skip_reasons.items(), key=lambda x: -x[1]):
+            print(f"   {count:4d}x  {reason}")
 
     return df
 
