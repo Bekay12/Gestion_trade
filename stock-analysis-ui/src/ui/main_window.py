@@ -199,7 +199,7 @@ class AnalysisThread(QThread):
             self._process = subprocess.Popen(
                 [sys.executable, '-u', worker_script, args_file, result_file],
                 stdout=subprocess.PIPE, stderr=subprocess.STDOUT,
-                text=True, bufsize=1, cwd=PROJECT_SRC,
+                text=True, encoding='utf-8', errors='replace', bufsize=1, cwd=PROJECT_SRC,
             )
             for line in self._process.stdout:
                 if self._stop_requested:
@@ -271,7 +271,7 @@ class DownloadThread(QThread):
             self._process = subprocess.Popen(
                 [sys.executable, '-u', worker_script, args_file, result_file],
                 stdout=subprocess.PIPE, stderr=subprocess.STDOUT,
-                text=True, bufsize=1, cwd=PROJECT_SRC,
+                text=True, encoding='utf-8', errors='replace', bufsize=1, cwd=PROJECT_SRC,
             )
             for line in self._process.stdout:
                 if self._stop_requested:
@@ -3219,7 +3219,7 @@ class MainWindow(QMainWindow):
     def _generate_historical_comparison_table(self, symbols_to_compare, historical_date):
         """
         Génère un tableau de comparaison historique avec analyse complète.
-        Télécharge intelligemment 18 mois de données pour le backtest annuel.
+        Télécharge intelligemment 36 mois de données pour le backtest annuel.
         Évite les retéléchargements en utilisant un cache intelligent.
         """
         try:
@@ -3233,7 +3233,7 @@ class MainWindow(QMainWindow):
             cache_dir.mkdir(parents=True, exist_ok=True)
             
             # Afficher le chargement
-            loading_label = QLabel(f"⏳ Téléchargement intelligent des données (18 mois) pour {historical_date}...")
+            loading_label = QLabel(f"⏳ Téléchargement intelligent des données (36 mois) pour {historical_date}...")
             loading_label.setStyleSheet("font-size: 11px; color: blue; padding: 10px;")
             self.comparison_results_layout.addWidget(loading_label)
             QApplication.processEvents()
@@ -3248,9 +3248,9 @@ class MainWindow(QMainWindow):
                 loading_label.deleteLater()
                 return
             
-            # Période à télécharger : 18 mois avant la date cible
-            # (12 mois de backtest + 6 mois pour les indicateurs)
-            dl_start_date = target_date - timedelta(days=550)  # ~18 mois
+            # Période à télécharger : 36 mois avant la date cible
+            # (30 mois de backtest + 6 mois de warmup pour les indicateurs)
+            dl_start_date = target_date - timedelta(days=1100)  # ~36 mois
             dl_end_date = target_date + timedelta(days=1)  # Inclure la date cible
             
             # Stocker les données historiques et actuelles
@@ -3551,7 +3551,7 @@ class MainWindow(QMainWindow):
             summary.setStyleSheet("background-color: #fff9c4; padding: 8px; border-radius: 4px; font-weight: bold;")
             
             info_label = QLabel(
-                f"💡 Analyse complète : 18 mois téléchargés intelligemment (12 mois backtest + 6 mois indicateurs). "
+                f"💡 Analyse complète : 36 mois téléchargés intelligemment (30 mois backtest + 6 mois indicateurs). "
                 f"Le cache est utilisé pour éviter les retéléchargements. "
                 f"Les symboles sont classés par performance réelle depuis {historical_date}."
             )

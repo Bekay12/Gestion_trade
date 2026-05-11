@@ -337,7 +337,7 @@ def cond5_volume(hist):
 def run_fundamental(ticker: str) -> dict | None:
     try:
         stock = yf.Ticker(ticker)
-        hist  = stock.history(period="18mo")
+        hist  = stock.history(period="3y")
         info  = stock.info
         if not info or info.get("regularMarketPrice") is None:
             return None

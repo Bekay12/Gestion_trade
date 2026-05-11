@@ -40,6 +40,15 @@ from market_store import (  # noqa: F401  (ré-export public)
     _safe_score_signal,
     _prepare_history_frame,
     _build_quarter_feature_points,
+    # Nouveau : financial cache (remplace pickle)
+    get_financial_cache,
+    save_financial_cache,
+    # Nouveau : timeline (remplace SQLite)
+    store_timeline_earnings,
+    store_timeline_recommendations,
+    store_timeline_insider,
+    get_timeline_pit_data,
+    update_timeline_data,
 )
 
 # ---------------------------------------------------------------------------

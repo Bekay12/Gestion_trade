@@ -126,7 +126,7 @@ def _fetch_history_with_retry(stock, max_retries=4):
     for attempt in range(max_retries):
         try:
             _throttle()
-            hist = stock.history(period="18mo", auto_adjust=False)
+            hist = stock.history(period="3y", auto_adjust=False)
             if _is_valid_history(hist): return hist
         except Exception: pass
         if attempt < max_retries - 1: time.sleep(0.8 * (2 ** attempt))

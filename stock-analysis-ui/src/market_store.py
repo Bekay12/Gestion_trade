@@ -1044,13 +1044,13 @@ def refresh_symbol_incremental(
         info = _get_instrument_profile(symbol)
 
     # Pour un nouveau symbole (jamais en DB), on commence par un téléchargement
-    # court (18 mois) identique à Big_Growth.py — beaucoup plus fiable sur les
-    # tickers étrangers ou peu liquides. Si ça réussit, on stocke et on retourne.
+    # de 36 mois (3y) identique aux scans Big_Growth/Combined — donne suffisamment
+    # d'historique pour le rolling 52w, le momentum 6m et les features trimestrielles.
     # Le remplissage historique complet depuis bootstrap_start_date peut se faire
     # lors d'un run suivant (fast_bootstrap=False) ou en tâche de fond.
     is_new_symbol = (latest_row is None)
     if is_new_symbol and fast_bootstrap:
-        history = ticker.history(period="18mo", auto_adjust=False, actions=True)
+        history = ticker.history(period="3y", auto_adjust=False, actions=True)
         if history is None or history.empty:
             raise ValueError(f"No history available for {symbol}")
         try:
@@ -1129,6 +1129,284 @@ def bootstrap_market_database(
     if failures:
         raise RuntimeError("; ".join(failures))
     return results
+
+
+# ---------------------------------------------------------------------------
+# Financial cache (remplace le cache pickle de config.py)
+# ---------------------------------------------------------------------------
+# Stocke des snapshots arbitraires de données financières (dict) par symbole
+# et par type.  Chaque ligne = un symbole × un cache_type × un horodatage.
+# Arborescence : market_parquet/financial_cache/cache_type=<type>/symbol=<SYM>/part0.parquet
+
+
+def _financial_cache_path(symbol: str, cache_type: str) -> Path:
+    safe_sym = symbol.replace("/", "_").replace("\\", "_").replace(":", "_")
+    safe_type = cache_type.replace("/", "_")
+    return PARQUET_DIR / "financial_cache" / f"cache_type={safe_type}" / f"symbol={safe_sym}" / "part0.parquet"
+
+
+def get_financial_cache(symbol: str, cache_type: str = "financial", ttl_hours: int = 24) -> Optional[dict]:
+    """Lit un snapshot financier depuis le store Parquet (remplace config.get_pickle_cache).
+
+    Retourne le dict le plus récent si son âge est inférieur à *ttl_hours*, sinon None.
+    """
+    symbol = _normalize_symbol(symbol)
+    path = _financial_cache_path(symbol, cache_type)
+    if not path.exists():
+        return None
+    try:
+        df = pd.read_parquet(path)
+        if df.empty:
+            return None
+        df["_fetched_at_dt"] = pd.to_datetime(df["fetched_at"], errors="coerce", utc=True)
+        latest = df.sort_values("_fetched_at_dt").iloc[-1]
+        age_h = (datetime.utcnow() - latest["_fetched_at_dt"].to_pydatetime().replace(tzinfo=None)).total_seconds() / 3600.0
+        if age_h >= float(ttl_hours):
+            return None
+        row = latest.drop(labels=["_fetched_at_dt"]).to_dict()
+        # Désérialiser les colonnes JSON (valeurs stockées comme str)
+        result: dict = {}
+        for k, v in row.items():
+            if k in ("symbol", "cache_type", "fetched_at"):
+                continue
+            if isinstance(v, str):
+                try:
+                    result[k] = __import__("json").loads(v)
+                except Exception:
+                    result[k] = v
+            elif pd.isna(v) if not isinstance(v, (list, dict)) else False:
+                result[k] = None
+            else:
+                result[k] = v
+        return result or None
+    except Exception:
+        return None
+
+
+def save_financial_cache(symbol: str, data: dict, cache_type: str = "financial") -> bool:
+    """Sauvegarde un snapshot financier dans le store Parquet (remplace config.save_pickle_cache).
+
+    Les valeurs scalaires (int, float, str, bool) sont stockées directement.
+    Les valeurs composites (dict, list) sont sérialisées en JSON dans une colonne TEXT.
+    """
+    symbol = _normalize_symbol(symbol)
+    ensure_market_data_schema()
+    path = _financial_cache_path(symbol, cache_type)
+    path.parent.mkdir(parents=True, exist_ok=True)
+    import json as _json
+
+    flat: dict = {"symbol": symbol, "cache_type": cache_type, "fetched_at": _utcnow()}
+    for k, v in data.items():
+        if isinstance(v, (dict, list)):
+            flat[k] = _json.dumps(v, default=str)
+        elif v is None:
+            flat[k] = None
+        else:
+            flat[k] = v
+
+    new_row = pd.DataFrame([flat])
+    if path.exists():
+        existing = pd.read_parquet(path)
+        # Garder les 4 derniers snapshots pour traçabilité, supprimer les plus anciens
+        existing = existing.sort_values("fetched_at").tail(4)
+        combined = pd.concat([existing, new_row], ignore_index=True)
+    else:
+        combined = new_row
+
+    try:
+        pq.write_table(pa.Table.from_pandas(combined, preserve_index=False), str(path))
+        return True
+    except Exception:
+        return False
+
+
+# ---------------------------------------------------------------------------
+# Timeline cache (remplace timeline_cache.py SQLite)
+# ---------------------------------------------------------------------------
+# Stocke les données point-in-time (earnings, recommendations, insider) par symbole.
+# Arborescence :
+#   market_parquet/timeline/earnings/symbol=<SYM>/part0.parquet
+#   market_parquet/timeline/recommendations/symbol=<SYM>/part0.parquet
+#   market_parquet/timeline/insider/symbol=<SYM>/part0.parquet
+
+
+def _timeline_path(category: str, symbol: str) -> Path:
+    safe = symbol.replace("/", "_").replace("\\", "_").replace(":", "_")
+    return PARQUET_DIR / "timeline" / category / f"symbol={safe}" / "part0.parquet"
+
+
+def _upsert_timeline(path: Path, incoming: pd.DataFrame, key_cols: list[str]) -> int:
+    """Merge *incoming* dans *path* en dédupliquant sur *key_cols*."""
+    if incoming.empty:
+        return 0
+    path.parent.mkdir(parents=True, exist_ok=True)
+    if path.exists():
+        existing = pd.read_parquet(path)
+        key_str = incoming[key_cols].astype(str).apply("|".join, axis=1)
+        ex_key_str = existing[key_cols].astype(str).apply("|".join, axis=1)
+        existing = existing[~ex_key_str.isin(key_str)]
+        combined = pd.concat([existing, incoming], ignore_index=True)
+    else:
+        combined = incoming
+    pq.write_table(pa.Table.from_pandas(combined, preserve_index=False), str(path))
+    return len(incoming)
+
+
+def store_timeline_earnings(symbol: str, df: pd.DataFrame) -> int:
+    """Stocke les earnings (EPS, surprise) en Parquet.
+
+    Colonnes attendues : date, eps_estimate, eps_actual, surprise_pct.
+    """
+    symbol = _normalize_symbol(symbol)
+    if df is None or df.empty:
+        return 0
+    ensure_market_data_schema()
+    df = df.copy()
+    df["symbol"] = symbol
+    df["date"] = pd.to_datetime(df["date"], errors="coerce").dt.strftime("%Y-%m-%d")
+    df = df.dropna(subset=["date"]).drop_duplicates(subset=["symbol", "date"])
+    for col in ("eps_estimate", "eps_actual", "surprise_pct"):
+        if col not in df.columns:
+            df[col] = None
+    df = df[["symbol", "date", "eps_estimate", "eps_actual", "surprise_pct"]]
+    return _upsert_timeline(_timeline_path("earnings", symbol), df, ["symbol", "date"])
+
+
+def store_timeline_recommendations(symbol: str, df: pd.DataFrame) -> int:
+    """Stocke les recommandations analystes en Parquet.
+
+    Colonnes attendues : date, firm, to_grade, from_grade, action.
+    """
+    symbol = _normalize_symbol(symbol)
+    if df is None or df.empty:
+        return 0
+    ensure_market_data_schema()
+    df = df.copy()
+    df["symbol"] = symbol
+    df["date"] = pd.to_datetime(df["date"], errors="coerce").dt.strftime("%Y-%m-%d")
+    df = df.dropna(subset=["date", "firm"]).drop_duplicates(subset=["symbol", "date", "firm"])
+    for col in ("to_grade", "from_grade", "action"):
+        if col not in df.columns:
+            df[col] = None
+    df = df[["symbol", "date", "firm", "to_grade", "from_grade", "action"]]
+    return _upsert_timeline(_timeline_path("recommendations", symbol), df, ["symbol", "date", "firm"])
+
+
+def store_timeline_insider(symbol: str, df: pd.DataFrame) -> int:
+    """Stocke les transactions insider en Parquet.
+
+    Colonnes attendues : date, shares, value, transaction_text.
+    """
+    symbol = _normalize_symbol(symbol)
+    if df is None or df.empty:
+        return 0
+    ensure_market_data_schema()
+    df = df.copy()
+    df["symbol"] = symbol
+    df["date"] = pd.to_datetime(df["date"], errors="coerce").dt.strftime("%Y-%m-%d")
+    df = df.dropna(subset=["date"]).drop_duplicates(subset=["symbol", "date", "transaction_text"])
+    for col in ("shares", "value", "transaction_text"):
+        if col not in df.columns:
+            df[col] = None
+    df = df[["symbol", "date", "shares", "value", "transaction_text"]]
+    return _upsert_timeline(_timeline_path("insider", symbol), df, ["symbol", "date", "transaction_text"])
+
+
+def get_timeline_pit_data(symbol: str, target_date: str, lookback_days: int = 120) -> dict:
+    """Retourne les données point-in-time (PIT) connues à *target_date*.
+
+    Réplique l'API de TimelineCache.get_pit_timeline_data() mais depuis Parquet.
+    """
+    symbol = _normalize_symbol(symbol)
+    # Valider le format de date
+    datetime.strptime(target_date, "%Y-%m-%d")
+    cutoff_dt = pd.to_datetime(target_date)
+    lookback_dt = cutoff_dt - timedelta(days=lookback_days)
+
+    # -- Earnings : dernier connu avant ou à target_date --
+    earn_path = _timeline_path("earnings", symbol)
+    latest_surprise = 0.0
+    if earn_path.exists():
+        df_e = pd.read_parquet(earn_path)
+        if not df_e.empty:
+            df_e["_date"] = pd.to_datetime(df_e["date"], errors="coerce")
+            past = df_e[df_e["_date"] <= cutoff_dt].sort_values("_date")
+            if not past.empty:
+                latest_surprise = _safe_float(past.iloc[-1].get("surprise_pct")) or 0.0
+
+    # -- Recommandations : nombre d'upgrades dans la fenêtre glissante --
+    rec_path = _timeline_path("recommendations", symbol)
+    upgrades_count = 0
+    if rec_path.exists():
+        df_r = pd.read_parquet(rec_path)
+        if not df_r.empty:
+            df_r["_date"] = pd.to_datetime(df_r["date"], errors="coerce")
+            window = df_r[
+                (df_r["_date"] <= cutoff_dt)
+                & (df_r["_date"] >= lookback_dt)
+                & df_r["action"].str.lower().isin(["up", "init"])
+            ]
+            upgrades_count = len(window)
+
+    return {
+        "latest_earnings_surprise": latest_surprise,
+        "recent_upgrades_count": upgrades_count,
+    }
+
+
+def update_timeline_data(symbol: str) -> None:
+    """Télécharge et stocke les données timeline depuis yfinance (earnings + reco + insider).
+
+    Remplace TimelineCache.update_timeline_data().
+    """
+    symbol = _normalize_symbol(symbol)
+    ensure_market_data_schema()
+    ticker = yf.Ticker(symbol)
+
+    # --- Earnings ---
+    try:
+        earnings = ticker.earnings_dates
+        if earnings is not None and not earnings.empty:
+            df_earn = earnings.reset_index().rename(columns={
+                "Earnings Date": "date",
+                "EPS Estimate": "eps_estimate",
+                "Reported EPS": "eps_actual",
+                "Surprise(%)": "surprise_pct",
+            })
+            df_earn["date"] = pd.to_datetime(df_earn["date"], errors="coerce", utc=True).dt.tz_localize(None)
+            store_timeline_earnings(symbol, df_earn)
+    except Exception:
+        pass
+
+    # --- Recommandations analystes ---
+    try:
+        recom = ticker.upgrades_downgrades
+        if recom is not None and not recom.empty:
+            df_rec = recom.reset_index().rename(columns={
+                "GradeDate": "date", "Firm": "firm", "ToGrade": "to_grade",
+                "FromGrade": "from_grade", "Action": "action",
+            })
+            df_rec["date"] = pd.to_datetime(df_rec["date"], errors="coerce", utc=True).dt.tz_localize(None)
+            store_timeline_recommendations(symbol, df_rec)
+    except Exception:
+        pass
+
+    # --- Transactions insider ---
+    try:
+        insider = ticker.insider_transactions
+        if insider is not None and not insider.empty:
+            df_ins = insider.reset_index().rename(columns={
+                "Start Date": "date", "Shares": "shares",
+                "Value": "value", "Text": "transaction_text",
+            })
+            if "date" not in df_ins.columns and "Date" in df_ins.columns:
+                df_ins = df_ins.rename(columns={"Date": "date"})
+            df_ins["date"] = pd.to_datetime(df_ins["date"], errors="coerce", utc=True).dt.tz_localize(None)
+            if "transaction_text" not in df_ins.columns:
+                df_ins["transaction_text"] = df_ins.get("Text", pd.Series("", index=df_ins.index)).astype(str)
+            store_timeline_insider(symbol, df_ins)
+    except Exception:
+        pass
 
 
 # ---------------------------------------------------------------------------

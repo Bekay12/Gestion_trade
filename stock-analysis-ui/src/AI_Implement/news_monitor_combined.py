@@ -363,7 +363,7 @@ def run_fundamental_combined(ticker):
     """Remplace run_fundamental() — évalue les 12 critères + profil."""
     try:
         stock = yf.Ticker(ticker)
-        hist  = stock.history(period="18mo", auto_adjust=False)
+        hist  = stock.history(period="3y", auto_adjust=False)
         info  = stock.info
         if not info or not (info.get("regularMarketPrice") or info.get("currentPrice")):
             return None

@@ -34,8 +34,8 @@ Random_List= [
     
 ]
 
-p_Ticker = ["LYTS", "MC", "SHIP","TTE", "AGEN", "ALB", "AMAT", "ASML", "AVGO", "AZN", "BABA", "BIDU", "CDNS", "CRWD", "DDOG", "DOCU", "ENPH", "EQIX", "FSLY", "GOOGL", "INTC", "JD", "LRCX", "MARA", "MCHP", "MSFT", "MTCH", "NFLX", "NVDA", "OKTA"]
-TICKERS = [ "INTC", "NVDA", "SMCI", "NOK", "AMD", "CPNG", "SNAP", "CTRA", "JOBY", "BBAI", "KEEL", "GRAB", "AAL", "PLUG", "IONQ", "SOFI", "IREN", "ACHR", "TSLA", "ONDS", "F", "CCL", "ITUB", "PLTR", "MARA", "OWL", "MU", "RIG", "SMR", "WULF"]
+p_Ticker = [ "ALRM","CTRA","ELAN","ELF","OLLI","ZTS","ADI","ZS","TER","DLO","KLIC","ARW","ALIT", "JBLU", "GTM", "GCTS", "FIGS", "UAMY", "CLOV", "WTI", "KOS", "CCO", "EMBC", "GRPN", "GENI", "ORC", "OPTU", "PGEN", "NFE", "PGNY", "FNKO", "AI", "MGNI", "KSS", "CAPR", "CMPS", "TROX", "GOSS", "LAR", "TIGR", "EVH", "GSBD"]
+TICKERS = Random_List + p_Ticker
 # ─────────────────────────────────────────────────────────────
 # CONDITION 1 — Croissance structurelle du CA (>20% YoY)
 # ─────────────────────────────────────────────────────────────
@@ -157,7 +157,7 @@ def condition_5_volume_buildup(hist):
 # ─────────────────────────────────────────────────────────────
 def analyze(ticker):
     stock = yf.Ticker(ticker)
-    hist = stock.history(period="18mo")
+    hist = stock.history(period="3y")
     info = stock.info
 
     c1 = condition_1_revenue_growth(info)
