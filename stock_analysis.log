@@ -7936,3 +7936,11 @@
 2026-05-12 12:33:19,259 - ERROR - $GTN.A: possibly delisted; no price data found  (period=3y) (Yahoo error = "No data found, symbol may be delisted")
 2026-05-12 12:34:10,825 - ERROR - $GTN.A: possibly delisted; no price data found  (period=3y) (Yahoo error = "No data found, symbol may be delisted")
 2026-05-12 12:35:48,594 - ERROR - $GTN.A: possibly delisted; no price data found  (period=3y) (Yahoo error = "No data found, symbol may be delisted")
+2026-05-12 12:38:30,811 - ERROR - HTTP Error 404: {"quoteSummary":{"result":null,"error":{"code":"Not Found","description":"No fundamentals data found for symbol: EPI"}}}
+2026-05-12 12:38:31,447 - ERROR - HTTP Error 404: {"quoteSummary":{"result":null,"error":{"code":"Not Found","description":"No fundamentals data found for symbol: EPI"}}}
+2026-05-12 12:38:32,025 - ERROR - HTTP Error 404: {"quoteSummary":{"result":null,"error":{"code":"Not Found","description":"No fundamentals data found for symbol: EPI"}}}
+2026-05-12 12:41:33,441 - ERROR - HTTP Error 401: {"finance":{"result":null,"error":{"code":"Unauthorized","description":"Invalid Crumb"}}}
+2026-05-12 12:41:37,831 - ERROR - HTTP Error 404: {"quoteSummary":{"result":null,"error":{"code":"Not Found","description":"No fundamentals data found for symbol: LTR.SG"}}}
+2026-05-12 12:41:38,330 - ERROR - HTTP Error 404: {"quoteSummary":{"result":null,"error":{"code":"Not Found","description":"No fundamentals data found for symbol: LTR.SG"}}}
+2026-05-12 12:41:44,207 - ERROR - HTTP Error 404: {"quoteSummary":{"result":null,"error":{"code":"Not Found","description":"No fundamentals data found for symbol: SDV1.SG"}}}
+2026-05-12 12:41:44,713 - ERROR - HTTP Error 404: {"quoteSummary":{"result":null,"error":{"code":"Not Found","description":"No fundamentals data found for symbol: SDV1.SG"}}}
