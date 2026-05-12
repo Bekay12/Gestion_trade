@@ -7944,3 +7944,400 @@
 2026-05-12 12:41:38,330 - ERROR - HTTP Error 404: {"quoteSummary":{"result":null,"error":{"code":"Not Found","description":"No fundamentals data found for symbol: LTR.SG"}}}
 2026-05-12 12:41:44,207 - ERROR - HTTP Error 404: {"quoteSummary":{"result":null,"error":{"code":"Not Found","description":"No fundamentals data found for symbol: SDV1.SG"}}}
 2026-05-12 12:41:44,713 - ERROR - HTTP Error 404: {"quoteSummary":{"result":null,"error":{"code":"Not Found","description":"No fundamentals data found for symbol: SDV1.SG"}}}
+2026-05-12 12:55:50,056 - ERROR - HTTP Error 404: {"quoteSummary":{"result":null,"error":{"code":"Not Found","description":"Quote not found for symbol: 0011.HK"}}}
+2026-05-12 12:55:50,583 - ERROR - HTTP Error 404: {"quoteSummary":{"result":null,"error":{"code":"Not Found","description":"Quote not found for symbol: 19V.DE"}}}
+2026-05-12 12:55:51,212 - ERROR - HTTP Error 404: {"quoteSummary":{"result":null,"error":{"code":"Not Found","description":"No fundamentals data found for symbol: AADR"}}}
+2026-05-12 12:55:53,190 - ERROR - HTTP Error 404: {"quoteSummary":{"result":null,"error":{"code":"Not Found","description":"No fundamentals data found for symbol: AGT"}}}
+2026-05-12 12:55:53,202 - ERROR - HTTP Error 404: {"quoteSummary":{"result":null,"error":{"code":"Not Found","description":"No fundamentals data found for symbol: AGQ"}}}
+2026-05-12 12:55:53,240 - ERROR - HTTP Error 404: {"quoteSummary":{"result":null,"error":{"code":"Not Found","description":"No fundamentals data found for symbol: AGS"}}}
+2026-05-12 12:55:54,587 - ERROR - HTTP Error 404: {"quoteSummary":{"result":null,"error":{"code":"Not Found","description":"No fundamentals data found for symbol: AMLP"}}}
+2026-05-12 12:55:54,592 - ERROR - HTTP Error 404: {"quoteSummary":{"result":null,"error":{"code":"Not Found","description":"No fundamentals data found for symbol: AMPS"}}}
+2026-05-12 12:55:55,693 - ERROR - HTTP Error 404: {"quoteSummary":{"result":null,"error":{"code":"Not Found","description":"No fundamentals data found for symbol: ARB"}}}
+2026-05-12 12:55:56,085 - ERROR - HTTP Error 404: {"quoteSummary":{"result":null,"error":{"code":"Not Found","description":"Quote not found for symbol: ARMN"}}}
+2026-05-12 12:55:56,877 - ERROR - HTTP Error 404: {"quoteSummary":{"result":null,"error":{"code":"Not Found","description":"Quote not found for symbol: ATGE"}}}
+2026-05-12 12:55:57,517 - ERROR - HTTP Error 404: {"quoteSummary":{"result":null,"error":{"code":"Not Found","description":"Quote not found for symbol: AXL"}}}
+2026-05-12 12:55:57,766 - ERROR - HTTP Error 404: {"quoteSummary":{"result":null,"error":{"code":"Not Found","description":"No fundamentals data found for symbol: BAB"}}}
+2026-05-12 12:55:57,772 - ERROR - HTTP Error 404: {"quoteSummary":{"result":null,"error":{"code":"Not Found","description":"No fundamentals data found for symbol: B4B.DE"}}}
+2026-05-12 12:55:58,216 - ERROR - HTTP Error 404: {"quoteSummary":{"result":null,"error":{"code":"Not Found","description":"No fundamentals data found for symbol: BATT"}}}
+2026-05-12 12:55:58,991 - ERROR - HTTP Error 404: {"quoteSummary":{"result":null,"error":{"code":"Not Found","description":"No fundamentals data found for symbol: BCOR"}}}
+2026-05-12 12:55:59,460 - ERROR - HTTP Error 404: {"quoteSummary":{"result":null,"error":{"code":"Not Found","description":"No fundamentals data found for symbol: BFIT"}}}
+2026-05-12 12:55:59,463 - ERROR - HTTP Error 404: {"quoteSummary":{"result":null,"error":{"code":"Not Found","description":"No fundamentals data found for symbol: BEZ"}}}
+2026-05-12 12:56:01,003 - ERROR - HTTP Error 404: {"quoteSummary":{"result":null,"error":{"code":"Not Found","description":"No fundamentals data found for symbol: BOSS"}}}
+2026-05-12 12:56:01,467 - ERROR - HTTP Error 404: {"quoteSummary":{"result":null,"error":{"code":"Not Found","description":"No fundamentals data found for symbol: BTC"}}}
+2026-05-12 12:56:01,973 - ERROR - HTTP Error 404: {"quoteSummary":{"result":null,"error":{"code":"Not Found","description":"No fundamentals data found for symbol: BZ=F"}}}
+2026-05-12 12:56:02,401 - ERROR - HTTP Error 404: {"quoteSummary":{"result":null,"error":{"code":"Not Found","description":"No fundamentals data found for symbol: CAML"}}}
+2026-05-12 12:56:02,736 - ERROR - HTTP Error 404: {"quoteSummary":{"result":null,"error":{"code":"Not Found","description":"No fundamentals data found for symbol: CASC"}}}
+2026-05-12 12:56:02,791 - ERROR - HTTP Error 404: {"quoteSummary":{"result":null,"error":{"code":"Not Found","description":"No fundamentals data found for symbol: CARD"}}}
+2026-05-12 12:56:03,543 - ERROR - HTTP Error 404: {"quoteSummary":{"result":null,"error":{"code":"Not Found","description":"No fundamentals data found for symbol: CEI"}}}
+2026-05-12 12:56:03,550 - ERROR - HTTP Error 404: {"quoteSummary":{"result":null,"error":{"code":"Not Found","description":"Quote not found for symbol: CCRD"}}}
+2026-05-12 12:56:03,594 - ERROR - HTTP Error 404: {"quoteSummary":{"result":null,"error":{"code":"Not Found","description":"Quote not found for symbol: CDTX"}}}
+2026-05-12 12:56:04,144 - ERROR - HTTP Error 404: {"quoteSummary":{"result":null,"error":{"code":"Not Found","description":"No fundamentals data found for symbol: CEY"}}}
+2026-05-12 12:56:04,558 - ERROR - HTTP Error 404: {"quoteSummary":{"result":null,"error":{"code":"Not Found","description":"No fundamentals data found for symbol: CHRO"}}}
+2026-05-12 12:56:05,008 - ERROR - HTTP Error 404: {"quoteSummary":{"result":null,"error":{"code":"Not Found","description":"No fundamentals data found for symbol: CL=F"}}}
+2026-05-12 12:56:05,699 - ERROR - HTTP Error 404: {"quoteSummary":{"result":null,"error":{"code":"Not Found","description":"No fundamentals data found for symbol: CNYA"}}}
+2026-05-12 12:56:06,041 - ERROR - HTTP Error 404: {"quoteSummary":{"result":null,"error":{"code":"Not Found","description":"No fundamentals data found for symbol: COMP-USD"}}}
+2026-05-12 12:56:06,090 - ERROR - HTTP Error 404: {"quoteSummary":{"result":null,"error":{"code":"Not Found","description":"No fundamentals data found for symbol: COM"}}}
+2026-05-12 12:56:06,177 - ERROR - HTTP Error 404: {"quoteSummary":{"result":null,"error":{"code":"Not Found","description":"No fundamentals data found for symbol: CORP"}}}
+2026-05-12 12:56:06,648 - ERROR - HTTP Error 404: {"quoteSummary":{"result":null,"error":{"code":"Not Found","description":"No fundamentals data found for symbol: CPI"}}}
+2026-05-12 12:56:06,664 - ERROR - HTTP Error 404: {"quoteSummary":{"result":null,"error":{"code":"Not Found","description":"No fundamentals data found for symbol: CRBN"}}}
+2026-05-12 12:56:07,469 - ERROR - HTTP Error 404: {"quoteSummary":{"result":null,"error":{"code":"Not Found","description":"No fundamentals data found for symbol: CTEC"}}}
+2026-05-12 12:56:08,002 - ERROR - HTTP Error 404: {"quoteSummary":{"result":null,"error":{"code":"Not Found","description":"No fundamentals data found for symbol: CWC"}}}
+2026-05-12 12:56:08,303 - ERROR - HTTP Error 404: {"quoteSummary":{"result":null,"error":{"code":"Not Found","description":"Quote not found for symbol: CYBR"}}}
+2026-05-12 12:56:08,632 - ERROR - HTTP Error 404: {"quoteSummary":{"result":null,"error":{"code":"Not Found","description":"No fundamentals data found for symbol: DBK"}}}
+2026-05-12 12:56:08,635 - ERROR - HTTP Error 404: {"quoteSummary":{"result":null,"error":{"code":"Not Found","description":"Quote not found for symbol: DAY"}}}
+2026-05-12 12:56:09,186 - ERROR - HTTP Error 404: {"quoteSummary":{"result":null,"error":{"code":"Not Found","description":"No fundamentals data found for symbol: DGE"}}}
+2026-05-12 12:56:09,190 - ERROR - HTTP Error 404: {"quoteSummary":{"result":null,"error":{"code":"Not Found","description":"No fundamentals data found for symbol: DGAZ"}}}
+2026-05-12 12:56:09,265 - ERROR - HTTP Error 404: {"quoteSummary":{"result":null,"error":{"code":"Not Found","description":"No fundamentals data found for symbol: DES"}}}
+2026-05-12 12:56:09,678 - ERROR - HTTP Error 404: {"quoteSummary":{"result":null,"error":{"code":"Not Found","description":"No fundamentals data found for symbol: DIA"}}}
+2026-05-12 12:56:09,701 - ERROR - HTTP Error 404: {"quoteSummary":{"result":null,"error":{"code":"Not Found","description":"No fundamentals data found for symbol: DIVI"}}}
+2026-05-12 12:56:10,022 - ERROR - HTTP Error 404: {"quoteSummary":{"result":null,"error":{"code":"Not Found","description":"No fundamentals data found for symbol: DLN"}}}
+2026-05-12 12:56:10,023 - ERROR - HTTP Error 404: {"quoteSummary":{"result":null,"error":{"code":"Not Found","description":"No fundamentals data found for symbol: DJAN"}}}
+2026-05-12 12:56:10,690 - ERROR - HTTP Error 404: {"quoteSummary":{"result":null,"error":{"code":"Not Found","description":"No fundamentals data found for symbol: DRX"}}}
+2026-05-12 12:56:10,692 - ERROR - HTTP Error 404: {"quoteSummary":{"result":null,"error":{"code":"Not Found","description":"No fundamentals data found for symbol: DOL"}}}
+2026-05-12 12:56:10,989 - ERROR - HTTP Error 404: {"quoteSummary":{"result":null,"error":{"code":"Not Found","description":"Quote not found for symbol: DVAX"}}}
+2026-05-12 12:56:10,999 - ERROR - HTTP Error 404: {"quoteSummary":{"result":null,"error":{"code":"Not Found","description":"No fundamentals data found for symbol: DTY"}}}
+2026-05-12 12:56:10,999 - ERROR - HTTP Error 404: {"quoteSummary":{"result":null,"error":{"code":"Not Found","description":"No fundamentals data found for symbol: DUST"}}}
+2026-05-12 12:56:11,281 - ERROR - HTTP Error 404: {"quoteSummary":{"result":null,"error":{"code":"Not Found","description":"No fundamentals data found for symbol: DXJ"}}}
+2026-05-12 12:56:12,082 - ERROR - HTTP Error 404: {"quoteSummary":{"result":null,"error":{"code":"Not Found","description":"No fundamentals data found for symbol: EEM"}}}
+2026-05-12 12:56:12,089 - ERROR - HTTP Error 404: {"quoteSummary":{"result":null,"error":{"code":"Not Found","description":"Quote not found for symbol: EDF.PA"}}}
+2026-05-12 12:56:12,090 - ERROR - HTTP Error 404: {"quoteSummary":{"result":null,"error":{"code":"Not Found","description":"No fundamentals data found for symbol: EDEN"}}}
+2026-05-12 12:56:12,586 - ERROR - HTTP Error 404: {"quoteSummary":{"result":null,"error":{"code":"Not Found","description":"No fundamentals data found for symbol: ELG"}}}
+2026-05-12 12:56:12,596 - ERROR - HTTP Error 404: {"quoteSummary":{"result":null,"error":{"code":"Not Found","description":"No fundamentals data found for symbol: ELM"}}}
+2026-05-12 12:56:13,355 - ERROR - HTTP Error 404: {"quoteSummary":{"result":null,"error":{"code":"Not Found","description":"No fundamentals data found for symbol: EMG"}}}
+2026-05-12 12:56:13,362 - ERROR - HTTP Error 404: {"quoteSummary":{"result":null,"error":{"code":"Not Found","description":"No fundamentals data found for symbol: EMB"}}}
+2026-05-12 12:56:14,608 - ERROR - HTTP Error 404: {"quoteSummary":{"result":null,"error":{"code":"Not Found","description":"Quote not found for symbol: ENG"}}}
+2026-05-12 12:56:14,959 - ERROR - HTTP Error 404: {"quoteSummary":{"result":null,"error":{"code":"Not Found","description":"No fundamentals data found for symbol: EPI"}}}
+2026-05-12 12:56:15,333 - ERROR - HTTP Error 404: {"quoteSummary":{"result":null,"error":{"code":"Not Found","description":"Quote not found for symbol: ERJ"}}}
+2026-05-12 12:56:15,335 - ERROR - HTTP Error 404: {"quoteSummary":{"result":null,"error":{"code":"Not Found","description":"No fundamentals data found for symbol: ERX"}}}
+2026-05-12 12:56:15,771 - ERROR - HTTP Error 404: {"quoteSummary":{"result":null,"error":{"code":"Not Found","description":"No fundamentals data found for symbol: ETH"}}}
+2026-05-12 12:56:15,786 - ERROR - HTTP Error 404: {"quoteSummary":{"result":null,"error":{"code":"Not Found","description":"No fundamentals data found for symbol: ETH-USD"}}}
+2026-05-12 12:56:15,819 - ERROR - HTTP Error 404: {"quoteSummary":{"result":null,"error":{"code":"Not Found","description":"No fundamentals data found for symbol: ESPO"}}}
+2026-05-12 12:56:16,967 - ERROR - HTTP Error 404: {"quoteSummary":{"result":null,"error":{"code":"Not Found","description":"No fundamentals data found for symbol: EURL"}}}
+2026-05-12 12:56:16,968 - ERROR - HTTP Error 404: {"quoteSummary":{"result":null,"error":{"code":"Not Found","description":"No fundamentals data found for symbol: EVAL"}}}
+2026-05-12 12:56:16,979 - ERROR - HTTP Error 404: {"quoteSummary":{"result":null,"error":{"code":"Not Found","description":"No fundamentals data found for symbol: EUDV"}}}
+2026-05-12 12:56:16,993 - ERROR - HTTP Error 404: {"quoteSummary":{"result":null,"error":{"code":"Not Found","description":"No fundamentals data found for symbol: EUNL.DE"}}}
+2026-05-12 12:56:17,510 - ERROR - HTTP Error 404: {"quoteSummary":{"result":null,"error":{"code":"Not Found","description":"No fundamentals data found for symbol: EWZ"}}}
+2026-05-12 12:56:17,525 - ERROR - HTTP Error 404: {"quoteSummary":{"result":null,"error":{"code":"Not Found","description":"No fundamentals data found for symbol: EWJ"}}}
+2026-05-12 12:56:17,539 - ERROR - HTTP Error 404: {"quoteSummary":{"result":null,"error":{"code":"Not Found","description":"No fundamentals data found for symbol: EWC"}}}
+2026-05-12 12:56:17,970 - ERROR - HTTP Error 404: {"quoteSummary":{"result":null,"error":{"code":"Not Found","description":"No fundamentals data found for symbol: EZJ"}}}
+2026-05-12 12:56:17,978 - ERROR - HTTP Error 404: {"quoteSummary":{"result":null,"error":{"code":"Not Found","description":"No fundamentals data found for symbol: FAS"}}}
+2026-05-12 12:56:18,003 - ERROR - HTTP Error 404: {"quoteSummary":{"result":null,"error":{"code":"Not Found","description":"No fundamentals data found for symbol: FAN"}}}
+2026-05-12 12:56:18,279 - ERROR - HTTP Error 404: {"quoteSummary":{"result":null,"error":{"code":"Not Found","description":"No fundamentals data found for symbol: FDM"}}}
+2026-05-12 12:56:18,285 - ERROR - HTTP Error 404: {"quoteSummary":{"result":null,"error":{"code":"Not Found","description":"No fundamentals data found for symbol: FB"}}}
+2026-05-12 12:56:19,935 - ERROR - HTTP Error 404: {"quoteSummary":{"result":null,"error":{"code":"Not Found","description":"No fundamentals data found for symbol: FLOW"}}}
+2026-05-12 12:56:19,943 - ERROR - HTTP Error 404: {"quoteSummary":{"result":null,"error":{"code":"Not Found","description":"No fundamentals data found for symbol: FLTR"}}}
+2026-05-12 12:56:20,792 - ERROR - HTTP Error 404: {"quoteSummary":{"result":null,"error":{"code":"Not Found","description":"No fundamentals data found for symbol: FPE"}}}
+2026-05-12 12:56:20,992 - ERROR - HTTP Error 404: {"quoteSummary":{"result":null,"error":{"code":"Not Found","description":"No fundamentals data found for symbol: FSTA"}}}
+2026-05-12 12:56:21,499 - ERROR - HTTP Error 404: {"quoteSummary":{"result":null,"error":{"code":"Not Found","description":"No fundamentals data found for symbol: FXC"}}}
+2026-05-12 12:56:21,575 - ERROR - HTTP Error 404: {"quoteSummary":{"result":null,"error":{"code":"Not Found","description":"No fundamentals data found for symbol: FXI"}}}
+2026-05-12 12:56:21,580 - ERROR - HTTP Error 404: {"quoteSummary":{"result":null,"error":{"code":"Not Found","description":"No fundamentals data found for symbol: GASI.MI"}}}
+2026-05-12 12:56:21,867 - ERROR - HTTP Error 404: {"quoteSummary":{"result":null,"error":{"code":"Not Found","description":"No fundamentals data found for symbol: GBF"}}}
+2026-05-12 12:56:21,874 - ERROR - HTTP Error 404: {"quoteSummary":{"result":null,"error":{"code":"Not Found","description":"No fundamentals data found for symbol: GC=F"}}}
+2026-05-12 12:56:22,648 - ERROR - HTTP Error 404: {"quoteSummary":{"result":null,"error":{"code":"Not Found","description":"No fundamentals data found for symbol: GCVTX"}}}
+2026-05-12 12:56:23,040 - ERROR - HTTP Error 404: {"quoteSummary":{"result":null,"error":{"code":"Not Found","description":"No fundamentals data found for symbol: GDX"}}}
+2026-05-12 12:56:23,042 - ERROR - HTTP Error 404: {"quoteSummary":{"result":null,"error":{"code":"Not Found","description":"No fundamentals data found for symbol: GDXJ"}}}
+2026-05-12 12:56:23,043 - ERROR - HTTP Error 404: {"quoteSummary":{"result":null,"error":{"code":"Not Found","description":"No fundamentals data found for symbol: GDXU"}}}
+2026-05-12 12:56:23,046 - ERROR - HTTP Error 404: {"quoteSummary":{"result":null,"error":{"code":"Not Found","description":"No fundamentals data found for symbol: GEMD"}}}
+2026-05-12 12:56:23,047 - ERROR - HTTP Error 404: {"quoteSummary":{"result":null,"error":{"code":"Not Found","description":"No fundamentals data found for symbol: GDXD"}}}
+2026-05-12 12:56:23,829 - ERROR - HTTP Error 404: {"quoteSummary":{"result":null,"error":{"code":"Not Found","description":"No fundamentals data found for symbol: GLDM"}}}
+2026-05-12 12:56:23,881 - ERROR - HTTP Error 404: {"quoteSummary":{"result":null,"error":{"code":"Not Found","description":"No fundamentals data found for symbol: GLD"}}}
+2026-05-12 12:56:24,746 - ERROR - HTTP Error 404: {"quoteSummary":{"result":null,"error":{"code":"Not Found","description":"Quote not found for symbol: GOGL.OL"}}}
+2026-05-12 12:56:25,162 - ERROR - HTTP Error 404: {"quoteSummary":{"result":null,"error":{"code":"Not Found","description":"No fundamentals data found for symbol: GRETX"}}}
+2026-05-12 12:56:25,557 - ERROR - HTTP Error 404: {"quoteSummary":{"result":null,"error":{"code":"Not Found","description":"Quote not found for symbol: GTN.A"}}}
+2026-05-12 12:56:25,738 - ERROR - HTTP Error 404: {"quoteSummary":{"result":null,"error":{"code":"Not Found","description":"No fundamentals data found for symbol: GSX"}}}
+2026-05-12 12:56:25,967 - ERROR - HTTP Error 404: {"quoteSummary":{"result":null,"error":{"code":"Not Found","description":"No fundamentals data found for symbol: GXI"}}}
+2026-05-12 12:56:26,255 - ERROR - HTTP Error 404: {"quoteSummary":{"result":null,"error":{"code":"Not Found","description":"No fundamentals data found for symbol: HDLV"}}}
+2026-05-12 12:56:26,310 - ERROR - HTTP Error 404: {"quoteSummary":{"result":null,"error":{"code":"Not Found","description":"No fundamentals data found for symbol: HDG"}}}
+2026-05-12 12:56:26,548 - ERROR - HTTP Error 404: {"quoteSummary":{"result":null,"error":{"code":"Not Found","description":"No fundamentals data found for symbol: HFEL"}}}
+2026-05-12 12:56:26,550 - ERROR - HTTP Error 404: {"quoteSummary":{"result":null,"error":{"code":"Not Found","description":"No fundamentals data found for symbol: HG=F"}}}
+2026-05-12 12:56:27,554 - ERROR - HTTP Error 404: {"quoteSummary":{"result":null,"error":{"code":"Not Found","description":"No fundamentals data found for symbol: HSPX"}}}
+2026-05-12 12:56:27,856 - ERROR - HTTP Error 404: {"quoteSummary":{"result":null,"error":{"code":"Not Found","description":"No fundamentals data found for symbol: HYG"}}}
+2026-05-12 12:56:27,881 - ERROR - HTTP Error 404: {"quoteSummary":{"result":null,"error":{"code":"Not Found","description":"No fundamentals data found for symbol: HYLD"}}}
+2026-05-12 12:56:28,154 - ERROR - HTTP Error 404: {"quoteSummary":{"result":null,"error":{"code":"Not Found","description":"No fundamentals data found for symbol: IBGL"}}}
+2026-05-12 12:56:28,200 - ERROR - HTTP Error 404: {"quoteSummary":{"result":null,"error":{"code":"Not Found","description":"No fundamentals data found for symbol: IAU"}}}
+2026-05-12 12:56:28,545 - ERROR - HTTP Error 404: {"quoteSummary":{"result":null,"error":{"code":"Not Found","description":"No fundamentals data found for symbol: IBTM"}}}
+2026-05-12 12:56:28,549 - ERROR - HTTP Error 404: {"quoteSummary":{"result":null,"error":{"code":"Not Found","description":"No fundamentals data found for symbol: ICGT"}}}
+2026-05-12 12:56:28,842 - ERROR - HTTP Error 404: {"quoteSummary":{"result":null,"error":{"code":"Not Found","description":"No fundamentals data found for symbol: IJR"}}}
+2026-05-12 12:56:28,855 - ERROR - HTTP Error 404: {"quoteSummary":{"result":null,"error":{"code":"Not Found","description":"No fundamentals data found for symbol: IEF"}}}
+2026-05-12 12:56:28,898 - ERROR - HTTP Error 404: {"quoteSummary":{"result":null,"error":{"code":"Not Found","description":"No fundamentals data found for symbol: IEMG"}}}
+2026-05-12 12:56:29,313 - ERROR - HTTP Error 404: {"quoteSummary":{"result":null,"error":{"code":"Not Found","description":"No fundamentals data found for symbol: INFO"}}}
+2026-05-12 12:56:30,028 - ERROR - HTTP Error 404: {"quoteSummary":{"result":null,"error":{"code":"Not Found","description":"No fundamentals data found for symbol: INOV"}}}
+2026-05-12 12:56:30,315 - ERROR - HTTP Error 404: {"quoteSummary":{"result":null,"error":{"code":"Not Found","description":"No fundamentals data found for symbol: IPO"}}}
+2026-05-12 12:56:30,315 - ERROR - HTTP Error 404: {"quoteSummary":{"result":null,"error":{"code":"Not Found","description":"No fundamentals data found for symbol: IPF"}}}
+2026-05-12 12:56:30,321 - ERROR - HTTP Error 404: {"quoteSummary":{"result":null,"error":{"code":"Not Found","description":"No fundamentals data found for symbol: IPU"}}}
+2026-05-12 12:56:30,767 - ERROR - HTTP Error 404: {"quoteSummary":{"result":null,"error":{"code":"Not Found","description":"No fundamentals data found for symbol: ITM"}}}
+2026-05-12 12:56:31,106 - ERROR - HTTP Error 404: {"quoteSummary":{"result":null,"error":{"code":"Not Found","description":"No fundamentals data found for symbol: IUSA"}}}
+2026-05-12 12:56:31,116 - ERROR - HTTP Error 404: {"quoteSummary":{"result":null,"error":{"code":"Not Found","description":"No fundamentals data found for symbol: IWD"}}}
+2026-05-12 12:56:31,147 - ERROR - HTTP Error 404: {"quoteSummary":{"result":null,"error":{"code":"Not Found","description":"No fundamentals data found for symbol: IVV"}}}
+2026-05-12 12:56:31,166 - ERROR - HTTP Error 404: {"quoteSummary":{"result":null,"error":{"code":"Not Found","description":"No fundamentals data found for symbol: IWM"}}}
+2026-05-12 12:56:31,406 - ERROR - HTTP Error 404: {"quoteSummary":{"result":null,"error":{"code":"Not Found","description":"No fundamentals data found for symbol: IXI"}}}
+2026-05-12 12:56:31,408 - ERROR - HTTP Error 404: {"quoteSummary":{"result":null,"error":{"code":"Not Found","description":"No fundamentals data found for symbol: IYR"}}}
+2026-05-12 12:56:31,714 - ERROR - HTTP Error 404: {"quoteSummary":{"result":null,"error":{"code":"Not Found","description":"No fundamentals data found for symbol: JDST"}}}
+2026-05-12 12:56:31,746 - ERROR - HTTP Error 404: {"quoteSummary":{"result":null,"error":{"code":"Not Found","description":"No fundamentals data found for symbol: JBSAY"}}}
+2026-05-12 12:56:32,143 - ERROR - HTTP Error 404: {"quoteSummary":{"result":null,"error":{"code":"Not Found","description":"No fundamentals data found for symbol: JNK"}}}
+2026-05-12 12:56:32,148 - ERROR - HTTP Error 404: {"quoteSummary":{"result":null,"error":{"code":"Not Found","description":"No fundamentals data found for symbol: JPNL"}}}
+2026-05-12 12:56:32,158 - ERROR - HTTP Error 404: {"quoteSummary":{"result":null,"error":{"code":"Not Found","description":"No fundamentals data found for symbol: JNUG"}}}
+2026-05-12 12:56:32,434 - ERROR - HTTP Error 404: {"quoteSummary":{"result":null,"error":{"code":"Not Found","description":"No fundamentals data found for symbol: KCO"}}}
+2026-05-12 12:56:32,435 - ERROR - HTTP Error 404: {"quoteSummary":{"result":null,"error":{"code":"Not Found","description":"No fundamentals data found for symbol: KBE"}}}
+2026-05-12 12:56:33,038 - ERROR - HTTP Error 404: {"quoteSummary":{"result":null,"error":{"code":"Not Found","description":"No fundamentals data found for symbol: KIE"}}}
+2026-05-12 12:56:33,840 - ERROR - HTTP Error 404: {"quoteSummary":{"result":null,"error":{"code":"Not Found","description":"No fundamentals data found for symbol: LABD"}}}
+2026-05-12 12:56:33,898 - ERROR - HTTP Error 404: {"quoteSummary":{"result":null,"error":{"code":"Not Found","description":"No fundamentals data found for symbol: LABU"}}}
+2026-05-12 12:56:34,893 - ERROR - HTTP Error 404: {"quoteSummary":{"result":null,"error":{"code":"Not Found","description":"No fundamentals data found for symbol: LINK-USD"}}}
+2026-05-12 12:56:34,894 - ERROR - HTTP Error 404: {"quoteSummary":{"result":null,"error":{"code":"Not Found","description":"No fundamentals data found for symbol: LKOR"}}}
+2026-05-12 12:56:35,531 - ERROR - HTTP Error 404: {"quoteSummary":{"result":null,"error":{"code":"Not Found","description":"No fundamentals data found for symbol: LQDH"}}}
+2026-05-12 12:56:35,540 - ERROR - HTTP Error 404: {"quoteSummary":{"result":null,"error":{"code":"Not Found","description":"No fundamentals data found for symbol: LTC-USD"}}}
+2026-05-12 12:56:36,507 - ERROR - HTTP Error 404: {"quoteSummary":{"result":null,"error":{"code":"Not Found","description":"No fundamentals data found for symbol: MARS"}}}
+2026-05-12 12:56:36,990 - ERROR - HTTP Error 404: {"quoteSummary":{"result":null,"error":{"code":"Not Found","description":"No fundamentals data found for symbol: MCRO"}}}
+2026-05-12 12:56:37,462 - ERROR - HTTP Error 404: {"quoteSummary":{"result":null,"error":{"code":"Not Found","description":"No fundamentals data found for symbol: MINV"}}}
+2026-05-12 12:56:37,465 - ERROR - HTTP Error 404: {"quoteSummary":{"result":null,"error":{"code":"Not Found","description":"No fundamentals data found for symbol: MINT"}}}
+2026-05-12 12:56:37,635 - ERROR - HTTP Error 404: {"quoteSummary":{"result":null,"error":{"code":"Not Found","description":"No fundamentals data found for symbol: MER"}}}
+2026-05-12 12:56:37,917 - ERROR - HTTP Error 404: {"quoteSummary":{"result":null,"error":{"code":"Not Found","description":"No fundamentals data found for symbol: MNG"}}}
+2026-05-12 12:56:38,096 - ERROR - HTTP Error 404: {"quoteSummary":{"result":null,"error":{"code":"Not Found","description":"Quote not found for symbol: MMC"}}}
+2026-05-12 12:56:38,292 - ERROR - HTTP Error 404: {"quoteSummary":{"result":null,"error":{"code":"Not Found","description":"Quote not found for symbol: MNMD"}}}
+2026-05-12 12:56:38,326 - ERROR - HTTP Error 404: {"quoteSummary":{"result":null,"error":{"code":"Not Found","description":"Quote not found for symbol: MOH.BE"}}}
+2026-05-12 12:56:39,109 - ERROR - HTTP Error 404: {"quoteSummary":{"result":null,"error":{"code":"Not Found","description":"No fundamentals data found for symbol: MTRO"}}}
+2026-05-12 12:56:39,485 - ERROR - HTTP Error 404: {"quoteSummary":{"result":null,"error":{"code":"Not Found","description":"No fundamentals data found for symbol: MVRL"}}}
+2026-05-12 12:56:40,200 - ERROR - HTTP Error 404: {"quoteSummary":{"result":null,"error":{"code":"Not Found","description":"Quote not found for symbol: NKLA"}}}
+2026-05-12 12:56:40,356 - ERROR - HTTP Error 404: {"quoteSummary":{"result":null,"error":{"code":"Not Found","description":"No fundamentals data found for symbol: NG=F"}}}
+2026-05-12 12:56:40,885 - ERROR - HTTP Error 404: {"quoteSummary":{"result":null,"error":{"code":"Not Found","description":"No fundamentals data found for symbol: NSI"}}}
+2026-05-12 12:56:41,416 - ERROR - HTTP Error 404: {"quoteSummary":{"result":null,"error":{"code":"Not Found","description":"No fundamentals data found for symbol: NUGT"}}}
+2026-05-12 12:56:43,025 - ERROR - HTTP Error 404: {"quoteSummary":{"result":null,"error":{"code":"Not Found","description":"No fundamentals data found for symbol: PA=F"}}}
+2026-05-12 12:56:43,398 - ERROR - HTTP Error 404: {"quoteSummary":{"result":null,"error":{"code":"Not Found","description":"No fundamentals data found for symbol: PBB"}}}
+2026-05-12 12:56:44,227 - ERROR - HTTP Error 404: {"quoteSummary":{"result":null,"error":{"code":"Not Found","description":"No fundamentals data found for symbol: PFV"}}}
+2026-05-12 12:56:44,240 - ERROR - HTTP Error 404: {"quoteSummary":{"result":null,"error":{"code":"Not Found","description":"Quote not found for symbol: PFC.L"}}}
+2026-05-12 12:56:44,677 - ERROR - HTTP Error 404: {"quoteSummary":{"result":null,"error":{"code":"Not Found","description":"No fundamentals data found for symbol: PJS1"}}}
+2026-05-12 12:56:45,110 - ERROR - HTTP Error 404: {"quoteSummary":{"result":null,"error":{"code":"Not Found","description":"No fundamentals data found for symbol: PL=F"}}}
+2026-05-12 12:56:45,114 - ERROR - HTTP Error 404: {"quoteSummary":{"result":null,"error":{"code":"Not Found","description":"Quote not found for symbol: PLL"}}}
+2026-05-12 12:56:46,064 - ERROR - HTTP Error 404: {"quoteSummary":{"result":null,"error":{"code":"Not Found","description":"No fundamentals data found for symbol: PSM"}}}
+2026-05-12 12:56:46,236 - ERROR - HTTP Error 404: {"quoteSummary":{"result":null,"error":{"code":"Not Found","description":"No fundamentals data found for symbol: PTEC"}}}
+2026-05-12 12:56:46,503 - ERROR - HTTP Error 404: {"quoteSummary":{"result":null,"error":{"code":"Not Found","description":"No fundamentals data found for symbol: QQQ"}}}
+2026-05-12 12:56:47,052 - ERROR - HTTP Error 404: {"quoteSummary":{"result":null,"error":{"code":"Not Found","description":"Quote not found for symbol: RAPT"}}}
+2026-05-12 12:56:47,440 - ERROR - HTTP Error 404: {"quoteSummary":{"result":null,"error":{"code":"Not Found","description":"Quote not found for symbol: REVG"}}}
+2026-05-12 12:56:47,978 - ERROR - HTTP Error 404: {"quoteSummary":{"result":null,"error":{"code":"Not Found","description":"No fundamentals data found for symbol: RKN"}}}
+2026-05-12 12:56:48,930 - ERROR - HTTP Error 404: {"quoteSummary":{"result":null,"error":{"code":"Not Found","description":"Quote not found for symbol: SAGE"}}}
+2026-05-12 12:56:49,501 - ERROR - HTTP Error 404: {"quoteSummary":{"result":null,"error":{"code":"Not Found","description":"Quote not found for symbol: SAND"}}}
+2026-05-12 12:56:50,081 - ERROR - HTTP Error 404: {"quoteSummary":{"result":null,"error":{"code":"Not Found","description":"No fundamentals data found for symbol: SGL"}}}
+2026-05-12 12:56:50,148 - ERROR - HTTP Error 404: {"quoteSummary":{"result":null,"error":{"code":"Not Found","description":"No fundamentals data found for symbol: SGOL"}}}
+2026-05-12 12:56:50,426 - ERROR - HTTP Error 404: {"quoteSummary":{"result":null,"error":{"code":"Not Found","description":"No fundamentals data found for symbol: SI=F"}}}
+2026-05-12 12:56:50,709 - ERROR - HTTP Error 404: {"quoteSummary":{"result":null,"error":{"code":"Not Found","description":"No fundamentals data found for symbol: SIL"}}}
+2026-05-12 12:56:51,064 - ERROR - HTTP Error 404: {"quoteSummary":{"result":null,"error":{"code":"Not Found","description":"Quote not found for symbol: SKX"}}}
+2026-05-12 12:56:51,404 - ERROR - HTTP Error 404: {"quoteSummary":{"result":null,"error":{"code":"Not Found","description":"No fundamentals data found for symbol: SLV"}}}
+2026-05-12 12:56:51,862 - ERROR - HTTP Error 404: {"quoteSummary":{"result":null,"error":{"code":"Not Found","description":"No fundamentals data found for symbol: SOL-USD"}}}
+2026-05-12 12:56:52,029 - ERROR - HTTP Error 404: {"quoteSummary":{"result":null,"error":{"code":"Not Found","description":"Quote not found for symbol: SOL"}}}
+2026-05-12 12:56:52,524 - ERROR - HTTP Error 404: {"quoteSummary":{"result":null,"error":{"code":"Not Found","description":"No fundamentals data found for symbol: SPY"}}}
+2026-05-12 12:56:53,629 - ERROR - HTTP Error 404: {"quoteSummary":{"result":null,"error":{"code":"Not Found","description":"No fundamentals data found for symbol: TELL"}}}
+2026-05-12 12:56:54,564 - ERROR - HTTP Error 404: {"quoteSummary":{"result":null,"error":{"code":"Not Found","description":"No fundamentals data found for symbol: TRX-USD"}}}
+2026-05-12 12:56:55,642 - ERROR - HTTP Error 404: {"quoteSummary":{"result":null,"error":{"code":"Not Found","description":"No fundamentals data found for symbol: UN01.DE"}}}
+2026-05-12 12:56:55,986 - ERROR - HTTP Error 404: {"quoteSummary":{"result":null,"error":{"code":"Not Found","description":"No fundamentals data found for symbol: URTH"}}}
+2026-05-12 12:56:56,798 - ERROR - HTTP Error 404: {"quoteSummary":{"result":null,"error":{"code":"Not Found","description":"No fundamentals data found for symbol: VOOG"}}}
+2026-05-12 12:56:56,854 - ERROR - HTTP Error 404: {"quoteSummary":{"result":null,"error":{"code":"Not Found","description":"Quote not found for symbol: VMEO"}}}
+2026-05-12 12:56:58,314 - ERROR - HTTP Error 404: {"quoteSummary":{"result":null,"error":{"code":"Not Found","description":"No fundamentals data found for symbol: XLB"}}}
+2026-05-12 12:56:58,316 - ERROR - HTTP Error 404: {"quoteSummary":{"result":null,"error":{"code":"Not Found","description":"No fundamentals data found for symbol: XHB"}}}
+2026-05-12 12:56:58,383 - ERROR - HTTP Error 404: {"quoteSummary":{"result":null,"error":{"code":"Not Found","description":"No fundamentals data found for symbol: XBI"}}}
+2026-05-12 12:56:58,702 - ERROR - HTTP Error 404: {"quoteSummary":{"result":null,"error":{"code":"Not Found","description":"No fundamentals data found for symbol: XLF"}}}
+2026-05-12 12:56:58,703 - ERROR - HTTP Error 404: {"quoteSummary":{"result":null,"error":{"code":"Not Found","description":"No fundamentals data found for symbol: XLI"}}}
+2026-05-12 12:56:58,705 - ERROR - HTTP Error 404: {"quoteSummary":{"result":null,"error":{"code":"Not Found","description":"No fundamentals data found for symbol: XLP"}}}
+2026-05-12 12:56:58,706 - ERROR - HTTP Error 404: {"quoteSummary":{"result":null,"error":{"code":"Not Found","description":"No fundamentals data found for symbol: XLC"}}}
+2026-05-12 12:56:58,707 - ERROR - HTTP Error 404: {"quoteSummary":{"result":null,"error":{"code":"Not Found","description":"No fundamentals data found for symbol: XLK"}}}
+2026-05-12 12:56:58,780 - ERROR - HTTP Error 404: {"quoteSummary":{"result":null,"error":{"code":"Not Found","description":"No fundamentals data found for symbol: XLY"}}}
+2026-05-12 12:56:58,835 - ERROR - HTTP Error 404: {"quoteSummary":{"result":null,"error":{"code":"Not Found","description":"No fundamentals data found for symbol: XLV"}}}
+2026-05-12 12:56:59,303 - ERROR - HTTP Error 404: {"quoteSummary":{"result":null,"error":{"code":"Not Found","description":"No fundamentals data found for symbol: XRT"}}}
+2026-05-12 12:56:59,647 - ERROR - HTTP Error 404: {"quoteSummary":{"result":null,"error":{"code":"Not Found","description":"No fundamentals data found for symbol: ZC=F"}}}
+2026-05-12 12:56:59,648 - ERROR - HTTP Error 404: {"quoteSummary":{"result":null,"error":{"code":"Not Found","description":"No fundamentals data found for symbol: YOC"}}}
+2026-05-12 12:56:59,936 - ERROR - HTTP Error 404: {"quoteSummary":{"result":null,"error":{"code":"Not Found","description":"No fundamentals data found for symbol: ZL=F"}}}
+2026-05-12 12:56:59,938 - ERROR - HTTP Error 404: {"quoteSummary":{"result":null,"error":{"code":"Not Found","description":"Quote not found for symbol: ZEAL"}}}
+2026-05-12 12:56:59,943 - ERROR - HTTP Error 404: {"quoteSummary":{"result":null,"error":{"code":"Not Found","description":"No fundamentals data found for symbol: ZS=F"}}}
+2026-05-12 12:57:00,305 - ERROR - HTTP Error 404: {"quoteSummary":{"result":null,"error":{"code":"Not Found","description":"No fundamentals data found for symbol: ^SSMI"}}}
+2026-05-12 12:57:00,305 - ERROR - HTTP Error 404: {"quoteSummary":{"result":null,"error":{"code":"Not Found","description":"No fundamentals data found for symbol: ^GDAXI"}}}
+2026-05-12 12:57:00,318 - ERROR - HTTP Error 404: {"quoteSummary":{"result":null,"error":{"code":"Not Found","description":"No fundamentals data found for symbol: ^N225"}}}
+2026-05-12 12:59:11,044 - ERROR - HTTP Error 404: {"quoteSummary":{"result":null,"error":{"code":"Not Found","description":"Quote not found for symbol: 0011.HK"}}}
+2026-05-12 12:59:11,840 - ERROR - HTTP Error 404: {"quoteSummary":{"result":null,"error":{"code":"Not Found","description":"Quote not found for symbol: 19V.DE"}}}
+2026-05-12 12:59:12,416 - ERROR - HTTP Error 404: {"quoteSummary":{"result":null,"error":{"code":"Not Found","description":"No fundamentals data found for symbol: AADR"}}}
+2026-05-12 12:59:14,398 - ERROR - HTTP Error 404: {"quoteSummary":{"result":null,"error":{"code":"Not Found","description":"No fundamentals data found for symbol: AGT"}}}
+2026-05-12 12:59:14,400 - ERROR - HTTP Error 404: {"quoteSummary":{"result":null,"error":{"code":"Not Found","description":"No fundamentals data found for symbol: AGS"}}}
+2026-05-12 12:59:14,441 - ERROR - HTTP Error 404: {"quoteSummary":{"result":null,"error":{"code":"Not Found","description":"No fundamentals data found for symbol: AGQ"}}}
+2026-05-12 12:59:15,935 - ERROR - HTTP Error 404: {"quoteSummary":{"result":null,"error":{"code":"Not Found","description":"No fundamentals data found for symbol: AMLP"}}}
+2026-05-12 12:59:15,940 - ERROR - HTTP Error 404: {"quoteSummary":{"result":null,"error":{"code":"Not Found","description":"No fundamentals data found for symbol: AMPS"}}}
+2026-05-12 12:59:17,236 - ERROR - HTTP Error 404: {"quoteSummary":{"result":null,"error":{"code":"Not Found","description":"No fundamentals data found for symbol: ARB"}}}
+2026-05-12 12:59:17,626 - ERROR - HTTP Error 404: {"quoteSummary":{"result":null,"error":{"code":"Not Found","description":"Quote not found for symbol: ARMN"}}}
+2026-05-12 12:59:18,161 - ERROR - HTTP Error 404: {"quoteSummary":{"result":null,"error":{"code":"Not Found","description":"Quote not found for symbol: ATGE"}}}
+2026-05-12 12:59:19,071 - ERROR - HTTP Error 404: {"quoteSummary":{"result":null,"error":{"code":"Not Found","description":"No fundamentals data found for symbol: B4B.DE"}}}
+2026-05-12 12:59:19,076 - ERROR - HTTP Error 404: {"quoteSummary":{"result":null,"error":{"code":"Not Found","description":"Quote not found for symbol: AXL"}}}
+2026-05-12 12:59:19,215 - ERROR - HTTP Error 404: {"quoteSummary":{"result":null,"error":{"code":"Not Found","description":"No fundamentals data found for symbol: BAB"}}}
+2026-05-12 12:59:19,585 - ERROR - HTTP Error 404: {"quoteSummary":{"result":null,"error":{"code":"Not Found","description":"No fundamentals data found for symbol: BATT"}}}
+2026-05-12 12:59:20,115 - ERROR - HTTP Error 404: {"quoteSummary":{"result":null,"error":{"code":"Not Found","description":"No fundamentals data found for symbol: BCOR"}}}
+2026-05-12 12:59:20,866 - ERROR - HTTP Error 404: {"quoteSummary":{"result":null,"error":{"code":"Not Found","description":"No fundamentals data found for symbol: BEZ"}}}
+2026-05-12 12:59:20,881 - ERROR - HTTP Error 404: {"quoteSummary":{"result":null,"error":{"code":"Not Found","description":"No fundamentals data found for symbol: BFIT"}}}
+2026-05-12 12:59:22,329 - ERROR - HTTP Error 404: {"quoteSummary":{"result":null,"error":{"code":"Not Found","description":"No fundamentals data found for symbol: BOSS"}}}
+2026-05-12 12:59:22,768 - ERROR - HTTP Error 404: {"quoteSummary":{"result":null,"error":{"code":"Not Found","description":"No fundamentals data found for symbol: BTC"}}}
+2026-05-12 12:59:23,370 - ERROR - HTTP Error 404: {"quoteSummary":{"result":null,"error":{"code":"Not Found","description":"No fundamentals data found for symbol: BZ=F"}}}
+2026-05-12 12:59:23,823 - ERROR - HTTP Error 404: {"quoteSummary":{"result":null,"error":{"code":"Not Found","description":"No fundamentals data found for symbol: CAML"}}}
+2026-05-12 12:59:24,116 - ERROR - HTTP Error 404: {"quoteSummary":{"result":null,"error":{"code":"Not Found","description":"No fundamentals data found for symbol: CASC"}}}
+2026-05-12 12:59:24,124 - ERROR - HTTP Error 404: {"quoteSummary":{"result":null,"error":{"code":"Not Found","description":"No fundamentals data found for symbol: CARD"}}}
+2026-05-12 12:59:24,953 - ERROR - HTTP Error 404: {"quoteSummary":{"result":null,"error":{"code":"Not Found","description":"Quote not found for symbol: CCRD"}}}
+2026-05-12 12:59:25,187 - ERROR - HTTP Error 404: {"quoteSummary":{"result":null,"error":{"code":"Not Found","description":"Quote not found for symbol: CDTX"}}}
+2026-05-12 12:59:25,297 - ERROR - HTTP Error 404: {"quoteSummary":{"result":null,"error":{"code":"Not Found","description":"No fundamentals data found for symbol: CEY"}}}
+2026-05-12 12:59:25,349 - ERROR - HTTP Error 404: {"quoteSummary":{"result":null,"error":{"code":"Not Found","description":"No fundamentals data found for symbol: CEI"}}}
+2026-05-12 12:59:26,040 - ERROR - HTTP Error 404: {"quoteSummary":{"result":null,"error":{"code":"Not Found","description":"No fundamentals data found for symbol: CHRO"}}}
+2026-05-12 12:59:26,409 - ERROR - HTTP Error 404: {"quoteSummary":{"result":null,"error":{"code":"Not Found","description":"No fundamentals data found for symbol: CL=F"}}}
+2026-05-12 12:59:27,244 - ERROR - HTTP Error 404: {"quoteSummary":{"result":null,"error":{"code":"Not Found","description":"No fundamentals data found for symbol: CNYA"}}}
+2026-05-12 12:59:27,247 - ERROR - HTTP Error 404: {"quoteSummary":{"result":null,"error":{"code":"Not Found","description":"No fundamentals data found for symbol: COM"}}}
+2026-05-12 12:59:27,580 - ERROR - HTTP Error 404: {"quoteSummary":{"result":null,"error":{"code":"Not Found","description":"No fundamentals data found for symbol: COMP-USD"}}}
+2026-05-12 12:59:27,591 - ERROR - HTTP Error 404: {"quoteSummary":{"result":null,"error":{"code":"Not Found","description":"No fundamentals data found for symbol: CORP"}}}
+2026-05-12 12:59:28,150 - ERROR - HTTP Error 404: {"quoteSummary":{"result":null,"error":{"code":"Not Found","description":"No fundamentals data found for symbol: CPI"}}}
+2026-05-12 12:59:28,560 - ERROR - HTTP Error 404: {"quoteSummary":{"result":null,"error":{"code":"Not Found","description":"No fundamentals data found for symbol: CRBN"}}}
+2026-05-12 12:59:29,207 - ERROR - HTTP Error 404: {"quoteSummary":{"result":null,"error":{"code":"Not Found","description":"No fundamentals data found for symbol: CTEC"}}}
+2026-05-12 12:59:29,815 - ERROR - HTTP Error 404: {"quoteSummary":{"result":null,"error":{"code":"Not Found","description":"No fundamentals data found for symbol: CWC"}}}
+2026-05-12 12:59:29,818 - ERROR - HTTP Error 404: {"quoteSummary":{"result":null,"error":{"code":"Not Found","description":"Quote not found for symbol: CYBR"}}}
+2026-05-12 12:59:30,561 - ERROR - HTTP Error 404: {"quoteSummary":{"result":null,"error":{"code":"Not Found","description":"No fundamentals data found for symbol: DBK"}}}
+2026-05-12 12:59:30,563 - ERROR - HTTP Error 404: {"quoteSummary":{"result":null,"error":{"code":"Not Found","description":"Quote not found for symbol: DAY"}}}
+2026-05-12 12:59:31,059 - ERROR - HTTP Error 404: {"quoteSummary":{"result":null,"error":{"code":"Not Found","description":"No fundamentals data found for symbol: DES"}}}
+2026-05-12 12:59:31,067 - ERROR - HTTP Error 404: {"quoteSummary":{"result":null,"error":{"code":"Not Found","description":"No fundamentals data found for symbol: DGE"}}}
+2026-05-12 12:59:31,067 - ERROR - HTTP Error 404: {"quoteSummary":{"result":null,"error":{"code":"Not Found","description":"No fundamentals data found for symbol: DGAZ"}}}
+2026-05-12 12:59:31,588 - ERROR - HTTP Error 404: {"quoteSummary":{"result":null,"error":{"code":"Not Found","description":"No fundamentals data found for symbol: DIA"}}}
+2026-05-12 12:59:31,590 - ERROR - HTTP Error 404: {"quoteSummary":{"result":null,"error":{"code":"Not Found","description":"No fundamentals data found for symbol: DIVI"}}}
+2026-05-12 12:59:31,885 - ERROR - HTTP Error 404: {"quoteSummary":{"result":null,"error":{"code":"Not Found","description":"No fundamentals data found for symbol: DJAN"}}}
+2026-05-12 12:59:31,896 - ERROR - HTTP Error 404: {"quoteSummary":{"result":null,"error":{"code":"Not Found","description":"No fundamentals data found for symbol: DLN"}}}
+2026-05-12 12:59:32,379 - ERROR - HTTP Error 404: {"quoteSummary":{"result":null,"error":{"code":"Not Found","description":"No fundamentals data found for symbol: DRX"}}}
+2026-05-12 12:59:32,381 - ERROR - HTTP Error 404: {"quoteSummary":{"result":null,"error":{"code":"Not Found","description":"No fundamentals data found for symbol: DOL"}}}
+2026-05-12 12:59:32,817 - ERROR - HTTP Error 404: {"quoteSummary":{"result":null,"error":{"code":"Not Found","description":"Quote not found for symbol: DVAX"}}}
+2026-05-12 12:59:32,818 - ERROR - HTTP Error 404: {"quoteSummary":{"result":null,"error":{"code":"Not Found","description":"No fundamentals data found for symbol: DUST"}}}
+2026-05-12 12:59:32,820 - ERROR - HTTP Error 404: {"quoteSummary":{"result":null,"error":{"code":"Not Found","description":"No fundamentals data found for symbol: DTY"}}}
+2026-05-12 12:59:33,261 - ERROR - HTTP Error 404: {"quoteSummary":{"result":null,"error":{"code":"Not Found","description":"No fundamentals data found for symbol: DXJ"}}}
+2026-05-12 12:59:33,611 - ERROR - HTTP Error 404: {"quoteSummary":{"result":null,"error":{"code":"Not Found","description":"Quote not found for symbol: EDF.PA"}}}
+2026-05-12 12:59:33,619 - ERROR - HTTP Error 404: {"quoteSummary":{"result":null,"error":{"code":"Not Found","description":"No fundamentals data found for symbol: EEM"}}}
+2026-05-12 12:59:33,637 - ERROR - HTTP Error 404: {"quoteSummary":{"result":null,"error":{"code":"Not Found","description":"No fundamentals data found for symbol: EDEN"}}}
+2026-05-12 12:59:34,371 - ERROR - HTTP Error 404: {"quoteSummary":{"result":null,"error":{"code":"Not Found","description":"No fundamentals data found for symbol: EMB"}}}
+2026-05-12 12:59:34,373 - ERROR - HTTP Error 404: {"quoteSummary":{"result":null,"error":{"code":"Not Found","description":"No fundamentals data found for symbol: ELM"}}}
+2026-05-12 12:59:34,377 - ERROR - HTTP Error 404: {"quoteSummary":{"result":null,"error":{"code":"Not Found","description":"No fundamentals data found for symbol: ELG"}}}
+2026-05-12 12:59:34,725 - ERROR - HTTP Error 404: {"quoteSummary":{"result":null,"error":{"code":"Not Found","description":"No fundamentals data found for symbol: EMG"}}}
+2026-05-12 12:59:35,017 - ERROR - HTTP Error 404: {"quoteSummary":{"result":null,"error":{"code":"Not Found","description":"Quote not found for symbol: ENG"}}}
+2026-05-12 12:59:35,364 - ERROR - HTTP Error 404: {"quoteSummary":{"result":null,"error":{"code":"Not Found","description":"No fundamentals data found for symbol: EPI"}}}
+2026-05-12 12:59:35,647 - ERROR - HTTP Error 404: {"quoteSummary":{"result":null,"error":{"code":"Not Found","description":"Quote not found for symbol: ERJ"}}}
+2026-05-12 12:59:35,946 - ERROR - HTTP Error 404: {"quoteSummary":{"result":null,"error":{"code":"Not Found","description":"No fundamentals data found for symbol: ESPO"}}}
+2026-05-12 12:59:35,948 - ERROR - HTTP Error 404: {"quoteSummary":{"result":null,"error":{"code":"Not Found","description":"No fundamentals data found for symbol: ERX"}}}
+2026-05-12 12:59:36,255 - ERROR - HTTP Error 404: {"quoteSummary":{"result":null,"error":{"code":"Not Found","description":"No fundamentals data found for symbol: EUNL.DE"}}}
+2026-05-12 12:59:36,259 - ERROR - HTTP Error 404: {"quoteSummary":{"result":null,"error":{"code":"Not Found","description":"No fundamentals data found for symbol: ETH"}}}
+2026-05-12 12:59:36,269 - ERROR - HTTP Error 404: {"quoteSummary":{"result":null,"error":{"code":"Not Found","description":"No fundamentals data found for symbol: ETH-USD"}}}
+2026-05-12 12:59:36,450 - ERROR - HTTP Error 404: {"quoteSummary":{"result":null,"error":{"code":"Not Found","description":"No fundamentals data found for symbol: EUDV"}}}
+2026-05-12 12:59:36,549 - ERROR - HTTP Error 404: {"quoteSummary":{"result":null,"error":{"code":"Not Found","description":"No fundamentals data found for symbol: EVAL"}}}
+2026-05-12 12:59:36,551 - ERROR - HTTP Error 404: {"quoteSummary":{"result":null,"error":{"code":"Not Found","description":"No fundamentals data found for symbol: EURL"}}}
+2026-05-12 12:59:37,079 - ERROR - HTTP Error 404: {"quoteSummary":{"result":null,"error":{"code":"Not Found","description":"No fundamentals data found for symbol: EWJ"}}}
+2026-05-12 12:59:37,087 - ERROR - HTTP Error 404: {"quoteSummary":{"result":null,"error":{"code":"Not Found","description":"No fundamentals data found for symbol: EWZ"}}}
+2026-05-12 12:59:37,131 - ERROR - HTTP Error 404: {"quoteSummary":{"result":null,"error":{"code":"Not Found","description":"No fundamentals data found for symbol: EWC"}}}
+2026-05-12 12:59:37,584 - ERROR - HTTP Error 404: {"quoteSummary":{"result":null,"error":{"code":"Not Found","description":"No fundamentals data found for symbol: EZJ"}}}
+2026-05-12 12:59:37,586 - ERROR - HTTP Error 404: {"quoteSummary":{"result":null,"error":{"code":"Not Found","description":"No fundamentals data found for symbol: FAN"}}}
+2026-05-12 12:59:37,591 - ERROR - HTTP Error 404: {"quoteSummary":{"result":null,"error":{"code":"Not Found","description":"No fundamentals data found for symbol: FAS"}}}
+2026-05-12 12:59:38,147 - ERROR - HTTP Error 404: {"quoteSummary":{"result":null,"error":{"code":"Not Found","description":"No fundamentals data found for symbol: FB"}}}
+2026-05-12 12:59:38,335 - ERROR - HTTP Error 404: {"quoteSummary":{"result":null,"error":{"code":"Not Found","description":"No fundamentals data found for symbol: FDM"}}}
+2026-05-12 12:59:39,213 - ERROR - HTTP Error 404: {"quoteSummary":{"result":null,"error":{"code":"Not Found","description":"No fundamentals data found for symbol: FLOW"}}}
+2026-05-12 12:59:39,215 - ERROR - HTTP Error 404: {"quoteSummary":{"result":null,"error":{"code":"Not Found","description":"No fundamentals data found for symbol: FLTR"}}}
+2026-05-12 12:59:39,713 - ERROR - HTTP Error 404: {"quoteSummary":{"result":null,"error":{"code":"Not Found","description":"No fundamentals data found for symbol: FPE"}}}
+2026-05-12 12:59:40,100 - ERROR - HTTP Error 404: {"quoteSummary":{"result":null,"error":{"code":"Not Found","description":"No fundamentals data found for symbol: FSTA"}}}
+2026-05-12 12:59:40,456 - ERROR - HTTP Error 404: {"quoteSummary":{"result":null,"error":{"code":"Not Found","description":"No fundamentals data found for symbol: FXI"}}}
+2026-05-12 12:59:40,520 - ERROR - HTTP Error 404: {"quoteSummary":{"result":null,"error":{"code":"Not Found","description":"No fundamentals data found for symbol: GASI.MI"}}}
+2026-05-12 12:59:40,693 - ERROR - HTTP Error 404: {"quoteSummary":{"result":null,"error":{"code":"Not Found","description":"No fundamentals data found for symbol: FXC"}}}
+2026-05-12 12:59:40,945 - ERROR - HTTP Error 404: {"quoteSummary":{"result":null,"error":{"code":"Not Found","description":"No fundamentals data found for symbol: GC=F"}}}
+2026-05-12 12:59:40,952 - ERROR - HTTP Error 404: {"quoteSummary":{"result":null,"error":{"code":"Not Found","description":"No fundamentals data found for symbol: GBF"}}}
+2026-05-12 12:59:41,297 - ERROR - HTTP Error 404: {"quoteSummary":{"result":null,"error":{"code":"Not Found","description":"No fundamentals data found for symbol: GDXD"}}}
+2026-05-12 12:59:41,298 - ERROR - HTTP Error 404: {"quoteSummary":{"result":null,"error":{"code":"Not Found","description":"No fundamentals data found for symbol: GCVTX"}}}
+2026-05-12 12:59:41,300 - ERROR - HTTP Error 404: {"quoteSummary":{"result":null,"error":{"code":"Not Found","description":"No fundamentals data found for symbol: GDX"}}}
+2026-05-12 12:59:41,301 - ERROR - HTTP Error 404: {"quoteSummary":{"result":null,"error":{"code":"Not Found","description":"No fundamentals data found for symbol: GDXU"}}}
+2026-05-12 12:59:41,352 - ERROR - HTTP Error 404: {"quoteSummary":{"result":null,"error":{"code":"Not Found","description":"No fundamentals data found for symbol: GDXJ"}}}
+2026-05-12 12:59:41,675 - ERROR - HTTP Error 404: {"quoteSummary":{"result":null,"error":{"code":"Not Found","description":"No fundamentals data found for symbol: GEMD"}}}
+2026-05-12 12:59:42,192 - ERROR - HTTP Error 404: {"quoteSummary":{"result":null,"error":{"code":"Not Found","description":"No fundamentals data found for symbol: GLDM"}}}
+2026-05-12 12:59:42,248 - ERROR - HTTP Error 404: {"quoteSummary":{"result":null,"error":{"code":"Not Found","description":"No fundamentals data found for symbol: GLD"}}}
+2026-05-12 12:59:42,791 - ERROR - HTTP Error 404: {"quoteSummary":{"result":null,"error":{"code":"Not Found","description":"Quote not found for symbol: GOGL.OL"}}}
+2026-05-12 12:59:43,291 - ERROR - HTTP Error 404: {"quoteSummary":{"result":null,"error":{"code":"Not Found","description":"No fundamentals data found for symbol: GRETX"}}}
+2026-05-12 12:59:43,796 - ERROR - HTTP Error 404: {"quoteSummary":{"result":null,"error":{"code":"Not Found","description":"Quote not found for symbol: GTN.A"}}}
+2026-05-12 12:59:43,816 - ERROR - HTTP Error 404: {"quoteSummary":{"result":null,"error":{"code":"Not Found","description":"No fundamentals data found for symbol: GSX"}}}
+2026-05-12 12:59:44,298 - ERROR - HTTP Error 404: {"quoteSummary":{"result":null,"error":{"code":"Not Found","description":"No fundamentals data found for symbol: GXI"}}}
+2026-05-12 12:59:44,594 - ERROR - HTTP Error 404: {"quoteSummary":{"result":null,"error":{"code":"Not Found","description":"No fundamentals data found for symbol: HDG"}}}
+2026-05-12 12:59:44,645 - ERROR - HTTP Error 404: {"quoteSummary":{"result":null,"error":{"code":"Not Found","description":"No fundamentals data found for symbol: HFEL"}}}
+2026-05-12 12:59:44,702 - ERROR - HTTP Error 404: {"quoteSummary":{"result":null,"error":{"code":"Not Found","description":"No fundamentals data found for symbol: HDLV"}}}
+2026-05-12 12:59:44,913 - ERROR - HTTP Error 404: {"quoteSummary":{"result":null,"error":{"code":"Not Found","description":"No fundamentals data found for symbol: HG=F"}}}
+2026-05-12 12:59:45,632 - ERROR - HTTP Error 404: {"quoteSummary":{"result":null,"error":{"code":"Not Found","description":"No fundamentals data found for symbol: HSPX"}}}
+2026-05-12 12:59:46,113 - ERROR - HTTP Error 404: {"quoteSummary":{"result":null,"error":{"code":"Not Found","description":"No fundamentals data found for symbol: HYG"}}}
+2026-05-12 12:59:46,129 - ERROR - HTTP Error 404: {"quoteSummary":{"result":null,"error":{"code":"Not Found","description":"No fundamentals data found for symbol: HYLD"}}}
+2026-05-12 12:59:46,319 - ERROR - HTTP Error 404: {"quoteSummary":{"result":null,"error":{"code":"Not Found","description":"No fundamentals data found for symbol: IAU"}}}
+2026-05-12 12:59:46,400 - ERROR - HTTP Error 404: {"quoteSummary":{"result":null,"error":{"code":"Not Found","description":"No fundamentals data found for symbol: IBGL"}}}
+2026-05-12 12:59:46,455 - ERROR - HTTP Error 404: {"quoteSummary":{"result":null,"error":{"code":"Not Found","description":"No fundamentals data found for symbol: IBTM"}}}
+2026-05-12 12:59:46,775 - ERROR - HTTP Error 404: {"quoteSummary":{"result":null,"error":{"code":"Not Found","description":"No fundamentals data found for symbol: IEMG"}}}
+2026-05-12 12:59:46,776 - ERROR - HTTP Error 404: {"quoteSummary":{"result":null,"error":{"code":"Not Found","description":"No fundamentals data found for symbol: ICGT"}}}
+2026-05-12 12:59:46,815 - ERROR - HTTP Error 404: {"quoteSummary":{"result":null,"error":{"code":"Not Found","description":"No fundamentals data found for symbol: IEF"}}}
+2026-05-12 12:59:47,189 - ERROR - HTTP Error 404: {"quoteSummary":{"result":null,"error":{"code":"Not Found","description":"No fundamentals data found for symbol: IJR"}}}
+2026-05-12 12:59:47,693 - ERROR - HTTP Error 404: {"quoteSummary":{"result":null,"error":{"code":"Not Found","description":"No fundamentals data found for symbol: INOV"}}}
+2026-05-12 12:59:47,695 - ERROR - HTTP Error 404: {"quoteSummary":{"result":null,"error":{"code":"Not Found","description":"No fundamentals data found for symbol: INFO"}}}
+2026-05-12 12:59:48,127 - ERROR - HTTP Error 404: {"quoteSummary":{"result":null,"error":{"code":"Not Found","description":"No fundamentals data found for symbol: IPF"}}}
+2026-05-12 12:59:48,131 - ERROR - HTTP Error 404: {"quoteSummary":{"result":null,"error":{"code":"Not Found","description":"No fundamentals data found for symbol: IPU"}}}
+2026-05-12 12:59:48,192 - ERROR - HTTP Error 404: {"quoteSummary":{"result":null,"error":{"code":"Not Found","description":"No fundamentals data found for symbol: IPO"}}}
+2026-05-12 12:59:48,619 - ERROR - HTTP Error 404: {"quoteSummary":{"result":null,"error":{"code":"Not Found","description":"No fundamentals data found for symbol: ITM"}}}
+2026-05-12 12:59:48,641 - ERROR - HTTP Error 404: {"quoteSummary":{"result":null,"error":{"code":"Not Found","description":"No fundamentals data found for symbol: IUSA"}}}
+2026-05-12 12:59:48,953 - ERROR - HTTP Error 404: {"quoteSummary":{"result":null,"error":{"code":"Not Found","description":"No fundamentals data found for symbol: IWD"}}}
+2026-05-12 12:59:48,960 - ERROR - HTTP Error 404: {"quoteSummary":{"result":null,"error":{"code":"Not Found","description":"No fundamentals data found for symbol: IVV"}}}
+2026-05-12 12:59:48,960 - ERROR - HTTP Error 404: {"quoteSummary":{"result":null,"error":{"code":"Not Found","description":"No fundamentals data found for symbol: IWM"}}}
+2026-05-12 12:59:50,831 - ERROR - HTTP Error 401: {"finance":{"result":null,"error":{"code":"Unauthorized","description":"Invalid Crumb"}}}
+2026-05-12 12:59:53,275 - ERROR - HTTP Error 401: {"finance":{"result":null,"error":{"code":"Unauthorized","description":"Invalid Crumb"}}}
+2026-05-12 12:59:56,624 - ERROR - HTTP Error 401: {"finance":{"result":null,"error":{"code":"Unauthorized","description":"Invalid Crumb"}}}
+2026-05-12 17:00:25,830 - ERROR - $1COV.DE: possibly delisted; no price data found  (period=5d)
+2026-05-12 17:00:26,246 - ERROR - HTTP Error 404: {"quoteSummary":{"result":null,"error":{"code":"Not Found","description":"Quote not found for symbol: 0011.HK"}}}
+2026-05-12 17:00:26,967 - ERROR - HTTP Error 404: {"quoteSummary":{"result":null,"error":{"code":"Not Found","description":"Quote not found for symbol: 19V.DE"}}}
+2026-05-12 17:00:27,239 - ERROR - $0011.HK: possibly delisted; no price data found  (period=5d) (Yahoo error = "No data found, symbol may be delisted")
+2026-05-12 17:00:28,167 - ERROR - $19V.DE: possibly delisted; no price data found  (period=5d) (Yahoo error = "No data found, symbol may be delisted")
+2026-05-12 17:00:28,902 - ERROR - $AGT: possibly delisted; no price data found  (period=5d)
+2026-05-12 17:00:30,049 - ERROR - $AGS: possibly delisted; no price data found  (period=5d) (Yahoo error = "No data found, symbol may be delisted")
+2026-05-12 17:00:30,069 - ERROR - $AL: possibly delisted; no price data found  (period=5d)
+2026-05-12 17:00:30,143 - ERROR - $ALEX: possibly delisted; no price data found  (period=5d)
+2026-05-12 17:00:31,823 - ERROR - $AMPS: possibly delisted; no price data found  (period=5d) (Yahoo error = "No data found, symbol may be delisted")
+2026-05-12 17:00:33,448 - ERROR - $ARMN: possibly delisted; no price data found  (period=5d) (Yahoo error = "No data found, symbol may be delisted")
+2026-05-12 17:00:34,619 - ERROR - $ATGE: possibly delisted; no price data found  (period=5d) (Yahoo error = "No data found, symbol may be delisted")
+2026-05-12 17:00:35,172 - ERROR - $AXL: possibly delisted; no price data found  (period=5d) (Yahoo error = "No data found, symbol may be delisted")
+2026-05-12 17:00:35,778 - ERROR - $B4B.DE: possibly delisted; no price data found  (period=5d) (Yahoo error = "No data found, symbol may be delisted")
+2026-05-12 17:00:36,831 - ERROR - $BFIT: possibly delisted; no price data found  (period=5d)
+2026-05-12 17:00:38,528 - ERROR - $BOSS: possibly delisted; no price data found  (period=5d)
+2026-05-12 17:00:39,553 - ERROR - $CASC: possibly delisted; no price data found  (period=5d)
+2026-05-12 17:00:41,269 - ERROR - $CCRD: possibly delisted; no price data found  (period=5d) (Yahoo error = "No data found, symbol may be delisted")
+2026-05-12 17:00:41,814 - ERROR - $CEY: possibly delisted; no price data found  (period=5d)
+2026-05-12 17:00:41,820 - ERROR - $CDTX: possibly delisted; no price data found  (period=5d) (Yahoo error = "No data found, symbol may be delisted")
+2026-05-12 17:00:41,842 - ERROR - $CFLT: possibly delisted; no price data found  (period=5d)
+2026-05-12 17:00:42,044 - ERROR - $APAM: possibly delisted; no price data found  (period=5d)
+2026-05-12 17:00:42,203 - ERROR - $CEI: possibly delisted; no price data found  (period=5d) (Yahoo error = "No data found, symbol may be delisted")
+2026-05-12 17:00:42,749 - ERROR - $CHRO: possibly delisted; no price data found  (period=5d) (Yahoo error = "No data found, symbol may be delisted")
+2026-05-12 17:00:43,690 - ERROR - $COMP-USD: possibly delisted; no price data found  (period=5d)
+2026-05-12 17:00:44,162 - ERROR - $CPI: possibly delisted; no price data found  (period=5d)
+2026-05-12 17:00:46,092 - ERROR - $CYBR: possibly delisted; no price data found  (period=5d) (Yahoo error = "No data found, symbol may be delisted")
+2026-05-12 17:00:46,586 - ERROR - $DBK: possibly delisted; no price data found  (period=5d)
+2026-05-12 17:00:46,897 - ERROR - $DBN.DE: possibly delisted; no price data found  (period=5d) (Yahoo error = "No data found, symbol may be delisted")
+2026-05-12 17:00:46,925 - ERROR - $DAY: possibly delisted; no price data found  (period=5d) (Yahoo error = "No data found, symbol may be delisted")
+2026-05-12 17:00:47,093 - ERROR - $DGAZ: possibly delisted; no price data found  (period=5d)
+2026-05-12 17:00:47,150 - ERROR - $DGE: possibly delisted; no price data found  (period=5d)
+2026-05-12 17:00:48,039 - ERROR - $DTY: possibly delisted; no price data found  (period=5d)
+2026-05-12 17:00:48,848 - ERROR - $DVAX: possibly delisted; no price data found  (period=5d) (Yahoo error = "No data found, symbol may be delisted")
+2026-05-12 17:00:49,280 - ERROR - $EB: possibly delisted; no price data found  (period=5d) (Yahoo error = "No data found, symbol may be delisted")
+2026-05-12 17:00:49,536 - ERROR - $EDF.PA: possibly delisted; no price data found  (period=5d) (Yahoo error = "No data found, symbol may be delisted")
+2026-05-12 17:00:49,624 - ERROR - $ELG: possibly delisted; no price data found  (period=5d)
+2026-05-12 17:00:49,738 - ERROR - $EMG: possibly delisted; no price data found  (period=5d)
+2026-05-12 17:00:49,910 - ERROR - $ELB: possibly delisted; no price data found  (period=5d) (Yahoo error = "No data found, symbol may be delisted")
+2026-05-12 17:00:50,704 - ERROR - $ENG: possibly delisted; no price data found  (period=5d) (Yahoo error = "No data found, symbol may be delisted")
+2026-05-12 17:00:51,773 - ERROR - $ERJ: possibly delisted; no price data found  (period=5d) (Yahoo error = "No data found, symbol may be delisted")
+2026-05-12 17:00:52,089 - ERROR - $EVAL: possibly delisted; no price data found  (period=5d)
+2026-05-12 17:00:52,394 - ERROR - $EXAS: possibly delisted; no price data found  (period=5d)
+2026-05-12 17:00:53,869 - ERROR - $FOLD: possibly delisted; no price data found  (period=5d)
+2026-05-12 17:00:54,540 - ERROR - $GASI.MI: possibly delisted; no price data found  (period=5d)
+2026-05-12 17:00:54,610 - ERROR - $GAZP.ME: possibly delisted; no price data found  (period=5d)
+2026-05-12 17:00:56,710 - ERROR - $GOGL.OL: possibly delisted; no price data found  (period=5d) (Yahoo error = "No data found, symbol may be delisted")
+2026-05-12 17:00:56,887 - ERROR - $GSX: possibly delisted; no price data found  (period=5d)
+2026-05-12 17:00:57,600 - ERROR - $GXI: possibly delisted; no price data found  (period=5d)
+2026-05-12 17:00:57,715 - ERROR - $GTN.A: possibly delisted; no price data found  (period=5d) (Yahoo error = "No data found, symbol may be delisted")
+2026-05-12 17:00:57,808 - ERROR - $HDLV: possibly delisted; no price data found  (period=5d)
+2026-05-12 17:00:58,414 - ERROR - $HOLX: possibly delisted; no price data found  (period=5d)
+2026-05-12 17:00:59,036 - ERROR - $HYLD: possibly delisted; no price data found  (period=5d)
+2026-05-12 17:01:00,185 - ERROR - $IPF: possibly delisted; no price data found  (period=5d)
+2026-05-12 17:01:00,203 - ERROR - $IPU: possibly delisted; no price data found  (period=5d)
+2026-05-12 17:01:00,700 - ERROR - $IUSA: possibly delisted; no price data found  (period=5d)
+2026-05-12 17:01:00,968 - ERROR - $IXI: possibly delisted; no price data found  (period=5d)
+2026-05-12 17:01:01,602 - ERROR - $JBSAY: possibly delisted; no price data found  (period=5d) (Yahoo error = "No data found, symbol may be delisted")
+2026-05-12 17:01:01,753 - ERROR - $JPNL: possibly delisted; no price data found  (period=5d)
+2026-05-12 17:01:01,893 - ERROR - $KCO: possibly delisted; no price data found  (period=5d)
+2026-05-12 17:01:04,069 - ERROR - $LKOH.ME: possibly delisted; no price data found  (period=5d)
+2026-05-12 17:01:05,778 - ERROR - $MCRO: possibly delisted; no price data found  (period=5d)

@@ -925,6 +925,10 @@ class MainWindow(QMainWindow):
         self.screener_combo = QComboBox()
         self.screener_combo.setMinimumWidth(185)
         _SCREENER_LABELS = [
+            ("_events_48h",             "⏰ Événements 48h (tous)"),
+            ("_events_48h_mes_coko",    "⏰ Événements 48h (Mes+Coko)"),
+            ("_gap_up_popular",          "🟢 Gap Up — Symboles populaires"),
+            ("_gap_down_popular",        "🔴 Gap Down — Symboles populaires"),
             ("most_actives",           "Most Actives"),
             ("day_gainers",            "Day Gainers"),
             ("day_losers",             "Day Losers"),
@@ -3871,6 +3875,24 @@ class MainWindow(QMainWindow):
         if not screener_key:
             return
 
+        # ── Screener personnalisé : événements dans les 48h ──────────────
+        if screener_key == "_events_48h":
+            self._show_events_48h_screener()
+            return
+
+        # ── Screener personnalisé : événements 48h sur Mes+Coko uniquement ──
+        if screener_key == "_events_48h_mes_coko":
+            self._show_events_48h_screener(list_sources=("mes_list", "coko_list"))
+            return
+
+        # ── Screeners gaps sur symboles populaires ──────────────────
+        if screener_key == "_gap_up_popular":
+            self._show_gap_screener(direction="up")
+            return
+        if screener_key == "_gap_down_popular":
+            self._show_gap_screener(direction="down")
+            return
+
         QApplication.setOverrideCursor(Qt.WaitCursor)
         try:
             payload = yf.screen(screener_key, count=30)
@@ -3911,6 +3933,269 @@ class MainWindow(QMainWindow):
             pct_str = f"{pct:+.2f}%" if pct is not None else "n/a"
             lines.append(f"{idx:02d}. {sym:8s} {pct_str}")
         QMessageBox.information(self, f"Yahoo Screener — {screener_label} (max 30)", '\n'.join(lines))
+
+    def _show_gap_screener(self, direction: str = "up"):
+        """Cherche les 30 plus grands gaps (positifs ou négatifs) parmi les symboles populaires.
+        Un gap est calculé comme : (Open_aujourd'hui - Close_hier) / Close_hier * 100.
+        direction: 'up' → gaps positifs, 'down' → gaps négatifs."""
+        import pandas as pd
+        from concurrent.futures import ThreadPoolExecutor, as_completed
+        from PyQt5.QtWidgets import QProgressDialog
+
+        # Symboles populaires uniquement
+        lw = getattr(self, "popular_list", None)
+        if lw is None or lw.count() == 0:
+            QMessageBox.information(self, "Gap Screener", "Aucun symbole dans la liste populaire.")
+            return
+
+        symbols_list = []
+        for i in range(lw.count()):
+            item = lw.item(i)
+            sym = (item.data(Qt.UserRole) or item.text() or "").strip().upper()
+            if sym:
+                symbols_list.append(sym)
+        symbols_list = sorted(set(symbols_list))
+        total = len(symbols_list)
+
+        lbl = "Gap Up" if direction == "up" else "Gap Down"
+        progress = QProgressDialog(
+            f"Calcul des {lbl}s pour {total} symboles populaires…",
+            "Annuler", 0, total, self
+        )
+        progress.setWindowTitle(f"Screener {lbl}")
+        progress.setWindowModality(Qt.WindowModal)
+        progress.setMinimumDuration(0)
+        progress.setValue(0)
+        QApplication.processEvents()
+
+        results = []   # [(symbol, gap_pct)]
+        done = [0]
+
+        def _calc_gap(sym):
+            try:
+                hist = yf.Ticker(sym).history(period="5d", auto_adjust=True)
+                if hist is None or len(hist) < 2:
+                    return sym, None
+                # Dernière bougie complète = avant-dernière ligne si la dernière est incomplète,
+                # sinon on prend simplement les deux dernières lignes disponibles.
+                prev_close = float(hist["Close"].iloc[-2])
+                today_open = float(hist["Open"].iloc[-1])
+                if prev_close == 0:
+                    return sym, None
+                gap_pct = (today_open - prev_close) / prev_close * 100
+                return sym, round(gap_pct, 2)
+            except Exception:
+                return sym, None
+
+        MAX_W = 10
+        cancelled = False
+        with ThreadPoolExecutor(max_workers=MAX_W) as pool:
+            futures = {pool.submit(_calc_gap, sym): sym for sym in symbols_list}
+            for future in as_completed(futures):
+                if progress.wasCanceled():
+                    cancelled = True
+                    break
+                try:
+                    sym, gap = future.result()
+                    if gap is not None:
+                        results.append((sym, gap))
+                except Exception:
+                    pass
+                done[0] += 1
+                progress.setValue(done[0])
+                QApplication.processEvents()
+
+        progress.close()
+        if cancelled:
+            return
+
+        # Filtrer selon la direction et trier
+        if direction == "up":
+            filtered = [(s, g) for s, g in results if g > 0]
+            filtered.sort(key=lambda x: x[1], reverse=True)
+        else:
+            filtered = [(s, g) for s, g in results if g < 0]
+            filtered.sort(key=lambda x: x[1])
+
+        top30 = filtered[:30]
+
+        if not top30:
+            QMessageBox.information(self, f"Screener {lbl}",
+                                    f"Aucun {lbl.lower()} détecté parmi les {total} symboles populaires.")
+            return
+
+        symbols_ordered = [s for s, _ in top30]
+        self.symbol_input.setText(', '.join(symbols_ordered))
+
+        arrow = "▲" if direction == "up" else "▼"
+        lines = [f"{'#':<4} {'Symbole':<12} {'Gap (%)'}",
+                 "-" * 30]
+        for idx, (sym, gap) in enumerate(top30, 1):
+            lines.append(f"{idx:<4} {sym:<12} {arrow} {gap:+.2f}%")
+        lines.append("")
+        lines.append(f"{len(symbols_ordered)} symbole(s) injecté(s) dans le champ d'analyse.")
+
+        QMessageBox.information(
+            self,
+            f"{'🟢' if direction == 'up' else '🔴'} {lbl}s — Top {len(top30)} (populaires)",
+            '\n'.join(lines),
+        )
+
+    def _show_events_48h_screener(self, list_sources=None):
+        """Interroge Yahoo Finance (calendar) sur les symboles des listes demandées et affiche
+        ceux qui ont un earnings ou un ex-dividende dans les 48 h à venir.
+        list_sources: tuple de noms d'attributs QListWidget à utiliser.
+                      None = toutes les listes + Parquet store."""
+        from datetime import datetime, timedelta, date as date_type
+        import pandas as pd
+        from concurrent.futures import ThreadPoolExecutor, as_completed
+
+        # ── 1. Collecter les symboles selon les sources demandées ─────────
+        all_symbols: set = set()
+        _default_sources = ("popular_list", "mes_list", "coko_list", "random_list", "recent_list")
+        _sources = list_sources if list_sources is not None else _default_sources
+
+        # Listes de l'UI
+        for attr in _sources:
+            lw = getattr(self, attr, None)
+            if lw is None:
+                continue
+            for i in range(lw.count()):
+                item = lw.item(i)
+                sym = (item.data(Qt.UserRole) or item.text() or "").strip().upper()
+                if sym:
+                    all_symbols.add(sym)
+
+        # Parquet store (bonus : symboles déjà analysés — uniquement en mode "tous")
+        if list_sources is None:
+            try:
+                from market_store import PARQUET_DIR
+                features_dir = PARQUET_DIR / "features"
+                if features_dir.exists():
+                    for d in features_dir.iterdir():
+                        if d.is_dir():
+                            s = d.name.replace("symbol=", "")
+                            if s:
+                                all_symbols.add(s.upper())
+            except Exception:
+                pass
+
+        if not all_symbols:
+            src_label = "Mes + Coko" if list_sources is not None else "vos listes"
+            QMessageBox.information(self, "Événements 48h",
+                                    f"Aucun symbole dans {src_label}.")
+            return
+
+        symbols_list = sorted(all_symbols)
+        total = len(symbols_list)
+        src_label = "Mes + Coko" if list_sources is not None else "tous symboles"
+
+        # ── 2. Progressbar ────────────────────────────────────────────────
+        from PyQt5.QtWidgets import QProgressDialog
+        progress = QProgressDialog(
+            f"Interrogation de Yahoo Finance pour {total} symboles ({src_label})…",
+            "Annuler", 0, total, self
+        )
+        progress.setWindowTitle("Événements 48h")
+        progress.setWindowModality(Qt.WindowModal)
+        progress.setMinimumDuration(0)
+        progress.setValue(0)
+        QApplication.processEvents()
+
+        now = datetime.utcnow().replace(hour=0, minute=0, second=0, microsecond=0)
+        cutoff = now + timedelta(hours=48)
+        results = []   # [(symbol, event_label, "YYYY-MM-DD")]
+        done = [0]
+
+        def _check_symbol(sym):
+            """Retourne la liste des événements 48h pour un symbole (thread-safe)."""
+            hits = []
+            try:
+                t = yf.Ticker(sym)
+                cal = t.calendar  # dict or DataFrame selon version yfinance
+
+                # --- normaliser en dict {clé: valeur} ---
+                if cal is None:
+                    return hits
+                if hasattr(cal, 'to_dict'):
+                    # DataFrame (ancienne API) : index = dates, colonnes = champs
+                    cal = cal.iloc[0].to_dict() if not cal.empty else {}
+                if not isinstance(cal, dict):
+                    return hits
+
+                mapping = {
+                    "Earnings Date":    "Earnings",
+                    "Ex-Dividend Date": "Ex-Dividende",
+                    "Dividend Date":    "Dividende",
+                }
+                for key, label in mapping.items():
+                    raw = cal.get(key)
+                    if raw is None:
+                        continue
+                    # Peut être une liste (plusieurs dates prévues)
+                    candidates = raw if isinstance(raw, (list, tuple)) else [raw]
+                    for c in candidates:
+                        try:
+                            if isinstance(c, date_type):
+                                evt_dt = datetime(c.year, c.month, c.day)
+                            else:
+                                evt_dt = pd.to_datetime(c, errors="coerce").to_pydatetime()
+                            evt_dt = evt_dt.replace(tzinfo=None, hour=0, minute=0, second=0, microsecond=0)
+                            if now <= evt_dt <= cutoff:
+                                hits.append((sym, label, evt_dt.strftime("%Y-%m-%d")))
+                                break  # une occurrence suffit par type d'événement
+                        except Exception:
+                            continue
+            except Exception:
+                pass
+            return hits
+
+        # ── 3. Interroger en parallèle (max 8 workers) ───────────────────
+        MAX_W = 8
+        cancelled = False
+        with ThreadPoolExecutor(max_workers=MAX_W) as pool:
+            futures = {pool.submit(_check_symbol, sym): sym for sym in symbols_list}
+            for future in as_completed(futures):
+                if progress.wasCanceled():
+                    cancelled = True
+                    break
+                try:
+                    results.extend(future.result())
+                except Exception:
+                    pass
+                done[0] += 1
+                progress.setValue(done[0])
+                QApplication.processEvents()
+
+        progress.close()
+
+        if cancelled:
+            return
+
+        # ── 4. Affichage ─────────────────────────────────────────────────
+        if not results:
+            QMessageBox.information(
+                self, "Événements 48h",
+                f"Aucun événement (earnings / dividende) trouvé dans les 48h\n"
+                f"pour les {total} symboles consultés sur Yahoo Finance."
+            )
+            return
+
+        symbols_ordered = list(dict.fromkeys(sym for sym, _, _ in results))
+        self.symbol_input.setText(', '.join(symbols_ordered))
+
+        lines = [f"{'Symbole':<12} {'Événement':<16} {'Date'}",
+                 "-" * 40]
+        for sym, evt, dt in sorted(results, key=lambda x: (x[2], x[0])):
+            lines.append(f"{sym:<12} {evt:<16} {dt}")
+        lines.append("")
+        lines.append(f"{len(symbols_ordered)} symbole(s) injecté(s) dans le champ d'analyse.")
+
+        QMessageBox.information(
+            self,
+            f"⏰ Événements 48h — {len(symbols_ordered)} symbole(s)",
+            '\n'.join(lines),
+        )
 
     def _get_clean_columns_and_data(self):
         """Filtrer les colonnes vides ou contenant uniquement des 0"""
