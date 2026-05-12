@@ -19,7 +19,7 @@ def main():
     args_file = sys.argv[1]
     result_file = sys.argv[2]
 
-    with open(args_file, 'rb') as f:
+    with open(args_file, "rb") as f:
         args = pickle.load(f)
 
     # Setup import paths (same as main_window.py's PROJECT_SRC)
@@ -29,14 +29,14 @@ def main():
     os.chdir(src_dir)
 
     # Safety: ensure C acceleration and online consensus are disabled
-    os.environ.setdefault('QSI_DISABLE_C_ACCELERATION', '1')
-    os.environ.setdefault('QSI_CONSENSUS_OFFLINE', '1')
+    os.environ.setdefault("QSI_DISABLE_C_ACCELERATION", "1")
+    os.environ.setdefault("QSI_CONSENSUS_OFFLINE", "1")
 
-    task = args.get('task')
+    task = args.get("task")
     try:
-        if task == 'analyse_signaux':
+        if task == "analyse_signaux":
             _run_analysis(args, result_file)
-        elif task == 'download':
+        elif task == "download":
             _run_download(args, result_file)
         else:
             raise ValueError(f"Unknown task: {task}")
@@ -44,8 +44,8 @@ def main():
         import traceback
         traceback.print_exc()
         try:
-            with open(result_file, 'wb') as f:
-                pickle.dump({'success': False, 'error': str(e)}, f)
+            with open(result_file, "wb") as f:
+                pickle.dump({"success": False, "error": str(e)}, f)
         except Exception:
             pass
         sys.exit(1)
@@ -55,28 +55,28 @@ def _run_analysis(args, result_file):
     from qsi import analyse_signaux_populaires
 
     result = analyse_signaux_populaires(
-        args['symbols'],
-        args['mes_symbols'],
-        period=args.get('period', '12mo'),
+        args["symbols"],
+        args["mes_symbols"],
+        period=args.get("period", "12mo"),
         afficher_graphiques=False,
         plot_all=False,
         verbose=True,
-        taux_reussite_min=args.get('taux_reussite_min', 30),
-        min_holding_days=args.get('min_holding_days', 7),
+        taux_reussite_min=args.get("taux_reussite_min", 30),
+        min_holding_days=args.get("min_holding_days", 7),
     )
-    with open(result_file, 'wb') as f:
-        pickle.dump({'success': True, 'result': result}, f, protocol=pickle.HIGHEST_PROTOCOL)
+    with open(result_file, "wb") as f:
+        pickle.dump({"success": True, "result": result}, f, protocol=pickle.HIGHEST_PROTOCOL)
 
 
 def _run_download(args, result_file):
     from qsi import download_stock_data
 
-    data = download_stock_data(args['symbols'], args.get('period', '12mo'))
-    result = {'data': data}
+    data = download_stock_data(args["symbols"], args.get("period", "12mo"))
+    result = {"data": data}
 
-    with open(result_file, 'wb') as f:
-        pickle.dump({'success': True, 'result': result}, f, protocol=pickle.HIGHEST_PROTOCOL)
+    with open(result_file, "wb") as f:
+        pickle.dump({"success": True, "result": result}, f, protocol=pickle.HIGHEST_PROTOCOL)
 
 
-if __name__ == '__main__':
+if __name__ == "__main__":
     main()

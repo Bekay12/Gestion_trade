@@ -7923,3 +7923,16 @@
 2026-05-11 21:20:26,602 - ERROR - HTTP Error 404: {"quoteSummary":{"result":null,"error":{"code":"Not Found","description":"Quote not found for symbol: PFC.L"}}}
 2026-05-11 21:20:27,290 - ERROR - HTTP Error 404: {"quoteSummary":{"result":null,"error":{"code":"Not Found","description":"Quote not found for symbol: PFC.L"}}}
 2026-05-11 21:20:29,047 - ERROR - HTTP Error 404: {"quoteSummary":{"result":null,"error":{"code":"Not Found","description":"Quote not found for symbol: PLL"}}}
+2026-05-12 12:22:19,804 - ERROR - $CEY: possibly delisted; no price data found  (period=3y)
+2026-05-12 12:22:56,966 - ERROR - $UN01.DE: possibly delisted; no price data found  (period=3y) (Yahoo error = "No data found, symbol may be delisted")
+2026-05-12 12:22:57,656 - ERROR - HTTP Error 404: {"quoteSummary":{"result":null,"error":{"code":"Not Found","description":"Quote not found for symbol: NKLA"}}}
+2026-05-12 12:22:58,840 - ERROR - $NKLA: possibly delisted; no price data found  (period=3y) (Yahoo error = "No data found, symbol may be delisted")
+2026-05-12 12:28:42,042 - ERROR - $GTN.A: possibly delisted; no price data found  (period=3y) (Yahoo error = "No data found, symbol may be delisted")
+2026-05-12 12:28:59,796 - ERROR - HTTP Error 404: {"quoteSummary":{"result":null,"error":{"code":"Not Found","description":"No fundamentals data found for symbol: TRX-USD"}}}
+2026-05-12 12:29:00,342 - ERROR - HTTP Error 404: {"quoteSummary":{"result":null,"error":{"code":"Not Found","description":"No fundamentals data found for symbol: TRX-USD"}}}
+2026-05-12 12:29:00,892 - ERROR - HTTP Error 404: {"quoteSummary":{"result":null,"error":{"code":"Not Found","description":"No fundamentals data found for symbol: TRX-USD"}}}
+2026-05-12 12:29:08,201 - ERROR - HTTP Error 404: {"quoteSummary":{"result":null,"error":{"code":"Not Found","description":"No fundamentals data found for symbol: KODN.SG"}}}
+2026-05-12 12:29:08,803 - ERROR - HTTP Error 404: {"quoteSummary":{"result":null,"error":{"code":"Not Found","description":"No fundamentals data found for symbol: KODN.SG"}}}
+2026-05-12 12:33:19,259 - ERROR - $GTN.A: possibly delisted; no price data found  (period=3y) (Yahoo error = "No data found, symbol may be delisted")
+2026-05-12 12:34:10,825 - ERROR - $GTN.A: possibly delisted; no price data found  (period=3y) (Yahoo error = "No data found, symbol may be delisted")
+2026-05-12 12:35:48,594 - ERROR - $GTN.A: possibly delisted; no price data found  (period=3y) (Yahoo error = "No data found, symbol may be delisted")

@@ -34,7 +34,7 @@ Random_List= [
     
 ]
 
-p_Ticker = [ "ALRM","CTRA","ELAN","ELF","OLLI","ZTS","ADI","ZS","TER","DLO","KLIC","ARW","ALIT", "JBLU", "GTM", "GCTS", "FIGS", "UAMY", "CLOV", "WTI", "KOS", "CCO", "EMBC", "GRPN", "GENI", "ORC", "OPTU", "PGEN", "NFE", "PGNY", "FNKO", "AI", "MGNI", "KSS", "CAPR", "CMPS", "TROX", "GOSS", "LAR", "TIGR", "EVH", "GSBD"]
+p_Ticker = [ "VIR", "DRE2.F", "CLOV", "OCS", "DOV", "SPCE", "BBAI", "SSU.F", "MAYS", "KVUE", "GLW", "CABO", "META", "DKNG", "FRO", "VRSN", "BAC", "RPD", "AVPT", "CRWD", "GLD", "VRTX", "IFNNY", "EXPE", "GDEN", "ARI", "HUT", "GTM", "NXR.L", "GMED"]
 TICKERS = Random_List + p_Ticker
 # ─────────────────────────────────────────────────────────────
 # CONDITION 1 — Croissance structurelle du CA (>20% YoY)

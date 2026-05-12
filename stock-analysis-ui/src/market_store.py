@@ -36,6 +36,7 @@ API publique identique à cache_db.py pour compatibilité descendante :
 from __future__ import annotations
 
 import os
+import threading
 from datetime import datetime, timedelta
 from pathlib import Path
 from typing import Iterable, List, Optional
@@ -72,12 +73,28 @@ DEFAULT_FX_CURRENCIES = (
 _SRC_DIR = Path(DB_PATH).parent
 PARQUET_DIR = _SRC_DIR / "market_parquet"
 
+# Verrous fichiers partagés (instruments.parquet écrit par plusieurs threads)
+_INSTRUMENTS_LOCK = threading.Lock()
+
 # ---------------------------------------------------------------------------
 # Helpers internes (identiques à cache_db.py pour cohérence)
 # ---------------------------------------------------------------------------
 
 def _utcnow() -> str:
     return datetime.utcnow().replace(microsecond=0).isoformat()
+
+
+def _safe_read_parquet(path, **kwargs) -> pd.DataFrame:
+    """Lit un fichier Parquet ; si le fichier est corrompu, le supprime et retourne un DataFrame vide."""
+    try:
+        return pd.read_parquet(path, **kwargs)
+    except Exception as exc:
+        print(f"[market_store] fichier Parquet corrompu détecté, suppression : {path} ({exc})")
+        try:
+            Path(path).unlink(missing_ok=True)
+        except Exception:
+            pass
+        return pd.DataFrame()
 
 
 def _normalize_symbol(symbol: str) -> str:
@@ -291,7 +308,7 @@ def ensure_fx_rates_daily_history(
 
     existing = pd.DataFrame(columns=["trade_date", "currency", "rate_to_usd", "fetched_at"])
     if path.exists():
-        existing = pd.read_parquet(path)
+        existing = _safe_read_parquet(path)
         if not force and not existing.empty and "fetched_at" in existing.columns:
             try:
                 last_refresh = pd.to_datetime(existing["fetched_at"], errors="coerce").max()
@@ -370,14 +387,14 @@ def _get_fx_rates_daily_series(currency: str, dates: pd.Series) -> pd.Series:
     if not path.exists():
         return pd.Series(1.0, index=idx.index, dtype=float)
 
-    fx = pd.read_parquet(path)
+    fx = _safe_read_parquet(path)
     if fx.empty:
         return pd.Series(1.0, index=idx.index, dtype=float)
 
     fx = fx[fx["currency"].astype(str).str.upper() == cur]
     if fx.empty:
         ensure_fx_rates_daily_history(currencies=[cur], years=5, min_refresh_hours=0, force=True)
-        fx = pd.read_parquet(path)
+        fx = _safe_read_parquet(path)
         fx = fx[fx["currency"].astype(str).str.upper() == cur]
     if fx.empty:
         return pd.Series(1.0, index=idx.index, dtype=float)
@@ -452,14 +469,14 @@ def upsert_instrument(symbol: str, info: dict) -> None:
         "source": "yfinance",
     }])
 
-    if path.exists():
-        existing = pd.read_parquet(path)
-        existing = existing[existing["symbol"] != symbol]
-        combined = pd.concat([existing, new_row], ignore_index=True)
-    else:
-        combined = new_row
-
-    pq.write_table(pa.Table.from_pandas(combined, preserve_index=False), str(path))
+    with _INSTRUMENTS_LOCK:
+        if path.exists():
+            existing = _safe_read_parquet(path)
+            existing = existing[existing["symbol"] != symbol] if not existing.empty else pd.DataFrame(columns=new_row.columns)
+            combined = pd.concat([existing, new_row], ignore_index=True)
+        else:
+            combined = new_row
+        pq.write_table(pa.Table.from_pandas(combined, preserve_index=False), str(path))
 
 
 def _get_instrument_profile(symbol: str) -> dict:
@@ -467,7 +484,7 @@ def _get_instrument_profile(symbol: str) -> dict:
     path = _instruments_path()
     if not path.exists():
         return {}
-    df = pd.read_parquet(path)
+    df = _safe_read_parquet(path)
     row = df[df["symbol"] == symbol]
     if row.empty:
         return {}
@@ -486,7 +503,7 @@ def _get_last_profile_refresh(symbol: str) -> Optional[datetime]:
     path = _instruments_path()
     if not path.exists():
         return None
-    df = pd.read_parquet(path, columns=["symbol", "last_profile_refresh"])
+    df = _safe_read_parquet(path, columns=["symbol", "last_profile_refresh"])
     row = df[df["symbol"] == symbol]
     if row.empty:
         return None
@@ -537,8 +554,8 @@ def store_price_history(symbol: str, history: pd.DataFrame, currency: Optional[s
     })
 
     if path.exists():
-        existing = pd.read_parquet(path)
-        existing = existing[~existing["trade_date"].isin(rows["trade_date"])]
+        existing = _safe_read_parquet(path)
+        existing = existing[~existing["trade_date"].isin(rows["trade_date"])] if not existing.empty else pd.DataFrame(columns=rows.columns)
         combined = pd.concat([existing, rows], ignore_index=True).sort_values("trade_date")
     else:
         path.parent.mkdir(parents=True, exist_ok=True)
@@ -553,7 +570,7 @@ def get_symbol_last_trade_date(symbol: str) -> Optional[str]:
     path = _parquet_path("prices", symbol)
     if not path.exists():
         return None
-    df = pd.read_parquet(path, columns=["trade_date"])
+    df = _safe_read_parquet(path, columns=["trade_date"])
     if df.empty:
         return None
     return df["trade_date"].max()
@@ -638,8 +655,8 @@ def store_fundamental_snapshot(symbol: str, info: dict, as_of_date: Optional[str
     }])
 
     if path.exists():
-        existing = pd.read_parquet(path)
-        existing = existing[existing["as_of_date"] != snapshot_date]
+        existing = _safe_read_parquet(path)
+        existing = existing[existing["as_of_date"] != snapshot_date] if not existing.empty else pd.DataFrame(columns=new_row.columns)
         combined = pd.concat([existing, new_row], ignore_index=True).sort_values("as_of_date")
     else:
         path.parent.mkdir(parents=True, exist_ok=True)
@@ -681,11 +698,154 @@ def _build_quarter_feature_points(symbol: str) -> pd.DataFrame:
     ]].sort_values("source_publication_date")
 
 
-def _build_daily_feature_frame(symbol: str, history: pd.DataFrame, info: dict) -> pd.DataFrame:
+# ---------------------------------------------------------------------------
+# Calendrier entreprise : snapshot depuis yfinance
+# ---------------------------------------------------------------------------
+
+def _fetch_calendar_snapshot(ticker: "yf.Ticker") -> dict:
+    """Télécharge toutes les données calendrier/analyste disponibles sur un ticker yfinance.
+
+    Retourne un dict plat utilisable comme scalar dans _build_daily_feature_frame.
+    Tous les champs sont protégés par try/except pour rester robuste.
+    """
+    cal: dict = {}
+
+    # ── 1. calendar (prochaine date earnings + estimations consensus) ─────
+    try:
+        raw = ticker.calendar
+        if raw is not None:
+            if isinstance(raw, dict):
+                cal_dict = raw
+            elif isinstance(raw, pd.DataFrame):
+                cal_dict = raw.to_dict()
+            else:
+                cal_dict = {}
+
+            # Earnings Date (peut être une liste ou une valeur unique)
+            ed = cal_dict.get("Earnings Date")
+            if ed is not None:
+                if isinstance(ed, (list, tuple)) and len(ed) > 0:
+                    ed = ed[0]
+                elif isinstance(ed, dict):
+                    ed = list(ed.values())[0] if ed else None
+                try:
+                    ed_dt = pd.to_datetime(ed, utc=True).tz_localize(None)
+                    cal["next_earnings_date"] = ed_dt.strftime("%Y-%m-%d")
+                except Exception:
+                    cal["next_earnings_date"] = None
+            else:
+                cal["next_earnings_date"] = None
+
+            cal["earnings_eps_estimate_avg"]  = _safe_float(cal_dict.get("Earnings Average"))
+            cal["earnings_eps_estimate_low"]  = _safe_float(cal_dict.get("Earnings Low"))
+            cal["earnings_eps_estimate_high"] = _safe_float(cal_dict.get("Earnings High"))
+            cal["earnings_revenue_estimate_avg"]  = _safe_float(cal_dict.get("Revenue Average"))
+            cal["earnings_revenue_estimate_low"]  = _safe_float(cal_dict.get("Revenue Low"))
+            cal["earnings_revenue_estimate_high"] = _safe_float(cal_dict.get("Revenue High"))
+
+            # Dividend Date / Ex-Dividend Date
+            for src_key, dst_key in [("Dividend Date", "next_dividend_date"),
+                                      ("Ex-Dividend Date", "next_ex_dividend_date")]:
+                raw_d = cal_dict.get(src_key)
+                if raw_d is not None:
+                    if isinstance(raw_d, dict):
+                        raw_d = list(raw_d.values())[0] if raw_d else None
+                    try:
+                        cal[dst_key] = pd.to_datetime(raw_d, utc=True).tz_localize(None).strftime("%Y-%m-%d")
+                    except Exception:
+                        cal[dst_key] = None
+                else:
+                    cal[dst_key] = None
+    except Exception:
+        cal.setdefault("next_earnings_date", None)
+        cal.setdefault("earnings_eps_estimate_avg", None)
+        cal.setdefault("earnings_eps_estimate_low", None)
+        cal.setdefault("earnings_eps_estimate_high", None)
+        cal.setdefault("earnings_revenue_estimate_avg", None)
+        cal.setdefault("earnings_revenue_estimate_low", None)
+        cal.setdefault("earnings_revenue_estimate_high", None)
+        cal.setdefault("next_dividend_date", None)
+        cal.setdefault("next_ex_dividend_date", None)
+
+    # ── 2. analyst_price_targets ─────────────────────────────────────────
+    try:
+        apt = ticker.analyst_price_targets
+        if isinstance(apt, dict):
+            cal["target_mean_price"]   = _safe_float(apt.get("mean") or apt.get("targetMeanPrice"))
+            cal["target_high_price"]   = _safe_float(apt.get("high") or apt.get("targetHighPrice"))
+            cal["target_low_price"]    = _safe_float(apt.get("low")  or apt.get("targetLowPrice"))
+            cal["target_median_price"] = _safe_float(apt.get("median") or apt.get("targetMedianPrice"))
+        else:
+            raise ValueError("not a dict")
+    except Exception:
+        info_ref = {}
+        try:
+            info_ref = ticker.info or {}
+        except Exception:
+            pass
+        cal["target_mean_price"]   = _safe_float(info_ref.get("targetMeanPrice"))
+        cal["target_high_price"]   = _safe_float(info_ref.get("targetHighPrice"))
+        cal["target_low_price"]    = _safe_float(info_ref.get("targetLowPrice"))
+        cal["target_median_price"] = _safe_float(info_ref.get("targetMedianPrice"))
+
+    # ── 3. recommendations_summary ───────────────────────────────────────
+    try:
+        rs = ticker.recommendations_summary
+        if rs is not None and not rs.empty:
+            row0 = rs.iloc[0]
+            cal["rec_strong_buy"]  = int(row0.get("strongBuy",  0) or 0)
+            cal["rec_buy"]         = int(row0.get("buy",         0) or 0)
+            cal["rec_hold"]        = int(row0.get("hold",        0) or 0)
+            cal["rec_sell"]        = int(row0.get("sell",        0) or 0)
+            cal["rec_strong_sell"] = int(row0.get("strongSell", 0) or 0)
+        else:
+            raise ValueError("empty")
+    except Exception:
+        for k in ("rec_strong_buy", "rec_buy", "rec_hold", "rec_sell", "rec_strong_sell"):
+            cal.setdefault(k, None)
+
+    # ── 4. last split info (depuis info) ─────────────────────────────────
+    try:
+        info_s = ticker.info or {}
+        raw_split_date = info_s.get("lastSplitDate")
+        if raw_split_date:
+            cal["last_split_date"] = pd.to_datetime(raw_split_date, unit="s", utc=True).tz_localize(None).strftime("%Y-%m-%d")
+        else:
+            cal["last_split_date"] = None
+        cal["last_split_factor"] = _safe_text(info_s.get("lastSplitFactor"))
+    except Exception:
+        cal.setdefault("last_split_date", None)
+        cal.setdefault("last_split_factor", None)
+
+    return cal
+
+
+# ---------------------------------------------------------------------------
+# Feature frame quotidien — toutes features
+# ---------------------------------------------------------------------------
+
+def _build_daily_feature_frame(
+    symbol: str,
+    history: pd.DataFrame,
+    info: dict,
+    calendar_data: Optional[dict] = None,
+) -> pd.DataFrame:
+    """Construit la série de features journalières pour un symbole.
+
+    Paramètres
+    ----------
+    symbol        : ticker normalisé
+    history       : OHLCV + Dividends + Stock Splits depuis yfinance
+    info          : dict yfinance.Ticker.info
+    calendar_data : dict retourné par _fetch_calendar_snapshot() (optionnel)
+    """
     frame = _prepare_history_frame(history)
     if frame.empty:
         return frame
 
+    cal = calendar_data or {}
+
+    # ── Prix & FX ────────────────────────────────────────────────────────
     currency = str(info.get("currency") or "USD").upper()
     fx_rates = _get_fx_rates_daily_series(currency, frame["trade_date"])
     fx_rate_to_usd = _safe_float(fx_rates.iloc[-1]) if not fx_rates.empty else _get_rate_to_usd(currency)
@@ -693,33 +853,86 @@ def _build_daily_feature_frame(symbol: str, history: pd.DataFrame, info: dict) -
         fx_rate_to_usd = _get_rate_to_usd(currency)
         fx_rates = pd.Series(fx_rate_to_usd, index=frame.index, dtype=float)
 
-    frame["price"] = frame["Close"].astype(float) * fx_rates.astype(float)
-    frame["currency"] = currency
+    price = frame["Close"].astype(float) * fx_rates.astype(float)
+    frame["price"]         = price
+    frame["currency"]      = currency
     frame["fx_rate_to_usd"] = fx_rates.astype(float)
     frame["values_in_usd"] = 1
-    frame["avg_volume_30d"] = frame["Volume"].rolling(30, min_periods=10).mean()
-    frame["avg_volume_90d"] = frame["Volume"].rolling(90, min_periods=30).mean()
-    frame["c5_volume_ratio"] = frame["avg_volume_30d"] / frame["avg_volume_90d"]
-    frame["volume_mean_usd"] = frame["avg_volume_30d"] * frame["price"]
-    frame["sma50"] = frame["price"].rolling(50, min_periods=20).mean()
-    frame["c4_momentum_3m_pct"] = frame["price"].pct_change(63, fill_method=None) * 100.0
-    frame["c4_momentum_6m_pct"] = frame["price"].pct_change(126, fill_method=None) * 100.0
-    frame["rolling_52w_high"] = frame["price"].rolling(252, min_periods=20).max()
-    frame["close_vs_52wh_ratio"] = frame["price"] / frame["rolling_52w_high"]
-    frame["c4_above_sma50"] = frame["price"] > frame["sma50"]
-    frame["c4_ok"] = (
-        frame["c4_momentum_3m_pct"].between(8.0, 60.0, inclusive="neither")
-        & frame["c4_above_sma50"]
-        & (frame["c4_momentum_6m_pct"] < 150.0)
-    )
-    frame["c5_ok"] = frame["c5_volume_ratio"] > 1.20
 
+    # ── Volume ───────────────────────────────────────────────────────────
+    vol = frame["Volume"].astype(float)
+    frame["avg_volume_5d"]      = vol.rolling(5,  min_periods=2).mean()
+    frame["avg_volume_30d"]     = vol.rolling(30, min_periods=10).mean()
+    frame["avg_volume_90d"]     = vol.rolling(90, min_periods=30).mean()
+    frame["c5_volume_ratio"]    = frame["avg_volume_30d"] / frame["avg_volume_90d"]
+    frame["volume_mean_usd"]    = frame["avg_volume_30d"] * price
+    frame["volume_spike_ratio"] = vol / frame["avg_volume_30d"]
+
+    # ── Trend / Moving averages ──────────────────────────────────────────
+    frame["sma20"]  = price.rolling(20,  min_periods=10).mean()
+    frame["sma50"]  = price.rolling(50,  min_periods=20).mean()
+    frame["sma200"] = price.rolling(200, min_periods=60).mean()
+    frame["ema12"]  = price.ewm(span=12, adjust=False).mean()
+    frame["ema26"]  = price.ewm(span=26, adjust=False).mean()
+    frame["macd"]        = frame["ema12"] - frame["ema26"]
+    frame["macd_signal"] = frame["macd"].ewm(span=9, adjust=False).mean()
+    frame["macd_hist"]   = frame["macd"] - frame["macd_signal"]
+
+    # ── Momentum ─────────────────────────────────────────────────────────
+    frame["momentum_1m_pct"]    = price.pct_change(21,  fill_method=None) * 100.0
+    frame["c4_momentum_3m_pct"] = price.pct_change(63,  fill_method=None) * 100.0
+    frame["c4_momentum_6m_pct"] = price.pct_change(126, fill_method=None) * 100.0
+    frame["momentum_12m_pct"]   = price.pct_change(252, fill_method=None) * 100.0
+    frame["dprice"]    = price.pct_change(1, fill_method=None) * 100.0
+    frame["var5j_pct"] = price.pct_change(5, fill_method=None) * 100.0
+
+    # ── 52-semaine ───────────────────────────────────────────────────────
+    frame["rolling_52w_high"]    = price.rolling(252, min_periods=20).max()
+    frame["rolling_52w_low"]     = price.rolling(252, min_periods=20).min()
+    frame["close_vs_52wh_ratio"] = price / frame["rolling_52w_high"]
+    _range_52w = (frame["rolling_52w_high"] - frame["rolling_52w_low"]).replace(0, pd.NA)
+    frame["high_low_52w_pct"]    = (price - frame["rolling_52w_low"]) / _range_52w * 100.0
+    frame["price_vs_sma200_pct"] = (price - frame["sma200"]) / frame["sma200"].replace(0, pd.NA) * 100.0
+
+    # ── Volatilité ───────────────────────────────────────────────────────
+    log_ret = price.apply(lambda x: x).pct_change(fill_method=None)
+    frame["realized_vol_21d"] = log_ret.rolling(21, min_periods=10).std() * (252 ** 0.5) * 100.0
+    frame["realized_vol_63d"] = log_ret.rolling(63, min_periods=21).std() * (252 ** 0.5) * 100.0
+
+    # ATR 14 (en devise locale puis converti)
+    if "High" in frame.columns and "Low" in frame.columns:
+        hi = frame["High"].astype(float) * fx_rates.astype(float)
+        lo = frame["Low"].astype(float)  * fx_rates.astype(float)
+        prev_close = price.shift(1)
+        tr = pd.concat([
+            hi - lo,
+            (hi - prev_close).abs(),
+            (lo - prev_close).abs(),
+        ], axis=1).max(axis=1)
+        frame["atr_14"] = tr.ewm(span=14, adjust=False).mean()
+    else:
+        frame["atr_14"] = pd.NA
+
+    # Bollinger Bands (SMA20 ± 2σ)
+    bb_std = price.rolling(20, min_periods=10).std()
+    frame["bollinger_upper"] = frame["sma20"] + 2.0 * bb_std
+    frame["bollinger_lower"] = frame["sma20"] - 2.0 * bb_std
+    bb_range = (frame["bollinger_upper"] - frame["bollinger_lower"]).replace(0, pd.NA)
+    frame["bollinger_pct_b"]  = (price - frame["bollinger_lower"]) / bb_range
+
+    # ── RSI ──────────────────────────────────────────────────────────────
+    frame["rsi"]   = _compute_rsi(price)
+    frame["drsi"]  = frame["rsi"].diff(1)
+    frame["dvolrel"] = (frame["c5_volume_ratio"] - 1.0) * 100.0
+
+    # ── Dividendes ───────────────────────────────────────────────────────
     if "Dividends" in frame.columns:
         trailing_dividend = frame["Dividends"].rolling(252, min_periods=20).sum()
         frame["dividend_stability_1y"] = trailing_dividend.rolling(126, min_periods=20).std()
     else:
         frame["dividend_stability_1y"] = pd.NA
 
+    # ── Données trimestrielles (via fundamentals_cache) ──────────────────
     quarter_points = _build_quarter_feature_points(symbol)
     if not quarter_points.empty:
         frame = pd.merge_asof(
@@ -734,71 +947,59 @@ def _build_daily_feature_frame(symbol: str, history: pd.DataFrame, info: dict) -
                     "ttm_eps", "eps_growth_pct", "margin_stability_4q"]:
             frame[col] = pd.NA
 
-    # ttm_eps provient des états trimestriels (devise native). On garde la valeur locale
-    # et on convertit en USD pour les calculs avec un prix déjà converti en USD.
     frame["ttm_eps_local"] = pd.to_numeric(frame["ttm_eps"], errors="coerce")
-    frame["ttm_eps"] = frame["ttm_eps_local"] * fx_rate_to_usd
+    frame["ttm_eps"]       = frame["ttm_eps_local"] * fx_rate_to_usd
 
-    frame["trailing_pe"] = frame["price"] / frame["ttm_eps"]
+    frame["trailing_pe"] = price / frame["ttm_eps"]
     frame.loc[frame["ttm_eps"].isna() | (frame["ttm_eps"] <= 0), "trailing_pe"] = pd.NA
     frame["peg_ratio"] = frame["trailing_pe"] / frame["eps_growth_pct"]
     frame.loc[frame["eps_growth_pct"].isna() | (frame["eps_growth_pct"] <= 0), "peg_ratio"] = pd.NA
 
+    # ── Critères de sélection (C1→C5) ────────────────────────────────────
     frame["c1_ok"] = frame["c1_revenue_growth_pct"] > 20.0
     frame["c2_ok"] = frame["c2_gross_margin_pct"] > 30.0
-    frame["c3_pe_ok"] = frame["trailing_pe"].between(0.0, 25.0, inclusive="neither")
-    frame["c3_peg_ok"] = frame["peg_ratio"].between(0.0, 1.5, inclusive="neither")
-    frame["c3_below_75pct_52wh"] = frame["close_vs_52wh_ratio"] < 0.75
+    frame["c3_pe_ok"]             = frame["trailing_pe"].between(0.0, 25.0, inclusive="neither")
+    frame["c3_peg_ok"]            = frame["peg_ratio"].between(0.0, 1.5, inclusive="neither")
+    frame["c3_below_75pct_52wh"]  = frame["close_vs_52wh_ratio"] < 0.75
     frame["c3_undervaluation_hits"] = (
         _flag(frame["c3_pe_ok"])
         + _flag(frame["c3_peg_ok"])
         + _flag(frame["c3_below_75pct_52wh"])
     )
-    frame["c3_ok"] = frame["c3_undervaluation_hits"] >= 2
+    frame["c3_ok"]         = frame["c3_undervaluation_hits"] >= 2
+    frame["c4_above_sma50"] = price > frame["sma50"]
+    frame["c4_ok"] = (
+        frame["c4_momentum_3m_pct"].between(8.0, 60.0, inclusive="neither")
+        & frame["c4_above_sma50"]
+        & (frame["c4_momentum_6m_pct"] < 150.0)
+    )
+    frame["c5_ok"] = frame["c5_volume_ratio"] > 1.20
 
+    # ── Capitalisation ────────────────────────────────────────────────────
+    # Defragmenter le DataFrame après les rolling calculations et merge_asof
+    # pour éviter les PerformanceWarnings lors des affectations de colonnes scalaires.
+    frame = frame.copy()
     shares_outstanding = _safe_float(info.get("sharesOutstanding"))
     frame["market_cap_b"] = pd.NA
     if shares_outstanding and shares_outstanding > 0:
-        frame["market_cap_b"] = (frame["price"] * shares_outstanding) / 1_000_000_000.0
+        frame["market_cap_b"] = (price * shares_outstanding) / 1_000_000_000.0
 
-    name = info.get("shortName") or info.get("longName") or symbol
+    # ── Info statiques (snapshot) ─────────────────────────────────────────
+    name   = info.get("shortName") or info.get("longName") or symbol
     sector = info.get("sector") or "N/A"
-    frame["name"] = name
-    frame["sector"] = sector
+    frame["name"]    = name
+    frame["sector"]  = sector
     frame["domaine"] = sector
+
+    # Dividende & payout
     frame["dividend_yield"] = _safe_float(info.get("dividendYield"))
-    frame["payout_ratio"] = _safe_float(info.get("payoutRatio"))
-    frame["event_count"] = 0
-    frame["event_flags"] = None
-    frame["score"] = (
-        _flag(frame["c1_ok"]) + _flag(frame["c2_ok"]) + _flag(frame["c3_ok"])
-        + _flag(frame["c4_ok"]) + _flag(frame["c5_ok"])
-    )
-    frame["rsi"] = _compute_rsi(frame["price"])
-    frame["trend"] = frame.apply(
-        lambda r: "Hausse" if (_safe_float(r.get("price")) or 0.0) >= (_safe_float(r.get("sma50")) or 0.0) else "Baisse",
-        axis=1,
-    )
-    frame["signal"] = frame["score"].apply(_safe_score_signal)
+    frame["payout_ratio"]   = _safe_float(info.get("payoutRatio"))
 
-    default_seuil_achat = 4.2
-    default_seuil_vente = -0.5
-    frame["seuil_achat"] = default_seuil_achat
-    frame["seuil_vente"] = default_seuil_vente
-    frame["score_over_threshold"] = frame["score"] / default_seuil_achat
-    frame["consensus"] = "Neutre"
-    frame["consensus_mean"] = pd.NA
-
-    frame["dprice"] = frame["price"].pct_change(1, fill_method=None) * 100.0
-    frame["var5j_pct"] = frame["price"].pct_change(5, fill_method=None) * 100.0
-    frame["drsi"] = frame["rsi"].diff(1)
-    frame["dvolrel"] = (frame["c5_volume_ratio"] - 1.0) * 100.0
-    frame["rev_growth_pct"] = frame["c1_revenue_growth_pct"]
-
+    # Valorisation
     market_cap_usd = _safe_float(info.get("marketCap"))
     if market_cap_usd:
         market_cap_usd = market_cap_usd * fx_rate_to_usd
-    ev_usd = _safe_float(info.get("enterpriseValue"))
+    ev_usd    = _safe_float(info.get("enterpriseValue"))
     if ev_usd:
         ev_usd = ev_usd * fx_rate_to_usd
     ebitda_usd = _safe_float(info.get("ebitda"))
@@ -809,47 +1010,233 @@ def _build_daily_feature_frame(symbol: str, history: pd.DataFrame, info: dict) -
         fcf_usd = fcf_usd * fx_rate_to_usd
 
     denom_ebitda = ev_usd if ev_usd and ev_usd > 0 else market_cap_usd
-    ebitda_yield_pct = (ebitda_usd / denom_ebitda * 100.0) if (ebitda_usd and denom_ebitda and denom_ebitda > 0) else pd.NA
-    fcf_yield_pct = (fcf_usd / market_cap_usd * 100.0) if (fcf_usd and market_cap_usd and market_cap_usd > 0) else pd.NA
-
-    frame["ebitda_yield_pct"] = ebitda_yield_pct
-    frame["fcf_yield_pct"] = fcf_yield_pct
-    frame["de_ratio"] = _safe_float(info.get("debtToEquity"))
+    frame["ebitda_yield_pct"] = (ebitda_usd / denom_ebitda * 100.0) if (ebitda_usd and denom_ebitda and denom_ebitda > 0) else pd.NA
+    frame["fcf_yield_pct"]    = (fcf_usd / market_cap_usd * 100.0)  if (fcf_usd and market_cap_usd and market_cap_usd > 0) else pd.NA
+    frame["de_ratio"]         = _safe_float(info.get("debtToEquity"))
     roe = _safe_float(info.get("returnOnEquity"))
-    frame["roe_pct"] = (roe * 100.0) if roe is not None else pd.NA
+    frame["roe_pct"]          = (roe * 100.0) if roe is not None else pd.NA
     frame["market_cap_b_usd"] = (market_cap_usd / 1e9) if market_cap_usd else frame["market_cap_b"]
-    frame["cap_range"] = frame["market_cap_b"].apply(_cap_range_from_market_cap_b)
-    frame["param_key"] = frame["domaine"].fillna("Inconnu").astype(str) + "_" + frame["cap_range"].fillna("Unknown").astype(str)
+
+    # Nouvelles métriques fondamentales issues de info
+    frame["forward_pe"]   = _safe_float(info.get("forwardPE"))
+    frame["forward_eps"]  = _safe_float(info.get("forwardEps"))
+    frame["book_value"]   = _safe_float(info.get("bookValue"))
+    frame["current_ratio"] = _safe_float(info.get("currentRatio"))
+    frame["quick_ratio"]   = _safe_float(info.get("quickRatio"))
+    frame["short_ratio"]   = _safe_float(info.get("shortRatio"))
+
+    spof = _safe_float(info.get("shortPercentOfFloat"))
+    frame["short_percent_float"] = (spof * 100.0) if spof is not None else pd.NA
+
+    hpi = _safe_float(info.get("heldPercentInsiders"))
+    frame["held_pct_insiders"] = (hpi * 100.0) if hpi is not None else pd.NA
+
+    hpinst = _safe_float(info.get("heldPercentInstitutions"))
+    frame["held_pct_institutions"] = (hpinst * 100.0) if hpinst is not None else pd.NA
+
+    eqg = _safe_float(info.get("earningsQuarterlyGrowth"))
+    frame["earnings_quarterly_growth_pct"] = (eqg * 100.0) if eqg is not None else pd.NA
+
+    rg = _safe_float(info.get("revenueGrowth"))
+    frame["revenue_growth_info_pct"] = (rg * 100.0) if rg is not None else pd.NA
+
+    frame["operating_margins_pct"] = (_safe_float(info.get("operatingMargins")) or 0.0) * 100.0 or pd.NA
+    frame["ebitda_margins_pct"]    = (_safe_float(info.get("ebitdaMargins"))    or 0.0) * 100.0 or pd.NA
+    frame["gross_margins_pct"]     = (_safe_float(info.get("grossMargins"))     or 0.0) * 100.0 or pd.NA
+    frame["profit_margins_pct"]    = (_safe_float(info.get("profitMargins"))    or 0.0) * 100.0 or pd.NA
+
+    roa = _safe_float(info.get("returnOnAssets"))
+    frame["return_on_assets_pct"] = (roa * 100.0) if roa is not None else pd.NA
+    frame["revenue_per_share"]    = _safe_float(info.get("revenuePerShare"))
+
+    tc = _safe_float(info.get("totalCash"))
+    td = _safe_float(info.get("totalDebt"))
+    frame["total_cash_b"] = (tc * fx_rate_to_usd / 1e9) if tc else pd.NA
+    frame["total_debt_b"] = (td * fx_rate_to_usd / 1e9) if td else pd.NA
+    if tc is not None and td is not None:
+        frame["net_cash_b"] = ((tc - td) * fx_rate_to_usd / 1e9)
+    else:
+        frame["net_cash_b"] = pd.NA
+
+    wk52c = _safe_float(info.get("52WeekChange"))
+    frame["week52_change_pct"] = (wk52c * 100.0) if wk52c is not None else pd.NA
+
+    sp52c = _safe_float(info.get("SandP52WeekChange"))
+    frame["sp500_52w_change_pct"] = (sp52c * 100.0) if sp52c is not None else pd.NA
+
+    fs = _safe_float(info.get("floatShares"))
+    frame["float_shares_m"] = (fs / 1e6) if fs else pd.NA
+
+    # Prix cibles analystes (depuis info si calendar non disponible)
+    frame["target_mean_price"]   = cal.get("target_mean_price")   or _safe_float(info.get("targetMeanPrice"))
+    frame["target_high_price"]   = cal.get("target_high_price")   or _safe_float(info.get("targetHighPrice"))
+    frame["target_low_price"]    = cal.get("target_low_price")    or _safe_float(info.get("targetLowPrice"))
+    frame["target_median_price"] = cal.get("target_median_price") or _safe_float(info.get("targetMedianPrice"))
+    frame["analyst_count"]       = _safe_float(info.get("numberOfAnalystOpinions"))
+    frame["recommendation_mean"] = cal.get("recommendation_mean") or _safe_float(info.get("recommendationMean"))
+    frame["recommendation_key"]  = cal.get("recommendation_key")  or _safe_text(info.get("recommendationKey"))
+
+    # Upside vs cible consensus
+    tmean = frame["target_mean_price"].iloc[0] if not pd.isna(frame["target_mean_price"].iloc[0]) else None
+    if tmean is not None:
+        tmean_usd = tmean * fx_rate_to_usd
+        frame["upside_to_target_pct"] = (tmean_usd - price) / price.replace(0, pd.NA) * 100.0
+    else:
+        frame["upside_to_target_pct"] = pd.NA
+
+    # Comptages recommandations
+    for rec_col in ("rec_strong_buy", "rec_buy", "rec_hold", "rec_sell", "rec_strong_sell"):
+        frame[rec_col] = cal.get(rec_col)
+
+    # ── Features calendrier (snapshot, calculées par row) ─────────────────
+    ned = cal.get("next_earnings_date")
+    frame["next_earnings_date"] = ned
+    if ned:
+        try:
+            ned_dt = pd.to_datetime(ned)
+            frame["days_to_next_earnings"] = (ned_dt - frame["trade_date"]).dt.days
+        except Exception:
+            frame["days_to_next_earnings"] = pd.NA
+    else:
+        frame["days_to_next_earnings"] = pd.NA
+
+    frame["earnings_eps_estimate_avg"]      = cal.get("earnings_eps_estimate_avg")
+    frame["earnings_eps_estimate_low"]      = cal.get("earnings_eps_estimate_low")
+    frame["earnings_eps_estimate_high"]     = cal.get("earnings_eps_estimate_high")
+    frame["earnings_revenue_estimate_avg"]  = cal.get("earnings_revenue_estimate_avg")
+    frame["earnings_revenue_estimate_low"]  = cal.get("earnings_revenue_estimate_low")
+    frame["earnings_revenue_estimate_high"] = cal.get("earnings_revenue_estimate_high")
+
+    frame["next_dividend_date"]    = cal.get("next_dividend_date")
+    frame["next_ex_dividend_date"] = cal.get("next_ex_dividend_date")
+    ndd = cal.get("next_dividend_date")
+    if ndd:
+        try:
+            ndd_dt = pd.to_datetime(ndd)
+            frame["days_to_next_dividend"] = (ndd_dt - frame["trade_date"]).dt.days
+        except Exception:
+            frame["days_to_next_dividend"] = pd.NA
+    else:
+        frame["days_to_next_dividend"] = pd.NA
+
+    frame["last_split_date"]   = cal.get("last_split_date")
+    frame["last_split_factor"] = cal.get("last_split_factor")
+
+    # ── Score global & signaux ────────────────────────────────────────────
+    frame["score"] = (
+        _flag(frame["c1_ok"]) + _flag(frame["c2_ok"]) + _flag(frame["c3_ok"])
+        + _flag(frame["c4_ok"]) + _flag(frame["c5_ok"])
+    )
+    frame["trend"] = frame.apply(
+        lambda r: "Hausse" if (_safe_float(r.get("price")) or 0.0) >= (_safe_float(r.get("sma50")) or 0.0) else "Baisse",
+        axis=1,
+    )
+    frame["signal"] = frame["score"].apply(_safe_score_signal)
+
+    default_seuil_achat = 4.2
+    default_seuil_vente = -0.5
+    frame["seuil_achat"]        = default_seuil_achat
+    frame["seuil_vente"]        = default_seuil_vente
+    frame["score_over_threshold"] = frame["score"] / default_seuil_achat
+    frame["consensus"]          = "Neutre"
+    frame["consensus_mean"]     = pd.NA
+
+    frame["rev_growth_pct"] = frame["c1_revenue_growth_pct"]
+    frame["cap_range"]      = frame["market_cap_b"].apply(_cap_range_from_market_cap_b)
+    frame["param_key"]      = frame["domaine"].fillna("Inconnu").astype(str) + "_" + frame["cap_range"].fillna("Unknown").astype(str)
     frame["selected_param_key"] = frame["param_key"]
-    frame["fiabilite"] = pd.NA
-    frame["nb_trades"] = 0
-    frame["gagnants"] = 0
+
+    frame["event_count"] = 0
+    frame["event_flags"] = None
+    frame["fiabilite"]   = pd.NA
+    frame["nb_trades"]   = 0
+    frame["gagnants"]    = 0
     frame["gain_total_usd"] = 0.0
     frame["gain_moyen_usd"] = 0.0
-    frame["computed_at"] = _utcnow()
-    frame["feature_date"] = frame["trade_date"].dt.strftime("%Y-%m-%d")
+    frame["computed_at"]    = _utcnow()
+    frame["feature_date"]   = frame["trade_date"].dt.strftime("%Y-%m-%d")
     frame["detection_time"] = frame["trade_date"].dt.strftime("%Y-%m-%d")
     frame["source_publication_date"] = pd.to_datetime(
         frame["source_publication_date"], errors="coerce"
     ).dt.strftime("%Y-%m-%d")
 
+    # ── Liste finale des colonnes (ordre fixe) ────────────────────────────
+    # TOTAL : 140 features (+ symbol ajouté par store_daily_feature_series = 141 colonnes Parquet)
     columns = [
-        "feature_date", "name", "sector", "price", "currency", "fx_rate_to_usd",
-        "values_in_usd", "market_cap_b", "score", "signal", "trend", "rsi",
-        "volume_mean_usd", "domaine", "cap_range", "param_key", "score_over_threshold",
+        # Identifiant & meta
+        "feature_date", "name", "sector", "domaine",
+        # Prix & change
+        "price", "dprice", "var5j_pct",
+        # Devise & FX
+        "currency", "fx_rate_to_usd", "values_in_usd",
+        # Capitalisation
+        "market_cap_b", "market_cap_b_usd",
+        # Score & signal
+        "score", "signal", "trend",
+        # RSI & dérivés
+        "rsi", "drsi",
+        # Volume
+        "volume_mean_usd", "avg_volume_5d", "avg_volume_30d", "avg_volume_90d",
+        "c5_volume_ratio", "volume_spike_ratio", "dvolrel",
+        # Moyennes mobiles
+        "sma20", "sma50", "sma200", "ema12", "ema26",
+        # MACD
+        "macd", "macd_signal", "macd_hist",
+        # Momentum
+        "momentum_1m_pct", "c4_momentum_3m_pct", "c4_momentum_6m_pct", "momentum_12m_pct",
+        # 52 semaines
+        "rolling_52w_high", "rolling_52w_low", "close_vs_52wh_ratio",
+        "high_low_52w_pct", "price_vs_sma200_pct",
+        # Volatilité
+        "realized_vol_21d", "realized_vol_63d", "atr_14",
+        # Bollinger
+        "bollinger_upper", "bollinger_lower", "bollinger_pct_b",
+        # Critères C1→C5
+        "c1_revenue_growth_pct", "c1_ok",
+        "c2_gross_margin_pct", "c2_ok",
+        "c3_undervaluation_hits", "c3_pe_ok", "c3_peg_ok", "c3_below_75pct_52wh", "c3_ok",
+        "c4_above_sma50", "c4_ok",
+        "c5_ok",
+        # Valorisation
+        "trailing_pe", "forward_pe", "peg_ratio",
+        "ttm_eps", "ttm_eps_local", "forward_eps", "eps_growth_pct",
+        "ebitda_yield_pct", "fcf_yield_pct",
+        "de_ratio", "roe_pct", "return_on_assets_pct",
+        "book_value", "current_ratio", "quick_ratio",
+        "revenue_per_share", "total_cash_b", "total_debt_b", "net_cash_b",
+        # Marges
+        "gross_margins_pct", "operating_margins_pct", "ebitda_margins_pct", "profit_margins_pct",
+        # Croissance
+        "rev_growth_pct", "revenue_growth_info_pct",
+        "earnings_quarterly_growth_pct", "margin_stability_4q",
+        # Dividendes
+        "dividend_yield", "payout_ratio", "dividend_stability_1y",
+        # Actionnariat
+        "short_ratio", "short_percent_float",
+        "held_pct_insiders", "held_pct_institutions", "float_shares_m",
+        # Comparaison marché
+        "week52_change_pct", "sp500_52w_change_pct",
+        # Analystes — prix cibles
+        "target_mean_price", "target_high_price", "target_low_price", "target_median_price",
+        "upside_to_target_pct", "analyst_count",
+        "recommendation_mean", "recommendation_key",
+        "rec_strong_buy", "rec_buy", "rec_hold", "rec_sell", "rec_strong_sell",
+        # Calendrier — prochains événements
+        "next_earnings_date", "days_to_next_earnings",
+        "earnings_eps_estimate_avg", "earnings_eps_estimate_low", "earnings_eps_estimate_high",
+        "earnings_revenue_estimate_avg", "earnings_revenue_estimate_low", "earnings_revenue_estimate_high",
+        "next_dividend_date", "next_ex_dividend_date", "days_to_next_dividend",
+        "last_split_date", "last_split_factor",
+        # Optimisation / backtest
+        "cap_range", "param_key", "score_over_threshold",
         "consensus", "consensus_mean", "seuil_achat", "seuil_vente", "selected_param_key",
-        "dprice", "var5j_pct", "drsi", "dvolrel", "rev_growth_pct", "ebitda_yield_pct",
-        "fcf_yield_pct", "de_ratio", "market_cap_b_usd", "roe_pct", "fiabilite",
-        "nb_trades", "gagnants", "gain_total_usd", "gain_moyen_usd", "detection_time",
-        "c1_revenue_growth_pct", "c1_ok", "c2_gross_margin_pct", "c2_ok",
-        "c3_undervaluation_hits", "c3_pe_ok", "c3_peg_ok", "c3_below_75pct_52wh",
-        "c3_ok", "c4_momentum_3m_pct", "c4_momentum_6m_pct", "c4_above_sma50",
-        "c4_ok", "c5_volume_ratio", "c5_ok", "close_vs_52wh_ratio", "sma50",
-        "avg_volume_30d", "avg_volume_90d", "trailing_pe", "peg_ratio", "ttm_eps",
-        "ttm_eps_local",
-        "eps_growth_pct", "dividend_yield", "payout_ratio", "margin_stability_4q",
-        "dividend_stability_1y", "event_count", "event_flags", "source_publication_date",
-        "computed_at",
+        "fiabilite", "nb_trades", "gagnants", "gain_total_usd", "gain_moyen_usd",
+        # Événements
+        "event_count", "event_flags",
+        # PIT fondamentaux
+        "source_publication_date",
+        # Timestamp
+        "detection_time", "computed_at",
     ]
     return frame[[c for c in columns if c in frame.columns]]
 
@@ -865,8 +1252,8 @@ def store_daily_feature_series(symbol: str, feature_frame: pd.DataFrame) -> int:
     df.insert(0, "symbol", symbol)
 
     if path.exists():
-        existing = pd.read_parquet(path)
-        existing = existing[~existing["feature_date"].isin(df["feature_date"])]
+        existing = _safe_read_parquet(path)
+        existing = existing[~existing["feature_date"].isin(df["feature_date"])] if not existing.empty else pd.DataFrame(columns=df.columns)
         combined = pd.concat([existing, df], ignore_index=True).sort_values("feature_date")
     else:
         path.parent.mkdir(parents=True, exist_ok=True)
@@ -885,7 +1272,7 @@ def get_latest_feature_row(symbol: str) -> Optional[dict]:
     path = _parquet_path("features", symbol)
     if not path.exists():
         return None
-    df = pd.read_parquet(path)
+    df = _safe_read_parquet(path)
     if df.empty:
         return None
     return df.sort_values("feature_date").iloc[-1].to_dict()
@@ -899,7 +1286,7 @@ def get_symbol_storage_summary(symbol: str) -> dict:
     price_rows = 0
     min_date = max_date = None
     if price_path.exists():
-        df_p = pd.read_parquet(price_path, columns=["trade_date"])
+        df_p = _safe_read_parquet(price_path, columns=["trade_date"])
         price_rows = len(df_p)
         if not df_p.empty:
             min_date = df_p["trade_date"].min()
@@ -907,7 +1294,7 @@ def get_symbol_storage_summary(symbol: str) -> dict:
 
     feature_rows = 0
     if feature_path.exists():
-        df_f = pd.read_parquet(feature_path, columns=["feature_date"])
+        df_f = _safe_read_parquet(feature_path, columns=["feature_date"])
         feature_rows = len(df_f)
 
     return {
@@ -972,9 +1359,10 @@ def fetch_and_store_symbol_series(symbol: str, start_date: str = DEFAULT_FEATURE
     upsert_instrument(symbol, info)
     store_fundamental_snapshot(symbol, info)
 
+    calendar_data = _fetch_calendar_snapshot(ticker)
     currency = _safe_text(info.get("currency"))
     price_rows = store_price_history(symbol, history, currency)
-    feature_frame = _build_daily_feature_frame(symbol, history, info)
+    feature_frame = _build_daily_feature_frame(symbol, history, info, calendar_data=calendar_data)
     feature_rows = store_daily_feature_series(symbol, feature_frame)
 
     return {
@@ -1060,9 +1448,10 @@ def refresh_symbol_incremental(
         upsert_instrument(symbol, info)
         if info:
             store_fundamental_snapshot(symbol, info)
+        calendar_data = _fetch_calendar_snapshot(ticker)
         currency = _safe_text(info.get("currency"))
         price_rows = store_price_history(symbol, history, currency)
-        feature_frame = _build_daily_feature_frame(symbol, history, info)
+        feature_frame = _build_daily_feature_frame(symbol, history, info, calendar_data=calendar_data)
         feature_rows = store_daily_feature_series(symbol, feature_frame)
         return {
             "symbol": symbol,
@@ -1093,9 +1482,10 @@ def refresh_symbol_incremental(
     if info:
         store_fundamental_snapshot(symbol, info)
 
+    calendar_data = _fetch_calendar_snapshot(ticker)
     currency = _safe_text(info.get("currency"))
     price_rows = store_price_history(symbol, history, currency)
-    feature_frame = _build_daily_feature_frame(symbol, history, info)
+    feature_frame = _build_daily_feature_frame(symbol, history, info, calendar_data=calendar_data)
     feature_rows = store_daily_feature_series(symbol, feature_frame)
 
     refreshed_last_date = None
@@ -1206,10 +1596,11 @@ def save_financial_cache(symbol: str, data: dict, cache_type: str = "financial")
 
     new_row = pd.DataFrame([flat])
     if path.exists():
-        existing = pd.read_parquet(path)
+        existing = _safe_read_parquet(path)
         # Garder les 4 derniers snapshots pour traçabilité, supprimer les plus anciens
-        existing = existing.sort_values("fetched_at").tail(4)
-        combined = pd.concat([existing, new_row], ignore_index=True)
+        if not existing.empty:
+            existing = existing.sort_values("fetched_at").tail(4)
+        combined = pd.concat([existing, new_row], ignore_index=True) if not existing.empty else new_row
     else:
         combined = new_row
 
@@ -1241,11 +1632,14 @@ def _upsert_timeline(path: Path, incoming: pd.DataFrame, key_cols: list[str]) ->
         return 0
     path.parent.mkdir(parents=True, exist_ok=True)
     if path.exists():
-        existing = pd.read_parquet(path)
-        key_str = incoming[key_cols].astype(str).apply("|".join, axis=1)
-        ex_key_str = existing[key_cols].astype(str).apply("|".join, axis=1)
-        existing = existing[~ex_key_str.isin(key_str)]
-        combined = pd.concat([existing, incoming], ignore_index=True)
+        existing = _safe_read_parquet(path)
+        if not existing.empty:
+            key_str = incoming[key_cols].astype(str).apply("|".join, axis=1)
+            ex_key_str = existing[key_cols].astype(str).apply("|".join, axis=1)
+            existing = existing[~ex_key_str.isin(key_str)]
+            combined = pd.concat([existing, incoming], ignore_index=True)
+        else:
+            combined = incoming
     else:
         combined = incoming
     pq.write_table(pa.Table.from_pandas(combined, preserve_index=False), str(path))
@@ -1327,7 +1721,7 @@ def get_timeline_pit_data(symbol: str, target_date: str, lookback_days: int = 12
     earn_path = _timeline_path("earnings", symbol)
     latest_surprise = 0.0
     if earn_path.exists():
-        df_e = pd.read_parquet(earn_path)
+        df_e = _safe_read_parquet(earn_path)
         if not df_e.empty:
             df_e["_date"] = pd.to_datetime(df_e["date"], errors="coerce")
             past = df_e[df_e["_date"] <= cutoff_dt].sort_values("_date")
@@ -1338,7 +1732,7 @@ def get_timeline_pit_data(symbol: str, target_date: str, lookback_days: int = 12
     rec_path = _timeline_path("recommendations", symbol)
     upgrades_count = 0
     if rec_path.exists():
-        df_r = pd.read_parquet(rec_path)
+        df_r = _safe_read_parquet(rec_path)
         if not df_r.empty:
             df_r["_date"] = pd.to_datetime(df_r["date"], errors="coerce")
             window = df_r[

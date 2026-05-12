@@ -307,6 +307,55 @@ class DownloadThread(QThread):
         if self._process and self._process.poll() is None:
             self._process.terminate()
 
+
+class ParquetSyncThread(QThread):
+    """Synchronise les symboles analysés dans le store Parquet en arrière-plan.
+
+    Déclenché depuis on_analysis_complete() après chaque analyse UI.
+    Premier appel : télécharge 3 ans → stocke tout (~750 lignes/symbole).
+    Appels suivants : ne télécharge que le delta depuis la dernière entrée.
+    """
+    sync_done = pyqtSignal(int, int)   # (ok_count, err_count)
+
+    def __init__(self, symbols, parent=None):
+        super().__init__(parent)
+        self.symbols = list(symbols)
+
+    def run(self):
+        try:
+            from market_store import refresh_symbol_incremental
+        except Exception as exc:
+            print(f"[Parquet] ERREUR import market_store : {exc}")
+            import traceback; traceback.print_exc()
+            self.sync_done.emit(0, len(self.symbols))
+            return
+
+        from concurrent.futures import ThreadPoolExecutor, as_completed
+        MAX_WORKERS = 6  # 6 threads en parallèle (I/O-bound : yfinance downloads)
+
+        print(f"[Parquet] démarrage sync de {len(self.symbols)} symboles (workers={MAX_WORKERS})…")
+        ok = err = 0
+
+        def _sync_one(symbol):
+            r = refresh_symbol_incremental(symbol)
+            return symbol, r.get('status', '?'), r.get('feature_rows', 0), None
+
+        with ThreadPoolExecutor(max_workers=MAX_WORKERS) as pool:
+            futures = {pool.submit(_sync_one, sym): sym for sym in self.symbols}
+            for future in as_completed(futures):
+                sym = futures[future]
+                try:
+                    symbol, status, rows, _ = future.result()
+                    print(f"[Parquet] {symbol}: {status} ({rows} lignes features)")
+                    ok += 1
+                except Exception as exc:
+                    print(f"[Parquet] {sym} ERREUR: {exc}")
+                    err += 1
+
+        print(f"[Parquet] sync terminé : {ok} ok, {err} erreurs sur {len(self.symbols)} symboles")
+        self.sync_done.emit(ok, err)
+
+
 class LogCapture:
     """Captures stdout/stderr and writes both to QTextEdit and to original stdout/stderr.
     Uses a Qt signal to marshal UI writes back to the GUI thread."""
@@ -1648,6 +1697,21 @@ class MainWindow(QMainWindow):
         except Exception:
             pass
 
+        # --- Sync Parquet en arrière-plan ---
+        try:
+            all_syms = list(getattr(self.download_thread, 'symbols', []) or [])
+            if all_syms:
+                print(f"[Parquet] lancement sync pour {len(all_syms)} symboles : {all_syms[:5]}{'...' if len(all_syms) > 5 else ''}")
+                self._parquet_sync_thread = ParquetSyncThread(all_syms, parent=self)
+                self._parquet_sync_thread.sync_done.connect(
+                    lambda ok, err: print(f"[Parquet] ✅ {ok} symboles synchronisés, {err} erreurs")
+                )
+                self._parquet_sync_thread.start()
+            else:
+                print("[Parquet] aucun symbole à synchroniser (liste vide)")
+        except Exception as exc:
+            print(f"[Parquet] impossible de démarrer le sync : {exc}")
+
     def on_analysis_progress(self, message):
         if self.progress:
             self.progress.setLabelText(message)
@@ -1804,6 +1868,33 @@ class MainWindow(QMainWindow):
                 self.render_backtest_summary_and_table(backtests, signals)
         except Exception:
             pass
+
+        # --- Sync Parquet en arrière-plan ---
+        # On utilise les symboles ENTRÉE de l'analyse (pas les signaux de sortie qui
+        # ne contiennent que ACHAT/VENTE — les NEUTRES seraient ignorés).
+        try:
+            # Priorité 1 : symboles passés au thread d'analyse
+            syms_from_thread = getattr(self, 'analysis_thread', None)
+            if syms_from_thread is not None:
+                all_syms = list(syms_from_thread.symbols or [])
+            else:
+                all_syms = []
+
+            # Fallback : liste UI courante
+            if not all_syms:
+                all_syms = list(getattr(self, 'symbols', []))
+
+            if all_syms:
+                print(f"[Parquet] lancement sync pour {len(all_syms)} symboles : {all_syms[:5]}{'...' if len(all_syms) > 5 else ''}")
+                self._parquet_sync_thread = ParquetSyncThread(all_syms, parent=self)
+                self._parquet_sync_thread.sync_done.connect(
+                    lambda ok, err: print(f"[Parquet] ✅ {ok} symboles synchronisés, {err} erreurs")
+                )
+                self._parquet_sync_thread.start()
+            else:
+                print("[Parquet] aucun symbole à synchroniser (liste vide)")
+        except Exception as exc:
+            print(f"[Parquet] impossible de démarrer le sync : {exc}")
 
     def on_analysis_error(self, error_msg):
         self._analysis_running = False
