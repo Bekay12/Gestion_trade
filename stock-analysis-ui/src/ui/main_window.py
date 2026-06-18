@@ -929,6 +929,7 @@ class MainWindow(QMainWindow):
             ("_events_48h_mes_coko",    "⏰ Événements 48h (Mes+Coko)"),
             ("_gap_up_popular",          "🟢 Gap Up — Symboles populaires"),
             ("_gap_down_popular",        "🔴 Gap Down — Symboles populaires"),
+            ("_finviz_gapper",           "🎯 Finviz Gapper (Nano/Small, Gap≥5%)"),
             ("most_actives",           "Most Actives"),
             ("day_gainers",            "Day Gainers"),
             ("day_losers",             "Day Losers"),
@@ -3893,6 +3894,11 @@ class MainWindow(QMainWindow):
             self._show_gap_screener(direction="down")
             return
 
+        # ── Finviz Gapper personnalisé ───────────────────────────────────
+        if screener_key == "_finviz_gapper":
+            self._show_finviz_gapper_screener()
+            return
+
         QApplication.setOverrideCursor(Qt.WaitCursor)
         try:
             payload = yf.screen(screener_key, count=30)
@@ -3934,15 +3940,142 @@ class MainWindow(QMainWindow):
             lines.append(f"{idx:02d}. {sym:8s} {pct_str}")
         QMessageBox.information(self, f"Yahoo Screener — {screener_label} (max 30)", '\n'.join(lines))
 
+    def _show_finviz_gapper_screener(self):
+        """Screener Finviz via finvizfinance :
+          • Market Cap  : < $300M (Micro + Nano)
+          • Prix        : $1 – $20
+          • Vol. moyen  : > 500K
+          • Vol. relatif: > 2×
+          • Float Short : > 10%
+          • Gap Up      : ≥ 5%
+        """
+        from finvizfinance.screener.overview import Overview
+
+        progress = QProgressDialog(
+            "Interrogation de Finviz en cours…",
+            "Annuler", 0, 0, self
+        )
+        progress.setWindowTitle("🎯 Finviz Gapper Screener")
+        progress.setWindowModality(Qt.WindowModal)
+        progress.setMinimumDuration(0)
+        progress.setValue(0)
+        QApplication.processEvents()
+
+        FILTERS = {
+            "Market Cap.":     "-Micro (under $300mln)",
+            "Price":           "Under $20",
+            "Average Volume":  "Over 500K",
+            "Relative Volume": "Over 2",
+            "Float Short":     "Over 10%",
+            "Gap":             "Up 5%",
+        }
+
+        df = None
+        try:
+            # Monkey-patch le session de finvizfinance avec curl_cffi
+            # pour contourner le bot-blocking de Finviz (requests standard est bloqué)
+            import finvizfinance.util as _fv_util
+            from curl_cffi.requests import Session as CurlSession
+            _orig_session = _fv_util.session
+            _fv_util.session = CurlSession(impersonate="chrome")
+
+            try:
+                fov = Overview()
+                fov.set_filter(filters_dict=FILTERS)
+                df = fov.screener_view(order="Change", limit=100, ascend=False)
+            finally:
+                _fv_util.session = _orig_session
+        except Exception as e:
+            progress.close()
+            import traceback
+            QMessageBox.warning(
+                self, "🎯 Finviz Gapper — Erreur",
+                f"Erreur lors de la requête Finviz :\n\n{e}\n\n"
+                + traceback.format_exc()
+            )
+            return
+
+        progress.close()
+        if progress.wasCanceled():
+            return
+
+        if df is None or len(df) == 0:
+            QMessageBox.information(
+                self, "🎯 Finviz Gapper",
+                "Finviz ne retourne aucun résultat pour ces filtres.\n\n"
+                "Ce screener nécessite que :\n"
+                "  • le marché US soit ouvert (9h30–16h ET)\n"
+                "  • des actions aient gappé de ≥ 5% aujourd'hui"
+            )
+            return
+
+        def _pct(v):
+            try:
+                return float(str(v).replace("%", "").replace(",", "").strip())
+            except Exception:
+                return None
+
+        def _num(v):
+            s = str(v).replace(",", "").strip()
+            for suffix, mult in [("B", 1e9), ("M", 1e6), ("K", 1e3)]:
+                if s.upper().endswith(suffix):
+                    try:
+                        return float(s[:-1]) * mult
+                    except Exception:
+                        return None
+            try:
+                return float(s)
+            except Exception:
+                return None
+
+        results = []
+        for _, row in df.iterrows():
+            sym = str(row.get("Ticker") or "").strip().upper()
+            if not sym:
+                continue
+            chg   = _pct(row.get("Change"))
+            price = _num(row.get("Price"))
+            vol   = _num(row.get("Volume"))
+            cap   = _num(row.get("Market Cap"))
+            cap_m = round(cap / 1_000_000, 1) if cap else None
+            results.append((sym, chg, price, cap_m, vol))
+
+        if not results:
+            QMessageBox.information(self, "🎯 Finviz Gapper",
+                                    "Finviz a répondu mais aucun symbole exploitable n'a été trouvé.")
+            return
+
+        top30 = results[:30]
+        self.symbol_input.setText(", ".join(r[0] for r in top30))
+
+        lines = [
+            f"{'#':<3} {'Sym':<7} {'Gap%':>7} {'Prix':>7} {'Cap':>8} {'Volume':>10}",
+            "─" * 50,
+        ]
+        for idx, (sym, chg, price, cap_m, vol) in enumerate(top30, 1):
+            chg_s = f"{chg:+.2f}%" if chg is not None else "n/a"
+            pr_s  = f"${price:.2f}" if price is not None else "n/a"
+            cap_s = f"${cap_m:.0f}M" if cap_m is not None else "n/a"
+            vol_s = f"{int(vol):,}" if vol is not None else "n/a"
+            lines.append(f"{idx:<3} {sym:<7} {chg_s:>7} {pr_s:>7} {cap_s:>8} {vol_s:>10}")
+        lines.append("")
+        lines.append("Filtres : Cap<$300M | Prix $1-$20 | VolMoy>500K | VolRel>2x | Short>10% | Gap≥5%")
+        lines.append(f"{len(top30)} symbole(s) injecté(s) dans le champ d'analyse.")
+
+        QMessageBox.information(
+            self,
+            f"🎯 Finviz Gapper — {len(top30)} résultat(s)",
+            "\n".join(lines),
+        )
+
     def _show_gap_screener(self, direction: str = "up"):
-        """Cherche les 30 plus grands gaps (positifs ou négatifs) parmi les symboles populaires.
-        Un gap est calculé comme : (Open_aujourd'hui - Close_hier) / Close_hier * 100.
-        direction: 'up' → gaps positifs, 'down' → gaps négatifs."""
+        """Calcule les gaps via yfinance sur chaque symbole populaire et affiche
+        le top 30 avec |gap| ≥ 5%.
+        direction: 'up' → gaps ≥ +5%, 'down' → gaps ≤ -5%."""
         import pandas as pd
         from concurrent.futures import ThreadPoolExecutor, as_completed
         from PyQt5.QtWidgets import QProgressDialog
 
-        # Symboles populaires uniquement
         lw = getattr(self, "popular_list", None)
         if lw is None or lw.count() == 0:
             QMessageBox.information(self, "Gap Screener", "Aucun symbole dans la liste populaire.")
@@ -3959,7 +4092,7 @@ class MainWindow(QMainWindow):
 
         lbl = "Gap Up" if direction == "up" else "Gap Down"
         progress = QProgressDialog(
-            f"Calcul des {lbl}s pour {total} symboles populaires…",
+            f"Calcul des {lbl}s (≥5%) pour {total} symboles populaires…",
             "Annuler", 0, total, self
         )
         progress.setWindowTitle(f"Screener {lbl}")
@@ -3968,7 +4101,7 @@ class MainWindow(QMainWindow):
         progress.setValue(0)
         QApplication.processEvents()
 
-        results = []   # [(symbol, gap_pct)]
+        results = []
         done = [0]
 
         def _calc_gap(sym):
@@ -3976,8 +4109,6 @@ class MainWindow(QMainWindow):
                 hist = yf.Ticker(sym).history(period="5d", auto_adjust=True)
                 if hist is None or len(hist) < 2:
                     return sym, None
-                # Dernière bougie complète = avant-dernière ligne si la dernière est incomplète,
-                # sinon on prend simplement les deux dernières lignes disponibles.
                 prev_close = float(hist["Close"].iloc[-2])
                 today_open = float(hist["Open"].iloc[-1])
                 if prev_close == 0:
@@ -3987,9 +4118,8 @@ class MainWindow(QMainWindow):
             except Exception:
                 return sym, None
 
-        MAX_W = 10
         cancelled = False
-        with ThreadPoolExecutor(max_workers=MAX_W) as pool:
+        with ThreadPoolExecutor(max_workers=10) as pool:
             futures = {pool.submit(_calc_gap, sym): sym for sym in symbols_list}
             for future in as_completed(futures):
                 if progress.wasCanceled():
@@ -4009,27 +4139,25 @@ class MainWindow(QMainWindow):
         if cancelled:
             return
 
-        # Filtrer selon la direction et trier
         if direction == "up":
-            filtered = [(s, g) for s, g in results if g > 0]
+            filtered = [(s, g) for s, g in results if g >= 5.0]
             filtered.sort(key=lambda x: x[1], reverse=True)
         else:
-            filtered = [(s, g) for s, g in results if g < 0]
+            filtered = [(s, g) for s, g in results if g <= -5.0]
             filtered.sort(key=lambda x: x[1])
 
         top30 = filtered[:30]
 
         if not top30:
             QMessageBox.information(self, f"Screener {lbl}",
-                                    f"Aucun {lbl.lower()} détecté parmi les {total} symboles populaires.")
+                                    f"Aucun {lbl.lower()} ≥ 5% détecté parmi les {total} symboles populaires.")
             return
 
         symbols_ordered = [s for s, _ in top30]
-        self.symbol_input.setText(', '.join(symbols_ordered))
+        self.symbol_input.setText(", ".join(symbols_ordered))
 
         arrow = "▲" if direction == "up" else "▼"
-        lines = [f"{'#':<4} {'Symbole':<12} {'Gap (%)'}",
-                 "-" * 30]
+        lines = [f"{'#':<4} {'Symbole':<12} {'Gap (%)'}", "-" * 30]
         for idx, (sym, gap) in enumerate(top30, 1):
             lines.append(f"{idx:<4} {sym:<12} {arrow} {gap:+.2f}%")
         lines.append("")
@@ -4037,8 +4165,8 @@ class MainWindow(QMainWindow):
 
         QMessageBox.information(
             self,
-            f"{'🟢' if direction == 'up' else '🔴'} {lbl}s — Top {len(top30)} (populaires)",
-            '\n'.join(lines),
+            f"{'🟢' if direction == 'up' else '🔴'} {lbl}s ≥ 5% — Top {len(top30)} (populaires)",
+            "\n".join(lines),
         )
 
     def _show_events_48h_screener(self, list_sources=None):

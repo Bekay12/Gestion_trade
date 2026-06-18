@@ -34,8 +34,7 @@ Random_List= [
     
 ]
 
-p_Ticker = [ "0005.HK", "0700.HK", "2388.HK", "601398.SS", "9618.HK", "9988.HK", "AAPL", "AAUC", "ABEO", "ABSO.ST", "ABUS", "ACS.MC", "ADC", "AER", "AFK.OL", "AG", "AFX.DE", "AHT", "AIXA.DE", "ALLO", "ALLT", "ALM", "ALV.DE", "AMAT", "ALTS", "ANAB", "AMS", "ARMK", "AROC", "ARX", "ASM", "ATHM", "ATRO", "ATON", "AWK", "BABA", "BAP", "BAYN.DE", "BEAT", "BFT.WA", "BGS", "BITF", "BMW.DE", "BN", "BOKF", "BP.L", "BRC", "BVN", "CALM", "CAN", "CAPR", "CCCC", "CBUS", "CEV", "CFG", "CIG", "CMPS", "CODX", "COK.DE", "COYA", "CRBP", "CRIS", "CRT", "CSCO", "CSIQ", "CSTE", "CWD", "CYN", "DAL", "DEZ.DE", "DHC", "DHI", "DLB", "DLO", "DMRC", "DRE2.F", "DTE.DE", "DSM", "DUE.DE", 
-            "EC", "ED", "ECO", "ELE", "ENR.DE", "EOSE", "EOAN.DE", "EPD", "EQPT", "ER9.F", "ESP", "ETOR", "EVLV", "EWCZ", "EXE", "F", "FANG", "FATE", "FBYD", "FIG", "FNV", "FNV.TO", "FOSL", "FRMI", "FTLF", "GCTS", "GGAL", "GILT", "GLOB", "GO", "GOOS", "GOSS", "GROW", "GRWG", "GSK.L", "GWRS", "GUTS", "HEI.DE", "HMC", "HSBA.L", "HTFL", "HUMA", "HUYA", "HYMC", "IDR", "IHG", "IMB.L", "IMNM", "IMTX", "INFQ", "INGM", "INO", "IR", "IVR", "IVVD", "JACK"]
+p_Ticker = [ "DDD","BLNK","APD","AG","GMAB","NTES","ZS","HTCO","FABC","BLNK","ERO","HBM","CMCL","ADAM","ANIP","TRVG"]
 TICKERS =  p_Ticker
 # ─────────────────────────────────────────────────────────────
 # CONDITION 1 — Croissance structurelle du CA (>20% YoY)
