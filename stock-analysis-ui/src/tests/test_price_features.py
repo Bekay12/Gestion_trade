@@ -7,11 +7,17 @@ import sys
 from pathlib import Path
 sys.path.insert(0, str(Path(__file__).parent))
 
+import pytest
+
+pytest.importorskip("optimisateur_hybride", reason="optimisateur_hybride module not present in this checkout")
+
 import pandas as pd
 import numpy as np
 from qsi import get_trading_signal, BEST_PARAM_EXTRAS
 from trading_c_acceleration.qsi_optimized import backtest_signals_with_events
 from optimisateur_hybride import HybridOptimizer
+
+pytestmark = pytest.mark.integration
 
 def test_price_features_flow():
     print("\n" + "="*80)

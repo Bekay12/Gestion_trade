@@ -6,11 +6,15 @@ import sys
 from pathlib import Path
 sys.path.insert(0, str(Path(__file__).parent))
 
+import pytest
+
 from fundamentals_cache import (
     get_fundamental_metrics,
     clear_fundamentals_cache,
     _ensure_fundamentals_table
 )
+
+pytestmark = pytest.mark.integration
 
 def test_table_creation():
     """Test that fundamentals table is created correctly."""

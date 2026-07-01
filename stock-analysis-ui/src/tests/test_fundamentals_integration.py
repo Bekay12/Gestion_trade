@@ -7,9 +7,12 @@ import sys
 from pathlib import Path
 sys.path.insert(0, str(Path(__file__).parent))
 
+import pytest
 import pandas as pd
 import numpy as np
 from fundamentals_cache import get_fundamental_metrics, clear_fundamentals_cache
+
+pytestmark = pytest.mark.integration
 
 def test_fundamentals_extraction():
     """Test fundamentals extraction from yfinance."""

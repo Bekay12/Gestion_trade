@@ -1067,6 +1067,50 @@ def _build_daily_feature_frame(
     fs = _safe_float(info.get("floatShares"))
     frame["float_shares_m"] = (fs / 1e6) if fs else pd.NA
 
+    # ── Critères « Sichere Unternehmen » (S1→S7), tous depuis info ─────────
+    # Répliqués depuis Sichere_Unternehmen_scan.py pour un screening 0-requête.
+    _EUR_USD = 1.08  # conversion approx. pour le seuil « cap > 10 Mrd € »
+    _beta = _safe_float(info.get("beta"))
+    frame["beta"] = _beta if _beta is not None else pd.NA
+
+    _total_revenue = _safe_float(info.get("totalRevenue"))
+    _fcf_raw = _safe_float(info.get("freeCashflow"))
+    if _fcf_raw is None:
+        _ocf = _safe_float(info.get("operatingCashflow"))
+        _capex = _safe_float(info.get("capitalExpenditures"))
+        _fcf_raw = (_ocf - abs(_capex)) if (_ocf is not None and _capex is not None) else None
+    _fcf_margin = (_fcf_raw / _total_revenue * 100.0) if (_fcf_raw is not None and _total_revenue and _total_revenue > 0) else None
+    frame["fcf_margin_pct"] = _fcf_margin if _fcf_margin is not None else pd.NA
+
+    _earnings_growth = _safe_float(info.get("earningsGrowth"))
+    frame["earnings_growth_pct"] = (_earnings_growth * 100.0) if _earnings_growth is not None else pd.NA
+
+    _mc_b_usd_val = frame["market_cap_b_usd"].iloc[0]
+    _mc_b_usd = float(_mc_b_usd_val) if not pd.isna(_mc_b_usd_val) else None
+    _de  = _safe_float(info.get("debtToEquity"))
+    _dy  = _safe_float(info.get("dividendYield")) or _safe_float(info.get("trailingAnnualDividendYield"))
+    _eqg = _safe_float(info.get("earningsQuarterlyGrowth"))
+    _rg  = _safe_float(info.get("revenueGrowth"))
+
+    s1 = bool(_mc_b_usd is not None and (_mc_b_usd / _EUR_USD) > 10.0)
+    s2 = bool(_de is not None and _de < 100.0)
+    s3 = bool(_beta is not None and 0.0 < _beta < 0.8)
+    s4 = bool(_dy is not None and _dy > 0.0)
+    s5 = bool(_fcf_margin is not None and _fcf_margin > 5.0)
+    _g6 = _eqg if _eqg is not None else (_earnings_growth if _earnings_growth is not None else _rg)
+    s6 = bool(_fcf_raw is not None and _fcf_raw > 0 and _g6 is not None and _g6 > 0)
+    if _rg is not None and _earnings_growth is not None:
+        s7 = bool(_rg * 100.0 > 3.0 and _earnings_growth * 100.0 > 3.0)
+    elif _rg is not None or _earnings_growth is not None:
+        _vals = [g for g in (_rg, _earnings_growth) if g is not None]
+        s7 = bool((sum(_vals) / len(_vals)) * 100.0 > 3.0)
+    else:
+        s7 = False
+    for _col, _val in (("s1_ok", s1), ("s2_ok", s2), ("s3_ok", s3), ("s4_ok", s4),
+                       ("s5_ok", s5), ("s6_ok", s6), ("s7_ok", s7)):
+        frame[_col] = _val
+    frame["secure_score"] = int(s1) + int(s2) + int(s3) + int(s4) + int(s5) + int(s6) + int(s7)
+
     # Prix cibles analystes (depuis info si calendar non disponible)
     frame["target_mean_price"]   = cal.get("target_mean_price")   or _safe_float(info.get("targetMeanPrice"))
     frame["target_high_price"]   = cal.get("target_high_price")   or _safe_float(info.get("targetHighPrice"))
@@ -1197,6 +1241,9 @@ def _build_daily_feature_frame(
         "c3_undervaluation_hits", "c3_pe_ok", "c3_peg_ok", "c3_below_75pct_52wh", "c3_ok",
         "c4_above_sma50", "c4_ok",
         "c5_ok",
+        # Critères Sichere Unternehmen S1→S7 + score
+        "beta", "fcf_margin_pct", "earnings_growth_pct",
+        "s1_ok", "s2_ok", "s3_ok", "s4_ok", "s5_ok", "s6_ok", "s7_ok", "secure_score",
         # Valorisation
         "trailing_pe", "forward_pe", "peg_ratio",
         "ttm_eps", "ttm_eps_local", "forward_eps", "eps_growth_pct",
@@ -1340,6 +1387,59 @@ def query_features(
     except Exception:
         # Fallback si aucun fichier n'existe encore
         return pd.DataFrame()
+
+
+def get_latest_event_dates(symbols: List[str] | None = None) -> pd.DataFrame:
+    """Dernière ligne par symbole avec les dates d'événements (earnings / ex-dividende),
+    lue depuis le store features en UNE requête DuckDB.
+
+    Tolère les schémas hétérogènes (anciens fichiers écrits avant l'ajout des
+    colonnes calendrier) grâce à union_by_name : les colonnes manquantes
+    deviennent NULL au lieu de faire échouer la requête.
+
+    Colonnes retournées : symbol, feature_date, next_earnings_date, next_ex_dividend_date.
+    DataFrame vide si aucune donnée calendrier n'est encore stockée.
+    """
+    ensure_market_data_schema()
+    pattern = str(PARQUET_DIR / "features" / "*/part0.parquet")
+    sql = f"""
+        SELECT symbol, feature_date, next_earnings_date, next_ex_dividend_date
+        FROM read_parquet('{pattern}', union_by_name=true)
+        QUALIFY row_number() OVER (PARTITION BY symbol ORDER BY feature_date DESC) = 1
+    """
+    try:
+        df = _duckdb_query(sql)
+    except Exception:
+        return pd.DataFrame(
+            columns=["symbol", "feature_date", "next_earnings_date", "next_ex_dividend_date"]
+        )
+    if symbols:
+        wanted = {_normalize_symbol(s) for s in symbols}
+        df = df[df["symbol"].isin(wanted)]
+    return df
+
+
+def get_latest_features(symbols: List[str] | None = None) -> pd.DataFrame:
+    """Dernière ligne (feature_date la plus récente) par symbole, TOUTES colonnes,
+    en UNE requête DuckDB. union_by_name=true tolère les schémas hétérogènes
+    (fichiers anciens sans certaines colonnes → NULL). Base des screeners store-based.
+    DataFrame vide si le store est vide.
+    """
+    ensure_market_data_schema()
+    pattern = str(PARQUET_DIR / "features" / "*/part0.parquet")
+    sql = f"""
+        SELECT *
+        FROM read_parquet('{pattern}', union_by_name=true)
+        QUALIFY row_number() OVER (PARTITION BY symbol ORDER BY feature_date DESC) = 1
+    """
+    try:
+        df = _duckdb_query(sql)
+    except Exception:
+        return pd.DataFrame()
+    if symbols and not df.empty:
+        wanted = {_normalize_symbol(s) for s in symbols}
+        df = df[df["symbol"].isin(wanted)]
+    return df
 
 
 # ---------------------------------------------------------------------------

@@ -1,9 +1,5 @@
-# qsi.py - Analyse technique unifiée pour les actions avec MACD et RSI et gestion intelligente du cache
-
-# Ce script télécharge les données boursières, calcule les indicateurs techniques et affiche
-
-# Import paresseux pour accélérer le chargement (yfinance ~1.9s)
-# import yfinance as yf  # Chargé à la demande dans download_stock_data
+# qsi.py — façade publique ; le code est progressivement migré dans core/.
+# Importez depuis qsi comme avant : aucun appelant n'a besoin de changer.
 
 # Set non-interactive backend if no GUI app has already configured one
 import matplotlib
@@ -20,7 +16,11 @@ import json
 from pathlib import Path
 from datetime import datetime, timedelta
 from typing import List, Dict, Union
+from collections import OrderedDict  # gardé pour compatibilité d'imports existants
 from concurrent.futures import ThreadPoolExecutor
+from core.indicators import calculate_macd  # migré dans core/
+from core.cache import _BoundedCache, DERIV_CACHE, TA_CACHE  # migré dans core/
+from core.io import save_to_evolutive_csv  # migré dans core/
 import sys
 import os
 import sqlite3
@@ -70,107 +70,6 @@ warnings.filterwarnings("ignore", category=FutureWarning)
 # Configuration du logger
 logging.basicConfig(level=logging.INFO, filename='stock_analysis.log', filemode='a', format='%(asctime)s - %(levelname)s - %(message)s')
 
-def calculate_macd(prices, fast=12, slow=26, signal=9):
-    """Calcule le MACD et sa ligne de signal"""
-    ema_fast = prices.ewm(span=fast, adjust=False).mean()
-    ema_slow = prices.ewm(span=slow, adjust=False).mean()
-    macd = ema_fast - ema_slow
-    signal_line = macd.ewm(span=signal, adjust=False).mean()
-    return macd, signal_line
-
-def save_to_evolutive_csv(signals, filename="signaux_trading.csv"):
-    """
-    Sauvegarde les signaux dans un CSV évolutif qui conserve l'historique
-    - Crée le fichier s'il n'existe pas
-    - Ajoute de nouveaux signaux
-    - Met à jour les signaux existants
-    - Conserve l'historique des changements
-    """
-    if not signals:
-        return
-
-    # Préparer les données avec le nouveau champ de fiabilité
-    header = [
-        'Symbole', 'Signal', 'Score', 'Prix', 'Tendance',
-        'RSI', 'Volume moyen', 'Domaine', 'Devise', 'Fiabilite', 'Detection_Time'
-    ]
-
-    rows = []
-    for s in signals:
-        # Formater la fiabilité
-        fiabilite = s.get('Fiabilite', 'N/A')
-        if isinstance(fiabilite, float):
-            fiabilite = f"{fiabilite:.1f}%"
-
-        rows.append([
-            s['Symbole'],
-            s['Signal'],
-            f"{s['Score']:.2f}",
-            f"{s['Prix']:.4f}",
-            s['Tendance'],
-            f"{s['RSI']:.2f}",
-            f"{s['Volume moyen']:,.0f}",
-            s['Domaine'],
-            s.get('Devise', 'USD'),
-            fiabilite,
-            datetime.now().strftime("%Y-%m-%d %H:%M:%S")
-        ])
-
-    # Création du DataFrame à partir des signaux actuels
-    df_new = pd.DataFrame(signals)
-    if df_new.empty:
-        return
-
-    # Ajout d'un timestamp pour le moment de détection
-    detection_time = datetime.now().strftime("%Y-%m-%d %H:%M:%S")
-    df_new['detection_time'] = detection_time
-
-    script_dir = Path(__file__).parent
-    signals_dir = script_dir / "signaux"
-
-    # Construire les chemins pour le fichier principal et l'archive
-    file_path = signals_dir / filename
-
-    # Vérifier si le fichier existe déjà
-    if file_path.exists():
-        try:
-            # Lire l'historique existant
-            df_old = pd.read_csv(file_path)
-            # Fusionner les nouveaux signaux avec l'historique
-            df_combined = pd.concat([df_old, df_new], ignore_index=True)
-            # Supprimer les doublons en gardant la dernière version
-            df_combined = df_combined.sort_values(
-                by=['detection_time', 'Symbole', 'Fiabilite'],
-                ascending=[True, False]
-            )
-            df_clean = df_combined.drop_duplicates(
-                subset=['Symbole', 'Signal', 'Prix', 'RSI'],
-                keep='first'
-            )
-        except Exception as e:
-            print(f"⚠️ Erreur lecture CSV: {e}")
-            df_clean = df_new
-    else:
-        df_clean = df_new
-
-    # Sauvegarde avec vérification de la structure
-    try:
-        # Créer le dossier si nécessaire
-        file_path.parent.mkdir(parents=True, exist_ok=True)
-
-        # Sauvegarder avec date de mise à jour dans le nom
-        timestamp = datetime.now().strftime("%Y%m%d")
-        base_name = Path(filename).stem  # enlève l'extension
-        archive_file = signals_dir / f"{base_name}_{timestamp}.csv"
-        df_clean.to_csv(archive_file, index=False)
-
-        # Sauvegarde principale
-        df_clean.to_csv(filename, index=False)
-        print(f"💾 Signaux sauvegardés: {filename} (archive: {archive_file})")
-
-    except Exception as e:
-        print(f"🚨 Erreur sauvegarde CSV: {e}")
-
 from typing import Tuple
 
 # Extras for parameters beyond the legacy 8 coeffs/8 thresholds.
@@ -180,20 +79,6 @@ BEST_PARAM_EXTRAS: Dict[str, Dict[str, Union[int, float]]] = {}
 # Fenêtre homogène pour les features price (sauf Var5j qui reste 5 jours).
 PRICE_FEATURE_WINDOW = 15
 PRICE_FEATURE_ACCEL_WINDOW = 15
-
-# Cache léger des dérivées de prix par symbole et longueur de série
-# Clé: (symbol, len(prices)) → valeurs:
-# {'price_slope_rel': float, 'price_acc_rel': float,
-#  'rsi_slope_rel': float, 'volume_slope_rel': float}
-DERIV_CACHE: Dict[tuple, Dict[str, float]] = {}
-
-# Cache des indicateurs techniques (instantanés scalaires) par symbole et longueur
-# Stocke uniquement les dernières valeurs nécessaires au scoring pour éviter recomputations
-# Clé: (symbol, len(prices)) → dict avec clés: last_close, last_ema20, last_ema50, last_ema200,
-# last_rsi, prev_rsi, delta_rsi, last_macd, prev_macd, last_signal, prev_signal,
-# variation_30j, variation_180j, volume_mean, volume_std, current_volume,
-# last_bb_percent, last_adx, last_ichimoku_base, last_ichimoku_conversion
-TA_CACHE: Dict[tuple, Dict[str, float]] = {}
 
 def extract_best_parameters(db_path: str = None) -> Dict[str, Tuple[Tuple[float, ...], Tuple[float, ...], Tuple[float, float]]]:
     """
@@ -259,6 +144,18 @@ def extract_best_parameters(db_path: str = None) -> Dict[str, Tuple[Tuple[float,
             ORDER BY sector, market_cap_range
         ''')
         
+        def _read_num(row, col, default):
+            try:
+                return float(row[col]) if (col in colnames and row[col] is not None) else default
+            except Exception:
+                return default
+
+        def _read_int(row, col, default):
+            try:
+                return int(row[col]) if (col in colnames and row[col] is not None) else default
+            except Exception:
+                return default
+
         # Reset extras map
         global BEST_PARAM_EXTRAS
         BEST_PARAM_EXTRAS = {}
@@ -278,21 +175,9 @@ def extract_best_parameters(db_path: str = None) -> Dict[str, Tuple[Tuple[float,
             
             gain_moy = float(row['gain_moy'])
             
-            # Always extract price-related extras (not optional): provide defaults when absent
-            def _read_num(col, default):
-                try:
-                    return float(row[col]) if (col in colnames and row[col] is not None) else default
-                except Exception:
-                    return default
-            def _read_int(col, default):
-                try:
-                    return int(row[col]) if (col in colnames and row[col] is not None) else default
-                except Exception:
-                    return default
-
             price_extras = {
-                'use_price_extras': _read_int('use_price_extras', 0) or int(
-                    any(_read_int(col, 0) for col in (
+                'use_price_extras': _read_int(row, 'use_price_extras', 0) or int(
+                    any(_read_int(row, col, 0) for col in (
                         'use_price_slope',
                         'use_price_acc',
                         'use_price_rsi_slope',
@@ -300,31 +185,30 @@ def extract_best_parameters(db_path: str = None) -> Dict[str, Tuple[Tuple[float,
                         'use_price_var5j',
                     ))
                 ),
-                'a_price_slope': _read_num('a9', 0.0),
-                'a_price_acc': _read_num('a10', 0.0),
-                'th_price_slope': _read_num('th9', 0.0),
-                'th_price_acc': _read_num('th10', 0.0),
-                'a_price_rsi_slope': _read_num('a16', 0.0),
-                'a_price_vol_slope': _read_num('a17', 0.0),
-                'a_price_var5j': _read_num('a18', 0.0),
-                'th_price_rsi_slope': _read_num('th16', 0.0),
-                'th_price_vol_slope': _read_num('th17', 0.0),
-                'th_price_var5j': _read_num('th18', 0.0),
+                'a_price_slope': _read_num(row, 'a9', 0.0),
+                'a_price_acc': _read_num(row, 'a10', 0.0),
+                'th_price_slope': _read_num(row, 'th9', 0.0),
+                'th_price_acc': _read_num(row, 'th10', 0.0),
+                'a_price_rsi_slope': _read_num(row, 'a16', 0.0),
+                'a_price_vol_slope': _read_num(row, 'a17', 0.0),
+                'a_price_var5j': _read_num(row, 'a18', 0.0),
+                'th_price_rsi_slope': _read_num(row, 'th16', 0.0),
+                'th_price_vol_slope': _read_num(row, 'th17', 0.0),
+                'th_price_var5j': _read_num(row, 'th18', 0.0),
             }
-            
-            # Extract fundamentals extras (optional, defaults to 0 if not present)
+
             fundamentals_extras = {
-                'use_fundamentals': _read_int('use_fundamentals', 0),
-                'a_rev_growth': _read_num('a11', 0.0),
-                'a_eps_growth': _read_num('a12', 0.0),
-                'a_roe': _read_num('a13', 0.0),
-                'a_fcf_yield': _read_num('a14', 0.0),
-                'a_de_ratio': _read_num('a15', 0.0),
-                'th_rev_growth': _read_num('th11', 0.0),
-                'th_eps_growth': _read_num('th12', 0.0),
-                'th_roe': _read_num('th13', 0.0),
-                'th_fcf_yield': _read_num('th14', 0.0),
-                'th_de_ratio': _read_num('th15', 0.0),
+                'use_fundamentals': _read_int(row, 'use_fundamentals', 0),
+                'a_rev_growth': _read_num(row, 'a11', 0.0),
+                'a_eps_growth': _read_num(row, 'a12', 0.0),
+                'a_roe': _read_num(row, 'a13', 0.0),
+                'a_fcf_yield': _read_num(row, 'a14', 0.0),
+                'a_de_ratio': _read_num(row, 'a15', 0.0),
+                'th_rev_growth': _read_num(row, 'th11', 0.0),
+                'th_eps_growth': _read_num(row, 'th12', 0.0),
+                'th_roe': _read_num(row, 'th13', 0.0),
+                'th_fcf_yield': _read_num(row, 'th14', 0.0),
+                'th_de_ratio': _read_num(row, 'th15', 0.0),
             }
             
             # Combine extras and attach timestamp for downstream labeling

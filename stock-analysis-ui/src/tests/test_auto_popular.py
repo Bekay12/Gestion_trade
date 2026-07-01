@@ -3,15 +3,17 @@ Test de l'auto-enregistrement des symboles dans popular
 """
 import sqlite3
 from pathlib import Path
+import pytest
 from symbol_manager import (
-    init_symbols_table, 
-    sync_txt_to_sqlite, 
+    init_symbols_table,
+    sync_txt_to_sqlite,
     get_symbols_by_list_type,
     auto_add_to_popular,
     sync_all_to_popular,
     DB_PATH
 )
 
+@pytest.mark.integration
 def test_auto_popular():
     """
     Teste que :

@@ -84,13 +84,18 @@ def set_security_headers(response):
 # DECORATORS
 # ============================================================================
 
+_API_KEY = os.getenv('API_KEY')
+
 def require_api_key(f):
-    """Decorator to check API key (optionnel)"""
+    """Vérifie l'en-tête X-API-Key si API_KEY est défini dans l'environnement.
+    Sans variable API_KEY, toutes les requêtes passent (mode dev/local).
+    """
     @wraps(f)
     def decorated_function(*args, **kwargs):
-        api_key = request.headers.get('X-API-Key')
-        # En production, vérifier contre une BD ou variable d'env
-        # Pour maintenant, optionnel
+        if _API_KEY:
+            provided = request.headers.get('X-API-Key', '')
+            if provided != _API_KEY:
+                return jsonify({'error': 'Unauthorized'}), 401
         return f(*args, **kwargs)
     return decorated_function
 
@@ -265,6 +270,7 @@ def get_symbol_signals(symbol):
         return jsonify({'error': str(e)}), 500
 
 @app.route('/api/analyze', methods=['POST'])
+@require_api_key
 @handle_errors
 def analyze_symbol():
     """
@@ -522,6 +528,7 @@ def run_backtest():
         return jsonify({'error': str(e)}), 500
 
 @app.route('/api/analyze-batch', methods=['POST'])
+@require_api_key
 @handle_errors
 def analyze_batch():
     """Analyse plusieurs symboles (max 20 à la fois)"""
@@ -560,6 +567,7 @@ def analyze_batch():
         return jsonify({'error': str(e)}), 500
 
 @app.route('/api/analyze-popular', methods=['POST'])
+@require_api_key
 @handle_errors
 def analyze_popular_signals():
     """
