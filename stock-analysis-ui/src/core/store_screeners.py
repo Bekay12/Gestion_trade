@@ -14,7 +14,7 @@ Sortie : dict {title, headers, rows} pour ScreenerResultsDialog (symbole en col 
 """
 import pandas as pd
 
-from market_store import get_latest_features
+from market_store import get_latest_features, get_country_map
 
 MAX_ROWS = 80
 
@@ -81,9 +81,11 @@ def screen_combined(symbols=None):
             rows.append([r["symbol"], prof, int(r["_bg"]), int(r["_sec"])])
     rows.sort(key=lambda x: (_order.get(x[1], 9), -x[2], -x[3]))
     rows = rows[:MAX_ROWS]
+    cmap = get_country_map([r[0] for r in rows])
+    rows = [[r[0], cmap.get(r[0]) or "N/A", *r[1:]] for r in rows]
     return _result(
         "Combined — profils (Dual Champion / Pure Safe / Pure Growth / Balanced)",
-        ["Symbole", "Profil", "Growth /5", "Safe /7"],
+        ["Symbole", "Pays", "Profil", "Growth /5", "Safe /7"],
         rows,
     )
 
@@ -98,15 +100,17 @@ def screen_golden_cross(max_gap_pct: float = 5.0, symbols=None):
     gap = (s50 / s200 - 1.0) * 100.0
     cond = (s50 > s200) & (gap <= max_gap_pct) & (price > s50)
     sel = df[cond.fillna(False)].assign(_g=gap).sort_values("_g").head(MAX_ROWS)
+    cmap = get_country_map(sel["symbol"].tolist())
     rows = []
     for _, r in sel.iterrows():
         rows.append([
-            r["symbol"], _cell(r, "price", 2), _cell(r, "sma50", 2),
+            r["symbol"], cmap.get(r["symbol"]) or "N/A",
+            _cell(r, "price", 2), _cell(r, "sma50", 2),
             _cell(r, "sma200", 2), _cell(r, "_g", 2),
         ])
     return _result(
         f"Golden Cross récent (SMA50 > SMA200, écart ≤ {max_gap_pct:.0f}%)",
-        ["Symbole", "Prix", "SMA50", "SMA200", "Écart %"],
+        ["Symbole", "Pays", "Prix", "SMA50", "SMA200", "Écart %"],
         rows,
     )
 

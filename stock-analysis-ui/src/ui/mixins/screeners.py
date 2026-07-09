@@ -15,6 +15,15 @@ class ScreenersMixin:
     def _select_all_items(self, list_widget):
         list_widget.selectAll()
 
+    def _country_map(self, symbols):
+        """Best-effort {symbole: pays} depuis le store instruments (0 requête).
+        Retourne {} si indisponible ; les symboles hors catalogue → N/A côté appelant."""
+        try:
+            from market_store import get_country_map
+            return get_country_map(list(symbols)) or {}
+        except Exception:
+            return {}
+
     def _present_screener_results(self, title, headers, rows):
         """Ouvre un dialog interactif (table triable + cases à cocher) et injecte
         les symboles cochés dans le champ d'analyse. Retourne la liste injectée
@@ -30,7 +39,7 @@ class ScreenersMixin:
                 self._status(f"{len(selected)} symbole(s) injecté(s) dans le champ d'analyse")
         return selected
 
-    def _compute_daily_top_movers(self, top_n=30):
+    def _compute_daily_top_movers(self, top_n=50):
         """Récupère les top movers Yahoo (day_gainers/day_losers) via yfinance.screen,
         sans dépendre des listes locales."""
         now = datetime.now()
@@ -94,7 +103,7 @@ class ScreenersMixin:
 
         QApplication.setOverrideCursor(Qt.WaitCursor)
         try:
-            top_data = self._compute_daily_top_movers(top_n=30)
+            top_data = self._compute_daily_top_movers(top_n=50)
         except TimeoutError as e:
             QMessageBox.warning(self, "Timeout", str(e))
             return
@@ -113,12 +122,13 @@ class ScreenersMixin:
             )
             return
 
-        title = "Top 30 Winners du jour" if mover_type == 'winners' else "Top 30 Losers du jour"
-        rows = [(sym, round(pct, 2)) for sym, pct in entries]
-        self._present_screener_results(title, ["Symbole", "Variation (%)"], rows)
+        title = "Top 50 Winners du jour" if mover_type == 'winners' else "Top 50 Losers du jour"
+        cmap = self._country_map([sym for sym, _ in entries])
+        rows = [(sym, cmap.get(sym) or "N/A", round(pct, 2)) for sym, pct in entries]
+        self._present_screener_results(title, ["Symbole", "Pays", "Variation (%)"], rows)
 
     def _show_yahoo_screener(self):
-        """Charge jusqu'à 30 symboles du screener Yahoo sélectionné et les injecte dans le champ d'analyse."""
+        """Charge jusqu'à 50 symboles du screener Yahoo sélectionné et les injecte dans le champ d'analyse."""
         screener_key = self.screener_combo.currentData()
         screener_label = self.screener_combo.currentText()
         if not screener_key:
@@ -144,7 +154,7 @@ class ScreenersMixin:
 
         QApplication.setOverrideCursor(Qt.WaitCursor)
         try:
-            payload = yf.screen(screener_key, count=30)
+            payload = yf.screen(screener_key, count=50)
         except Exception as e:
             QApplication.restoreOverrideCursor()
             QMessageBox.warning(self, "Erreur", f"Impossible de charger le screener '{screener_label}': {e}")
@@ -169,15 +179,19 @@ class ScreenersMixin:
                 pct_val = None
             entries.append((symbol, pct_val))
 
-        entries = entries[:30]
+        entries = entries[:50]
         if not entries:
             QMessageBox.information(self, "Yahoo Screener", f"Aucun résultat pour le screener « {screener_label} ».")
             return
 
-        rows = [(sym, (round(pct, 2) if pct is not None else None)) for sym, pct in entries]
+        cmap = self._country_map([sym for sym, _ in entries])
+        rows = [
+            (sym, cmap.get(sym) or "N/A", (round(pct, 2) if pct is not None else None))
+            for sym, pct in entries
+        ]
         self._present_screener_results(
-            f"Yahoo Screener — {screener_label} (max 30)",
-            ["Symbole", "Variation (%)"],
+            f"Yahoo Screener — {screener_label} (max 50)",
+            ["Symbole", "Pays", "Variation (%)"],
             rows,
         )
 
@@ -228,7 +242,8 @@ class ScreenersMixin:
         QApplication.processEvents()
         try:
             from core.finviz_screeners import run_preset
-            res = run_preset(preset_key, limit=100)
+            # limit élevé pour refléter le vrai nombre de matchs Finviz (pas de plafond à 100).
+            res = run_preset(preset_key, limit=500)
         except Exception as e:
             progress.close()
             import traceback
@@ -347,21 +362,22 @@ class ScreenersMixin:
             vol   = _num(row.get("Volume"))
             cap   = _num(row.get("Market Cap"))
             cap_m = round(cap / 1_000_000, 1) if cap else None
-            results.append((sym, chg, price, cap_m, vol))
+            country = str(row.get("Country") or "N/A")
+            results.append((sym, country, chg, price, cap_m, vol))
 
         if not results:
             QMessageBox.information(self, "Finviz Gapper",
                                     "Finviz a répondu mais aucun symbole exploitable n'a été trouvé.")
             return
 
-        top30 = results[:30]
+        top = results[:50]
         rows = [
-            (sym, chg, price, cap_m, (int(vol) if vol is not None else None))
-            for sym, chg, price, cap_m, vol in top30
+            (sym, country, chg, price, cap_m, (int(vol) if vol is not None else None))
+            for sym, country, chg, price, cap_m, vol in top
         ]
         self._present_screener_results(
-            f"Finviz Gapper (Cap<$300M, $1-$20, Gap>=5%) — {len(top30)} résultat(s)",
-            ["Symbole", "Gap (%)", "Prix ($)", "Cap (M$)", "Volume"],
+            f"Finviz Gapper (Cap<$300M, $1-$20, Gap>=5%) — {len(top)} résultat(s)",
+            ["Symbole", "Pays", "Gap (%)", "Prix ($)", "Cap (M$)", "Volume"],
             rows,
         )
 

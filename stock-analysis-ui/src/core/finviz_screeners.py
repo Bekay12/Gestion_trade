@@ -33,13 +33,20 @@ PRESETS = {
         },
     },
     "secure_growth": {
-        "title": "Secure / Quality Defensive (large, peu endetté, dividende)",
+        "title": "Secure Growth — large cap qualité, croissance + faible risque (9 critères)",
+        # Set exact repris de Code_Germain/Gap_Screen.py (preset "secure_Growth") :
+        # grande cap, peu endettée, croissance CA/EPS 5 ans, forte marge brute,
+        # valorisation raisonnable (PEG<2), beta bas, en repli mais au-dessus de la SMA50.
         "filters": {
             "Market Cap.": "+Large (over $10bln)",
             "Debt/Equity": "Under 1",
+            "EPS growthpast 5 years": "Positive (>0%)",
+            "Gross Margin": "Over 30%",
+            "PEG": "Under 2",
+            "Sales growthpast 5 years": "Over 5%",
             "Beta": "Under 1",
-            "Dividend Yield": "Positive (>0%)",
-            "Net Profit Margin": "Positive (>0%)",
+            "52-Week High/Low": "20% or more below High",
+            "50-Day Simple Moving Average": "Price above SMA50",
         },
     },
     "minervini": {
@@ -152,7 +159,7 @@ def run_preset(key: str, limit: int = 100) -> dict:
         preset["filters"], order=preset.get("order", "Change"),
         limit=limit, ascend=preset.get("ascend", False),
     )
-    headers = ["Symbole", "Secteur", "Cap", "P/E", "Prix", "Var %"]
+    headers = ["Symbole", "Secteur", "Pays", "Cap", "P/E", "Prix", "Var %"]
     rows = []
     if df is not None and not df.empty:
         for _, r in df.iterrows():
@@ -163,6 +170,7 @@ def run_preset(key: str, limit: int = 100) -> dict:
             rows.append([
                 sym,
                 str(r.get("Sector") or "N/A"),
+                str(r.get("Country") or "N/A"),
                 str(r.get("Market Cap") or "N/A"),
                 _num(r.get("P/E")),
                 _num(r.get("Price")),

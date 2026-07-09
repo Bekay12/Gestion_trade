@@ -1442,6 +1442,28 @@ def get_latest_features(symbols: List[str] | None = None) -> pd.DataFrame:
     return df
 
 
+def get_country_map(symbols: List[str] | None = None) -> dict:
+    """Retourne {symbol: country} depuis le parquet `instruments` (0 requête réseau).
+    Utilisé pour afficher le pays dans les screeners store-based."""
+    path = _instruments_path()
+    if not path.exists():
+        return {}
+    try:
+        df = _safe_read_parquet(path, columns=["symbol", "country"])
+    except Exception:
+        try:
+            df = _safe_read_parquet(path)
+        except Exception:
+            return {}
+    if df.empty or "symbol" not in df.columns or "country" not in df.columns:
+        return {}
+    if symbols:
+        wanted = {_normalize_symbol(s) for s in symbols}
+        df = df[df["symbol"].isin(wanted)]
+    return {str(s): (str(c) if c is not None else None)
+            for s, c in zip(df["symbol"], df["country"])}
+
+
 # ---------------------------------------------------------------------------
 # Pipeline d'ingestion complet
 # ---------------------------------------------------------------------------
