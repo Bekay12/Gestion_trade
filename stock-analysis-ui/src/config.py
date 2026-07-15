@@ -15,6 +15,10 @@ _CONFIG_DIR = Path(__file__).parent.resolve()
 PROJECT_ROOT = _CONFIG_DIR  # Alias pour compatibilité
 DB_PATH = str(_CONFIG_DIR / "stock_analysis.db")
 OPTIMIZATION_DB_PATH = str(_CONFIG_DIR / "signaux" / "optimization_hist.db")
+<<<<<<< HEAD
+=======
+MARKET_DATA_DB_PATH = DB_PATH
+>>>>>>> 978e7c70cfbf4e61452e6f0df73d74f7b56595c5
 CACHE_DIR = _CONFIG_DIR / "cache_data"
 DATA_CACHE_DIR = _CONFIG_DIR / "data_cache"
 CACHE_LOGS_DIR = _CONFIG_DIR / "cache_logs"
@@ -27,12 +31,13 @@ CACHE_LOGS_DIR.mkdir(exist_ok=True)
 SIGNALS_DIR.mkdir(exist_ok=True)
 
 # ===================================================================
-# CACHE DISQUE
+# FALLBACK CONTROLS (UI + API)
 # ===================================================================
 
-SECTOR_CACHE_FILE = CACHE_DIR / "sector_cache.json"
-CACHE_INDEX_FILE = CACHE_DIR / "cache_index.json"
+# Autoriser le fallback de domaine lorsque le secteur est "Inconnu"
+DOMAIN_FALLBACK_ENABLED = False
 
+<<<<<<< HEAD
 # ===================================================================
 # FICHIERS DE SYMBOLES
 # ===================================================================
@@ -83,6 +88,10 @@ DEFAULT_VOLUME_MIN = 100000
 DEFAULT_RELIABILITY_THRESHOLD = 60.0
 DEFAULT_TRAILING_MONTHS = 9
 DEFAULT_RECALC_RELIABILITY_EVERY = 5
+=======
+# Autoriser le fallback de cap_range lorsque la capitalisation est "Unknown"
+CAP_FALLBACK_ENABLED = False
+>>>>>>> 978e7c70cfbf4e61452e6f0df73d74f7b56595c5
 
 # ===================================================================
 # FALLBACK CONTROLS (UI + API)
@@ -100,23 +109,37 @@ CAP_FALLBACK_ENABLED = False
 
 
 # ===================================================================
-# CACHE UTILITIES (PICKLE)
+# CACHE UTILITIES — backend Parquet (via market_store)
 # ===================================================================
+# Les anciennes fonctions get_pickle_cache / save_pickle_cache sont
+# conservées pour compatibilité des imports existants, mais délèguent
+# désormais vers market_store.get_financial_cache /
+# market_store.save_financial_cache (Parquet, market_parquet/financial_cache/).
+#
+# Le cache pickle (data_cache/*.pkl) n'est plus utilisé en écriture.
+# Les fichiers pkl existants restent lisibles pendant la période de
+# transition via le fallback ci-dessous.
 
 import pandas as pd
 from datetime import datetime, timedelta
 
-def get_pickle_cache(symbol: str, cache_type: str = 'financial', ttl_hours: int = 24) -> pd.DataFrame:
-    """Charge depuis le cache pickle s'il existe et n'est pas expire.
-    
-    Args:
-        symbol: Ticker
-        cache_type: Type de cache ('financial', 'consensus', etc.)
-        ttl_hours: Time-to-live en heures
-    
-    Returns:
-        Data si cache valide, None sinon
+
+def get_pickle_cache(symbol: str, cache_type: str = 'financial', ttl_hours: int = 24):
+    """Lit le cache financier depuis Parquet (remplace pickle).
+
+    Fallback automatique vers l'ancien fichier pkl si le cache Parquet
+    n'existe pas encore pour ce symbole.
     """
+    # Tentative 1 : Parquet via market_store
+    try:
+        import market_store as _ms
+        result = _ms.get_financial_cache(symbol, cache_type=cache_type, ttl_hours=ttl_hours)
+        if result is not None:
+            return result
+    except Exception:
+        pass
+
+    # Tentative 2 : fallback lecture pickle legacy (lecture seule, pas d'écriture)
     try:
         cache_file = DATA_CACHE_DIR / f"{symbol}_{cache_type}.pkl"
         if cache_file.exists():
@@ -125,24 +148,27 @@ def get_pickle_cache(symbol: str, cache_type: str = 'financial', ttl_hours: int 
                 return pd.read_pickle(cache_file)
     except Exception:
         pass
+
     return None
 
-def save_pickle_cache(data: pd.DataFrame, symbol: str, cache_type: str = 'financial') -> bool:
-    """Sauvegarde data dans le cache pickle.
-    
-    Args:
-        data: Data a sauvegarder
-        symbol: Ticker
-        cache_type: Type de cache
-    
-    Returns:
-        True si succes, False sinon
+
+def save_pickle_cache(data, symbol: str, cache_type: str = 'financial') -> bool:
+    """Sauvegarde le cache financier en Parquet (remplace pickle).
+
+    *data* peut être un dict ou un DataFrame.  Les DataFrames sont
+    convertis en dict avant stockage (première ligne).
     """
     try:
-        cache_file = DATA_CACHE_DIR / f"{symbol}_{cache_type}.pkl"
-        DATA_CACHE_DIR.mkdir(parents=True, exist_ok=True)
-        pd.to_pickle(data, cache_file)
-        return True
+        import market_store as _ms
+        if isinstance(data, pd.DataFrame):
+            if data.empty:
+                return False
+            payload = data.iloc[0].to_dict()
+        elif isinstance(data, dict):
+            payload = data
+        else:
+            return False
+        return _ms.save_financial_cache(symbol, payload, cache_type=cache_type)
     except Exception:
         return False
 

@@ -4,8 +4,10 @@ Vérifie que les symboles ajoutés restent dans les bonnes listes.
 """
 import sqlite3
 from pathlib import Path
+import pytest
 from symbol_manager import init_symbols_table, sync_txt_to_sqlite, get_symbols_by_list_type, DB_PATH
 
+@pytest.mark.integration
 def test_symbol_persistence():
     """
     Test: Ajouter un symbole à plusieurs listes et vérifier qu'il apparaît dans toutes.

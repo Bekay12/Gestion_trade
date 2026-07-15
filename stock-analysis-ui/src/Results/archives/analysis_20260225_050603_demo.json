@@ -1,0 +1,70 @@
+{
+  "timestamp": "2026-02-25T05:06:03.629551",
+  "date": "20260225",
+  "results": [
+    {
+      "Symbol": "AAPL",
+      "Signal": "ACHAT",
+      "Score": 8.7,
+      "ROE": 95.2,
+      "PEG": 1.12
+    },
+    {
+      "Symbol": "MSFT",
+      "Signal": "ACHAT",
+      "Score": 9.1,
+      "ROE": 87.5,
+      "PEG": 0.98
+    },
+    {
+      "Symbol": "GOOGL",
+      "Signal": "VENTE",
+      "Score": 5.2,
+      "ROE": 12.3,
+      "PEG": 2.45
+    },
+    {
+      "Symbol": "AMZN",
+      "Signal": "NEUTRE",
+      "Score": 6.8,
+      "ROE": 45.1,
+      "PEG": 1.55
+    }
+  ],
+  "columns": [
+    "Symbol",
+    "Signal",
+    "Score",
+    "ROE",
+    "PEG"
+  ],
+  "total_symbols": 4,
+  "signal_stats": {
+    "ACHAT": 2,
+    "VENTE": 1,
+    "NEUTRE": 1,
+    "TOTAL": 4
+  },
+  "top_scores": [
+    {
+      "Symbol": "MSFT",
+      "Score": 9.1,
+      "Signal": "ACHAT"
+    },
+    {
+      "Symbol": "AAPL",
+      "Score": 8.7,
+      "Signal": "ACHAT"
+    },
+    {
+      "Symbol": "AMZN",
+      "Score": 6.8,
+      "Signal": "NEUTRE"
+    },
+    {
+      "Symbol": "GOOGL",
+      "Score": 5.2,
+      "Signal": "VENTE"
+    }
+  ]
+}

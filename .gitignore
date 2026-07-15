@@ -10,6 +10,7 @@ build/
 
 # Virtual Environment
 .venv/
+.venv_new/
 venv/
 ENV/
 env/
@@ -44,3 +45,6 @@ Thumbs.db
 
 # Streamlit
 .streamlit/secrets.toml
+
+# Parquet files
+*.parquet

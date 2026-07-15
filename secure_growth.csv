@@ -1,0 +1,4 @@
+Ticker,Company,Sector,Industry,Country,Market Cap,P/E,Price,Change,Volume
+ZS,Zscaler Inc,Technology,Software - Infrastructure,USA,25900000000.0,,161.05,0.0478,4151748.0
+DT,Dynatrace Inc,Technology,Software - Application,USA,11440000000.0,71.55,38.36,0.0334,8549050.0
+ADP,Automatic Data Processing Inc,Technology,Software - Application,USA,85740000000.0,19.99,214.48,0.029300000000000003,2921677.0

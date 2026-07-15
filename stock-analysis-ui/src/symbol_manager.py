@@ -9,7 +9,19 @@ import yfinance as yf
 from typing import List, Dict, Optional, Tuple
 import pandas as pd
 import json
-from config import DB_PATH, CAP_RANGE_THRESHOLDS
+from config import DB_PATH
+
+_FX_RATE_MEM = {}
+
+_CCY_SUBUNIT_TO_MAJOR = {
+    'GBX': ('GBP', 0.01),
+    'GBPX': ('GBP', 0.01),
+    'GBP.P': ('GBP', 0.01),
+    'GBP': ('GBP', 1.0),
+    'GBp': ('GBP', 0.01),
+    'ZAc': ('ZAR', 0.01),
+    'ZAR': ('ZAR', 1.0),
+}
 
 def init_symbols_table():
     """Crée les tables symbols et symbol_lists si elles n'existent pas."""
@@ -24,6 +36,7 @@ def init_symbols_table():
             sector TEXT,
             market_cap_range TEXT,
             market_cap_value REAL,
+            currency TEXT DEFAULT 'USD',
             added_date TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
             last_checked TIMESTAMP,
             is_active BOOLEAN DEFAULT 1
@@ -69,14 +82,23 @@ def init_symbols_table():
                 sector TEXT,
                 market_cap_range TEXT,
                 market_cap_value REAL,
+<<<<<<< HEAD
+=======
+                currency TEXT DEFAULT 'USD',
+>>>>>>> 978e7c70cfbf4e61452e6f0df73d74f7b56595c5
                 added_date TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
                 last_checked TIMESTAMP,
                 is_active BOOLEAN DEFAULT 1
             )
         ''')
         cursor.execute('''
+<<<<<<< HEAD
             INSERT OR IGNORE INTO symbols_new (id, symbol, sector, market_cap_range, market_cap_value, added_date, last_checked, is_active)
             SELECT id, symbol, sector, market_cap_range, market_cap_value, added_date, last_checked, is_active
+=======
+            INSERT OR IGNORE INTO symbols_new (id, symbol, sector, market_cap_range, market_cap_value, currency, added_date, last_checked, is_active)
+            SELECT id, symbol, sector, market_cap_range, market_cap_value, 'USD', added_date, last_checked, is_active
+>>>>>>> 978e7c70cfbf4e61452e6f0df73d74f7b56595c5
             FROM symbols
         ''')
         cursor.execute('DROP TABLE symbols')
@@ -87,6 +109,15 @@ def init_symbols_table():
         cursor.execute('CREATE INDEX IF NOT EXISTS idx_market_cap_range ON symbols(market_cap_range)')
         cursor.execute('CREATE INDEX IF NOT EXISTS idx_is_active ON symbols(is_active)')
         print("✅ Migration list_type terminée: colonne legacy supprimée de la table symbols")
+<<<<<<< HEAD
+=======
+
+    # Migration légère: ajout de la colonne devise si absente
+    cursor.execute("PRAGMA table_info(symbols)")
+    columns = [col[1] for col in cursor.fetchall()]
+    if 'currency' not in columns:
+        cursor.execute("ALTER TABLE symbols ADD COLUMN currency TEXT DEFAULT 'USD'")
+>>>>>>> 978e7c70cfbf4e61452e6f0df73d74f7b56595c5
     
     # Table pour cacher les groupes nettoyés (complétion + limitation)
     cursor.execute('''
@@ -139,15 +170,54 @@ def sync_txt_to_sqlite(txt_file: str, list_type: str = 'popular', force_refresh:
             # Vérifier si le symbole existe déjà dans la DB (avec OU sans métadonnées)
             if not force_refresh:
                 cursor.execute('''
-                    SELECT sector, market_cap_range, market_cap_value 
+                    SELECT sector, market_cap_range, market_cap_value, currency, last_checked
                     FROM symbols 
                     WHERE symbol = ?
                 ''', (symbol,))
                 existing = cursor.fetchone()
                 
                 if existing:
+<<<<<<< HEAD
                     # ✅ Le symbole existe déjà en DB — ne PAS re-fetcher même si sector='Unknown'
                     # (ETFs, futures, cryptos n'ont pas de secteur — c'est normal)
+=======
+                    sector_db, cap_range_db, cap_value_db, currency_db, last_checked_db = existing
+
+                    # Si les metadonnees cap sont incomplètes, re-fetch periodique pour eviter
+                    # de garder "Unknown" indefiniment apres import massif.
+                    cap_range_unknown = (
+                        cap_range_db is None
+                        or str(cap_range_db).strip() == ''
+                        or str(cap_range_db).strip().lower() == 'unknown'
+                    )
+                    cap_value_missing = (cap_value_db is None or float(cap_value_db) <= 0)
+                    cap_incomplete = (
+                        cap_range_unknown or cap_value_missing
+                    )
+                    stale_or_never_checked = (
+                        last_checked_db is None
+                    )
+                    if not stale_or_never_checked and cap_incomplete:
+                        try:
+                            # last_checked est souvent ISO8601; comparaison tolérante coté SQLite
+                            cursor.execute("""
+                                SELECT CASE
+                                    WHEN datetime(?) IS NULL THEN 1
+                                    WHEN datetime(?) <= datetime('now', '-14 days') THEN 1
+                                    ELSE 0
+                                END
+                            """, (last_checked_db, last_checked_db))
+                            stale_or_never_checked = bool(cursor.fetchone()[0])
+                        except Exception:
+                            stale_or_never_checked = True
+
+                    if cap_incomplete and stale_or_never_checked:
+                        needs_fetch.append(symbol)
+                    elif not currency_db:
+                        needs_fetch.append(symbol)
+
+                    # Garder le symbole actif et rattache a la liste
+>>>>>>> 978e7c70cfbf4e61452e6f0df73d74f7b56595c5
                     cursor.execute('UPDATE symbols SET is_active = 1 WHERE symbol = ?', (symbol,))
                     cursor.execute('''
                         INSERT OR IGNORE INTO symbol_lists (symbol, list_type)
@@ -172,13 +242,18 @@ def sync_txt_to_sqlite(txt_file: str, list_type: str = 'popular', force_refresh:
             try:
                 sector = _get_sector_safe(symbol)
                 cap_range, market_cap = _get_cap_range_safe(symbol)
+                currency = _get_currency_safe(symbol)
+
+                # Backfill: si seule la market cap est connue, dériver la tranche.
+                if (not cap_range or str(cap_range).strip().lower() == 'unknown') and market_cap and float(market_cap) > 0:
+                    cap_range = classify_cap_range(float(market_cap))
                 
                 # Insérer ou mettre à jour les métadonnées du symbole
                 cursor.execute('''
                     INSERT OR REPLACE INTO symbols 
-                    (symbol, sector, market_cap_range, market_cap_value, last_checked, is_active)
-                    VALUES (?, ?, ?, ?, ?, 1)
-                ''', (symbol, sector, cap_range, market_cap, datetime.now().isoformat()))
+                    (symbol, sector, market_cap_range, market_cap_value, currency, last_checked, is_active)
+                    VALUES (?, ?, ?, ?, ?, ?, 1)
+                ''', (symbol, sector, cap_range, market_cap, currency, datetime.now().isoformat()))
                 
                 # Ajouter à la liste (relation many-to-many)
                 cursor.execute('''
@@ -187,7 +262,31 @@ def sync_txt_to_sqlite(txt_file: str, list_type: str = 'popular', force_refresh:
                 ''', (symbol, list_type))
                 added += 1
             except Exception:
-                pass
+                # Même si l'enrichissement distant échoue, garder une ligne cohérente en DB.
+                cursor.execute('''
+                    INSERT OR IGNORE INTO symbols 
+                    (symbol, sector, market_cap_range, market_cap_value, currency, last_checked, is_active)
+                    VALUES (?, ?, ?, ?, ?, ?, 1)
+                ''', (symbol, 'Unknown', 'Unknown', 0.0, 'USD', datetime.now().isoformat()))
+                cursor.execute('''
+                    INSERT OR IGNORE INTO symbol_lists (symbol, list_type)
+                    VALUES (?, ?)
+                ''', (symbol, list_type))
+    
+    # ✅ CORRIGÉ: Supprimer de la liste SQLite les symboles qui ne sont plus dans le fichier txt
+    # (sinon les symboles supprimés par l'utilisateur reviennent au redémarrage)
+    if symbols:
+        try:
+            placeholders = ','.join('?' * len(symbols))
+            cursor.execute(f'''
+                DELETE FROM symbol_lists 
+                WHERE list_type = ? AND symbol NOT IN ({placeholders})
+            ''', [list_type] + symbols)
+            removed_count = cursor.rowcount
+            if removed_count > 0:
+                print(f"   🗑️  {removed_count} symboles retirés de la liste '{list_type}' dans SQLite")
+        except Exception as e:
+            print(f"   ⚠️ Erreur suppression symboles obsolètes: {e}")
     
     # ✅ CORRIGÉ: Supprimer de la liste SQLite les symboles qui ne sont plus dans le fichier txt
     # (sinon les symboles supprimés par l'utilisateur reviennent au redémarrage)
@@ -244,6 +343,30 @@ def get_symbols_by_list_type(list_type: str = 'popular', active_only: bool = Tru
     symbols = [row[0] for row in cursor.fetchall()]
     conn.close()
     
+    return symbols
+
+def get_recent_symbols(limit: int = 30, active_only: bool = True) -> List[str]:
+    """Récupère les N derniers symboles ajoutés à la base de données, triés par date d'ajout (plus récents en premier)."""
+    init_symbols_table()
+    conn = sqlite3.connect(DB_PATH)
+    cursor = conn.cursor()
+
+    # Récupérer les symboles en triant par added_date DESC (plus récents en premier)
+    query = '''
+        SELECT DISTINCT s.symbol
+        FROM symbols s
+        WHERE 1=1
+    '''
+
+    if active_only:
+        query += ' AND s.is_active = 1'
+
+    query += ' ORDER BY s.added_date DESC LIMIT ?'
+
+    cursor.execute(query, (limit,))
+    symbols = [row[0] for row in cursor.fetchall()]
+    conn.close()
+
     return symbols
 
 def auto_add_to_popular(symbols: List[str]) -> int:
@@ -332,12 +455,6 @@ def get_symbols_by_sector(sector: str, list_type: str = None, active_only: bool 
     conn.close()
     
     return symbols
-
-def get_popular_symbols_by_sector(sector: str, max_count: Optional[int] = None, exclude_symbols: Optional[set] = None) -> List[str]:
-    """Retourne les symboles populaires d'un secteur, en excluant éventuellement certains tickers."""
-    exclude = set(exclude_symbols or [])
-    symbols = [s for s in get_symbols_by_sector(sector, list_type='popular', active_only=True) if s not in exclude]
-    return symbols[:max_count] if max_count is not None else symbols
 
 def get_symbols_by_cap_range(cap_range: str, list_type: str = None, active_only: bool = True) -> List[str]:
     """Récupère les symboles d'une gamme de capitalisation donnée."""
@@ -469,16 +586,16 @@ def get_symbol_count(list_type: str = None, active_only: bool = True) -> int:
     conn = sqlite3.connect(DB_PATH)
     cursor = conn.cursor()
     
-    query = 'SELECT COUNT(*) FROM symbols'
-    params = []
-    
     if list_type:
-        query += ' WHERE list_type = ?'
-        params.append(list_type)
+        query = 'SELECT COUNT(DISTINCT sl.symbol) FROM symbol_lists sl JOIN symbols s ON sl.symbol = s.symbol WHERE sl.list_type = ?'
+        params = [list_type]
         if active_only:
-            query += ' AND is_active = 1'
-    elif active_only:
-        query += ' WHERE is_active = 1'
+            query += ' AND s.is_active = 1'
+    else:
+        query = 'SELECT COUNT(*) FROM symbols'
+        params = []
+        if active_only:
+            query += ' WHERE is_active = 1'
     
     cursor.execute(query, params)
     count = cursor.fetchone()[0]
@@ -486,8 +603,53 @@ def get_symbol_count(list_type: str = None, active_only: bool = True) -> int:
     
     return count
 
+def get_symbol_info_from_db(symbol: str) -> dict:
+    """Récupère les infos d'un symbole depuis la DB cache.
+    
+    Returns:
+        dict avec keys: sector, market_cap_range, market_cap_value (ou vide si not found)
+    """
+    try:
+        conn = sqlite3.connect(DB_PATH)
+        cursor = conn.cursor()
+        cursor.execute(
+            'SELECT sector, market_cap_range, market_cap_value, currency FROM symbols WHERE symbol = ?',
+            (symbol.upper(),)
+        )
+        row = cursor.fetchone()
+        conn.close()
+        
+        if row:
+            sector, cap_range, cap_value, currency = row
+            inferred_cap_range = cap_range if cap_range else 'Unknown'
+            try:
+                if (not inferred_cap_range or str(inferred_cap_range).lower() == 'unknown') and cap_value and float(cap_value) > 0:
+                    inferred_cap_range = classify_cap_range(float(cap_value))
+            except Exception:
+                inferred_cap_range = cap_range if cap_range else 'Unknown'
+            return {
+                'sector': sector if sector and sector != 'Inconnu' else 'Inconnu',
+                'market_cap_range': inferred_cap_range,
+                'market_cap_value': cap_value,
+                'currency': currency if currency else 'USD'
+            }
+        return {}
+    except Exception:
+        return {}
+
 def _get_sector_safe(symbol: str) -> str:
-    """Récupère le secteur d'une action avec gestion d'erreur."""
+    """Récupère le secteur depuis le cache DB, avec fallback yfinance.
+    
+    Priorité:
+    1. Database cache (local DB)
+    2. yfinance API (online)
+    """
+    # Essayer la DB d'abord (zéro latence)
+    info = get_symbol_info_from_db(symbol)
+    if info.get('sector') and info['sector'] != 'Inconnu':
+        return info['sector']
+    
+    # Fallback: yfinance
     try:
         ticker = yf.Ticker(symbol)
         sector = ticker.info.get('sector', 'Unknown')
@@ -496,467 +658,89 @@ def _get_sector_safe(symbol: str) -> str:
         return 'Unknown'
 
 def _get_cap_range_safe(symbol: str) -> Tuple[str, float]:
-    """Récupère la gamme de capitalisation et la valeur en milliards."""
+    """Récupère la gamme de capitalisation depuis le cache DB, avec fallback yfinance.
+    
+    Priorité:
+    1. Database cache (local DB)
+    2. yfinance API (online)
+    """
+    # Essayer la DB d'abord (zéro latence)
+    info = get_symbol_info_from_db(symbol)
+    if info.get('market_cap_range') and info['market_cap_range'] != 'Unknown':
+        return info['market_cap_range'], info.get('market_cap_value')
+    
+    # Fallback: yfinance
     try:
         ticker = yf.Ticker(symbol)
-        market_cap = ticker.info.get('marketCap')
+        info = ticker.info or {}
+        market_cap = info.get('marketCap')
+        # Pour certains fonds/ETF, marketCap est absent mais totalAssets est disponible.
+        if market_cap is None:
+            market_cap = info.get('totalAssets')
         if market_cap is None:
             return 'Unknown', None
-        
-        market_cap_b = market_cap / 1e9
+
+        currency = str(info.get('currency') or 'USD').strip().upper()
+        rate_to_usd = _get_rate_to_usd_simple(currency)
+        market_cap_b = (float(market_cap) * rate_to_usd) / 1e9
         
         if market_cap_b < 2:
             return 'Small', market_cap_b
         elif market_cap_b < 10:
             return 'Mid', market_cap_b
-        elif market_cap_b < 200:
+        elif market_cap_b < 100:
             return 'Large', market_cap_b
         else:
             return 'Mega', market_cap_b
     except Exception:
         return 'Unknown', None
 
+def _get_rate_to_usd_simple(currency: str) -> float:
+    raw = str(currency or 'USD').strip()
+    if raw in _CCY_SUBUNIT_TO_MAJOR:
+        cur, unit_factor = _CCY_SUBUNIT_TO_MAJOR[raw]
+    else:
+        cur_up = raw.upper()
+        cur, unit_factor = _CCY_SUBUNIT_TO_MAJOR.get(cur_up, (cur_up, 1.0))
+    if not cur or cur == 'USD':
+        return float(unit_factor)
+    cache_key = f"{cur}@{unit_factor}"
+    if cache_key in _FX_RATE_MEM:
+        return _FX_RATE_MEM[cache_key]
+    try:
+        fx_pair = f"{cur}USD=X"
+        fx = yf.Ticker(fx_pair)
+        info = fx.info or {}
+        rate = info.get('regularMarketPrice')
+        if rate is None:
+            fi = getattr(fx, 'fast_info', {}) or {}
+            rate = fi.get('last_price') or fi.get('lastPrice')
+        rate = float(rate) if rate else 1.0
+        if rate <= 0:
+            rate = 1.0
+    except Exception:
+        rate = 1.0
+    rate_to_usd = float(rate) * float(unit_factor)
+    _FX_RATE_MEM[cache_key] = rate_to_usd
+    return rate_to_usd
+
+def _get_currency_safe(symbol: str) -> str:
+    """Récupère la devise native depuis le cache DB, avec fallback yfinance."""
+    info = get_symbol_info_from_db(symbol)
+    cached_currency = str(info.get('currency') or '').strip().upper()
+    if cached_currency and not (cached_currency == 'USD' and '.' in str(symbol)):
+        return cached_currency
+
+    try:
+        ticker = yf.Ticker(symbol)
+        currency = ticker.info.get('currency', 'USD')
+        return str(currency or 'USD').strip().upper()
+    except Exception:
+        return 'USD'
+
 # ----------------------------
 # Enrichissement depuis indices
 # ----------------------------
 
-def _normalize_symbol(symbol: str) -> str:
-    """Normalise un ticker (ex: BRK.B -> BRK-B pour Yahoo)."""
-    if not symbol:
-        return symbol
-    # Yahoo finance utilise '-' au lieu de '.' pour les classes d'actions US
-    return symbol.strip().upper().replace('.', '-')
-
-def get_sp500_constituents() -> List[str]:
-    """Récupère la liste des constituants du S&P 500 depuis Wikipedia.
-
-    Retourne une liste de tickers normalisés pour Yahoo Finance.
-    """
-    # 1) Fallback local: sp500_symbols.txt si présent
-    local_file = Path("sp500_symbols.txt")
-    if local_file.exists():
-        try:
-            syms = [
-                _normalize_symbol(line)
-                for line in local_file.read_text(encoding="utf-8").splitlines()
-                if line.strip()
-            ]
-            if syms:
-                return list(dict.fromkeys(syms))
-        except Exception:
-            pass
-
-    # 2) Wikipedia
-    url = "https://en.wikipedia.org/wiki/List_of_S%26P_500_companies"
-    try:
-        tables = pd.read_html(url)
-        for df in tables:
-            # normaliser colonnes
-            cols = [str(c).strip().lower() for c in df.columns]
-            if any("symbol" == c or "ticker" in c for c in cols):
-                cand_col = None
-                for name in df.columns:
-                    low = str(name).strip().lower()
-                    if low == "symbol" or low.startswith("ticker"):
-                        cand_col = name
-                        break
-                if cand_col is not None:
-                    symbols = [
-                        _normalize_symbol(s)
-                        for s in df[cand_col].astype(str).tolist()
-                    ]
-                    return list(dict.fromkeys([s for s in symbols if s]))
-    except Exception:
-        pass
-    return []
-
-def add_sp500_to_popular(list_type: str = 'popular') -> Dict[str, int]:
-    """Ajoute les constituants du S&P 500 à la liste 'popular' (ou autre list_type).
-
-    Retourne un dict avec les compteurs {added, updated, skipped}.
-    """
-    init_symbols_table()
-    sp500 = get_sp500_constituents()
-    if not sp500:
-        return {"added": 0, "updated": 0, "skipped": 0}
-
-    conn = sqlite3.connect(DB_PATH)
-    cursor = conn.cursor()
-
-    added = 0
-    updated = 0
-    skipped = 0
-
-    for sym in sp500:
-        try:
-            # Vérifier s'il existe déjà
-            cursor.execute("SELECT sector, market_cap_range FROM symbols WHERE symbol = ?", (sym,))
-            row = cursor.fetchone()
-
-            sector = _get_sector_safe(sym)
-            cap_range, market_cap = _get_cap_range_safe(sym)
-
-            if row is None:
-                # Nouveau symbole : insérer dans symbols et symbol_lists
-                cursor.execute(
-                    '''INSERT INTO symbols (symbol, sector, market_cap_range, market_cap_value, last_checked, is_active)
-                       VALUES (?, ?, ?, ?, ?, 1)''',
-                    (sym, sector, cap_range, market_cap, datetime.now().isoformat())
-                )
-                cursor.execute(
-                    '''INSERT OR IGNORE INTO symbol_lists (symbol, list_type)
-                       VALUES (?, ?)''',
-                    (sym, list_type)
-                )
-                added += 1
-            else:
-                # Symbole existe : mettre à jour métadonnées et ajouter à la liste si absent
-                cursor.execute(
-                    '''UPDATE symbols SET sector=?, market_cap_range=?, market_cap_value=?, last_checked=?, is_active=1
-                       WHERE symbol=?''',
-                    (sector, cap_range, market_cap, datetime.now().isoformat(), sym)
-                )
-                cursor.execute(
-                    '''INSERT OR IGNORE INTO symbol_lists (symbol, list_type)
-                       VALUES (?, ?)''',
-                    (sym, list_type)
-                )
-                updated += 1
-        except Exception:
-            skipped += 1
-
-    conn.commit()
-    conn.close()
-    return {"added": added, "updated": updated, "skipped": skipped}
-
-# ===================================================================
-# CACHE INTELLIGENT DES SECTEURS (DISQUE + MEMOIRE + TTL)
-# ===================================================================
-
-import json
-
-SECTOR_CACHE_FILE = Path("cache_data/sector_cache.json")
-SECTOR_CACHE_FILE.parent.mkdir(exist_ok=True)
-SECTOR_TTL_DAYS = 30
-SECTOR_TTL_UNKNOWN_DAYS = 7
-
-def _load_sector_cache() -> Dict:
-    """Charge le cache des secteurs depuis le disque."""
-    try:
-        if SECTOR_CACHE_FILE.exists():
-            with open(SECTOR_CACHE_FILE, "r", encoding="utf-8") as f:
-                return json.load(f)
-    except Exception as e:
-        print(f"Impossible de charger cache secteurs: {e}")
-    return {}
-
-def _save_sector_cache(cache: Dict) -> None:
-    """Sauvegarde le cache des secteurs sur disque."""
-    try:
-        with open(SECTOR_CACHE_FILE, "w", encoding="utf-8") as f:
-            json.dump(cache, f)
-    except Exception as e:
-        print(f"Impossible d'ecrire cache secteurs: {e}")
-
-def _is_sector_expired(entry: Dict) -> bool:
-    """Verifie si une entree cache est expiree."""
-    try:
-        ts = entry.get("ts")
-        if not ts:
-            return True
-        dt = datetime.fromisoformat(ts)
-        ttl_days = SECTOR_TTL_UNKNOWN_DAYS if entry.get("sector") == "Unknown" else SECTOR_TTL_DAYS
-        return (datetime.utcnow() - dt).days >= ttl_days
-    except Exception:
-        return True
-
-_sector_cache = _load_sector_cache()
-
-def get_sector_cached(symbol: str, use_cache: bool = True) -> str:
-    """Recupere le secteur d'une action avec cache intelligent (mémoire + disque + TTL).
-    
-    Args:
-        symbol: Le ticker de l'action
-        use_cache: Si True, utilise le cache; sinon recompute
-    
-    Returns:
-        Le secteur de l'action (ou 'Unknown' si indetermine)
-    """
-    global _sector_cache
-    
-    # Check cache memoire
-    if use_cache:
-        entry = _sector_cache.get(symbol)
-        if entry and not _is_sector_expired(entry):
-            return entry.get("sector", "Unknown")
-    
-    # Try SQLite database first
-    try:
-        conn = sqlite3.connect(DB_PATH)
-        cursor = conn.cursor()
-        cursor.execute("SELECT sector FROM symbols WHERE symbol=?", (symbol,))
-        row = cursor.fetchone()
-        conn.close()
-        if row and row[0] and row[0] != "Unknown":
-            # Cache hit from DB
-            _sector_cache[symbol] = {"sector": row[0], "ts": datetime.utcnow().isoformat()}
-            _save_sector_cache(_sector_cache)
-            return row[0]
-    except Exception:
-        pass
-    
-    # Fallback: fetch from yfinance
-    try:
-        ticker = yf.Ticker(symbol)
-        sector = ticker.info.get('sector', 'Unknown')
-        _sector_cache[symbol] = {"sector": sector, "ts": datetime.utcnow().isoformat()}
-        _save_sector_cache(_sector_cache)
-        return sector
-    except Exception:
-        # Cache the failure too
-        _sector_cache[symbol] = {"sector": "Unknown", "ts": datetime.utcnow().isoformat()}
-        _save_sector_cache(_sector_cache)
-        return "Unknown"
-
-
-# ===================================================================
-# CLASSIFICATION DE CAPITALISATION
-# ===================================================================
-
-def classify_cap_range(market_cap_b: Optional[float]) -> str:
-    """Classe la capitalisation en categories (Small/Mid/Large/Mega) ou Unknown.
-    
-    Args:
-        market_cap_b: Market cap en milliards de dollars (ou None)
-    
-    Returns:
-        Une des categories: 'Small', 'Mid', 'Large', 'Mega', 'Unknown'
-    """
-    try:
-        if market_cap_b is None or market_cap_b <= 0:
-            return 'Unknown'
-        
-        for label, (min_val, max_val) in CAP_RANGE_THRESHOLDS.items():
-            if min_val <= market_cap_b < max_val:
-                return label
-        
-        return 'Unknown'
-    except Exception:
-        return 'Unknown'
-
-
-def classify_cap_range_for_symbol(symbol: str) -> str:
-    """Classe la capitalisation d'un symbole en fetching depuis yfinance.
-    
-    Args:
-        symbol: Le ticker de l'action
-    
-    Returns:
-        La categorie de capitalisation ('Small', 'Mid', 'Large', 'Mega', 'Unknown')
-    """
-    try:
-        ticker = yf.Ticker(symbol)
-        market_cap = ticker.info.get('marketCap')
-        if market_cap is None:
-            return 'Unknown'
-        
-        market_cap_b = market_cap / 1e9
-        return classify_cap_range(market_cap_b)
-    except Exception:
-        return 'Unknown'
-
-def get_cleaned_group_cache(sector: str, cap_range: str, ttl_days: int = 20) -> Optional[List[str]]:
-    """Récupère un groupe nettoyé depuis le cache (si <TTL jours).
-    
-    Args:
-        sector: Secteur
-        cap_range: Gamme de cap
-        ttl_days: TTL en jours (défaut 20)
-    
-    Returns:
-        Liste des symboles si trouvé et valide, None sinon
-    """
-    init_symbols_table()
-    conn = sqlite3.connect(DB_PATH)
-    cursor = conn.cursor()
-    
-    cursor.execute('''
-        SELECT symbols_json, cached_at 
-        FROM cleaned_groups_cache 
-        WHERE sector = ? AND cap_range = ?
-    ''', (sector, cap_range))
-    
-    result = cursor.fetchone()
-    conn.close()
-    
-    if not result:
-        return None
-    
-    symbols_json, cached_at_str = result
-    cached_at = datetime.fromisoformat(cached_at_str)
-    
-    # Vérifier si le cache a expiré
-    if datetime.now() - cached_at > timedelta(days=ttl_days):
-        return None
-    
-    return json.loads(symbols_json)
-
-
-def save_cleaned_group_cache(sector: str, cap_range: str, symbols: List[str]) -> None:
-    """Sauvegarde un groupe nettoyé dans le cache.
-    
-    Args:
-        sector: Secteur
-        cap_range: Gamme de cap
-        symbols: Liste des symboles nettoyés
-    """
-    init_symbols_table()
-    conn = sqlite3.connect(DB_PATH)
-    cursor = conn.cursor()
-    
-    cursor.execute('''
-        INSERT OR REPLACE INTO cleaned_groups_cache 
-        (sector, cap_range, symbols_json, cached_at)
-        VALUES (?, ?, ?, ?)
-    ''', (sector, cap_range, json.dumps(symbols), datetime.now().isoformat()))
-    
-    conn.commit()
-    conn.close()
-
-
-def clear_cleaned_groups_cache() -> None:
-    """Efface complètement le cache des groupes nettoyés (force recalcul)."""
-    init_symbols_table()
-    conn = sqlite3.connect(DB_PATH)
-    cursor = conn.cursor()
-    cursor.execute('DELETE FROM cleaned_groups_cache')
-    conn.commit()
-    conn.close()
-
-
-def display_popular_symbols_distribution():
-    """
-    Affiche la répartition des symboles 'popular' par secteur et capital range.
-    Utile pour analyser la composition du portefeuille de trading.
-    """
-    init_symbols_table()
-    conn = sqlite3.connect(DB_PATH)
-    cursor = conn.cursor()
-    
-    # Récupérer tous les symboles populaires avec leurs métadonnées
-    cursor.execute('''
-        SELECT s.sector, s.market_cap_range, COUNT(*) as count
-        FROM symbols s
-        INNER JOIN symbol_lists sl ON s.symbol = sl.symbol
-        WHERE sl.list_type = 'popular' AND s.is_active = 1
-        GROUP BY s.sector, s.market_cap_range
-        ORDER BY s.sector, s.market_cap_range
-    ''')
-    
-    results = cursor.fetchall()
-    
-    # Également récupérer les totaux par secteur et par capital range
-    cursor.execute('''
-        SELECT s.sector, COUNT(*) as count
-        FROM symbols s
-        INNER JOIN symbol_lists sl ON s.symbol = sl.symbol
-        WHERE sl.list_type = 'popular' AND s.is_active = 1
-        GROUP BY s.sector
-        ORDER BY s.sector
-    ''')
-    
-    sector_totals = {row[0]: row[1] for row in cursor.fetchall()}
-    
-    cursor.execute('''
-        SELECT s.market_cap_range, COUNT(*) as count
-        FROM symbols s
-        INNER JOIN symbol_lists sl ON s.symbol = sl.symbol
-        WHERE sl.list_type = 'popular' AND s.is_active = 1
-        GROUP BY s.market_cap_range
-        ORDER BY s.market_cap_range
-    ''')
-    
-    cap_totals = {row[0]: row[1] for row in cursor.fetchall()}
-    
-    cursor.execute('''
-        SELECT COUNT(DISTINCT s.symbol) FROM symbols s
-        INNER JOIN symbol_lists sl ON s.symbol = sl.symbol
-        WHERE sl.list_type = 'popular' AND s.is_active = 1
-    ''')
-    
-    total_symbols = cursor.fetchone()[0]
-    conn.close()
-    
-    # Affichage
-    print("\n" + "="*100)
-    print("RÉPARTITION DES SYMBOLES POPULAIRES PAR SECTEUR × CAPITAL RANGE")
-    print("="*100)
-    
-    # Créer un tableau
-    sectors = sorted(set(row[0] for row in results))
-    cap_ranges = sorted(set(row[1] for row in results))
-    
-    # En-tête
-    header = "Secteur".ljust(25) + "  |  ".join([f"{cap:^12}" for cap in cap_ranges]) + "  |  Total"
-    print("\n" + header)
-    print("-" * len(header))
-    
-    # Créer une matrice pour les données
-    data_matrix = {}
-    for sector, cap_range, count in results:
-        if sector not in data_matrix:
-            data_matrix[sector] = {}
-        data_matrix[sector][cap_range] = count
-    
-    # Afficher les lignes
-    for sector in sectors:
-        row_data = sector.ljust(25) + "  |  "
-        row_counts = []
-        for cap_range in cap_ranges:
-            count = data_matrix.get(sector, {}).get(cap_range, 0)
-            row_counts.append(count)
-            row_data += f"{count:^12}"
-        
-        row_data += f"  |  {sector_totals.get(sector, 0):>3}"
-        print(row_data)
-    
-    # Ligne des totaux
-    print("-" * len(header))
-    footer = "TOTAL".ljust(25) + "  |  "
-    for cap_range in cap_ranges:
-        footer += f"{cap_totals.get(cap_range, 0):^12}"
-    footer += f"  |  {total_symbols:>3}"
-    print(footer)
-    
-    print("\n" + "="*100)
-    print(f"TOTAL GÉNÉRAL: {total_symbols} symboles populaires actifs")
-    print("="*100 + "\n")
-    
-    # Statistiques supplémentaires
-    print("\nSTATISTIQUES PAR SECTEUR:")
-    print("-" * 50)
-    for sector in sectors:
-        count = sector_totals.get(sector, 0)
-        pct = (count / total_symbols * 100) if total_symbols > 0 else 0
-        print(f"  {sector:30s}: {count:3d} symboles ({pct:5.1f}%)")
-    
-    print("\nSTATISTIQUES PAR CAPITAL RANGE:")
-    print("-" * 50)
-    for cap_range in cap_ranges:
-        count = cap_totals.get(cap_range, 0)
-        pct = (count / total_symbols * 100) if total_symbols > 0 else 0
-        print(f"  {cap_range:30s}: {count:3d} symboles ({pct:5.1f}%)")
-    
-    print("\n")
-    
-    return {
-        'total': total_symbols,
-        'by_sector': sector_totals,
-        'by_cap_range': cap_totals,
-        'matrix': data_matrix
-    }
-
-
-# Exemple d'utilisation
 if __name__ == '__main__':
     display_popular_symbols_distribution()

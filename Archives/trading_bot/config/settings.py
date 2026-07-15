@@ -95,7 +95,7 @@ class DataConfig:
     """Configuration des données."""
     # Yahoo Finance
     valid_periods: List[str] = field(default_factory=lambda: [
-        '1d', '5d', '1mo', '3mo', '6mo', '12mo', '1y', '18mo', '24mo', 
+        '1d', '5d', '1mo', '3mo', '6mo', '12mo', '1y', '14mo', '15mo', '18mo','21mo','24mo', 
         '2y', '5y', '10y', 'ytd', 'max'
     ])
     

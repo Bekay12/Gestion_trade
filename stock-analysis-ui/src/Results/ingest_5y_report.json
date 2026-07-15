@@ -1,0 +1,13 @@
+{
+  "summary": {
+    "start_date": "2021-04-25",
+    "total": 43,
+    "ok": 43,
+    "failed": 0,
+    "status_count": {
+      "updated": 43
+    },
+    "failed_symbols": []
+  },
+  "failed": []
+}

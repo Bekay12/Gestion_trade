@@ -1,3 +1,4 @@
+<<<<<<< HEAD
 Symbole,Signal,Score,Prix,Tendance,RSI,Domaine,CapRange,ParamKey,Volume moyen,Consensus,ConsensusMean,dPrice,dMACD,dRSI,dVolRel,Rev. Growth (%),EBITDA Yield (%),FCF Yield (%),D/E Ratio,Market Cap (B$),Fiabilite,detection_time
 NXP,ACHAT,7.68,14.510000228881836,Hausse,75.78,Financial Services,Small,Financial Services_Small,205890.0,Neutre,,0.42,15.13,4.26,-6.79,9.1,0.0,0.0,0.0,0.75,42.857142857142854,2026-02-14 13:41:37
 ENR.DE,ACHAT,7.54,162.10000610351562,Hausse,68.0,Industrials,Large,Industrials_Large,2342776.67,Achat,1.8,1.47,2.76,0.36,0.68,8.2,2.47,2.75,33.02,135.4,100.0,2026-02-14 13:41:37
@@ -6,3 +7,20 @@ IMNM,ACHAT,6.115,22.15999984741211,Baisse,45.74,Healthcare,Mid,Healthcare_Mid,18
 ALAB,ACHAT,5.482,129.32000732421875,Baisse,40.12,Technology,Large,Technology_Large,5851280.0,Achat,1.73913,-2.5,1.43,-1.18,11.88,103.9,0.37,0.37,2.46,30.89,60.0,2026-02-14 13:41:37
 NVDA,ACHAT,7.16,182.80999755859375,Baisse,47.82,Technology,Mega,Technology_Mega,171188010.0,Achat,1.34921,0.96,199.7,3.62,-5.31,62.5,2.49,1.16,9.1,4590.38,50.0,2026-02-14 13:41:37
 AVGO,ACHAT,6.63,325.1700134277344,Baisse,45.01,Technology,Mega,Technology_Mega,26503956.67,Achat,1.22,0.91,-29.61,3.52,-21.83,16.4,20.68,1.55,166.03,1614.12,75.0,2026-02-14 13:41:37
+=======
+Symbole,Signal,Score,Prix,Devise,FxRateToUSD,Tendance,RSI,Domaine,CapRange,ParamKey,Volume moyen,Consensus,ConsensusMean,_seuil_achat_used,_seuil_vente_used,_selected_param_key,dPrice,Var5j (%),dRSI,dVolRel,Rev. Growth (%),EBITDA Yield (%),FCF Yield (%),FCF (B$),EBITDA (B$),D/E Ratio,Market Cap (B$),ROE (%),Fiabilite,detection_time
+3037.TW,ACHAT,5.25,20.427613113075495,TWD,0.03176922723650932,Hausse,65.01,Inconnu,Large,,346735484.6761378,Achat,1.52941,4.2,-4.2,Inconnu,2.09,0.78,1.38,10.27,18.1,2.47,-0.48,-0.15,0.78,56.33,32.18,7.31,83.33333333333334,2026-04-19 23:13:07
+DD,ACHAT,4.8,47.349998474121094,USD,1.0,Hausse,54.92,Basic Materials,Large,Basic Materials_Large,174731886.3941574,Neutre,,1.8,-4.8,Basic Materials_Large,0.33,0.21,0.93,-1.25,0.0,6.87,71.17,13.44,1.51,24.48,18.88,0.52,100.0,2026-04-19 23:13:07
+AER,ACHAT,4.7,147.4499969482422,USD,1.0,Hausse,57.2,Industrials,Large,Industrials_Large,186985238.08822632,Achat,1.44444,1.6,-4.2,Industrials_Large,0.7,1.32,2.03,2.62,8.3,7.08,-6.68,-1.67,4.71,238.42,25.06,21.12,66.66666666666666,2026-04-19 23:13:07
+AEM,ACHAT,7.5,220.10000610351562,USD,1.0,Hausse,57.05,Basic Materials,Large,Basic Materials_Large,534121763.16416425,Neutre,,1.8,-4.8,Basic Materials_Large,0.77,0.62,1.5,-3.43,60.3,7.62,3.74,4.14,8.2,1.3,110.9,19.58,66.66666666666666,2026-04-19 23:13:07
+EXE,ACHAT,8.2,95.81999969482422,USD,1.0,Baisse,35.16,Energy,Large,Energy_Large,432008869.17188007,Achat,1.46429,3.3,-3.0,Energy_Large,-1.3,-3.2,-4.79,-0.39,38.3,20.36,5.02,1.18,5.62,27.5,23.41,10.07,50.0,2026-04-19 23:13:07
+BIIB,ACHAT,8.3,177.35000610351562,USD,1.0,Baisse,46.02,Healthcare,Large,Healthcare_Large,211862778.98330688,Neutre,,3.0,-1.9,Healthcare_Large,-0.3,2.53,-0.32,-1.84,-7.1,12.48,7.61,1.98,3.6,36.47,26.03,7.39,100.0,2026-04-19 23:13:07
+CAPC,VENTE,-7.8,0.15000000596046448,USD,1.0,Hausse,67.27,Technology,Small,Technology_Small,4315.556728368004,Neutre,,3.4,-2.1,Technology_Small,4.06,11.11,1.57,2.18,0.0,-4.08,-2.86,-0.0,-0.0,0.0,0.01,-90656.95,0.0,2026-04-19 23:13:07
+ATOM,VENTE,-11.325,5.349999904632568,USD,1.0,Hausse,59.83,Technology,Small,Technology_Small,4246449.271687667,Neutre,,3.4,-2.1,Technology_Small,2.59,5.11,2.34,5.94,117.4,-11.37,-3.91,-0.01,-0.02,6.96,0.2,-92.84,33.33333333333333,2026-04-19 23:13:07
+RILY,VENTE,-2.1,7.800000190734863,USD,1.0,Hausse,55.86,Financial Services,Small,Financial Services_Small,5952571.212377548,Neutre,,2.5,-1.8,Financial Services_Small,0.98,7.88,1.29,-2.41,75.8,0.0,0.0,0.0,0.0,0.0,0.27,0.0,66.66666666666666,2026-04-19 23:13:07
+AI,VENTE,-7.7,9.239999771118164,USD,1.0,Hausse,52.36,Unknown,Small,Unknown_Small,42696858.996006645,Neutre,3.5,3.0,-3.1,Unknown_Small,0.89,11.59,2.19,2.41,-46.1,-70.65,0.94,0.01,-0.45,8.37,1.23,-55.01,0.0,2026-04-19 23:13:07
+BAND,VENTE,-13.5,23.010000228881836,USD,1.0,Hausse,77.37,Technology,Small,Technology_Small,7045646.959260304,Neutre,,3.4,-2.1,Technology_Small,0.95,42.57,-0.07,1.87,-1.1,3.27,10.11,0.07,0.03,120.05,0.65,-3.62,60.0,2026-04-19 23:13:07
+FLTR,VENTE,-9.0,25.450000762939453,USD,1.0,Hausse,64.62,Unknown,Small,Unknown_Small,21094359.046611786,Neutre,,3.0,-3.1,Unknown_Small,0.03,0.0,2.29,-3.05,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,100.0,2026-04-19 23:13:07
+BF-B,VENTE,-6.4,29.149999618530273,USD,1.0,Hausse,61.06,Consumer Defensive,Large,Consumer Defensive_Large,171105074.46654,Neutre,2.88235,1.1,-5.8,Consumer Defensive_Large,0.9,-1.15,1.23,-0.43,2.0,7.62,4.49,0.6,1.21,67.25,13.33,20.42,33.33333333333333,2026-04-19 23:13:07
+HP,VENTE,-4.4,33.63999938964844,USD,1.0,Baisse,43.86,Energy,Mid,Energy_Mid,47912551.22678121,Achat,2.5,1.2,-4.0,Energy_Mid,-0.33,-3.0,-1.18,-1.7,50.2,16.64,5.28,0.19,0.89,75.24,3.55,-10.96,100.0,2026-04-19 23:13:07
+>>>>>>> 978e7c70cfbf4e61452e6f0df73d74f7b56595c5

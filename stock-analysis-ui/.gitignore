@@ -65,6 +65,8 @@ cache_logs/
 logs/
 *.log
 *.csv (garder optionnellement)
+signaux/
+*.parquet
 
 # ==================== OS ====================
 Thumbs.db

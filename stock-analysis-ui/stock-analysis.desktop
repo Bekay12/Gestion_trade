@@ -1,0 +1,11 @@
+[Desktop Entry]
+Name=Stock Analysis Tool
+Comment=Outil d'analyse boursière avec signaux de trading
+Exec=/home/berkam/Projets/Gestion_trade/.venv/bin/python /home/berkam/Projets/Gestion_trade/stock-analysis-ui/launch_stock_analysis.py
+Path=/home/berkam/Projets/Gestion_trade/stock-analysis-ui/src
+Icon=/home/berkam/Projets/Gestion_trade/stock-analysis-ui/icon.png
+Terminal=false
+Type=Application
+Categories=Finance;Office;Development;
+StartupNotify=true
+StartupWMClass=stock-analysis-tool

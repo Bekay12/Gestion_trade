@@ -113,81 +113,116 @@ static PyObject* py_backtest_symbol(PyObject* self, PyObject* args) {
         item = PyTuple_GetItem(coeffs_tuple, 9);
         coeffs.sell_threshold = PyFloat_Check(item) ? PyFloat_AsDouble(item) : (PyLong_Check(item) ? (double)PyLong_AsLong(item) : -0.5);
         
-        // 🚀 PRICE FEATURES (indices 10-15 si présents)
-        if (tuple_size >= 16) {
+        // 🚀 PRICE FEATURES (nouveau layout: indices 10-20)
+        if (tuple_size >= 21) {
             item = PyTuple_GetItem(coeffs_tuple, 10);
-            coeffs.use_price_slope = PyLong_Check(item) ? (int)PyLong_AsLong(item) : (PyFloat_Check(item) ? (int)PyFloat_AsDouble(item) : 0);
-            
+            coeffs.use_price_extras = PyLong_Check(item) ? (int)PyLong_AsLong(item) : (PyFloat_Check(item) ? (int)PyFloat_AsDouble(item) : 0);
+
             item = PyTuple_GetItem(coeffs_tuple, 11);
-            coeffs.use_price_acc = PyLong_Check(item) ? (int)PyLong_AsLong(item) : (PyFloat_Check(item) ? (int)PyFloat_AsDouble(item) : 0);
-            
-            item = PyTuple_GetItem(coeffs_tuple, 12);
             coeffs.a_price_slope = PyFloat_Check(item) ? PyFloat_AsDouble(item) : (PyLong_Check(item) ? (double)PyLong_AsLong(item) : 0.0);
-            
-            item = PyTuple_GetItem(coeffs_tuple, 13);
+
+            item = PyTuple_GetItem(coeffs_tuple, 12);
             coeffs.a_price_acc = PyFloat_Check(item) ? PyFloat_AsDouble(item) : (PyLong_Check(item) ? (double)PyLong_AsLong(item) : 0.0);
-            
-            item = PyTuple_GetItem(coeffs_tuple, 14);
+
+            item = PyTuple_GetItem(coeffs_tuple, 13);
             coeffs.th_price_slope = PyFloat_Check(item) ? PyFloat_AsDouble(item) : (PyLong_Check(item) ? (double)PyLong_AsLong(item) : 0.0);
-            
+
+            item = PyTuple_GetItem(coeffs_tuple, 14);
+            coeffs.th_price_acc = PyFloat_Check(item) ? PyFloat_AsDouble(item) : (PyLong_Check(item) ? (double)PyLong_AsLong(item) : 0.0);
+
             item = PyTuple_GetItem(coeffs_tuple, 15);
+            coeffs.a_price_rsi_slope = PyFloat_Check(item) ? PyFloat_AsDouble(item) : (PyLong_Check(item) ? (double)PyLong_AsLong(item) : 0.0);
+
+            item = PyTuple_GetItem(coeffs_tuple, 16);
+            coeffs.a_price_vol_slope = PyFloat_Check(item) ? PyFloat_AsDouble(item) : (PyLong_Check(item) ? (double)PyLong_AsLong(item) : 0.0);
+
+            item = PyTuple_GetItem(coeffs_tuple, 17);
+            coeffs.a_price_var5j = PyFloat_Check(item) ? PyFloat_AsDouble(item) : (PyLong_Check(item) ? (double)PyLong_AsLong(item) : 0.0);
+
+            item = PyTuple_GetItem(coeffs_tuple, 18);
+            coeffs.th_price_rsi_slope = PyFloat_Check(item) ? PyFloat_AsDouble(item) : (PyLong_Check(item) ? (double)PyLong_AsLong(item) : 0.0);
+
+            item = PyTuple_GetItem(coeffs_tuple, 19);
+            coeffs.th_price_vol_slope = PyFloat_Check(item) ? PyFloat_AsDouble(item) : (PyLong_Check(item) ? (double)PyLong_AsLong(item) : 0.0);
+
+            item = PyTuple_GetItem(coeffs_tuple, 20);
+            coeffs.th_price_var5j = PyFloat_Check(item) ? PyFloat_AsDouble(item) : (PyLong_Check(item) ? (double)PyLong_AsLong(item) : 0.0);
+        } else if (tuple_size >= 16) {
+            // Legacy layout conservé pour compatibilité
+            item = PyTuple_GetItem(coeffs_tuple, 10);
+            coeffs.use_price_extras = PyLong_Check(item) ? (int)PyLong_AsLong(item) : (PyFloat_Check(item) ? (int)PyFloat_AsDouble(item) : 0);
+
+            item = PyTuple_GetItem(coeffs_tuple, 11);
+            coeffs.a_price_slope = PyFloat_Check(item) ? PyFloat_AsDouble(item) : (PyLong_Check(item) ? (double)PyLong_AsLong(item) : 0.0);
+
+            item = PyTuple_GetItem(coeffs_tuple, 12);
+            coeffs.a_price_acc = PyFloat_Check(item) ? PyFloat_AsDouble(item) : (PyLong_Check(item) ? (double)PyLong_AsLong(item) : 0.0);
+
+            item = PyTuple_GetItem(coeffs_tuple, 13);
+            coeffs.th_price_slope = PyFloat_Check(item) ? PyFloat_AsDouble(item) : (PyLong_Check(item) ? (double)PyLong_AsLong(item) : 0.0);
+
+            item = PyTuple_GetItem(coeffs_tuple, 14);
             coeffs.th_price_acc = PyFloat_Check(item) ? PyFloat_AsDouble(item) : (PyLong_Check(item) ? (double)PyLong_AsLong(item) : 0.0);
         }
-        
-        // 🚀 FUNDAMENTALS FEATURES (indices 16-26 si présents)
-        if (tuple_size >= 27) {
-            item = PyTuple_GetItem(coeffs_tuple, 16);
+
+        // 🚀 FUNDAMENTALS FEATURES (nouveau layout: indices 21-31)
+        if (tuple_size >= 32) {
+            item = PyTuple_GetItem(coeffs_tuple, 21);
             coeffs.use_fundamentals = PyLong_Check(item) ? (int)PyLong_AsLong(item) : (PyFloat_Check(item) ? (int)PyFloat_AsDouble(item) : 0);
             
-            // Weights a11-a15
-            item = PyTuple_GetItem(coeffs_tuple, 17);
+            item = PyTuple_GetItem(coeffs_tuple, 22);
             coeffs.a_rev_growth = PyFloat_Check(item) ? PyFloat_AsDouble(item) : (PyLong_Check(item) ? (double)PyLong_AsLong(item) : 0.0);
             
-            item = PyTuple_GetItem(coeffs_tuple, 18);
+            item = PyTuple_GetItem(coeffs_tuple, 23);
             coeffs.a_eps_growth = PyFloat_Check(item) ? PyFloat_AsDouble(item) : (PyLong_Check(item) ? (double)PyLong_AsLong(item) : 0.0);
             
-            item = PyTuple_GetItem(coeffs_tuple, 19);
+            item = PyTuple_GetItem(coeffs_tuple, 24);
             coeffs.a_roe = PyFloat_Check(item) ? PyFloat_AsDouble(item) : (PyLong_Check(item) ? (double)PyLong_AsLong(item) : 0.0);
             
-            item = PyTuple_GetItem(coeffs_tuple, 20);
+            item = PyTuple_GetItem(coeffs_tuple, 25);
             coeffs.a_fcf_yield = PyFloat_Check(item) ? PyFloat_AsDouble(item) : (PyLong_Check(item) ? (double)PyLong_AsLong(item) : 0.0);
             
-            item = PyTuple_GetItem(coeffs_tuple, 21);
+            item = PyTuple_GetItem(coeffs_tuple, 26);
             coeffs.a_de_ratio = PyFloat_Check(item) ? PyFloat_AsDouble(item) : (PyLong_Check(item) ? (double)PyLong_AsLong(item) : 0.0);
             
-            // Thresholds
-            item = PyTuple_GetItem(coeffs_tuple, 22);
+            item = PyTuple_GetItem(coeffs_tuple, 27);
             coeffs.th_rev_growth = PyFloat_Check(item) ? PyFloat_AsDouble(item) : (PyLong_Check(item) ? (double)PyLong_AsLong(item) : 10.0);
             
-            item = PyTuple_GetItem(coeffs_tuple, 23);
+            item = PyTuple_GetItem(coeffs_tuple, 28);
             coeffs.th_eps_growth = PyFloat_Check(item) ? PyFloat_AsDouble(item) : (PyLong_Check(item) ? (double)PyLong_AsLong(item) : 10.0);
             
-            item = PyTuple_GetItem(coeffs_tuple, 24);
+            item = PyTuple_GetItem(coeffs_tuple, 29);
             coeffs.th_roe = PyFloat_Check(item) ? PyFloat_AsDouble(item) : (PyLong_Check(item) ? (double)PyLong_AsLong(item) : 15.0);
             
-            item = PyTuple_GetItem(coeffs_tuple, 25);
+            item = PyTuple_GetItem(coeffs_tuple, 30);
             coeffs.th_fcf_yield = PyFloat_Check(item) ? PyFloat_AsDouble(item) : (PyLong_Check(item) ? (double)PyLong_AsLong(item) : 5.0);
             
+            item = PyTuple_GetItem(coeffs_tuple, 31);
+            coeffs.th_de_ratio = PyFloat_Check(item) ? PyFloat_AsDouble(item) : (PyLong_Check(item) ? (double)PyLong_AsLong(item) : 1.0);
+        } else if (tuple_size >= 27) {
+            // Legacy layout conservé
+            item = PyTuple_GetItem(coeffs_tuple, 16);
+            coeffs.use_fundamentals = PyLong_Check(item) ? (int)PyLong_AsLong(item) : (PyFloat_Check(item) ? (int)PyFloat_AsDouble(item) : 0);
+            item = PyTuple_GetItem(coeffs_tuple, 17);
+            coeffs.a_rev_growth = PyFloat_Check(item) ? PyFloat_AsDouble(item) : (PyLong_Check(item) ? (double)PyLong_AsLong(item) : 0.0);
+            item = PyTuple_GetItem(coeffs_tuple, 18);
+            coeffs.a_eps_growth = PyFloat_Check(item) ? PyFloat_AsDouble(item) : (PyLong_Check(item) ? (double)PyLong_AsLong(item) : 0.0);
+            item = PyTuple_GetItem(coeffs_tuple, 19);
+            coeffs.a_roe = PyFloat_Check(item) ? PyFloat_AsDouble(item) : (PyLong_Check(item) ? (double)PyLong_AsLong(item) : 0.0);
+            item = PyTuple_GetItem(coeffs_tuple, 20);
+            coeffs.a_fcf_yield = PyFloat_Check(item) ? PyFloat_AsDouble(item) : (PyLong_Check(item) ? (double)PyLong_AsLong(item) : 0.0);
+            item = PyTuple_GetItem(coeffs_tuple, 21);
+            coeffs.a_de_ratio = PyFloat_Check(item) ? PyFloat_AsDouble(item) : (PyLong_Check(item) ? (double)PyLong_AsLong(item) : 0.0);
+            item = PyTuple_GetItem(coeffs_tuple, 22);
+            coeffs.th_rev_growth = PyFloat_Check(item) ? PyFloat_AsDouble(item) : (PyLong_Check(item) ? (double)PyLong_AsLong(item) : 10.0);
+            item = PyTuple_GetItem(coeffs_tuple, 23);
+            coeffs.th_eps_growth = PyFloat_Check(item) ? PyFloat_AsDouble(item) : (PyLong_Check(item) ? (double)PyLong_AsLong(item) : 10.0);
+            item = PyTuple_GetItem(coeffs_tuple, 24);
+            coeffs.th_roe = PyFloat_Check(item) ? PyFloat_AsDouble(item) : (PyLong_Check(item) ? (double)PyLong_AsLong(item) : 15.0);
+            item = PyTuple_GetItem(coeffs_tuple, 25);
+            coeffs.th_fcf_yield = PyFloat_Check(item) ? PyFloat_AsDouble(item) : (PyLong_Check(item) ? (double)PyLong_AsLong(item) : 5.0);
             item = PyTuple_GetItem(coeffs_tuple, 26);
             coeffs.th_de_ratio = PyFloat_Check(item) ? PyFloat_AsDouble(item) : (PyLong_Check(item) ? (double)PyLong_AsLong(item) : 1.0);
-            
-            // Métriques fondamentales réelles (indices 27-31)
-            if (tuple_size >= 32) {
-                item = PyTuple_GetItem(coeffs_tuple, 27);
-                coeffs.fund_rev_growth = PyFloat_Check(item) ? PyFloat_AsDouble(item) : (PyLong_Check(item) ? (double)PyLong_AsLong(item) : 0.0);
-                
-                item = PyTuple_GetItem(coeffs_tuple, 28);
-                coeffs.fund_eps_growth = PyFloat_Check(item) ? PyFloat_AsDouble(item) : (PyLong_Check(item) ? (double)PyLong_AsLong(item) : 0.0);
-                
-                item = PyTuple_GetItem(coeffs_tuple, 29);
-                coeffs.fund_roe = PyFloat_Check(item) ? PyFloat_AsDouble(item) : (PyLong_Check(item) ? (double)PyLong_AsLong(item) : 0.0);
-                
-                item = PyTuple_GetItem(coeffs_tuple, 30);
-                coeffs.fund_fcf_yield = PyFloat_Check(item) ? PyFloat_AsDouble(item) : (PyLong_Check(item) ? (double)PyLong_AsLong(item) : 0.0);
-                
-                item = PyTuple_GetItem(coeffs_tuple, 31);
-                coeffs.fund_de_ratio = PyFloat_Check(item) ? PyFloat_AsDouble(item) : (PyLong_Check(item) ? (double)PyLong_AsLong(item) : 0.0);
-            }
         }
     }
     

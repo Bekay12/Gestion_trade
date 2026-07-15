@@ -1,0 +1,30 @@
+Symbole,Signal,Score,Prix,Tendance,RSI,"Volume
+moyen",Domaine,"Cap
+Range","Score/
+Seuil","Fiabilite
+(%)","Nb
+Trades",Gagnants,"Rev.
+Growth(%)","EBITDA
+Yield(%)","FCF
+Yield(%)","D/E
+Ratio","Market
+Cap(B$)","ROE
+(%)",dPrice,dMACD,dRSI,"dVol
+Rel","Gain
+total($)","Gain
+moyen($)",Consensus
+ATRO,ACHAT,7.194,79.38999938964844,Hausse,62.51,,Industrials,,,,,6,,,,,,,0.39,-3.47,0.1,,,,Achat
+ARR,ACHAT,9.21,18.18000030517578,Hausse,58.9,,Real Estate,,,,,4,,,,,,,0.14,12.51,0.39,,,,Achat
+CTMX,ACHAT,4.6,5.440000057220459,Hausse,53.72,,Healthcare,,,,,2,,,,,,,0.42,-14.19,0.51,,,,Neutre
+DRI,VENTE,-3.339,213.9199981689453,Hausse,57.33,,Consumer Cyclical,,,,,1,,,,,,,0.08,-1.74,-0.98,,,,Achat
+BAX,ACHAT,4.029,20.6299991607666,Baisse,50.55,,Healthcare,,,,,0,,,,,,,1.31,2.4,2.64,,,,Neutre
+MIRM,ACHAT,3.516,107.4800033569336,Hausse,71.79,,Healthcare,,,,,1,,,,,,,0.66,-1.24,1.0,,,,Achat
+MSCI,ACHAT,8.42,548.7100219726562,Baisse,46.89,,Financial Services,,,,,1,,,,,,,0.71,-4.16,3.38,,,,Achat
+UNP,ACHAT,7.754,266.6600036621094,Hausse,71.23,,Industrials,,,,,3,,,,,,,0.26,1.2,-0.54,,,,Achat
+INTU,ACHAT,2.8,358.7099914550781,Baisse,19.59,,Technology,,,,,1,,,,,,,-1.59,-0.24,-0.2,,,,Achat
+ALDX,ACHAT,8.32,5.210000038146973,Hausse,52.49,,Healthcare,,,,,0,,,,,,,-0.52,-70.32,-1.03,,,,Neutre
+GS,ACHAT,4.68,902.27001953125,Baisse,46.57,,Financial Services,,,,,3,,,,,,,-0.1,23.28,-0.28,,,,Neutre
+NET,ACHAT,6.3,163.80999755859375,Baisse,40.61,,Technology,,,,,5,,,,,,,-2.73,0.4,-5.17,,,,Achat
+LDI,ACHAT,4.774,1.899999976158142,Baisse,35.14,,Financial Services,,,,,2,,,,,,,-0.97,0.2,-1.42,,,,Neutre
+OXY,ACHAT,5.245,51.95000076293945,Hausse,69.58,,Energy,,,,,8,,,,,,,2.27,8.05,3.95,,,,Neutre
+KRMN,ACHAT,6.799,83.5999984741211,Baisse,45.39,,Industrials,,,,,4,,,,,,,1.26,6.89,2.64,,,,Neutre

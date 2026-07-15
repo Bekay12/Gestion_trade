@@ -1,6 +1,0 @@
-ÔÜá´©Å Could not load domain params: no such column: domain
-­ƒÜÇ C-ACCELERATED simulation from 2024-01-01 to 2024-12-31 for 280 symbols (list=optimization)
-   Filters: reliability >= 30.0%, min_hold_days=14, volume_min=100000
-­ƒôÑ Downloading data for 280 symbols (2023-01-01 to 2025-01-07)...
-Ô£à Data downloaded: 275 symbols with data
-­ƒÜÇ Computing training reliability per symbol (C-accelerated)...

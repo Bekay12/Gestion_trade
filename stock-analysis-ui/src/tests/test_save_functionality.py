@@ -6,7 +6,9 @@ Test script: Vérifie que la sauvegarde SQLite fonctionne correctement
 import sqlite3
 from pathlib import Path
 import sys
+import pytest
 
+@pytest.mark.integration
 def test_save_functionality():
     """Test la fonction de sauvegarde SQLite."""
     

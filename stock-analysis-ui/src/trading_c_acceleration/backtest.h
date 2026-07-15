@@ -21,13 +21,18 @@ typedef struct {
     double buy_threshold;
     double sell_threshold;
     
-    // 🚀 Price features (a9, a10)
-    int use_price_slope;      // 0 ou 1
-    int use_price_acc;        // 0 ou 1
+    // 🚀 Price features (flag global + 5 features)
+    int use_price_extras;     // 0 ou 1
     double a_price_slope;     // a9
     double a_price_acc;       // a10
     double th_price_slope;    // seuil price slope
     double th_price_acc;      // seuil price acc
+    double a_price_rsi_slope; // a16
+    double a_price_vol_slope; // a17
+    double a_price_var5j;     // a18
+    double th_price_rsi_slope;
+    double th_price_vol_slope;
+    double th_price_var5j;
     
     // 🚀 Fundamentals features (a11-a15)
     int use_fundamentals;     // 0 ou 1
