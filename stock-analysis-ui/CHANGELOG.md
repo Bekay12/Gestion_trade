@@ -1,5 +1,38 @@
 # 📋 Changelog - Stock Analysis Web Dashboard
 
+## Version 1.1.0 - Correction de biais de look-ahead et durcissement de l'API (2026-07-30)
+
+### 🐛 Corrections
+
+- **Biais de look-ahead dans le calcul des fondamentaux point-in-time**
+  - Fichier : `src/fundamentals_cache.py`, fonction `compute_pit_fundamentals`.
+  - La branche de repli terminale retournait les fondamentaux du trimestre le plus récent du cache lorsque aucun trimestre n'était encore publié à la date simulée. Elle retourne maintenant `None`.
+  - Cette branche était atteinte à chaque barre par la boucle de backtest (`src/trading_c_acceleration/qsi_optimized.py`), injectant des données futures dans les barres anciennes.
+  - Les performances de backtest en étaient surévaluées, et l'optimiseur sélectionnait ses paramètres sur cette base.
+  - Les appelants traitent déjà `None` : la barre est évaluée sans composante fondamentale.
+  - Verrouillé par `src/tests/test_pit_fundamentals.py` (7 tests). Vérifié : 3 de ces tests échouent sur le code d'avant correctif et passent après.
+
+### 🎯 Sécurité et durcissement
+
+- **Durcissement de l'API Flask**
+  - Mise à jour des dépendances : Flask 2.2.5 → 3.1.3, Flask-Cors 4.0.0 → 6.0.0, gunicorn 21.2.0 → 23.0.0, requests 2.31.0 → 2.33.0, python-dotenv 1.0.1 → 1.2.2. `pip-audit` passe de 14 vulnérabilités connues à 0.
+  - `src/api.py` :
+    - Décorateur `require_api_key` fermant. Sans `API_KEY` en environnement, les routes protégées répondent 503 au lieu de laisser passer toutes les requêtes. Échappatoire explicite pour le développement : `API_AUTH_DISABLED=1`.
+    - Comparaison de clé par `hmac.compare_digest`.
+    - `CORS(app)` sans restriction remplacé par liste d'origines lue dans `CORS_ORIGINS`. Vide par défaut, aucun en-tête CORS émis (same-origin uniquement).
+    - Routes `POST /api/backtest` et `POST /api/lists/<type>` désormais protégées par authentification (auparavant aucune).
+    - Gestionnaire d'erreurs n'expose plus `str(e)` au client. Détail dans les logs via `logger.exception`, réponse générique au client.
+    - Adaptation à Flask 3 : `app.json.sort_keys` et `app.json.compact` remplacent les clés dépréciées.
+    - Adresse d'écoute par défaut du bloc de développement : `0.0.0.0` → `127.0.0.1`.
+  - `render.yaml` :
+    - Ajout de `API_KEY` (`generateValue: true`) et de `CORS_ORIGINS`.
+    - `autoDeploy` passe à `false` (un push sur master ne met plus l'API en ligne sans relecture).
+  - `.env.example` :
+    - Documentation des trois nouvelles variables.
+    - Correction de la note sur `API_KEY` qui indiquait à tort qu'une valeur vide désactive l'authentification.
+
+---
+
 ## Version 1.0.0 - Interface Web Complète (Janvier 2025)
 
 ### ✨ Nouvelles Fonctionnalités

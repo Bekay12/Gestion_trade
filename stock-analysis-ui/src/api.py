@@ -8,11 +8,15 @@ import os
 import sys
 import json
 import gc
+import logging
 from datetime import datetime, timedelta
+from hmac import compare_digest
 from pathlib import Path
 from dotenv import load_dotenv
 from functools import wraps, lru_cache
 from threading import Lock
+
+logger = logging.getLogger(__name__)
 
 from flask import Flask, request, jsonify, send_file, render_template
 from flask_cors import CORS
@@ -52,10 +56,21 @@ except ImportError as e:
 # ============================================================================
 
 app = Flask(__name__, template_folder=TEMPLATE_DIR)
-CORS(app)  # Enable CORS for all routes
 
-app.config['JSON_SORT_KEYS'] = False
-app.config['JSONIFY_PRETTYPRINT_REGULAR'] = True
+# FRONTIERE DE SECURITE — CORS.
+# L'interface web est servie par cette meme application (`render_template` sur '/'),
+# donc le cas nominal est same-origin et ne requiert aucun en-tete CORS.
+# CORS_ORIGINS n'est a renseigner que si un front est heberge sur un autre domaine.
+# Ne jamais revenir a `CORS(app)` sans origine : cela autorise n'importe quel site
+# visite par l'utilisateur a appeler /api/analyze et a consommer le budget yfinance.
+_CORS_ORIGINS = [o.strip() for o in os.getenv('CORS_ORIGINS', '').split(',') if o.strip()]
+if _CORS_ORIGINS:
+    CORS(app, origins=_CORS_ORIGINS, methods=['GET', 'POST'])
+
+# Flask >= 2.3 : JSON_SORT_KEYS / JSONIFY_PRETTYPRINT_REGULAR ont ete retires de
+# app.config et sont sans effet. La configuration passe desormais par app.json.
+app.json.sort_keys = False
+app.json.compact = False
 
 # Limite de requêtes simultanées pour éviter surcharge mémoire
 analysis_lock = Lock()
@@ -85,17 +100,37 @@ def set_security_headers(response):
 # ============================================================================
 
 _API_KEY = os.getenv('API_KEY')
+# Echappatoire explicite pour le developpement local. Doit rester une action
+# deliberee : sans elle, une API_KEY absente bloque le service au lieu de
+# l'ouvrir silencieusement.
+_AUTH_DISABLED = os.getenv('API_AUTH_DISABLED') == '1'
 
 def require_api_key(f):
-    """Vérifie l'en-tête X-API-Key si API_KEY est défini dans l'environnement.
-    Sans variable API_KEY, toutes les requêtes passent (mode dev/local).
+    """
+    --------------------------------------------------------------------------
+    Objectif:
+        Proteger une route par cle d'API. FRONTIERE DE SECURITE : le defaut est
+        fermant. Sans API_KEY dans l'environnement, la route repond 503 au lieu
+        de laisser passer — une variable oubliee ne doit jamais exposer l'API.
+        Pour le developpement local, poser explicitement API_AUTH_DISABLED=1.
+
+    Entrees:
+        f (Callable): la vue Flask a proteger
+
+    Sorties:
+        decorated_function (Callable): la vue enveloppee du controle de cle
+    --------------------------------------------------------------------------
     """
     @wraps(f)
     def decorated_function(*args, **kwargs):
-        if _API_KEY:
-            provided = request.headers.get('X-API-Key', '')
-            if provided != _API_KEY:
-                return jsonify({'error': 'Unauthorized'}), 401
+        if _AUTH_DISABLED:
+            return f(*args, **kwargs)
+        if not _API_KEY:
+            logger.error("[API] API_KEY absente : route refusee (poser API_AUTH_DISABLED=1 en local)")
+            return jsonify({'error': 'Service unavailable'}), 503
+        provided = request.headers.get('X-API-Key', '')
+        if not compare_digest(provided, _API_KEY):
+            return jsonify({'error': 'Unauthorized'}), 401
         return f(*args, **kwargs)
     return decorated_function
 
@@ -106,10 +141,14 @@ def handle_errors(f):
         try:
             return f(*args, **kwargs)
         except ValueError as e:
+            # ValueError provient de nos propres validations : le message est
+            # redige pour l'appelant et ne divulgue pas d'interne.
             return jsonify({'error': f'Invalid input: {str(e)}'}), 400
-        except Exception as e:
-            print(f"❌ Erreur: {e}")
-            return jsonify({'error': f'Server error: {str(e)}'}), 500
+        except Exception:
+            # Le detail (trace, chemins, internes) reste dans les logs serveur ;
+            # le client ne recoit qu'un message generique.
+            logger.exception("[API] Erreur non geree sur %s", request.path)
+            return jsonify({'error': 'Server error'}), 500
     return decorated_function
 
 # ============================================================================
@@ -482,6 +521,7 @@ def analyze_symbol():
         return jsonify({'error': str(e)}), 500
 
 @app.route('/api/backtest', methods=['POST'])
+@require_api_key
 @handle_errors
 def run_backtest():
     """
@@ -656,6 +696,7 @@ def get_lists():
         return jsonify({'error': str(e)}), 500
 
 @app.route('/api/lists/<list_type>', methods=['POST'])
+@require_api_key
 @handle_errors
 def update_list(list_type):
     """
@@ -826,7 +867,10 @@ if __name__ == '__main__':
     # Configuration
     debug = os.getenv('FLASK_ENV') == 'development'
     port = int(os.getenv('BIND_PORT', 5000))
-    host = os.getenv('BIND_ADDRESS', '0.0.0.0')
+    # Defaut sur la boucle locale : ce bloc ne sert qu'au developpement.
+    # L'exposition sur toutes les interfaces doit etre demandee explicitement
+    # (render.yaml pose BIND_ADDRESS=0.0.0.0, requis par la plateforme).
+    host = os.getenv('BIND_ADDRESS', '127.0.0.1')
     
     print(f"""
     ╔═══════════════════════════════════════╗

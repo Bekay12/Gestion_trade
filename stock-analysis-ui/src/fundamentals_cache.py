@@ -770,19 +770,19 @@ def compute_pit_fundamentals(quarters_sorted: List[dict], as_of_date: str,
         if usable_pq:
             return _compute_metrics_from_periods(usable_pq, lookback_quarters)
 
-    # ── Last resort: use oldest available data despite date mismatch ──
-    # Better to have stale fundamentals than none at all during backtest.
-    # Priority: real quarterly > pseudo-quarterly from annuals
-    all_q = list(quarters_sorted or [])
-    if all_q:
-        return _compute_metrics_from_periods(all_q, lookback_quarters)
-
-    all_annuals = list(annuals_sorted or [])
-    if all_annuals:
-        pseudo_q = _annuals_to_pseudo_quarters(all_annuals)
-        if pseudo_q:
-            return _compute_metrics_from_periods(pseudo_q, lookback_quarters)
-
+    # FRONTIERE POINT-IN-TIME — ne rien retourner ici.
+    #
+    # Aucune periode n'etait publiee a `as_of_date`. Il n'existe pas de repli
+    # licite : toute donnee restante est posterieure a cette date. Une version
+    # anterieure retombait sur `_compute_metrics_from_periods(quarters_sorted)`,
+    # qui prend `periods[-1]` — le trimestre le PLUS RECENT du cache. Appelee a
+    # chaque barre par la boucle de backtest, elle injectait donc les
+    # fondamentaux futurs dans les barres anciennes, gonflait les performances
+    # mesurees et faussait les parametres retenus par l'optimiseur.
+    #
+    # `None` est le contrat attendu par les appelants : get_trading_signal
+    # traite deja `fin_data_override=None` en evaluant la barre sans composante
+    # fondamentale. Verrouille par src/tests/test_pit_fundamentals.py.
     return None
 
 
