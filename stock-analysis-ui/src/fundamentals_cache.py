@@ -23,8 +23,21 @@ FUNDAMENTALS_CACHE_TTL_HOURS = 24
 # TTL for snapshot (point-in-time) data like market cap, ROE, etc.
 SNAPSHOT_TTL_HOURS = 24
 
+# Chemins de base deja initialises. Cle par chemin et non booleen : les tests
+# redirigent DB_PATH vers une copie temporaire, et un simple drapeau global
+# ferait sauter l'initialisation de la nouvelle base.
+_TABLES_PRETES: set = set()
+
+
 def _ensure_fundamentals_table():
-    """Create all fundamentals cache tables if not exists (idempotent)."""
+    """Create all fundamentals cache tables if not exists (idempotent).
+
+    Appelee paresseusement par chaque point d'entree public. Ne PAS rappeler au
+    niveau module : l'import de ce fichier ouvrirait alors une connexion SQLite,
+    et fundamentals_cache est importe en cascade par market_store puis cache_db.
+    """
+    if DB_PATH in _TABLES_PRETES:
+        return True
     try:
         conn = sqlite3.connect(DB_PATH)
         cursor = conn.cursor()
@@ -129,6 +142,7 @@ def _ensure_fundamentals_table():
 
         conn.commit()
         conn.close()
+        _TABLES_PRETES.add(DB_PATH)
         return True
     except Exception as e:
         print(f"⚠️ Error ensuring fundamentals table: {e}")
@@ -530,6 +544,7 @@ def _bulk_insert_annual(rows: List[dict]):
 def get_all_annual_sorted(symbol: str) -> List[dict]:
     """Retrieve ALL stored annual data for a symbol, sorted by fiscal_date ASC.
     Used as fallback for point-in-time when quarterly data is unavailable."""
+    _ensure_fundamentals_table()
     try:
         conn = sqlite3.connect(DB_PATH)
         conn.row_factory = sqlite3.Row
@@ -597,6 +612,7 @@ def _bulk_insert_quarters(rows: List[dict]):
 def get_quarterly_history(symbol: str, limit: int = 8) -> List[dict]:
     """Retrieve stored quarterly data for a symbol, most recent first.
     Returns list of dicts with all stored fields."""
+    _ensure_fundamentals_table()
     try:
         conn = sqlite3.connect(DB_PATH)
         conn.row_factory = sqlite3.Row
@@ -617,6 +633,7 @@ def get_quarterly_history(symbol: str, limit: int = 8) -> List[dict]:
 def get_all_quarters_sorted(symbol: str) -> List[dict]:
     """Retrieve ALL stored quarterly data for a symbol, sorted by quarter_date ASC.
     Used for point-in-time backtest lookups."""
+    _ensure_fundamentals_table()
     try:
         conn = sqlite3.connect(DB_PATH)
         conn.row_factory = sqlite3.Row
@@ -770,19 +787,19 @@ def compute_pit_fundamentals(quarters_sorted: List[dict], as_of_date: str,
         if usable_pq:
             return _compute_metrics_from_periods(usable_pq, lookback_quarters)
 
-    # ── Last resort: use oldest available data despite date mismatch ──
-    # Better to have stale fundamentals than none at all during backtest.
-    # Priority: real quarterly > pseudo-quarterly from annuals
-    all_q = list(quarters_sorted or [])
-    if all_q:
-        return _compute_metrics_from_periods(all_q, lookback_quarters)
-
-    all_annuals = list(annuals_sorted or [])
-    if all_annuals:
-        pseudo_q = _annuals_to_pseudo_quarters(all_annuals)
-        if pseudo_q:
-            return _compute_metrics_from_periods(pseudo_q, lookback_quarters)
-
+    # FRONTIERE POINT-IN-TIME — ne rien retourner ici.
+    #
+    # Aucune periode n'etait publiee a `as_of_date`. Il n'existe pas de repli
+    # licite : toute donnee restante est posterieure a cette date. Une version
+    # anterieure retombait sur `_compute_metrics_from_periods(quarters_sorted)`,
+    # qui prend `periods[-1]` — le trimestre le PLUS RECENT du cache. Appelee a
+    # chaque barre par la boucle de backtest, elle injectait donc les
+    # fondamentaux futurs dans les barres anciennes, gonflait les performances
+    # mesurees et faussait les parametres retenus par l'optimiseur.
+    #
+    # `None` est le contrat attendu par les appelants : get_trading_signal
+    # traite deja `fin_data_override=None` en evaluant la barre sans composante
+    # fondamentale. Verrouille par src/tests/test_pit_fundamentals.py.
     return None
 
 
@@ -905,6 +922,7 @@ def _save_snapshot(symbol: str, info: dict):
 
 def get_snapshot(symbol: str, max_age_hours: int = SNAPSHOT_TTL_HOURS) -> Optional[dict]:
     """Get cached snapshot metrics if fresh enough."""
+    _ensure_fundamentals_table()
     try:
         conn = sqlite3.connect(DB_PATH)
         conn.row_factory = sqlite3.Row
@@ -956,10 +974,11 @@ def clear_fundamentals_cache(symbol: Optional[str] = None, older_than_hours: int
         symbol: If provided, clear only that symbol; if None, clear all old entries
         older_than_hours: Clear entries older than this many hours (default: 48h)
     """
+    _ensure_fundamentals_table()
     try:
         conn = sqlite3.connect(DB_PATH)
         cursor = conn.cursor()
-        
+
         cutoff = datetime.now() - timedelta(hours=older_than_hours)
         
         if symbol:
@@ -979,5 +998,7 @@ def clear_fundamentals_cache(symbol: Optional[str] = None, older_than_hours: int
         print(f"⚠️ Error clearing cache: {e}")
         return 0
 
-# Initialize on module load
-_ensure_fundamentals_table()
+# Pas d'initialisation au niveau module : chaque point d'entree public appelle
+# _ensure_fundamentals_table() lui-meme. Importer ce fichier ne doit ouvrir
+# aucune base — market_store puis cache_db l'importent en cascade, et un simple
+# `import cache_db` ouvrait jusqu'ici une connexion sur stock_analysis.db.

@@ -5,14 +5,19 @@
 # ============================================================================
 
 import os
+import re
 import sys
 import json
 import gc
+import logging
 from datetime import datetime, timedelta
+from hmac import compare_digest
 from pathlib import Path
 from dotenv import load_dotenv
 from functools import wraps, lru_cache
 from threading import Lock
+
+logger = logging.getLogger(__name__)
 
 from flask import Flask, request, jsonify, send_file, render_template
 from flask_cors import CORS
@@ -44,7 +49,10 @@ try:
     from config import SIGNALS_DIR, DATA_CACHE_DIR
     import yfinance as yf
 except ImportError as e:
-    print(f"⚠️ Import error: {e}")
+    # Volontairement un print : on est avant toute configuration du logging et
+    # juste avant un sys.exit(1). Un logger sans handler avalerait le message,
+    # et le processus mourrait sans rien dire.
+    print(f"[API] Import error: {e}", file=sys.stderr)
     sys.exit(1)
 
 # ============================================================================
@@ -52,10 +60,21 @@ except ImportError as e:
 # ============================================================================
 
 app = Flask(__name__, template_folder=TEMPLATE_DIR)
-CORS(app)  # Enable CORS for all routes
 
-app.config['JSON_SORT_KEYS'] = False
-app.config['JSONIFY_PRETTYPRINT_REGULAR'] = True
+# FRONTIERE DE SECURITE — CORS.
+# L'interface web est servie par cette meme application (`render_template` sur '/'),
+# donc le cas nominal est same-origin et ne requiert aucun en-tete CORS.
+# CORS_ORIGINS n'est a renseigner que si un front est heberge sur un autre domaine.
+# Ne jamais revenir a `CORS(app)` sans origine : cela autorise n'importe quel site
+# visite par l'utilisateur a appeler /api/analyze et a consommer le budget yfinance.
+_CORS_ORIGINS = [o.strip() for o in os.getenv('CORS_ORIGINS', '').split(',') if o.strip()]
+if _CORS_ORIGINS:
+    CORS(app, origins=_CORS_ORIGINS, methods=['GET', 'POST'])
+
+# Flask >= 2.3 : JSON_SORT_KEYS / JSONIFY_PRETTYPRINT_REGULAR ont ete retires de
+# app.config et sont sans effet. La configuration passe desormais par app.json.
+app.json.sort_keys = False
+app.json.compact = False
 
 # Limite de requêtes simultanées pour éviter surcharge mémoire
 analysis_lock = Lock()
@@ -69,7 +88,7 @@ def get_ticker_info_cached(symbol: str):
     try:
         return yf.Ticker(symbol).info
     except Exception as e:
-        print(f"⚠️ Erreur récupération info {symbol}: {e}")
+        logger.warning(f"[API] Erreur récupération info {symbol}: {e}")
         return {}
 
 # Security headers
@@ -85,17 +104,37 @@ def set_security_headers(response):
 # ============================================================================
 
 _API_KEY = os.getenv('API_KEY')
+# Echappatoire explicite pour le developpement local. Doit rester une action
+# deliberee : sans elle, une API_KEY absente bloque le service au lieu de
+# l'ouvrir silencieusement.
+_AUTH_DISABLED = os.getenv('API_AUTH_DISABLED') == '1'
 
 def require_api_key(f):
-    """Vérifie l'en-tête X-API-Key si API_KEY est défini dans l'environnement.
-    Sans variable API_KEY, toutes les requêtes passent (mode dev/local).
+    """
+    --------------------------------------------------------------------------
+    Objectif:
+        Proteger une route par cle d'API. FRONTIERE DE SECURITE : le defaut est
+        fermant. Sans API_KEY dans l'environnement, la route repond 503 au lieu
+        de laisser passer — une variable oubliee ne doit jamais exposer l'API.
+        Pour le developpement local, poser explicitement API_AUTH_DISABLED=1.
+
+    Entrees:
+        f (Callable): la vue Flask a proteger
+
+    Sorties:
+        decorated_function (Callable): la vue enveloppee du controle de cle
+    --------------------------------------------------------------------------
     """
     @wraps(f)
     def decorated_function(*args, **kwargs):
-        if _API_KEY:
-            provided = request.headers.get('X-API-Key', '')
-            if provided != _API_KEY:
-                return jsonify({'error': 'Unauthorized'}), 401
+        if _AUTH_DISABLED:
+            return f(*args, **kwargs)
+        if not _API_KEY:
+            logger.error("[API] API_KEY absente : route refusee (poser API_AUTH_DISABLED=1 en local)")
+            return jsonify({'error': 'Service unavailable'}), 503
+        provided = request.headers.get('X-API-Key', '')
+        if not compare_digest(provided, _API_KEY):
+            return jsonify({'error': 'Unauthorized'}), 401
         return f(*args, **kwargs)
     return decorated_function
 
@@ -106,11 +145,142 @@ def handle_errors(f):
         try:
             return f(*args, **kwargs)
         except ValueError as e:
+            # ValueError provient de nos propres validations : le message est
+            # redige pour l'appelant et ne divulgue pas d'interne.
             return jsonify({'error': f'Invalid input: {str(e)}'}), 400
-        except Exception as e:
-            print(f"❌ Erreur: {e}")
-            return jsonify({'error': f'Server error: {str(e)}'}), 500
+        except Exception:
+            # Le detail (trace, chemins, internes) reste dans les logs serveur ;
+            # le client ne recoit qu'un message generique.
+            logger.exception("[API] Erreur non geree sur %s", request.path)
+            return jsonify({'error': 'Server error'}), 500
     return decorated_function
+
+# ============================================================================
+# VALIDATION DES ENTREES
+# ============================================================================
+# FRONTIERE DE VALIDATION. Tout ce qui vient du client passe par ces trois
+# fonctions avant d'atteindre yfinance, le store DuckDB ou le disque. Elles
+# levent ValueError ; le decorateur handle_errors le traduit en 400 avec un
+# message qui dit quoi corriger.
+
+# Un symbole boursier : lettres, chiffres, point (BRK.B), tiret (BRK-B) et
+# egal (SI=F pour les futures). Volontairement strict : ce meme texte finit
+# interpole dans des requetes DuckDB construites par f-string.
+_MOTIF_SYMBOLE = re.compile(r'^[A-Z0-9][A-Z0-9.\-=]{0,14}$')
+
+# La forme d'une periode, pas son vocabulaire. Le code utilise des valeurs
+# non standard pour yfinance (12mo, 15mo, 4y) : figer une liste blanche
+# casserait des appels existants. On rejette la forme invalide, pas la valeur.
+_MOTIF_PERIODE = re.compile(r'^(?:\d{1,3}(?:d|mo|y)|ytd|max)$')
+
+MAX_SYMBOLES_PAR_LOT = 50
+
+
+def valider_symbole(brut) -> str:
+    """
+    --------------------------------------------------------------------------
+    Objectif:
+        Normaliser et valider un symbole boursier recu du client.
+
+    Inputs:
+        brut (Any): valeur fournie par l'appelant
+
+    Outputs:
+        symbole (str): symbole en majuscules, garanti conforme au motif
+    --------------------------------------------------------------------------
+    """
+    symbole = str(brut or '').strip().upper()
+    if not symbole:
+        raise ValueError("le champ 'symbol' est requis")
+    if not _MOTIF_SYMBOLE.match(symbole):
+        raise ValueError(
+            f"symbole invalide: {symbole!r}. Attendu 1 a 15 caracteres parmi "
+            "A-Z, 0-9, point, tiret ou egal (exemples: AAPL, BRK.B, ENR.DE, SI=F)"
+        )
+    return symbole
+
+
+def valider_periode(brut, defaut: str = '1mo') -> str:
+    """
+    --------------------------------------------------------------------------
+    Objectif:
+        Valider la forme d'une periode d'historique avant de la transmettre a
+        la couche de telechargement.
+
+    Inputs:
+        brut (Any): valeur fournie par l'appelant
+        defaut (str): valeur employee si le champ est absent
+
+    Outputs:
+        periode (str): periode conforme au motif
+    --------------------------------------------------------------------------
+    """
+    periode = str(brut or defaut).strip().lower()
+    if not _MOTIF_PERIODE.match(periode):
+        raise ValueError(
+            f"periode invalide: {periode!r}. Attendu <nombre>d, <nombre>mo, "
+            "<nombre>y, 'ytd' ou 'max' (exemples: 5d, 3mo, 12mo, 2y)"
+        )
+    return periode
+
+
+def valider_entier(brut, nom: str, defaut: int, mini: int, maxi: int) -> int:
+    """
+    --------------------------------------------------------------------------
+    Objectif:
+        Valider un entier borne recu en parametre de requete.
+
+    Inputs:
+        brut (Any): valeur fournie par l'appelant, ou None
+        nom (str): nom du champ, pour le message d'erreur
+        defaut (int): valeur si le champ est absent
+        mini (int), maxi (int): bornes incluses
+
+    Outputs:
+        valeur (int): entier garanti dans [mini, maxi]
+    --------------------------------------------------------------------------
+    """
+    if brut is None:
+        return defaut
+    try:
+        valeur = int(brut)
+    except (TypeError, ValueError):
+        raise ValueError(f"{nom} doit etre un entier, recu {brut!r}")
+    if not (mini <= valeur <= maxi):
+        raise ValueError(f"{nom} doit etre compris entre {mini} et {maxi}, recu {valeur}")
+    return valeur
+
+
+def valider_liste_symboles(brut, maximum: int = MAX_SYMBOLES_PAR_LOT) -> list:
+    """
+    --------------------------------------------------------------------------
+    Objectif:
+        Valider une liste de symboles et en borner la taille, pour qu'un seul
+        appel ne puisse pas consommer tout le budget de requetes yfinance.
+
+    Inputs:
+        brut (Any): liste fournie par l'appelant
+        maximum (int): nombre maximal de symboles acceptes
+
+    Outputs:
+        symboles (list[str]): symboles valides, dedupliques, ordre conserve
+    --------------------------------------------------------------------------
+    """
+    if not isinstance(brut, (list, tuple)):
+        raise ValueError("'symbols' doit etre une liste")
+    if not brut:
+        raise ValueError("'symbols' ne peut pas etre vide")
+    if len(brut) > maximum:
+        raise ValueError(f"'symbols' est limite a {maximum} entrees, recu {len(brut)}")
+
+    symboles, vus = [], set()
+    for element in brut:
+        symbole = valider_symbole(element)
+        if symbole not in vus:
+            vus.add(symbole)
+            symboles.append(symbole)
+    return symboles
+
 
 # ============================================================================
 # HEALTH & STATUS ENDPOINTS
@@ -189,11 +359,15 @@ def get_signals():
     - symbol: filtrer par symbole (optionnel)
     - min_reliability: score minimum (default: 30)
     """
+    # Validation avant le try : un ValueError doit atteindre handle_errors
+    # (400) et non l'except interne, qui repondrait 500.
+    limit = valider_entier(request.args.get('limit'), 'limit', 50, 1, 500)
+    symbol_brut = request.args.get('symbol', None, type=str)
+    symbol = valider_symbole(symbol_brut) if symbol_brut else None
+    min_reliability = valider_entier(
+        request.args.get('min_reliability'), 'min_reliability', 30, 0, 100
+    )
     try:
-        limit = request.args.get('limit', 50, type=int)
-        symbol = request.args.get('symbol', None, type=str)
-        min_reliability = request.args.get('min_reliability', 30, type=int)
-        
         # Charger les signaux depuis CSV
         signals_file = SIGNALS_DIR / "signaux_trading.csv"
         if not signals_file.exists():
@@ -226,7 +400,8 @@ def get_signals():
         }), 200
         
     except Exception as e:
-        return jsonify({'error': str(e)}), 500
+        logger.exception("[API] Erreur sur %s", request.path)
+        return jsonify({'error': 'Server error'}), 500
 
 @app.route('/api/signals/<symbol>', methods=['GET'])
 @handle_errors
@@ -267,7 +442,8 @@ def get_symbol_signals(symbol):
         }), 200
         
     except Exception as e:
-        return jsonify({'error': str(e)}), 500
+        logger.exception("[API] Erreur sur %s", request.path)
+        return jsonify({'error': 'Server error'}), 500
 
 @app.route('/api/analyze', methods=['POST'])
 @require_api_key
@@ -284,10 +460,10 @@ def analyze_symbol():
     prices = None
     volumes = None
     
+    data = request.get_json()
+    symbol = valider_symbole(data.get('symbol'))
+    period = valider_periode(data.get('period'), '1mo')
     try:
-        data = request.get_json()
-        symbol = data.get('symbol', '').upper()
-        period = data.get('period', '1mo')
         # Optional flags to control fallbacks
         use_domain_fallback = bool(data.get('use_domain_fallback', True))
         use_cap_fallback = bool(data.get('use_cap_fallback', True))
@@ -306,7 +482,7 @@ def analyze_symbol():
             current_analyses += 1
         
         try:
-            print(f"📊 Analyse simple de {symbol} (période: {period})...")
+            logger.info(f"[API] Analyse simple de {symbol} (période: {period})...")
             
             # Télécharger les données (comme le desktop UI)
             stock_data_dict = download_stock_data([symbol], period)
@@ -332,10 +508,10 @@ def analyze_symbol():
                 domaine_raw = domaine
                 domaine = normalize_sector(domaine)
                 if domaine_raw != domaine:
-                    print(f"🔄 {symbol}: Secteur normalisé: '{domaine_raw}' -> '{domaine}'")
+                    logger.info(f"[API] {symbol}: Secteur normalisé: '{domaine_raw}' -> '{domaine}'")
             except Exception as e:
                 domaine = "Inconnu"
-                print(f"⚠️ Erreur normalisation secteur {symbol}: {e}")
+                logger.warning(f"[API] Erreur normalisation secteur {symbol}: {e}")
             
             # Cap range
             cap_range = get_cap_range_for_symbol(symbol)
@@ -362,10 +538,10 @@ def analyze_symbol():
                                 test_key = f"{domaine}_{cap}"
                                 if test_key in best_params_all:
                                     cap_range = cap
-                                    print(f"✅ {symbol}: Cap_range trouvé en DB: {cap}")
+                                    logger.info(f"[API] {symbol}: Cap_range trouvé en DB: {cap}")
                                     break
                 except Exception as e:
-                    print(f"⚠️ {symbol}: Erreur recherche DB cap_range: {e}")
+                    logger.warning(f"[API] {symbol}: Erreur recherche DB cap_range: {e}")
                 
                 # Fallback standard
                 if cap_range == "Unknown" or not cap_range:
@@ -448,11 +624,11 @@ def analyze_symbol():
                 'status': 'success'
             }
             
-            print(f"✅ Analyse terminée: {sig} (score: {score})")
+            logger.info(f"[API] Analyse terminée: {sig} (score: {score})")
             return jsonify(response), 200
             
         except Exception as e:
-            print(f"❌ Erreur analyse: {e}")
+            logger.error(f"[API] Erreur analyse: {e}")
             import traceback
             traceback.print_exc()
             return jsonify({
@@ -479,9 +655,11 @@ def analyze_symbol():
     except Exception as e:
         with analysis_lock:
             current_analyses -= 1
-        return jsonify({'error': str(e)}), 500
+        logger.exception("[API] Erreur sur %s", request.path)
+        return jsonify({'error': 'Server error'}), 500
 
 @app.route('/api/backtest', methods=['POST'])
+@require_api_key
 @handle_errors
 def run_backtest():
     """
@@ -495,15 +673,15 @@ def run_backtest():
         "slow_ma": 26
     }
     """
+    data = request.get_json()
+    symbol = valider_symbole(data.get('symbol'))
+    period = valider_periode(data.get('period'), '12mo')
     try:
-        data = request.get_json()
-        symbol = data.get('symbol', '').upper()
-        period = data.get('period', '12mo')
         
         if not symbol:
             return jsonify({'error': 'symbol required'}), 400
         
-        print(f"🔬 Backtesting {symbol}...")
+        logger.info(f"[API] 🔬 Backtesting {symbol}...")
         
         # Télécharger données
         df = download_stock_data([symbol], period=period)
@@ -524,18 +702,19 @@ def run_backtest():
         }), 200
         
     except Exception as e:
-        print(f"❌ Error in /backtest: {e}")
-        return jsonify({'error': str(e)}), 500
+        logger.error(f"[API] Error in /backtest: {e}")
+        logger.exception("[API] Erreur sur %s", request.path)
+        return jsonify({'error': 'Server error'}), 500
 
 @app.route('/api/analyze-batch', methods=['POST'])
 @require_api_key
 @handle_errors
 def analyze_batch():
     """Analyse plusieurs symboles (max 20 à la fois)"""
+    data = request.get_json()
+    symbols = valider_liste_symboles(data.get('symbols'))
+    period = valider_periode(data.get('period'), '12mo')
     try:
-        data = request.get_json()
-        symbols = data.get('symbols', [])
-        period = data.get('period', '12mo')
         
         if not symbols:
             return jsonify({'error': 'symbols list required'}), 400
@@ -545,7 +724,7 @@ def analyze_batch():
         
         symbols = [s.upper() for s in symbols]
         
-        print(f"📊 Analysing {len(symbols)} symbols...")
+        logger.info(f"[API] Analysing {len(symbols)} symbols...")
         results = analyse_signaux_populaires(
             popular_symbols=symbols,
             mes_symbols=[],
@@ -563,8 +742,9 @@ def analyze_batch():
         }), 200
         
     except Exception as e:
-        print(f"❌ Error in /analyze-batch: {e}")
-        return jsonify({'error': str(e)}), 500
+        logger.error(f"[API] Error in /analyze-batch: {e}")
+        logger.exception("[API] Erreur sur %s", request.path)
+        return jsonify({'error': 'Server error'}), 500
 
 @app.route('/api/analyze-popular', methods=['POST'])
 @require_api_key
@@ -581,17 +761,29 @@ def analyze_popular_signals():
         "period": "12mo"
     }
     """
+    # Validation avant le try : un ValueError doit atteindre handle_errors
+    # (400) et non l'except interne, qui repondrait 500.
+    data = request.get_json()
+    popular_brut = data.get('popular_symbols', [])
+    mes_brut = data.get('mes_symbols', [])
+    period = valider_periode(data.get('period'), '12mo')
+
+    if not popular_brut and not mes_brut:
+        return jsonify({'error': 'At least one symbol list required'}), 400
+
+    # Les deux listes sont analysees dans le meme appel : la borne porte
+    # sur leur total, pas sur chacune, sinon on double le budget yfinance.
+    popular_symbols = valider_liste_symboles(popular_brut) if popular_brut else []
+    mes_symbols = valider_liste_symboles(mes_brut) if mes_brut else []
+    if len(popular_symbols) + len(mes_symbols) > MAX_SYMBOLES_PAR_LOT:
+        raise ValueError(
+            f"total des symboles limite a {MAX_SYMBOLES_PAR_LOT}, recu "
+            f"{len(popular_symbols) + len(mes_symbols)}"
+        )
+
     try:
-        data = request.get_json()
-        popular_symbols = data.get('popular_symbols', [])
-        mes_symbols = data.get('mes_symbols', [])
-        period = data.get('period', '12mo')
-        
-        if not popular_symbols and not mes_symbols:
-            return jsonify({'error': 'At least one symbol list required'}), 400
-        
-        print(f"📊 Analyzing popular signals... ({len(popular_symbols)} popular, {len(mes_symbols)} personal)")
-        
+        logger.info(f"[API] Analyzing popular signals... ({len(popular_symbols)} popular, {len(mes_symbols)} personal)")
+
         # Utiliser la même fonction que le UI
         results = analyse_signaux_populaires(
             popular_symbols=popular_symbols,
@@ -613,10 +805,11 @@ def analyze_popular_signals():
         }), 200
         
     except Exception as e:
-        print(f"❌ Error in /analyze-popular: {e}")
+        logger.error(f"[API] Error in /analyze-popular: {e}")
         import traceback
         traceback.print_exc()
-        return jsonify({'error': str(e)}), 500
+        logger.exception("[API] Erreur sur %s", request.path)
+        return jsonify({'error': 'Server error'}), 500
 
 @app.route('/api/lists', methods=['GET'])
 @handle_errors
@@ -648,14 +841,16 @@ def get_lists():
                         symbols = [s.strip().upper() for s in f.readlines() if s.strip()]
                         lists_data[list_type] = sorted(symbols)
             except Exception as e:
-                print(f"⚠️ Error loading {list_type}: {e}")
+                logger.warning(f"[API] Error loading {list_type}: {e}")
         
         return jsonify(lists_data), 200
         
     except Exception as e:
-        return jsonify({'error': str(e)}), 500
+        logger.exception("[API] Erreur sur %s", request.path)
+        return jsonify({'error': 'Server error'}), 500
 
 @app.route('/api/lists/<list_type>', methods=['POST'])
+@require_api_key
 @handle_errors
 def update_list(list_type):
     """
@@ -667,19 +862,18 @@ def update_list(list_type):
         "symbols": ["AAPL", "MSFT"]
     }
     """
+    # Validation avant le try : un ValueError doit atteindre handle_errors
+    # (400) et non l'except interne, qui repondrait 500.
+    if list_type not in ['popular', 'personal', 'optimization']:
+        return jsonify({'error': 'Invalid list type'}), 400
+
+    data = request.get_json()
+    action = str(data.get('action', '')).strip().lower()
+    symbols = valider_liste_symboles(data.get('symbols'))
+
     try:
         from config import PROJECT_ROOT
-        
-        if list_type not in ['popular', 'personal', 'optimization']:
-            return jsonify({'error': 'Invalid list type'}), 400
-        
-        data = request.get_json()
-        action = data.get('action', '').lower()
-        symbols = data.get('symbols', [])
-        
-        if not symbols:
-            return jsonify({'error': 'symbols required'}), 400
-        
+
         if action not in ['add', 'remove']:
             return jsonify({'error': 'Invalid action (add or remove)'}), 400
         
@@ -721,8 +915,9 @@ def update_list(list_type):
         }), 200
         
     except Exception as e:
-        print(f"❌ Error in /lists/{list_type}: {e}")
-        return jsonify({'error': str(e)}), 500
+        logger.error(f"[API] Error in /lists/{list_type}: {e}")
+        logger.exception("[API] Erreur sur %s", request.path)
+        return jsonify({'error': 'Server error'}), 500
 
 # ============================================================================
 # STATS & REPORT ENDPOINTS
@@ -764,7 +959,8 @@ def get_stats():
         return jsonify(stats), 200
         
     except Exception as e:
-        return jsonify({'error': str(e)}), 500
+        logger.exception("[API] Erreur sur %s", request.path)
+        return jsonify({'error': 'Server error'}), 500
 
 # ============================================================================
 # ERROR HANDLERS
@@ -826,7 +1022,10 @@ if __name__ == '__main__':
     # Configuration
     debug = os.getenv('FLASK_ENV') == 'development'
     port = int(os.getenv('BIND_PORT', 5000))
-    host = os.getenv('BIND_ADDRESS', '0.0.0.0')
+    # Defaut sur la boucle locale : ce bloc ne sert qu'au developpement.
+    # L'exposition sur toutes les interfaces doit etre demandee explicitement
+    # (render.yaml pose BIND_ADDRESS=0.0.0.0, requis par la plateforme).
+    host = os.getenv('BIND_ADDRESS', '127.0.0.1')
     
     print(f"""
     ╔═══════════════════════════════════════╗

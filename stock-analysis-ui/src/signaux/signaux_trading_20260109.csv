@@ -1,7 +1,0 @@
-Symbole,Signal,Score,Prix,Tendance,RSI,Domaine,CapRange,ParamKey,Volume moyen,Consensus,ConsensusMean,dPrice,dMACD,dRSI,dVolRel,Rev. Growth (%),EBITDA Yield (%),FCF Yield (%),D/E Ratio,Market Cap (B$),Fiabilite,detection_time
-ALB,ACHAT,5.15,158.30999755859375,Hausse,70.66,Basic Materials,Large,Basic Materials_Large,2967966.67,Neutre,,1.85,0.51,2.07,10.02,-3.5,3.27,-0.92,36.66,16.94,50.0,2026-01-09 04:18:21
-AIZ,ACHAT,4.425,238.02000427246094,Hausse,58.69,Financial Services,Large,Financial Services_Large,318920.0,Neutre,,-0.33,-9.42,-4.25,3.7,8.9,11.7,8.24,38.32,12.0,50.0,2026-01-09 04:18:21
-AJG,ACHAT,10.06,264.5400085449219,Hausse,58.02,Financial Services,Large,Financial Services_Large,1486433.33,Achat,2.0,0.07,3.02,-0.47,5.17,20.0,4.41,1.25,58.98,65.74,33.33333333333333,2026-01-09 04:18:21
-AKAM,ACHAT,6.3,85.70999908447266,Baisse,47.63,Technology,Large,Technology_Large,2154476.67,Achat,2.20833,-0.16,-35.7,-1.19,6.48,5.0,7.18,4.62,110.55,12.24,100.0,2026-01-09 04:18:21
-ALAB,ACHAT,2.475,156.72999572753906,Baisse,47.24,Technology,Large,Technology_Large,5314316.67,Neutre,,-1.12,-3.25,-1.97,13.89,103.9,0.38,0.38,2.46,30.33,100.0,2026-01-09 04:18:21
-AGX,ACHAT,7.94,313.9800109863281,Baisse,46.03,Industrials,Mid,Industrials_Mid,350343.33,Neutre,,0.48,-21.5,1.07,9.14,-2.3,3.36,4.76,0.63,4.36,100.0,2026-01-09 04:18:21

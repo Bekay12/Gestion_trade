@@ -1,4 +1,0 @@
-Symbole,Signal,Score,Prix,Tendance,RSI,Domaine,CapRange,ParamKey,Volume moyen,Consensus,ConsensusMean,dPrice,dMACD,dRSI,dVolRel,Rev. Growth (%),EBITDA Yield (%),FCF Yield (%),D/E Ratio,Market Cap (B$),Fiabilite,detection_time
-NVDA,ACHAT,5.8,188.85000610351562,Hausse,54.86,Technology,Mega,Technology_Mega,186590530.0,Achat,1.32812,0.11,35.87,0.01,-0.52,62.5,2.51,1.16,9.1,4597.93,100.0,2026-01-04 13:47:34
-CDTX,ACHAT,8.05,221.02999877929688,Hausse,83.51,Healthcare,Mid,Healthcare_Mid,1105983.33,Neutre,,0.0,-8.77,-0.2,7.72,0.0,-2.45,-0.46,0.47,6.95,100.0,2026-01-04 13:47:34
-GEV,ACHAT,9.16,679.5499877929688,Hausse,58.19,Industrials,Large,Industrials_Large,3347893.33,Achat,1.78125,0.11,-4.29,0.05,-0.9,11.8,1.67,1.33,11.1,181.66,75.0,2026-01-04 13:47:34

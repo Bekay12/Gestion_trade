@@ -1302,8 +1302,7 @@ def compute_financial_derivatives(symbol: str, lookback_quarters: int = 4) -> di
 # ===================================================================
 # SEGMENTATION PAR CAPITALISATION
 # ===================================================================
-# Note: classify_cap_range() est maintenant dans symbol_manager.py
-# Les appels à classify_cap_range_from_market_cap() sont obsoletes; utiliser classify_cap_range() a la place
+# `classify_cap_range()` est défini dans `symbol_manager.py`
 
 # ✅ Cache mémoire pour éviter les requêtes DB répétées
 _SYMBOL_INFO_CACHE = {}
