@@ -1,0 +1,82 @@
+# ============================================================================
+# RENDER.YAML - CONFIGURATION RENDER.COM
+# Infrastructure as Code pour déploiement automatique sur Render
+# ============================================================================
+
+services:
+  # ========================================================================
+  # WEB SERVICE - API Flask principale
+  # ========================================================================
+  - type: web
+    name: stock-analysis-api
+    runtime: docker
+    plan: free
+    
+    # Configuration Docker
+    dockerfilePath: ./stock-analysis-ui/Dockerfile
+    dockerContext: ./stock-analysis-ui
+    
+    # Variables d'environnement
+    envVars:
+      - key: FLASK_ENV
+        value: production
+      
+      - key: FLASK_APP
+        value: src.api:app
+      
+      - key: DEBUG
+        value: false
+      
+      - key: PYTHONUNBUFFERED
+        value: 1
+      
+      - key: FLASK_SECRET_KEY
+        generateValue: true
+      
+      - key: BIND_PORT
+        value: 10000
+      
+      - key: BIND_ADDRESS
+        value: 0.0.0.0
+    
+    # Health check
+    healthCheckPath: /health
+    
+    # Auto deploy
+    autoDeploy: true
+    
+    # Build command (optionnel, Docker gère ça)
+    # buildCommand: pip install -r requirements.txt
+    
+    # Start command (défini dans Dockerfile/Procfile)
+    # startCommand: gunicorn --bind 0.0.0.0:10000 src.api:app
+
+# ============================================================================
+# NOTES DE CONFIGURATION
+# ============================================================================
+# 
+# Plan Gratuit Render :
+# - 750 heures/mois
+# - Service se met en sleep après 15 min d'inactivité
+# - 512 MB RAM
+# - Redémarre automatiquement au premier accès
+# 
+# Variables d'environnement :
+# - FLASK_SECRET_KEY: Généré automatiquement par Render
+# - BIND_PORT: Render utilise le port 10000 par défaut
+# 
+# Santé du service :
+# - Render ping /health toutes les 30s
+# - Si échec, redémarre le service
+# 
+# Déploiement automatique :
+# - Push sur master/main → Redéploiement auto
+# - Logs disponibles dans le dashboard Render
+# 
+# SSL/HTTPS :
+# - Certificat SSL gratuit inclus
+# - HTTPS activé automatiquement
+# 
+# Custom domain (optionnel) :
+# - Ajouter dans le dashboard Render
+# - DNS CNAME vers le domaine Render fourni

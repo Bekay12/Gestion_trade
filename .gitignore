@@ -38,6 +38,11 @@ stock_analysis.log
 # OS
 .DS_Store
 Thumbs.db
+desktop.ini
+
+# SQLite runtime DB + journals (regenerated at runtime, never commit)
+stock_analysis.db
+*.db-journal
 
 # Temporary files
 *.tmp
