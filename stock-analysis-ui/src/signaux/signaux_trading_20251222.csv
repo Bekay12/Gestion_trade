@@ -1,6 +1,0 @@
-Symbole,Signal,Score,Prix,Tendance,RSI,Domaine,CapRange,ParamKey,Volume moyen,Consensus,ConsensusMean,dPrice,dMACD,dRSI,dVolRel,Rev. Growth (%),EBITDA Yield (%),FCF Yield (%),D/E Ratio,Market Cap (B$),Fiabilite,detection_time
-AAL,ACHAT,7.33,15.975000381469727,Hausse,68.65,Industrials,Large,Industrials_Large,53340942.8,Achat,2.12,0.86,2.4,0.44,-62.61,0.3,44.29,4.06,0.0,10.42,100.0,2025-12-22 17:10:58
-ACGL,ACHAT,10.65,96.56999969482422,Hausse,67.1,Financial Services,Large,Financial Services_Large,2261008.63,Achat,2.25,0.42,8.18,1.56,-6.26,8.2,14.39,18.55,11.5,36.04,40.0,2025-12-22 17:10:58
-ADSK,ACHAT,11.95,302.7900085449219,Hausse,52.84,Technology,Large,Technology_Large,1626875.6,Achat,1.5625,0.15,24.21,1.51,-5.82,18.0,2.77,3.98,94.5,63.92,80.0,2025-12-22 17:10:58
-ADM,ACHAT,7.1,57.970001220703125,Baisse,44.67,Consumer Defensive,Large,Consumer Defensive_Large,3033526.17,Neutre,3.18182,-0.57,12.49,-3.15,31.78,2.2,6.96,8.86,40.47,27.86,100.0,2025-12-22 17:10:58
-ABG,VENTE,-3.5,238.6199951171875,Hausse,52.53,Consumer Cyclical,Mid,Consumer Cyclical,169413.73,Neutre,2.77778,-0.61,-5.83,-2.78,7.42,13.3,23.75,5.36,154.34,4.66,100.0,2025-12-22 17:10:58
