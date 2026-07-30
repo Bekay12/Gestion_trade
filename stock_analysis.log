@@ -8819,3 +8819,9 @@
 2026-07-09 12:03:07,591 - ERROR - HTTP Error 404: {"quoteSummary":{"result":null,"error":{"code":"Not Found","description":"Quote not found for symbol: PLL"}}}
 2026-07-09 12:07:55,120 - ERROR - HTTP Error 404: {"quoteSummary":{"result":null,"error":{"code":"Not Found","description":"Quote not found for symbol: AAC-U"}}}
 2026-07-09 12:07:55,749 - ERROR - HTTP Error 404: {"quoteSummary":{"result":null,"error":{"code":"Not Found","description":"Quote not found for symbol: AAC-U"}}}
+2026-07-09 12:36:14,964 - ERROR - HTTP Error 404: {"quoteSummary":{"result":null,"error":{"code":"Not Found","description":"No fundamentals data found for symbol: LTR.SG"}}}
+2026-07-09 12:36:15,402 - ERROR - HTTP Error 404: {"quoteSummary":{"result":null,"error":{"code":"Not Found","description":"No fundamentals data found for symbol: LTR.SG"}}}
+2026-07-09 12:36:23,230 - ERROR - HTTP Error 404: {"quoteSummary":{"result":null,"error":{"code":"Not Found","description":"No fundamentals data found for symbol: SDV1.SG"}}}
+2026-07-09 12:36:23,841 - ERROR - HTTP Error 404: {"quoteSummary":{"result":null,"error":{"code":"Not Found","description":"No fundamentals data found for symbol: SDV1.SG"}}}
+2026-07-09 12:41:24,707 - ERROR - HTTP Error 404: {"quoteSummary":{"result":null,"error":{"code":"Not Found","description":"Quote not found for symbol: SEMR"}}}
+2026-07-09 12:41:25,151 - ERROR - $SEMR: possibly delisted; no price data found  (1d 2025-03-03 -> 2026-07-09) (Yahoo error = "No data found, symbol may be delisted")
