@@ -43,6 +43,9 @@ desktop.ini
 # SQLite runtime DB + journals (regenerated at runtime, never commit)
 stock_analysis.db
 *.db-journal
+# Fichiers du mode WAL : crees a chaque ouverture de la base, jamais a versionner.
+*.db-wal
+*.db-shm
 
 # Temporary files
 *.tmp

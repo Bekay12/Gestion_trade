@@ -35,11 +35,14 @@ API publique identique à cache_db.py pour compatibilité descendante :
 
 from __future__ import annotations
 
+import logging
 import os
 import threading
 from datetime import datetime, timedelta
 from pathlib import Path
 from typing import Iterable, List, Optional
+
+logger = logging.getLogger(__name__)
 
 import duckdb
 import pandas as pd
@@ -92,8 +95,8 @@ def _safe_read_parquet(path, **kwargs) -> pd.DataFrame:
         print(f"[market_store] fichier Parquet corrompu détecté, suppression : {path} ({exc})")
         try:
             Path(path).unlink(missing_ok=True)
-        except Exception:
-            pass
+        except Exception as exc:
+            logger.debug("[STORE] _safe_read_parquet: %s ignoree (%s)", type(exc).__name__, exc)
         return pd.DataFrame()
 
 
@@ -111,8 +114,8 @@ def _safe_float(value):
     try:
         if pd.isna(value):
             return None
-    except Exception:
-        pass
+    except Exception as exc:
+        logger.debug("[STORE] _safe_float: %s ignoree (%s)", type(exc).__name__, exc)
     try:
         return float(value)
     except (TypeError, ValueError):
@@ -125,8 +128,8 @@ def _safe_int(value):
     try:
         if pd.isna(value):
             return None
-    except Exception:
-        pass
+    except Exception as exc:
+        logger.debug("[STORE] _safe_int: %s ignoree (%s)", type(exc).__name__, exc)
     try:
         return int(value)
     except (TypeError, ValueError):
@@ -188,8 +191,8 @@ def _get_rate_to_usd(currency: str) -> float:
             if rate and rate > 0:
                 _FX_RATE_CACHE[cur] = rate
                 return rate
-    except Exception:
-        pass
+    except Exception as exc:
+        logger.debug("[STORE] _get_rate_to_usd: %s ignoree (%s)", type(exc).__name__, exc)
     _FX_RATE_CACHE[cur] = 1.0
     return 1.0
 
@@ -322,8 +325,8 @@ def ensure_fx_rates_daily_history(
                             "rows_added": 0,
                             "last_refresh": str(last_refresh),
                         }
-            except Exception:
-                pass
+            except Exception as exc:
+                logger.debug("[STORE] ensure_fx_rates_daily_history: %s ignoree (%s)", type(exc).__name__, exc)
 
     start_date = (now - timedelta(days=max(365, int(years) * 365))).strftime("%Y-%m-%d")
     end_date = now.strftime("%Y-%m-%d")
@@ -781,8 +784,8 @@ def _fetch_calendar_snapshot(ticker: "yf.Ticker") -> dict:
         info_ref = {}
         try:
             info_ref = ticker.info or {}
-        except Exception:
-            pass
+        except Exception as exc:
+            logger.debug("[STORE] _fetch_calendar_snapshot: %s ignoree (%s)", type(exc).__name__, exc)
         cal["target_mean_price"]   = _safe_float(info_ref.get("targetMeanPrice"))
         cal["target_high_price"]   = _safe_float(info_ref.get("targetHighPrice"))
         cal["target_low_price"]    = _safe_float(info_ref.get("targetLowPrice"))
@@ -1370,22 +1373,43 @@ def query_features(
     pattern = str(PARQUET_DIR / "features" / "*/part0.parquet")
     col_clause = "*" if not columns else ", ".join(columns)
 
-    filters = []
+    # FRONTIERE SQL — les valeurs passent par des parametres lies, jamais par
+    # interpolation. Les symboles viennent de fichiers .txt edites a la main :
+    # une apostrophe dans un ticker cassait la requete, et l'except plus bas
+    # transformait la panne en resultat vide, donc en « aucune opportunite ».
+    # Seuls le nom des colonnes et le chemin Parquet restent interpoles : ils
+    # sont d'origine interne, jamais fournis par l'utilisateur.
+    filters: list[str] = []
+    params: list = []
     if symbols:
-        quoted = ", ".join(f"'{s}'" for s in [_normalize_symbol(s) for s in symbols])
-        filters.append(f"symbol IN ({quoted})")
+        normalises = [_normalize_symbol(s) for s in symbols]
+        filters.append(f"symbol IN ({', '.join('?' for _ in normalises)})")
+        params.extend(normalises)
     if start_date:
-        filters.append(f"feature_date >= '{start_date}'")
+        filters.append("feature_date >= ?")
+        params.append(start_date)
     if end_date:
-        filters.append(f"feature_date <= '{end_date}'")
+        filters.append("feature_date <= ?")
+        params.append(end_date)
 
     where = f"WHERE {' AND '.join(filters)}" if filters else ""
-    sql = f"SELECT {col_clause} FROM read_parquet('{pattern}', hive_partitioning=false) {where} ORDER BY feature_date DESC, symbol ASC"
+    # union_by_name=true est indispensable, pas cosmetique : les fichiers
+    # Parquet ont des schemas heterogenes selon la date d'ecriture du symbole.
+    # Avec hive_partitioning=false et sans union, DuckDB lit le schema du
+    # premier fichier et echoue des qu'un autre n'a pas les memes colonnes —
+    # la fonction retournait alors un DataFrame vide en toute discretion.
+    # get_latest_features() utilise deja cette option pour la meme raison.
+    sql = (
+        f"SELECT {col_clause} FROM read_parquet(?, union_by_name=true) "
+        f"{where} ORDER BY feature_date DESC, symbol ASC"
+    )
 
     try:
-        return _duckdb_query(sql)
+        return _duckdb_query(sql, [pattern] + params)
     except Exception:
-        # Fallback si aucun fichier n'existe encore
+        # Repli si aucun fichier n'existe encore. Journalise : sans trace, une
+        # requete invalide est indiscernable d'un store vide.
+        logger.warning("[STORE] query_features a echoue, DataFrame vide retourne", exc_info=True)
         return pd.DataFrame()
 
 
@@ -1565,8 +1589,8 @@ def refresh_symbol_incremental(
             raise ValueError(f"No history available for {symbol}")
         try:
             get_fundamental_metrics(symbol, use_cache=True, allow_stale=False)
-        except Exception:
-            pass
+        except Exception as exc:
+            logger.debug("[STORE] refresh_symbol_incremental: %s ignoree (%s)", type(exc).__name__, exc)
         upsert_instrument(symbol, info)
         if info:
             store_fundamental_snapshot(symbol, info)
@@ -1597,8 +1621,8 @@ def refresh_symbol_incremental(
 
     try:
         get_fundamental_metrics(symbol, use_cache=True, allow_stale=False)
-    except Exception:
-        pass
+    except Exception as exc:
+        logger.debug("[STORE] refresh_symbol_incremental: %s ignoree (%s)", type(exc).__name__, exc)
 
     upsert_instrument(symbol, info)
     if info:
@@ -1891,8 +1915,8 @@ def update_timeline_data(symbol: str) -> None:
             })
             df_earn["date"] = pd.to_datetime(df_earn["date"], errors="coerce", utc=True).dt.tz_localize(None)
             store_timeline_earnings(symbol, df_earn)
-    except Exception:
-        pass
+    except Exception as exc:
+        logger.debug("[STORE] update_timeline_data: %s ignoree (%s)", type(exc).__name__, exc)
 
     # --- Recommandations analystes ---
     try:
@@ -1904,8 +1928,8 @@ def update_timeline_data(symbol: str) -> None:
             })
             df_rec["date"] = pd.to_datetime(df_rec["date"], errors="coerce", utc=True).dt.tz_localize(None)
             store_timeline_recommendations(symbol, df_rec)
-    except Exception:
-        pass
+    except Exception as exc:
+        logger.debug("[STORE] update_timeline_data: %s ignoree (%s)", type(exc).__name__, exc)
 
     # --- Transactions insider ---
     try:
@@ -1921,8 +1945,8 @@ def update_timeline_data(symbol: str) -> None:
             if "transaction_text" not in df_ins.columns:
                 df_ins["transaction_text"] = df_ins.get("Text", pd.Series("", index=df_ins.index)).astype(str)
             store_timeline_insider(symbol, df_ins)
-    except Exception:
-        pass
+    except Exception as exc:
+        logger.debug("[STORE] update_timeline_data: %s ignoree (%s)", type(exc).__name__, exc)
 
 
 # ---------------------------------------------------------------------------

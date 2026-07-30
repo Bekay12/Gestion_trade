@@ -2,6 +2,7 @@
 Module pour gérer les symboles boursiers dans SQLite - Version sans emojis pour Windows.
 """
 
+import logging
 import sqlite3
 from pathlib import Path
 from datetime import datetime, timedelta
@@ -10,6 +11,8 @@ from typing import List, Dict, Optional, Tuple
 import pandas as pd
 import json
 from config import DB_PATH
+
+logger = logging.getLogger(__name__)
 
 _FX_RATE_MEM = {}
 
@@ -22,6 +25,45 @@ _CCY_SUBUNIT_TO_MAJOR = {
     'ZAc': ('ZAR', 0.01),
     'ZAR': ('ZAR', 1.0),
 }
+
+# Bornes des tranches de capitalisation, en MILLIARDS de dollars US.
+CAP_RANGE_THRESHOLDS_B = ((2.0, 'Small'), (10.0, 'Mid'), (100.0, 'Large'))
+
+
+def classify_cap_range(market_cap_b: Optional[float]) -> str:
+    """
+    --------------------------------------------------------------------------
+    Objectif:
+        Traduire une capitalisation boursiere en tranche ('Small', 'Mid',
+        'Large', 'Mega'). Source unique de verite : _get_cap_range_safe() et
+        qsi.py appliquaient auparavant ces memes seuils en dur, chacun de leur
+        cote.
+
+    Entrees:
+        market_cap_b (float | None): capitalisation en MILLIARDS de dollars US.
+            L'unite est imposee par la base : market_cap_value vaut 4943.99
+            pour NVDA, soit 4,94 T$. Passer des dollars bruts classerait tout
+            en 'Mega'.
+
+    Sorties:
+        cap_range (str): 'Small', 'Mid', 'Large', 'Mega', ou 'Unknown' si la
+            valeur est absente, nulle, negative ou non numerique.
+    --------------------------------------------------------------------------
+    """
+    try:
+        if market_cap_b is None:
+            return 'Unknown'
+        value = float(market_cap_b)
+    except (TypeError, ValueError):
+        return 'Unknown'
+
+    if value <= 0:
+        return 'Unknown'
+    for seuil, libelle in CAP_RANGE_THRESHOLDS_B:
+        if value < seuil:
+            return libelle
+    return 'Mega'
+
 
 def init_symbols_table():
     """Crée les tables symbols et symbol_lists si elles n'existent pas."""
@@ -245,7 +287,18 @@ def sync_txt_to_sqlite(txt_file: str, list_type: str = 'popular', force_refresh:
                     VALUES (?, ?)
                 ''', (symbol, list_type))
                 added += 1
-            except Exception:
+            except Exception as exc:
+                # Cet except attrapait silencieusement un NameError sur
+                # classify_cap_range : chaque symbole concerne perdait secteur,
+                # devise et capitalisation qui venaient pourtant d'etre
+                # recuperes, au prix de trois requetes yfinance. On journalise
+                # desormais la cause, pour qu'une erreur de programmation ne
+                # puisse plus se deguiser en donnee manquante.
+                logger.warning(
+                    "[SYMBOLS] enrichissement de %s abandonne (%s: %s) — "
+                    "ligne degradee ecrite en base",
+                    symbol, type(exc).__name__, exc,
+                )
                 # Même si l'enrichissement distant échoue, garder une ligne cohérente en DB.
                 cursor.execute('''
                     INSERT OR IGNORE INTO symbols 
@@ -491,23 +544,32 @@ def get_all_sectors(list_type: Optional[str] = None) -> List[str]:
     conn = sqlite3.connect(DB_PATH)
     cursor = conn.cursor()
 
+    # Les secteurs NULL ou vides sont exclus : "pas de secteur" n'est pas un
+    # secteur. Sans ce filtre la liste contient None, et tout appelant qui la
+    # trie leve TypeError ('<' not supported between 'str' and 'NoneType').
     if list_type:
         query = '''
-            SELECT DISTINCT s.sector 
+            SELECT DISTINCT s.sector
             FROM symbols s
             INNER JOIN symbol_lists sl ON s.symbol = sl.symbol
             WHERE s.is_active = 1 AND sl.list_type = ?
+              AND s.sector IS NOT NULL AND TRIM(s.sector) <> ''
             ORDER BY s.sector
         '''
         params = [list_type]
     else:
-        query = 'SELECT DISTINCT sector FROM symbols WHERE is_active = 1 ORDER BY sector'
+        query = '''
+            SELECT DISTINCT sector FROM symbols
+            WHERE is_active = 1
+              AND sector IS NOT NULL AND TRIM(sector) <> ''
+            ORDER BY sector
+        '''
         params = []
 
     cursor.execute(query, params)
     sectors = [row[0] for row in cursor.fetchall()]
     conn.close()
-    
+
     return sectors
 
 def get_all_cap_ranges(list_type: Optional[str] = None) -> List[str]:
@@ -652,15 +714,7 @@ def _get_cap_range_safe(symbol: str) -> Tuple[str, float]:
         currency = str(info.get('currency') or 'USD').strip().upper()
         rate_to_usd = _get_rate_to_usd_simple(currency)
         market_cap_b = (float(market_cap) * rate_to_usd) / 1e9
-        
-        if market_cap_b < 2:
-            return 'Small', market_cap_b
-        elif market_cap_b < 10:
-            return 'Mid', market_cap_b
-        elif market_cap_b < 100:
-            return 'Large', market_cap_b
-        else:
-            return 'Mega', market_cap_b
+        return classify_cap_range(market_cap_b), market_cap_b
     except Exception:
         return 'Unknown', None
 
@@ -712,4 +766,11 @@ def _get_currency_safe(symbol: str) -> str:
 # ----------------------------
 
 if __name__ == '__main__':
-    display_popular_symbols_distribution()
+    # Appelait display_popular_symbols_distribution(), fonction qui n'a jamais
+    # existe dans le depot : `python symbol_manager.py` plantait aussitot.
+    # Remplace par un resume construit avec les fonctions reellement definies.
+    for _liste in ('popular', 'personal', 'optimization', 'coko'):
+        print(f"{_liste:14s} {len(get_symbols_by_list_type(_liste)):5d} symboles")
+    print()
+    for _tranche in get_all_cap_ranges():
+        print(f"  {_tranche:10s} {len(get_symbols_by_cap_range(_tranche)):5d}")

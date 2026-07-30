@@ -13,7 +13,7 @@ here), so every relative path resolves from `src/`.
 | [core/](core/) | Analysis engine being migrated out of `qsi.py` (indicators, signals, screeners, fx, io…) |
 | `qsi.py` | **Legacy façade** re-exporting `core/`; callers import from here. Migrate logic *into* `core/`, keep the re-export. |
 | `market_store.py` | Parquet+DuckDB warehouse (real backend). `market_parquet/features/symbol=…/` partitions. |
-| `cache_db.py` | SQLite-compat **shim** → forwards to `market_store`. Don't add logic here. |
+| `cache_db.py` | Re-exports public API from `market_store`. No implementation. Zero DB connections opened on import. |
 | `config.py` | Central paths/constants — import cache dirs & globals from here, don't hardcode. |
 | `symbol_manager.py`, `fundamentals_cache.py`, `timeline_cache.py`, `sector_normalizer.py` | Symbol catalogue, fundamentals cache (TTL, evolutive quarters), timelines, sector name normalization |
 | `*_scan.py` (`Big_Growth_scan`, `Sichere_Unternehmen_scan`, `Combined_scan`) | Standalone CLI batch screeners: fetch yfinance per symbol → write Parquet store → CSV |
