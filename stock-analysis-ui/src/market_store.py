@@ -36,7 +36,6 @@ API publique identique à cache_db.py pour compatibilité descendante :
 from __future__ import annotations
 
 import logging
-import os
 import threading
 from datetime import datetime, timedelta
 from pathlib import Path

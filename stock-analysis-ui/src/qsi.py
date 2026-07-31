@@ -14,21 +14,18 @@ import logging
 import warnings
 import json
 from pathlib import Path
-from datetime import datetime, timedelta
+from datetime import datetime
 from typing import List, Dict, Union
-from collections import OrderedDict  # gardé pour compatibilité d'imports existants
-from concurrent.futures import ThreadPoolExecutor
 from core.indicators import calculate_macd  # migré dans core/
-from core.cache import _BoundedCache, DERIV_CACHE, TA_CACHE  # migré dans core/
+from core.cache import _BoundedCache, DERIV_CACHE, TA_CACHE  # noqa: F401  (migré dans core/, ré-exporté : d'autres modules font `from qsi import _BoundedCache`)
 from core.io import save_to_evolutive_csv  # migré dans core/
 import sys
 import os
-import sqlite3
 import yfinance as yf
 _trading_accel_path = Path(__file__).parent / "trading_c_acceleration"
 if _trading_accel_path.exists():
     sys.path.insert(0, str(_trading_accel_path.parent))
-from trading_c_acceleration.qsi_optimized import backtest_signals, backtest_signals_with_events
+from trading_c_acceleration.qsi_optimized import backtest_signals, backtest_signals_with_events  # noqa: F401  (ré-exporté : api.py fait `from qsi import backtest_signals`)
 
 # Import config et cache utilities
 try:
@@ -42,8 +39,10 @@ except ImportError:
 
 # Import du gestionnaire de symboles
 try:
-    from symbol_manager import (
-        init_symbols_table, sync_txt_to_sqlite, 
+    # noqa sur le bloc : ces noms sont ré-exportés par la façade qsi, et
+    # l'import sert aussi de test de disponibilité de symbol_manager.
+    from symbol_manager import (  # noqa: F401
+        init_symbols_table, sync_txt_to_sqlite,
         get_symbols_by_list_type, get_symbols_by_sector_and_cap,
         classify_cap_range
     )
@@ -243,7 +242,7 @@ def extract_best_parameters(db_path: str = None) -> Dict[str, Tuple[Tuple[float,
 
     except FileNotFoundError:
         print(f"🚫 Base de données {db_path} non trouvée")
-        print(f"   💡 Exécute: python migration_csv_to_sqlite.py")
+        print("   💡 Exécute: python migration_csv_to_sqlite.py")
         return {}
     except Exception as e:
         print(f"⚠️ Erreur lors de l'extraction depuis SQLite: {e}")
@@ -620,7 +619,6 @@ def get_trading_signal(prices, volumes, domaine, domain_coeffs=None, domain_thre
         extras = price_extras
         if extras is None:
             try:
-                from typing import Any
                 extras = BEST_PARAM_EXTRAS.get(selected_key or domaine, {})
             except Exception:
                 extras = {}
@@ -1955,7 +1953,7 @@ def get_symbol_classification(symbols: List[str]) -> Dict:
     return {
         "strategy": "context_fallback",
         "max_age_hours": fallback_age,
-        "source": f"contexte (nouveaux symboles)",
+        "source": "contexte (nouveaux symboles)",
         "new_symbols": new_symbols,
         "total_symbols": len(clean_symbols),
         "known_symbols": 0
@@ -1985,7 +1983,7 @@ def log_new_symbols(new_symbols: set, context: str = "unknown"):
             # print(f"🆕 {len(new_symbols)} nouveaux symboles (voir cache_logs/nouveaux_symboles.log)")
             pass
             
-    except Exception as e:
+    except Exception:
         # print(f"⚠️ Impossible de logger: {e}")
         pass
 
@@ -2251,11 +2249,11 @@ def download_stock_data(symbols: List[str], period: str) -> Dict[str, Dict[str, 
                                             'Currency': str(clean_data['Currency'].iloc[-1]) if 'Currency' in clean_data.columns and len(clean_data) else 'USD',
                                             'FxRateToUSD': _safe_float(clean_data['FxRateToUSD'].iloc[-1], 1.0) if 'FxRateToUSD' in clean_data.columns and len(clean_data) else 1.0,
                                         }
-                    except Exception as e:
+                    except Exception:
                         # print(f"⚠️ Erreur traitement {symbol}: {e}")
                         pass
                 
-            except Exception as e:
+            except Exception:
                 # print(f"🚨 Erreur batch: {e}")
                 
                 # Fallback: téléchargements individuels
@@ -2277,7 +2275,7 @@ def download_stock_data(symbols: List[str], period: str) -> Dict[str, Dict[str, 
                                     'Currency': str(clean_data['Currency'].iloc[-1]) if 'Currency' in clean_data.columns and len(clean_data) else 'USD',
                                     'FxRateToUSD': _safe_float(clean_data['FxRateToUSD'].iloc[-1], 1.0) if 'FxRateToUSD' in clean_data.columns and len(clean_data) else 1.0,
                                 }
-                    except Exception as e2:
+                    except Exception:
                         # print(f"⚠️ Fallback échoué {symbol}: {e2}")
                         pass
     
@@ -2312,9 +2310,6 @@ def auto_register_analyzed_symbols(symbols: List[str], list_type: str = 'popular
     """
     try:
         from symbol_manager import init_symbols_table, auto_add_to_popular
-        from symbol_manager import sync_txt_to_sqlite
-        import sqlite3
-        from config import DB_PATH
         
         if not symbols:
             return
@@ -2327,7 +2322,7 @@ def auto_register_analyzed_symbols(symbols: List[str], list_type: str = 'popular
         if added > 0:
             print(f"🔄 {added} nouveaux symboles auto-enregistrés dans popular")
             
-    except Exception as e:
+    except Exception:
         # Silencieux - ne pas bloquer l'analyse si l'enregistrement échoue
         pass
 
@@ -2776,7 +2771,7 @@ def analyse_signaux_populaires(
                     print(f"      📊 Paramètres base: coeffs={coeffs}")
                     print(f"         seuils={thresholds}, globaux={globals_th}")
                     if extras and isinstance(extras, dict):
-                        print(f"      ✨ Features supplémentaires:")
+                        print("      ✨ Features supplémentaires:")
                         for key, val in extras.items():
                             print(f"         {key}: {val}")
                     elif extras:
@@ -3018,7 +3013,7 @@ def analyse_signaux_populaires(
     if total_trades > 0:
         taux_global = total_gagnants / total_trades * 100
         print("\n" + "="*115)
-        print(f"🌍 Résultat global :")
+        print("🌍 Résultat global :")
         print(f" - Taux de réussite = {taux_global:.1f}%")
         print(f" - Nombre de trades = {total_trades}")
         print(f" - Total investi réel = {total_investi_reel:.2f} $ (50 $ par action analysée)")
@@ -3225,7 +3220,7 @@ def analyse_signaux_populaires(
         # Sauvegarde spéciale pour vos symboles personnels
         mes_signaux_valides = [s for s in signaux_valides if s['Symbole'] in mes_symbols]
         if mes_signaux_valides:
-            special_filename = f"mes_signaux_fiables_.csv"
+            special_filename = "mes_signaux_fiables_.csv"
             if verbose:
                 print(f"💠 Sauvegarde de {len(mes_signaux_valides)} signaux personnels fiables dans {special_filename}")
             save_to_evolutive_csv(mes_signaux_valides, special_filename)

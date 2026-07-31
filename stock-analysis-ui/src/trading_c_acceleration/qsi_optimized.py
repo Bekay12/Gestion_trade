@@ -3,18 +3,11 @@
 
 import numpy as np
 import pandas as pd
-import yfinance as yf
-import ta
-import time
-import csv
-from matplotlib import dates as mdates
 import logging
 import warnings
-import requests
 from pathlib import Path
-from datetime import datetime, timedelta
-from typing import List, Dict, Union
-from concurrent.futures import ThreadPoolExecutor
+from datetime import datetime
+from typing import Dict, Union
 
 # Import du module C (après compilation)
 import sys
@@ -53,7 +46,7 @@ def _diagnose_import(module_name: str):
         try:
             print(f"Python executable: {sys.executable}")
             print(f"CWD: {os.getcwd()}")
-            print(f"sys.path:")
+            print("sys.path:")
             for p in sys.path:
                 print(f"  {p}")
         except Exception:
@@ -165,13 +158,12 @@ def save_to_evolutive_csv(signals, filename="signaux_trading.csv"):
     except Exception as e:
         print(f"🚨 Erreur sauvegarde CSV: {e}")
 
-from typing import Tuple, Dict, Union, List
+from typing import Tuple
 
 BEST_PARAM_EXTRAS: Dict[str, Dict[str, Union[int, float]]] = {}
 
 def extract_best_parameters(db_path: str = None) -> Dict[str, Tuple[Tuple[float, ...], Tuple[float, ...], Tuple[float, float]]]:
     if db_path is None:
-        import sys
         from pathlib import Path
         config_dir = Path(__file__).parent.parent.resolve()
         db_path = str(config_dir / 'signaux' / 'optimization_hist.db')
@@ -445,7 +437,7 @@ def backtest_signals_c_extended(prices: Union[pd.Series, pd.DataFrame], volumes:
         result = trading_c.backtest_symbol(prices_array, volumes_array, coeffs_tuple, montant, transaction_cost)
         return result
         
-    except Exception as e:
+    except Exception:
         # Fallback Python en cas d'erreur
         # print(f"⚠️ C extended error, fallback Python: {e}")
         result_dict, _ = backtest_signals_with_events(
@@ -493,7 +485,7 @@ def backtest_signals_accelerated(prices: Union[pd.Series, pd.DataFrame], volumes
 
     # Debug: vérifier si les paramètres sont chargés
     if domain_coeffs is None and not best_params:
-        print(f"⚠️ backtest_signals: Aucun paramètre optimisé trouvé")
+        print("⚠️ backtest_signals: Aucun paramètre optimisé trouvé")
     
     selected_key = domaine
     if cap_range:
@@ -544,7 +536,8 @@ def backtest_signals_accelerated(prices: Union[pd.Series, pd.DataFrame], volumes
     if C_ACCELERATION and min_holding_bars == MIN_HOLDING_BARS:
         try:
             # NOTE: Ne PAS écraser seuil_achat/seuil_vente ici - ils sont déjà correctement définis
-            # depuis globals_thresholds (lignes 343-345) ou les valeurs par défaut
+            # par le dépaquetage de globals_thresholds depuis best_params[selected_key],
+            # plus haut dans cette fonction, ou par les valeurs par défaut.
             
             # Nettoyage des données (éliminer NaN)
             clean_prices = prices.fillna(method='ffill').fillna(method='bfill')
@@ -592,7 +585,7 @@ def backtest_signals_with_events(prices, volumes, domaine, montant=50, transacti
     """
     try:
         from qsi import get_trading_signal as qsi_get_trading_signal
-    except Exception as e:
+    except Exception:
         return {"trades": 0, "gagnants": 0, "taux_reussite": 0, "gain_total": 0.0, "gain_moyen": 0.0, "drawdown_max": 0.0}, []
 
     if isinstance(prices, pd.DataFrame):

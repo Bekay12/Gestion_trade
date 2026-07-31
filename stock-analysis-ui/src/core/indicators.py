@@ -1,7 +1,6 @@
 """
 Calculs d'indicateurs techniques purs (pas de réseau, pas de DB).
 """
-import pandas as pd
 
 
 def calculate_macd(prices, fast=12, slow=26, signal=9):

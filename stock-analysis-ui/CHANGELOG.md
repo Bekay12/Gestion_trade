@@ -1,5 +1,44 @@
 # 📋 Changelog - Stock Analysis Web Dashboard
 
+## Version 1.4.0 - Mises à jour techniques (2026-07-31)
+
+### 🔧 Outillage et CI
+
+- **Ajout de règles de linting ciblées**
+  - `.github/workflows/tests.yml` : étape de lint ajoutée avant les tests. Trois règles `ruff` activées : `F821` (nom indéfini), `F811` (redéfinition masquant la précédente), `E9` (erreur de syntaxe). Ces règles sont volontairement limitées à des problèmes critiques, sans règles de style.
+
+- **Corrections de redéfinitions F811**
+  - `src/trading_c_acceleration/qsi_optimized.py` : deux redéfinitions corrigées (`Dict` et `Union` importés deux fois), qui bloquaient l'exécution de la nouvelle étape de linting.
+
+### 🧹 Nettoyage
+
+- **Corrections automatiques à grande échelle**
+  - 102 corrections appliquées : suppression d'imports inutilisés, variables assignées sans utilisation, f-strings sans champ de substitution.
+
+- **Mise à jour des annotations d'imports**
+  - Les imports réellement ré-exportés sont désormais marqués `# noqa: F401` avec la raison. Trois emplacements de `src/qsi.py` étaient concernés : `_BoundedCache`, `backtest_signals`, et le bloc importé de `symbol_manager`. D'autres modules en dépendent, un nettoyage automatique les aurait supprimés.
+
+- **Amélioration du test d'import**
+  - `src/tests/test_cap_range.py` : le test vérifie désormais cinq noms importés au lieu de deux, assurant une couverture plus précise.
+
+### 📌 Dépendances
+
+- **Épinglage des versions critiques**
+  - `requirements.txt` : quatre dernières dépendances épinglées à des versions spécifiques — `yfinance==1.2.2`, `curl_cffi==0.15.0`, `duckdb==1.5.2`, `lxml==6.1.1`. Cela empêche les mises à jour majeures non planifiées.
+
+- **Fichier de dépendances verrouillé**
+  - Nouveau fichier `requirements.locked.txt` : 54 paquets, 1198 hachages SHA-256 générés avec `uv pip compile --generate-hashes`. Contrôle d'intégrité réussi sans anomalie.
+
+### 📝 Documentation du code
+
+- **Clarification de la sécurité de `pickle.load()`**
+  - `src/_subprocess_worker.py` : ajout d'une note expliquant pourquoi `pickle.load()` est sûr dans ce contexte (fichier temporaire `tempfile.mkstemp()` en 0600, écrit par le processus parent, lu par l'enfant). La note précise les cas où cette sécurité ne serait plus garantie.
+
+- **Correction d'une référence inexacte**
+  - `src/trading_c_acceleration/qsi_optimized.py` : un commentaire pointant vers des numéros de ligne obsolètes a été modifié pour référencer directement la variable concernée.
+
+---
+
 ## Version 1.3.0 - Requête du store réparée, validation des entrées, journalisation (2026-07-30)
 
 ### 🐛 Corrections

@@ -28,14 +28,13 @@ os.environ.setdefault('QSI_DISABLE_C_ACCELERATION', '1')
 # Segfault mitigation: avoid curl_cffi/yfinance recommendation fetches in desktop callbacks.
 os.environ.setdefault('QSI_CONSENSUS_OFFLINE', '1')
 
-from qsi import analyse_signaux_populaires, analyse_et_affiche, load_symbols_from_txt
+from qsi import load_symbols_from_txt
 from core.indicators import calculate_rsi_scalar, calculate_macd_scalar, calculate_bollinger_extreme
-from qsi import download_stock_data, backtest_signals, plot_unified_chart, get_trading_signal, resolve_symbol_scoring_context
+from qsi import download_stock_data, plot_unified_chart, get_trading_signal
 import qsi
 from ui.workers import (
     AnalysisThread, DownloadThread, ParquetSyncThread, LogCapture,
-    SYMBOL_MANAGER_AVAILABLE, get_symbol_info_from_db,
-    get_symbols_by_list_type, get_recent_symbols,
+    SYMBOL_MANAGER_AVAILABLE, get_symbols_by_list_type, get_recent_symbols,
     _fetch_yf_info_with_timeout, _is_valid_ticker_info, _get_sector_cache_first,
 )
 from ui.mixins.screeners import ScreenersMixin

@@ -5,11 +5,9 @@ Module pour gérer les symboles boursiers dans SQLite - Version sans emojis pour
 import logging
 import sqlite3
 from pathlib import Path
-from datetime import datetime, timedelta
+from datetime import datetime
 import yfinance as yf
 from typing import List, Dict, Optional, Tuple
-import pandas as pd
-import json
 from config import DB_PATH
 
 logger = logging.getLogger(__name__)

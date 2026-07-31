@@ -35,7 +35,7 @@ def test_fetch_real_symbol():
     assert 'roe' in metrics, "Missing roe key"
     assert 'de_ratio' in metrics, "Missing de_ratio key"
     
-    print(f"✅ Fetched metrics for AAPL:")
+    print("✅ Fetched metrics for AAPL:")
     for key, val in metrics.items():
         if val is not None:
             print(f"   {key}: {val:.2f}")

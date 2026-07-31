@@ -17,7 +17,7 @@ Usage:
   python Sichere_Unternehmen_scan.py --workers 10
   python Sichere_Unternehmen_scan.py --random 100 --seed 42
 """
-import os, sys, time, logging, argparse, threading, math
+import sys, time, logging, argparse, threading, math
 from pathlib import Path
 from concurrent.futures import ThreadPoolExecutor, as_completed
 
@@ -28,7 +28,6 @@ warnings.filterwarnings("ignore")
 
 try:
     from cache_db import (
-        refresh_symbol_incremental, get_latest_feature_row,
         ensure_market_data_schema, upsert_instrument,
         store_price_history, store_fundamental_snapshot,
         store_daily_feature_series, _build_daily_feature_frame,
@@ -293,8 +292,8 @@ def run_scan(symbols, max_workers=10, min_score=0, top_n=None, verbose=True):
     total = len(symbols)
     t0 = time.time()
     print(f"\n🛡️  Sichere Unternehmen Scan — {total} symboles, {max_workers} threads")
-    print(f"    C1=MCap>10Mrd€ | C2=D/E<100% | C3=Beta<0.8 | C4=Div>0%")
-    print(f"    C5=FCF_M>5%    | C6=FCF_G>0% | C7=Rev+EPS>3%\n")
+    print("    C1=MCap>10Mrd€ | C2=D/E<100% | C3=Beta<0.8 | C4=Div>0%")
+    print("    C5=FCF_M>5%    | C6=FCF_G>0% | C7=Rev+EPS>3%\n")
 
     with ThreadPoolExecutor(max_workers=max_workers) as pool:
         futures = {pool.submit(analyze_safe, s): s for s in symbols}
@@ -324,7 +323,7 @@ def run_scan(symbols, max_workers=10, min_score=0, top_n=None, verbose=True):
     elapsed = time.time()-t0
     print(f"\n✅ Terminé en {elapsed:.0f}s — {len(df)} résultats (score >= {min_score})")
     if skipped > 0 and _skip_reasons:
-        print(f"\n⚠️  Raisons skip:")
+        print("\n⚠️  Raisons skip:")
         for r,c in sorted(_skip_reasons.items(), key=lambda x:-x[1]):
             print(f"  {c:4d}x {r}")
     return df
@@ -395,7 +394,7 @@ if __name__ == "__main__":
         df.to_csv(OUTPUT_CSV, index=False)
         print(f"\n💾 Sauvegardé: {OUTPUT_CSV}")
         print_summary(df)
-        print(f"\n📊 Distribution des scores:")
+        print("\n📊 Distribution des scores:")
         for s in range(7,-1,-1):
             c = len(df[df["score"]==s])
             if c > 0: print(f"  {s}/7: {c:4d} {'█'*(c//2 or 1)}")

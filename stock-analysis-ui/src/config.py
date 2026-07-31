@@ -50,7 +50,7 @@ CAP_FALLBACK_ENABLED = False
 # transition via le fallback ci-dessous.
 
 import pandas as pd
-from datetime import datetime, timedelta
+from datetime import datetime
 
 
 def get_pickle_cache(symbol: str, cache_type: str = 'financial', ttl_hours: int = 24):

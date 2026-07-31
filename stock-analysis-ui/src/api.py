@@ -7,22 +7,19 @@
 import os
 import re
 import sys
-import json
 import gc
 import logging
-from datetime import datetime, timedelta
+from datetime import datetime
 from hmac import compare_digest
-from pathlib import Path
 from dotenv import load_dotenv
 from functools import wraps, lru_cache
 from threading import Lock
 
 logger = logging.getLogger(__name__)
 
-from flask import Flask, request, jsonify, send_file, render_template
+from flask import Flask, request, jsonify, render_template
 from flask_cors import CORS
 import pandas as pd
-import numpy as np
 
 # Load environment variables
 load_dotenv()
@@ -399,7 +396,7 @@ def get_signals():
             'timestamp': datetime.utcnow().isoformat()
         }), 200
         
-    except Exception as e:
+    except Exception:
         logger.exception("[API] Erreur sur %s", request.path)
         return jsonify({'error': 'Server error'}), 500
 
@@ -441,7 +438,7 @@ def get_symbol_signals(symbol):
             'timestamp': datetime.utcnow().isoformat()
         }), 200
         
-    except Exception as e:
+    except Exception:
         logger.exception("[API] Erreur sur %s", request.path)
         return jsonify({'error': 'Server error'}), 500
 
@@ -652,7 +649,7 @@ def analyze_symbol():
                 pass
             gc.collect()
         
-    except Exception as e:
+    except Exception:
         with analysis_lock:
             current_analyses -= 1
         logger.exception("[API] Erreur sur %s", request.path)
@@ -845,7 +842,7 @@ def get_lists():
         
         return jsonify(lists_data), 200
         
-    except Exception as e:
+    except Exception:
         logger.exception("[API] Erreur sur %s", request.path)
         return jsonify({'error': 'Server error'}), 500
 
@@ -958,7 +955,7 @@ def get_stats():
         
         return jsonify(stats), 200
         
-    except Exception as e:
+    except Exception:
         logger.exception("[API] Erreur sur %s", request.path)
         return jsonify({'error': 'Server error'}), 500
 

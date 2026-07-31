@@ -10,7 +10,7 @@ sys.path.insert(0, str(Path(__file__).parent))
 import pytest
 import pandas as pd
 import numpy as np
-from fundamentals_cache import get_fundamental_metrics, clear_fundamentals_cache
+from fundamentals_cache import get_fundamental_metrics
 
 pytestmark = pytest.mark.integration
 

@@ -9,7 +9,6 @@ Usage:
     python Big_Growth_scan.py --top 50         # Top 50
     python Big_Growth_scan.py --workers 20     # 20 threads parallèles
 """
-import os
 import sys
 import time
 import logging
@@ -690,7 +689,7 @@ if __name__ == "__main__":
         print_summary(df)
 
         # Quick stats
-        print(f"\n📊 Distribution des scores:")
+        print("\n📊 Distribution des scores:")
         for s in range(5, -1, -1):
             count = len(df[df["score"] == s])
             if count > 0:

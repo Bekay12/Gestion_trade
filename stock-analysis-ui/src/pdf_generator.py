@@ -3,7 +3,6 @@ Générateur de rapports PDF professionnels pour l'analyse stock
 Gère la génération automatisée des PDFs avec reportlab
 """
 
-import io
 from datetime import datetime
 from pathlib import Path
 from typing import List, Dict, Optional
@@ -78,7 +77,7 @@ class PDFReportGenerator:
             }
             
             # Debug: afficher les colonnes reçues
-            print(f"\n📊 GÉNÉRATION PDF - INFO DE DÉBUG")
+            print("\n📊 GÉNÉRATION PDF - INFO DE DÉBUG")
             print(f"   Colonnes reçues: {len(clean_columns)}")
             print(f"   Colonnes à afficher: {[c for c in clean_columns if c not in columns_to_skip]}")
             print(f"   Résultats: {len(current_results)} symboles\n")

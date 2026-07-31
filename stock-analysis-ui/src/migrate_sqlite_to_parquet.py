@@ -315,7 +315,7 @@ def main() -> int:
 
     conn.close()
 
-    print(f"\n=== RÉSUMÉ ===")
+    print("\n=== RÉSUMÉ ===")
     print(f"  instruments : {n_instruments}")
     print(f"  prix        : {n_prices}")
     print(f"  fundamentals: {n_fundamentals}")

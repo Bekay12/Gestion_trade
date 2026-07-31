@@ -57,7 +57,7 @@ def test_price_features_flow():
     print(f"   Signal: {sig}, Score: {score:.3f}")
     print(f"   Price slope rel: {deriv.get('price_slope_rel', 0):.6f}")
     print(f"   Price acc rel: {deriv.get('price_acc_rel', 0):.6f}")
-    print(f"   ✅ get_trading_signal accepts and uses price_extras")
+    print("   ✅ get_trading_signal accepts and uses price_extras")
     
     # 3. Test backtest_signals_with_events with extras
     print("\n3️⃣  Testing backtest_signals_with_events with extra_params...")
@@ -69,7 +69,7 @@ def test_price_features_flow():
     )
     print(f"   Backtest result: {result['trades']} trades, gain={result['gain_total']:.2f}")
     print(f"   Events recorded: {len(events)}")
-    print(f"   ✅ backtest_signals_with_events passes extras to signal generation")
+    print("   ✅ backtest_signals_with_events passes extras to signal generation")
     
     # 4. Test HybridOptimizer with use_price_features
     print("\n4️⃣  Testing HybridOptimizer with use_price_features=True...")
@@ -83,7 +83,7 @@ def test_price_features_flow():
     print(f"   Delta: {len(opt_pf.bounds) - len(opt_base.bounds)} extra params for price features")
     
     if len(opt_pf.bounds) == 24:
-        print(f"   ✅ Bounds correctly extended (18 + 6 for price features)")
+        print("   ✅ Bounds correctly extended (18 + 6 for price features)")
     else:
         print(f"   ❌ Unexpected bound count: {len(opt_pf.bounds)}")
         return False
@@ -101,7 +101,7 @@ def test_price_features_flow():
     
     score = opt_pf.evaluate_config(params_pf)
     print(f"   Score with price features: {score:.4f}")
-    print(f"   ✅ Optimizer can evaluate extended parameter vector")
+    print("   ✅ Optimizer can evaluate extended parameter vector")
     
     # 6. Check BEST_PARAM_EXTRAS
     print("\n6️⃣  Testing BEST_PARAM_EXTRAS extraction...")
@@ -112,7 +112,7 @@ def test_price_features_flow():
         print(f"   Sample extras for '{sample_key}':")
         print(f"     use_price_slope: {extras.get('use_price_slope')}")
         print(f"     use_price_acc: {extras.get('use_price_acc')}")
-        print(f"   ✅ BEST_PARAM_EXTRAS always populated with price params")
+        print("   ✅ BEST_PARAM_EXTRAS always populated with price params")
     
     print("\n" + "="*80)
     print("✅ ALL INTEGRATION TESTS PASSED")

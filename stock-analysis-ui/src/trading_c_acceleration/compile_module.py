@@ -35,7 +35,6 @@ def main():
         print("✅ Compilation successful!")
         # Tester le module
         try:
-            import importlib
             if 'trading_c' in sys.modules:
                 del sys.modules['trading_c']
             import trading_c
