@@ -1,5 +1,36 @@
 # 📋 Changelog - Stock Analysis Web Dashboard
 
+## Version 1.5.0 - Profils d'instruments : stockage partitionné et complétion progressive (2026-08-02)
+
+### 🐛 Corrections
+
+- **Les profils d'instruments se perdaient entre processus**
+  - `src/market_store.py` : `upsert_instrument()` écrit désormais dans un fichier par symbole (`instruments/symbol=XXX/part0.parquet`), comme les features. Il réécrivait auparavant un fichier unique partagé en entier à chaque appel — lire tout, remplacer une ligne, réécrire tout — sous la seule protection d'un `threading.Lock` local au processus. Les scripts `*_scan.py` et le worker en sous-processus écrivant en parallèle, le dernier écrivain gagnait : **124 profils subsistaient pour 1853 symboles** présents dans le store de features. La colonne « Pays » des screeners affichait N/A pour 94 % des lignes, et `sector`, `industry`, `exchange` et `market_cap` manquaient de la même façon.
+  - Migration incluse via `migrate_instruments_to_partitioned()`, idempotente. L'ancien fichier n'est pas supprimé. Vérifié : `get_country_map()` et `_get_instrument_profile()` renvoient exactement les mêmes valeurs qu'avant sur les 124 symboles, sans aucun écart de champ.
+
+### ✨ Nouveautés
+
+- **Complétion progressive des profils**
+  - `ensure_instrument_profiles(symbols, max_fetch, max_age_days)` complète les profils manquants ou périmés **par petits lots**. Appelée après l'affichage d'un screener, dans un thread détaché : la liste s'affiche immédiatement, et se complète pour la fois suivante.
+  - Plafond configurable dans `src/config.py` : `INSTRUMENT_PROFILE_FETCH_LIMIT` (25) et `INSTRUMENT_PROFILE_MAX_AGE_DAYS` (90). Le budget de requêtes yfinance étant une contrainte dure, une liste de 500 résultats ne peut jamais déclencher 500 appels.
+  - Ne récupère rien avec `QSI_CONSENSUS_OFFLINE=1`. Un symbole en échec n'interrompt pas les suivants et ne remonte jamais jusqu'à l'interface.
+  - `missing_instrument_profiles()` liste les symboles à compléter sans aucune requête réseau.
+  - `read_instruments()` lit tous les profils en une requête DuckDB avec `union_by_name=true`, ce qui tolère les fichiers écrits avant l'ajout des nouvelles colonnes : aucune migration de schéma n'est nécessaire.
+
+- **Champs ajoutés au profil**
+  - `financial_currency` : devise de publication des comptes, distincte de la devise de cotation. Un titre coté en HKD mais publiant en USD voyait ses fondamentaux convertis une fois de trop, `fx_rate_to_usd` étant dérivé de la cotation.
+  - `beta` : lu par le screener Sichere Unternehmen (critère S3), qui devait le redemander à yfinance faute d'être stocké.
+  - `float_shares` : flottant réel. `shares_outstanding` surestime la quantité négociable des titres à actionnariat concentré, ce qui fausse les critères de liquidité.
+  - `first_trade_date` : début de l'historique disponible, pour savoir si une fenêtre de backtest est couverte.
+  - `exchange_timezone`, et `isin` — ce dernier reste vide, yfinance ne le fournissant pas dans `.info` sans une requête supplémentaire par symbole.
+
+### ✅ Tests
+
+- Nouveau fichier `src/tests/test_instrument_profiles.py` (6 cas, hors ligne) : mode hors ligne, respect du plafond, non-rechargement d'un profil frais, rechargement d'un profil périmé, isolation des échecs, liste vide. yfinance y est simulé et `PARQUET_DIR` redirigé vers un répertoire temporaire — vérifié : le store réel reste bit à bit identique après exécution.
+- Le sous-ensemble exécuté en intégration continue passe de 27 à 33 tests.
+
+---
+
 ## Version 1.4.0 - Mises à jour techniques (2026-07-31)
 
 ### 🔧 Outillage et CI

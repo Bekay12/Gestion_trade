@@ -12,7 +12,7 @@ here), so every relative path resolves from `src/`.
 | [ui/](ui/) | PyQt5 GUI — `main_window.py` (composed from `mixins/`), `dialogs.py`, `workers.py` |
 | [core/](core/) | Analysis engine being migrated out of `qsi.py` (indicators, signals, screeners, fx, io…) |
 | `qsi.py` | **Legacy façade** re-exporting `core/`; callers import from here. Migrate logic *into* `core/`, keep the re-export. |
-| `market_store.py` | Parquet+DuckDB warehouse (real backend). `market_parquet/features/symbol=…/` partitions. |
+| `market_store.py` | Parquet+DuckDB warehouse (real backend). `market_parquet/features/symbol=…/` **and** `instruments/symbol=…/` partitions — one file per symbol, never a shared file (a shared one silently lost profiles across processes). |
 | `cache_db.py` | Re-exports public API from `market_store`. No implementation. Zero DB connections opened on import. |
 | `config.py` | Central paths/constants — import cache dirs & globals from here, don't hardcode. |
 | `symbol_manager.py`, `fundamentals_cache.py`, `timeline_cache.py`, `sector_normalizer.py` | Symbol catalogue, fundamentals cache (TTL, evolutive quarters), timelines, sector name normalization |

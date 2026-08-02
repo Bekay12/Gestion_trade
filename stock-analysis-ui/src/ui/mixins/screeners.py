@@ -7,6 +7,7 @@ from PyQt5.QtWidgets import QApplication, QMessageBox, QProgressDialog
 from PyQt5.QtCore import Qt
 from concurrent.futures import ThreadPoolExecutor, TimeoutError as FuturesTimeoutError
 from datetime import datetime
+import threading
 import yfinance as yf
 
 
@@ -24,13 +25,57 @@ class ScreenersMixin:
         except Exception:
             return {}
 
+    def _completer_profils_en_arriere_plan(self, rows):
+        """Complète les profils d'instruments manquants des symboles affichés.
+
+        Lancé APRÈS l'affichage : la liste s'affiche immédiatement avec ce qui
+        est déjà connu, et la colonne « Pays » se remplit pour la prochaine
+        ouverture. Plafonné par INSTRUMENT_PROFILE_FETCH_LIMIT — une liste de
+        500 résultats ne doit jamais déclencher 500 requêtes yfinance.
+
+        Silencieux par construction : un échec de complétion ne doit jamais
+        perturber l'affichage d'un screener.
+        """
+        try:
+            from config import (INSTRUMENT_PROFILE_FETCH_LIMIT,
+                                INSTRUMENT_PROFILE_MAX_AGE_DAYS)
+            from market_store import ensure_instrument_profiles
+
+            symboles = [str(r[0]).strip().upper() for r in (rows or []) if r and r[0]]
+            if not symboles:
+                return
+
+            def _travail():
+                try:
+                    bilan = ensure_instrument_profiles(
+                        symboles,
+                        max_fetch=INSTRUMENT_PROFILE_FETCH_LIMIT,
+                        max_age_days=INSTRUMENT_PROFILE_MAX_AGE_DAYS,
+                    )
+                    if bilan.get("recuperes"):
+                        print(f"[SCREENER] {bilan['recuperes']} profil(s) complété(s), "
+                              f"{bilan['ignores']} reporté(s) au prochain affichage")
+                except Exception as exc:
+                    print(f"[SCREENER] complétion des profils abandonnée ({type(exc).__name__}: {exc})")
+
+            # Thread détaché : le dialog est déjà fermé, rien n'attend ce résultat.
+            threading.Thread(target=_travail, name="profils-instruments", daemon=True).start()
+        except Exception as exc:
+            print(f"[SCREENER] complétion des profils non lancée ({type(exc).__name__}: {exc})")
+
     def _present_screener_results(self, title, headers, rows):
         """Ouvre un dialog interactif (table triable + cases à cocher) et injecte
         les symboles cochés dans le champ d'analyse. Retourne la liste injectée
         (vide si l'utilisateur annule)."""
         from ui.dialogs import ScreenerResultsDialog
         dlg = ScreenerResultsDialog(title, headers, rows, parent=self)
-        if dlg.exec_() != ScreenerResultsDialog.Accepted:
+        resultat = dlg.exec_()
+        # Complétion lancée quoi qu'il arrive : même si l'utilisateur annule,
+        # les symboles ont été affichés et méritent d'avoir leur pays la
+        # prochaine fois.
+        if "Pays" in (headers or []):
+            self._completer_profils_en_arriere_plan(rows)
+        if resultat != ScreenerResultsDialog.Accepted:
             return []
         selected = list(dict.fromkeys(dlg.selected_symbols()))
         if selected:
