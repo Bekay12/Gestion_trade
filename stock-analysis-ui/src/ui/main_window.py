@@ -58,6 +58,7 @@ _CRASH_LOG_FILE = None
 MERGED_COLUMNS = [
     ('symbole',      'Symbole'),
     ('nom',          'Nom'),
+    ('pays',         'Pays'),
     ('signal',       'Signal'),
     ('score',        'Score'),
     ('prix',         'Prix\n(USD)'),
@@ -102,6 +103,71 @@ def _nom_abrege(nom: str) -> str:
     if len(texte) <= LONGUEUR_NOM_MAX:
         return texte
     return texte[:LONGUEUR_NOM_MAX - 1].rstrip() + '…'
+
+
+# Nombre maximal de décimales affichées dans les cellules chiffrées. Les valeurs
+# calculées (Score/Seuil, dPrice, dRSI…) arrivent en double précision et
+# s'affichaient sur 15 chiffres, ce qui noyait la colonne.
+DECIMALES_MAX = 6
+
+
+def formater_nombre(valeur) -> str:
+    """Nombre en texte, au plus DECIMALES_MAX décimales, sans zéro inutile.
+
+    Volontairement sans notation scientifique : `1.23456789e-05` devient
+    `0.000012`, lisible dans une colonne étroite. Une valeur non numérique est
+    rendue telle quelle.
+    """
+    try:
+        nombre = float(valeur)
+    except (TypeError, ValueError):
+        return str(valeur)
+    if nombre != nombre or nombre in (float('inf'), float('-inf')):
+        return str(valeur)
+    arrondi = round(nombre, DECIMALES_MAX)
+    if arrondi == 0:
+        # Évite le « -0 » d'un arrondi de valeur négative infime.
+        return '0'
+    return f"{arrondi:.{DECIMALES_MAX}f}".rstrip('0').rstrip('.') or '0'
+
+
+class CelluleNumerique(QTableWidgetItem):
+    """Cellule chiffrée : affichage arrondi, tri sur la valeur réelle.
+
+    QTableWidgetItem compare `data(DisplayRole)`. Quand cette donnée est un
+    texte, le tri est lexicographique : mesuré sur la colonne Score, l'ordre
+    croissant donnait 10.2, 100, puis 9.5. La valeur numérique est donc gardée à
+    part, dans `valeur`, et sert à la comparaison comme à tout recalcul
+    (statistiques par domaine), pendant que la cellule n'affiche que l'arrondi.
+    """
+
+    def __init__(self, valeur, texte: str | None = None) -> None:
+        super().__init__(formater_nombre(valeur) if texte is None else texte)
+        self.valeur = float(valeur)
+
+    def __lt__(self, autre) -> bool:
+        autre_valeur = getattr(autre, 'valeur', None)
+        if autre_valeur is None:
+            return super().__lt__(autre)
+        return self.valeur < autre_valeur
+
+
+def valeur_cellule(item, defaut: float = 0.0) -> float:
+    """Valeur numérique d'une cellule, sans repasser par le texte affiché.
+
+    Le texte étant arrondi à DECIMALES_MAX, le reparser perdrait de la
+    précision ; il ne sert que de secours pour une cellule non chiffrée.
+    """
+    if item is None:
+        return defaut
+    valeur = getattr(item, 'valeur', None)
+    if valeur is not None:
+        return float(valeur)
+    try:
+        brut = str(item.text()).replace('%', '').replace('$', '').replace(',', '').strip()
+        return float(brut)
+    except (TypeError, ValueError):
+        return defaut
 
 
 def _install_runtime_diagnostics():
@@ -1758,12 +1824,10 @@ class MainWindow(QMainWindow, ScreenersMixin, ExportMixin):
                 return default
 
         def _set_item(row: int, col: int, value, *, numeric: bool = False):
-            item = QTableWidgetItem(str(value))
-            if numeric:
-                try:
-                    item.setData(2, float(value))
-                except Exception:
-                    pass
+            # Une colonne chiffrée dont la valeur n'est pas exploitable (« N/A »)
+            # reste une cellule texte : il n'y a rien à arrondir ni à trier.
+            nombre = _parse_numeric(value, None) if numeric else None
+            item = CelluleNumerique(nombre) if nombre is not None else QTableWidgetItem(str(value))
             self.merged_table.setItem(row, col, item)
 
         def _colorize(item, kind: str, value):
@@ -1823,10 +1887,12 @@ class MainWindow(QMainWindow, ScreenersMixin, ExportMixin):
 
             min_fiab_threshold = self.fiab_threshold_spin.value() if hasattr(self, 'fiab_threshold_spin') else 30
             bt_map = getattr(self, 'backtest_map', {}) or {}
-            noms_map = self._name_map(
+            symboles_affiches = [
                 str(r.get('Symbole', '')).strip()
                 for r in self.current_results if isinstance(r, dict)
-            )
+            ]
+            noms_map = self._name_map(symboles_affiches)
+            pays_map = self._country_map(symboles_affiches)
             results_to_display = []
 
             for result in self.current_results:
@@ -1865,6 +1931,7 @@ class MainWindow(QMainWindow, ScreenersMixin, ExportMixin):
                 values = {
                     'symbole': sym,
                     'nom': _nom_abrege(nom),
+                    'pays': str(signal.get('Pays') or pays_map.get(sym) or 'N/A'),
                     'signal': signal.get('Signal', 'N/A'),
                     'score': signal.get('Score', 0.0),
                     'prix': signal.get('Prix', 0.0),
@@ -2381,14 +2448,12 @@ class MainWindow(QMainWindow, ScreenersMixin, ExportMixin):
                     domaine_item = self.merged_table.item(row, MERGED_COL['domaine'])
                     domaine = domaine_item.text() if domaine_item and domaine_item.text().strip() else 'Inconnu'
                     
-                    trades_item = self.merged_table.item(row, MERGED_COL['nb_trades'])
-                    nb_trades = int(trades_item.data(Qt.EditRole)) if trades_item and trades_item.data(Qt.EditRole) is not None else 0
-                    
-                    gagnants_item = self.merged_table.item(row, MERGED_COL['gagnants'])
-                    gagnants = int(gagnants_item.data(Qt.EditRole)) if gagnants_item and gagnants_item.data(Qt.EditRole) is not None else 0
-                    
-                    gain_item = self.merged_table.item(row, MERGED_COL['gain_total'])
-                    gain = float(gain_item.data(Qt.EditRole)) if gain_item and gain_item.data(Qt.EditRole) is not None else 0.0
+                    # valeur_cellule() lit la valeur portée par la cellule, jamais
+                    # son texte arrondi. L'ancien int(data(EditRole)) levait sur
+                    # un « 3.0 » et la ligne était abandonnée en silence.
+                    nb_trades = int(valeur_cellule(self.merged_table.item(row, MERGED_COL['nb_trades'])))
+                    gagnants = int(valeur_cellule(self.merged_table.item(row, MERGED_COL['gagnants'])))
+                    gain = valeur_cellule(self.merged_table.item(row, MERGED_COL['gain_total']))
                     
                     if domaine not in domain_stats:
                         domain_stats[domaine] = {'trades': 0, 'gagnants': 0, 'gain': 0.0}
@@ -2814,10 +2879,12 @@ class MainWindow(QMainWindow, ScreenersMixin, ExportMixin):
                     if isinstance(edit_value, (int, float)):
                         text = _format_numeric_like_source(text, edit_value)
 
-                item = QTableWidgetItem(text)
+                # Une cellule chiffrée reste chiffrée dans la copie, sinon le
+                # tableau comparatif retomberait sur un tri lexicographique.
+                valeur_source = getattr(source_item, 'valeur', None)
+                item = (CelluleNumerique(valeur_source, text) if valeur_source is not None
+                        else QTableWidgetItem(text))
                 if source_item:
-                    # Keep the already-formatted text from source_item to preserve UI rounding.
-                    item.setData(Qt.EditRole, source_item.data(Qt.EditRole))
                     item.setForeground(source_item.foreground())
                     item.setBackground(source_item.background())
                     item.setFont(source_item.font())

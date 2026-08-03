@@ -1,8 +1,12 @@
 # 📋 Changelog - Stock Analysis Web Dashboard
 
-## Version 1.6.0 - Tickers Finviz corrigés et colonne « Nom » dans toute l'interface (2026-08-03)
+## Version 1.6.0 - Tickers Finviz corrigés, colonnes « Nom » et « Pays », nombres arrondis (2026-08-03)
 
 ### 🐛 Corrections
+
+- **Le tri des colonnes chiffrées du tableau de résultats était lexicographique**
+  - `ui/main_window.py` : `_set_item()` posait le texte `str(value)` puis une valeur numérique sur `Qt.EditRole`, que `QTableWidgetItem` ramène au rôle d'affichage. Mesuré sur la colonne Score : l'ordre croissant donnait **10.2, 100, puis 9.5**. La nouvelle `CelluleNumerique` garde la valeur réelle dans un attribut et surcharge la comparaison ; vérifié croissant et décroissant, valeurs négatives comprises (`-3.75, 9.5, 10.2, 100`). Le tableau comparatif hérite du correctif, ses cellules étant recopiées.
+  - Corollaire : `compute_domain_stats()` faisait `int(item.data(Qt.EditRole))`, qui lève sur un « 3.0 » — la ligne était alors abandonnée en silence par le `except: continue`, faussant les totaux par domaine. La lecture passe par `valeur_cellule()`, qui prend la valeur portée par la cellule et non son texte arrondi.
 
 - **Tous les tickers venant de Finviz partaient avec leur première lettre doublée**
   - `src/core/finviz_screeners.py` : Finviz place un avatar-lettre dans la cellule Ticker (`<a class="company-ticker"><img …/><span>I</span></a>`, la lettre servant de repli le temps que le logo charge), devant le lien du symbole. `finvizfinance` 1.3.0 remplit chaque cellule avec `td.text`, qui concatène **tout** le texte de la cellule : `IESC` devenait `IIESC`, `AMZN` → `AAMZN`, `TW` → `TTW`. Chaque symbole injecté dans le champ d'analyse échouait ensuite côté yfinance (« No history available for FFUTU »). Mesuré sur une session : 14 symboles sur 14 en échec, 0 synchronisé.
@@ -19,7 +23,14 @@
 - **Colonne « Nom » sur tous les tableaux de l'interface**
   - Tableau de résultats (`merged_table`), tableau comparatif multicritère, tableau de comparaison historique, et tous les screeners (Finviz market-wide, Finviz Gapper, Yahoo Screener, top movers, vues store Combined et Golden Cross, Événements 48 h).
   - Coût réseau nul. Finviz et le screener Yahoo renvoient déjà le nom dans leur réponse ; ailleurs, `market_store.get_name_map()` le lit dans les profils d'instruments (1 requête DuckDB), avec la colonne `name` des features en secours. Un symbole sans profil affiche N/A et se remplit à la passe suivante, comme la colonne Pays.
-  - Nom tronqué à l'affichage et repris en entier en infobulle : sur 27 colonnes, un nom complet poussait les colonnes chiffrées hors de l'écran.
+  - Nom tronqué à l'affichage et repris en entier en infobulle : sur 28 colonnes, un nom complet poussait les colonnes chiffrées hors de l'écran.
+  - La complétion des profils en arrière-plan se déclenche désormais sur la présence de « Nom » **ou** de « Pays » : les deux colonnes viennent du même profil, et le screener Événements 48 h (sans colonne Pays) ne l'aurait jamais déclenchée.
+
+- **Colonne « Pays » dans le tableau de résultats**
+  - Même source que le nom (`get_country_map()`, 0 requête réseau), N/A tant que le profil n'est pas récupéré. Le tableau comparatif la recopie.
+
+- **Nombres limités à 6 décimales à l'affichage**
+  - Les valeurs calculées arrivaient en double précision et s'affichaient sur 15 chiffres : `Score/Seuil` à `1.312463256881238`, `dRSI` à `2.00000000001`, `dPrice` en notation scientifique `1.23456789e-05`. `formater_nombre()` affiche au plus `DECIMALES_MAX` (6) décimales, sans zéro inutile ni notation scientifique (`0.000012`), et les valeurs pleine précision restent disponibles pour le tri et les statistiques.
 
 ### ♻️ Interne
 

@@ -24,6 +24,12 @@ PyQt5 GUI layer.
   `MERGED_COL['clé']` in `main_window.py` is the single source of the layout, and the
   multi-criteria comparison table derives its columns from it. Adding a column means adding a
   tuple there, nothing else.
+- **Numeric cells are `CelluleNumerique`, not `QTableWidgetItem`.** It displays
+  `formater_nombre()` (≤ `DECIMALES_MAX` decimals, no scientific notation) and keeps the real
+  value in `.valeur`. Never sort or recompute from the cell text — it is rounded; read
+  `valeur_cellule(item)`. Setting a number on `Qt.EditRole` does **not** work here:
+  `QTableWidgetItem` folds `EditRole` into the display role, which is what made every numeric
+  column sort lexicographically (`10.2` before `9.5`).
 - **`QProgressDialog.close()` sets `wasCanceled()` to True** — never branch on
   `wasCanceled()` after `close()`, or the handler always returns before displaying results.
   (This silently broke the Finviz gapper once.)
