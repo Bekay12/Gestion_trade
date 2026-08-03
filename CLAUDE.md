@@ -41,7 +41,8 @@ python setup.py                 # wraps trading_c_acceleration/setup.py build_ex
 | Flag | Effect |
 |---|---|
 | `QSI_DISABLE_C_ACCELERATION=1` | Skip the compiled `trading_c` backtest module (pure-Python path) |
-| `QSI_CONSENSUS_OFFLINE=1` | Disable network consensus lookups |
+| `QSI_CONSENSUS_OFFLINE=1` | Disable network consensus lookups **only** — the desktop UI sets this unconditionally at startup, so it is *not* a general "no network" switch |
+| `QSI_DISABLE_PROFILE_FETCH=1` | Stop `ensure_instrument_profiles()` from topping up instrument profiles (country, name, sector, beta…) after a screener. Set by default in the test conftest |
 | `QT_QPA_PLATFORM=offscreen` | Run PyQt headless (required for GUI-touching tests) |
 
 CI ([.github/workflows/tests.yml](.github/workflows/tests.yml)) runs `pytest -m "not integration"`

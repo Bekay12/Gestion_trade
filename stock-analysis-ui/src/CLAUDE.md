@@ -30,5 +30,13 @@ here), so every relative path resolves from `src/`.
 - **finvizfinance** needs `lxml` installed and a `curl_cffi` `Session(impersonate="chrome")`
   swapped into `finvizfinance.util.session`, or it crashes / gets bot-blocked. Its `Change`
   field is a **fraction** (0.4776 = 47.76%) — multiply by 100 for display.
+- **Never call finvizfinance directly — go through `core.finviz_screeners.run_screen()`.**
+  finvizfinance builds each cell from `td.text`, and Finviz's ticker cell holds a letter
+  avatar before the symbol link, so a raw `Overview()` returns `IIESC` for `IESC`. `run_screen`
+  reads `data-boxover-ticker` (and strips `a.company-ticker`) and carries the curl_cffi session.
+- **Instrument profiles need a real name.** yfinance answers a nonexistent ticker with a
+  non-empty `info` that has no `shortName`/`longName` (sometimes a numeric-named "YHD" fund),
+  so `ensure_instrument_profiles()` gates on `_info_sans_identite()`. Without it, ghost
+  profiles land in the store and count as *fresh*, so they are never refreshed.
 - `qsi.py` sets a non-interactive matplotlib backend only if none is set — don't force `Agg`
   after the Qt app has initialized a GUI backend.

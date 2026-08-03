@@ -1634,6 +1634,26 @@ def missing_instrument_profiles(symbols: Iterable[str], max_age_days: int = 90) 
     return [s for s in voulus if s not in frais]
 
 
+def _info_sans_identite(info: dict) -> bool:
+    """Vrai si `info` ne porte aucun nom d'entreprise exploitable.
+
+    yfinance ne lève pas sur un symbole inexistant : il renvoie un dict non vide
+    mais sans identité (parfois avec `exchange` ou `currency`, jamais de nom).
+    Écrire ce dict produisait un profil fantôme dont `name` valait le symbole
+    lui-même, compté ensuite comme profil frais donc jamais corrigé. Un profil
+    sans nom n'est pas un profil : on refuse de l'écrire.
+
+    Deuxième forme observée le 2026-08-03 : sur certains symboles inexistants,
+    yfinance renvoie un pseudo-fonds de l'échange « YHD » dont le nom est un
+    simple nombre (« 164 » pour AABT, « 24564 » pour TTYL). Un nom d'entreprise
+    n'est jamais un nombre nu.
+    """
+    nom = _safe_text(info.get("shortName")) or _safe_text(info.get("longName"))
+    if not nom:
+        return True
+    return nom.strip().replace(" ", "").isdigit()
+
+
 def ensure_instrument_profiles(symbols: Iterable[str],
                                max_fetch: int = 25,
                                max_age_days: int = 90) -> dict:
@@ -1662,11 +1682,14 @@ def ensure_instrument_profiles(symbols: Iterable[str],
     if not manquants:
         return bilan
 
-    # Respecte le mode hors ligne : ni les tests ni un lancement sans réseau ne
-    # doivent déclencher d'appel yfinance.
-    if os.getenv("QSI_CONSENSUS_OFFLINE") == "1":
+    # Interrupteur DÉDIÉ à cette fonction. Ne pas se rabattre sur
+    # QSI_CONSENSUS_OFFLINE : ce drapeau a un sens étroit (désactiver les
+    # lookups de consensus) et l'UI desktop le pose systématiquement au
+    # démarrage — s'en servir ici empêchait toute complétion dans
+    # l'application, alors que les autres appels yfinance continuaient.
+    if os.getenv("QSI_DISABLE_PROFILE_FETCH") == "1":
         bilan["ignores"] = len(manquants)
-        logger.info("[STORE] mode hors ligne : %d profils non récupérés", len(manquants))
+        logger.info("[STORE] complétion désactivée : %d profils non récupérés", len(manquants))
         return bilan
 
     a_traiter = manquants[:max(0, int(max_fetch))]
@@ -1675,7 +1698,7 @@ def ensure_instrument_profiles(symbols: Iterable[str],
     for symbole in a_traiter:
         try:
             info = yf.Ticker(symbole).info or {}
-            if not info:
+            if not info or _info_sans_identite(info):
                 bilan["echecs"] += 1
                 continue
             upsert_instrument(symbole, info)
@@ -1706,6 +1729,39 @@ def get_country_map(symbols: List[str] | None = None) -> dict:
         return {}
     return {str(s): (str(c) if c is not None and c == c else None)
             for s, c in zip(df["symbol"], df["country"])}
+
+
+def get_name_map(symbols: List[str] | None = None) -> dict:
+    """Retourne {symbol: nom d'entreprise} depuis les profils (0 requête réseau).
+
+    Alimente la colonne « Nom » de tous les tableaux de l'interface. Même contrat
+    que get_country_map : un symbole sans profil est absent du dictionnaire et
+    s'affiche N/A, puis se remplit au fil des appels de
+    ensure_instrument_profiles(). Le nom long n'est pas retenu : il déborde la
+    largeur de colonne sans rien apprendre de plus que le nom court.
+    """
+    df = read_instruments(symbols, columns=["symbol", "name", "short_name"])
+    if df.empty or "symbol" not in df.columns:
+        return {}
+
+    def _texte(valeur) -> str | None:
+        # valeur == valeur écarte les NaN, qu'un profil ancien laisse dans les
+        # colonnes ajoutées après son écriture (lecture union_by_name).
+        if valeur is None or valeur != valeur:
+            return None
+        texte = str(valeur).strip()
+        return texte or None
+
+    noms = {}
+    for ligne in df.itertuples(index=False):
+        symbole = _texte(getattr(ligne, "symbol", None))
+        if not symbole:
+            continue
+        nom = _texte(getattr(ligne, "short_name", None)) or _texte(getattr(ligne, "name", None))
+        # Un profil dont le nom se réduit au symbole n'apporte rien à la colonne.
+        if nom and nom.upper() != symbole.upper():
+            noms[symbole] = nom
+    return noms
 
 
 # ---------------------------------------------------------------------------

@@ -16,10 +16,10 @@ from market_store import (
 )
 
 
-def test_returns_zero_when_offline_flag_set(monkeypatch, tmp_path) -> None:
-    """Verrouille : avec QSI_CONSENSUS_OFFLINE=1, recuperes == 0 et ignores = manquants."""
+def test_returns_zero_when_disable_flag_set(monkeypatch, tmp_path) -> None:
+    """Verrouille : avec QSI_DISABLE_PROFILE_FETCH=1, recuperes == 0 et ignores = manquants."""
     monkeypatch.setattr(market_store, "PARQUET_DIR", tmp_path)
-    monkeypatch.setenv("QSI_CONSENSUS_OFFLINE", "1")
+    monkeypatch.setenv("QSI_DISABLE_PROFILE_FETCH", "1")
 
     ensure_market_data_schema()
     test_symbols = ["AAPL", "MSFT"]
@@ -34,7 +34,7 @@ def test_returns_zero_when_offline_flag_set(monkeypatch, tmp_path) -> None:
 def test_respects_max_fetch_cap(monkeypatch, tmp_path) -> None:
     """Verrouille : avec max_fetch=3 et 10 symboles verrouillés, recuperes == 3 et ignores == 7."""
     monkeypatch.setattr(market_store, "PARQUET_DIR", tmp_path)
-    monkeypatch.delenv("QSI_CONSENSUS_OFFLINE", raising=False)
+    monkeypatch.delenv("QSI_DISABLE_PROFILE_FETCH", raising=False)
 
     ensure_market_data_schema()
     stale_date = (datetime.utcnow() - timedelta(days=200)).isoformat()
@@ -96,7 +96,7 @@ def test_respects_max_fetch_cap(monkeypatch, tmp_path) -> None:
 def test_skips_symbols_already_present_and_fresh(monkeypatch, tmp_path) -> None:
     """Verrouille : un symbole frais (< max_age_days) n'est pas rechargé."""
     monkeypatch.setattr(market_store, "PARQUET_DIR", tmp_path)
-    monkeypatch.delenv("QSI_CONSENSUS_OFFLINE", raising=False)
+    monkeypatch.delenv("QSI_DISABLE_PROFILE_FETCH", raising=False)
 
     ensure_market_data_schema()
     fresh_date = datetime.utcnow().isoformat()
@@ -146,7 +146,7 @@ def test_skips_symbols_already_present_and_fresh(monkeypatch, tmp_path) -> None:
 def test_refetches_stale_profile(monkeypatch, tmp_path) -> None:
     """Verrouille : un symbole verrouillé (> max_age_days) est rechargé."""
     monkeypatch.setattr(market_store, "PARQUET_DIR", tmp_path)
-    monkeypatch.delenv("QSI_CONSENSUS_OFFLINE", raising=False)
+    monkeypatch.delenv("QSI_DISABLE_PROFILE_FETCH", raising=False)
 
     ensure_market_data_schema()
     stale_date = (datetime.utcnow() - timedelta(days=200)).isoformat()
@@ -207,7 +207,7 @@ def test_refetches_stale_profile(monkeypatch, tmp_path) -> None:
 def test_one_failing_symbol_does_not_stop_the_others(monkeypatch, tmp_path) -> None:
     """Verrouille : une exception sur un symbole n'arrête pas le traitement des autres."""
     monkeypatch.setattr(market_store, "PARQUET_DIR", tmp_path)
-    monkeypatch.delenv("QSI_CONSENSUS_OFFLINE", raising=False)
+    monkeypatch.delenv("QSI_DISABLE_PROFILE_FETCH", raising=False)
 
     ensure_market_data_schema()
     stale_date = (datetime.utcnow() - timedelta(days=200)).isoformat()
@@ -276,7 +276,7 @@ def test_one_failing_symbol_does_not_stop_the_others(monkeypatch, tmp_path) -> N
 def test_empty_symbol_list_is_a_noop(monkeypatch, tmp_path) -> None:
     """Verrouille : liste vide ne produit aucun appel yfinance."""
     monkeypatch.setattr(market_store, "PARQUET_DIR", tmp_path)
-    monkeypatch.delenv("QSI_CONSENSUS_OFFLINE", raising=False)
+    monkeypatch.delenv("QSI_DISABLE_PROFILE_FETCH", raising=False)
 
     ensure_market_data_schema()
 
@@ -293,3 +293,38 @@ def test_empty_symbol_list_is_a_noop(monkeypatch, tmp_path) -> None:
     assert result["recuperes"] == 0
     assert result["manquants"] == 0
     assert result["ignores"] == 0
+
+
+def test_profil_sans_identite_nest_pas_ecrit(monkeypatch, tmp_path) -> None:
+    """Verrouille : un `info` yfinance sans aucun nom ne devient pas un profil.
+
+    Mesure du 2026-08-03 : les tickers Finviz corrompus (« FFUTU », « IINTU »,
+    « ZZBAO »…) renvoyaient un `info` non vide mais sans identite (ni shortName
+    ni longName), et 18 profils fantomes ont ete ecrits dans le store, avec
+    `name` egal au ticker corrompu. Ils comptaient ensuite comme profils frais,
+    donc n'etaient jamais rafraichis, et polluaient les colonnes Nom / Pays.
+    """
+    monkeypatch.setattr(market_store, "PARQUET_DIR", tmp_path)
+    monkeypatch.delenv("QSI_DISABLE_PROFILE_FETCH", raising=False)
+
+    ensure_market_data_schema()
+
+    infos = {
+        "REAL": {"shortName": "Real Corp", "exchange": "NASDAQ", "currency": "USD"},
+        # Exactement la forme observee pour un ticker inexistant.
+        "FFUTU": {"currency": "USD", "trailingPegRatio": None},
+        "ZZS": {"exchange": "NMS", "currency": "USD", "quoteType": "EQUITY"},
+        # Pseudo-fonds « YHD » au nom numerique, l'autre forme de reponse
+        # yfinance sur un symbole inexistant (AABT -> « 164 »).
+        "AABT": {"shortName": "164", "exchange": "YHD", "quoteType": "MUTUALFUND"},
+    }
+
+    with patch("market_store.yf.Ticker", side_effect=lambda s: MagicMock(info=infos[s])):
+        result = ensure_instrument_profiles(list(infos), max_fetch=10, max_age_days=90)
+
+    assert result["recuperes"] == 1
+    assert result["echecs"] == 3
+    assert market_store._instrument_path("REAL").exists()
+    assert not market_store._instrument_path("FFUTU").exists()
+    assert not market_store._instrument_path("ZZS").exists()
+    assert not market_store._instrument_path("AABT").exists()

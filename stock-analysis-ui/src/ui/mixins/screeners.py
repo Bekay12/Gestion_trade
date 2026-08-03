@@ -25,6 +25,15 @@ class ScreenersMixin:
         except Exception:
             return {}
 
+    def _name_map(self, symbols):
+        """Best-effort {symbole: nom d'entreprise} depuis le store (0 requête).
+        Même contrat que _country_map : hors catalogue → N/A côté appelant."""
+        try:
+            from market_store import get_name_map
+            return get_name_map(list(symbols)) or {}
+        except Exception:
+            return {}
+
     def _completer_profils_en_arriere_plan(self, rows):
         """Complète les profils d'instruments manquants des symboles affichés.
 
@@ -71,9 +80,10 @@ class ScreenersMixin:
         dlg = ScreenerResultsDialog(title, headers, rows, parent=self)
         resultat = dlg.exec_()
         # Complétion lancée quoi qu'il arrive : même si l'utilisateur annule,
-        # les symboles ont été affichés et méritent d'avoir leur pays la
-        # prochaine fois.
-        if "Pays" in (headers or []):
+        # les symboles ont été affichés et méritent d'avoir leur pays et leur nom
+        # la prochaine fois. Les deux colonnes viennent du même profil, donc la
+        # présence de l'une ou l'autre justifie la complétion.
+        if {"Pays", "Nom"} & set(headers or []):
             self._completer_profils_en_arriere_plan(rows)
         if resultat != ScreenerResultsDialog.Accepted:
             return []
@@ -115,7 +125,10 @@ class ScreenersMixin:
                     pct_val = float(pct)
                 except Exception:
                     continue
-                extracted.append((symbol, pct_val))
+                # Le nom est déjà dans la réponse du screener : aucune requête de
+                # plus, et il couvre les symboles absents du catalogue local.
+                nom = str(q.get('shortName') or q.get('longName') or '').strip()
+                extracted.append((symbol, nom, pct_val))
             return extracted
 
         def _fetch_screeners():
@@ -168,9 +181,16 @@ class ScreenersMixin:
             return
 
         title = "Top 50 Winners du jour" if mover_type == 'winners' else "Top 50 Losers du jour"
-        cmap = self._country_map([sym for sym, _ in entries])
-        rows = [(sym, cmap.get(sym) or "N/A", round(pct, 2)) for sym, pct in entries]
-        self._present_screener_results(title, ["Symbole", "Pays", "Variation (%)"], rows)
+        symboles = [sym for sym, _, _ in entries]
+        cmap = self._country_map(symboles)
+        nmap = self._name_map(symboles)
+        rows = [
+            (sym, nom or nmap.get(sym) or "N/A", cmap.get(sym) or "N/A", round(pct, 2))
+            for sym, nom, pct in entries
+        ]
+        self._present_screener_results(
+            title, ["Symbole", "Nom", "Pays", "Variation (%)"], rows
+        )
 
     def _show_yahoo_screener(self):
         """Charge jusqu'à 50 symboles du screener Yahoo sélectionné et les injecte dans le champ d'analyse."""
@@ -222,21 +242,25 @@ class ScreenersMixin:
                 pct_val = float(pct)
             except Exception:
                 pct_val = None
-            entries.append((symbol, pct_val))
+            nom = str(q.get('shortName') or q.get('longName') or '').strip()
+            entries.append((symbol, nom, pct_val))
 
         entries = entries[:50]
         if not entries:
             QMessageBox.information(self, "Yahoo Screener", f"Aucun résultat pour le screener « {screener_label} ».")
             return
 
-        cmap = self._country_map([sym for sym, _ in entries])
+        symboles = [sym for sym, _, _ in entries]
+        cmap = self._country_map(symboles)
+        nmap = self._name_map(symboles)
         rows = [
-            (sym, cmap.get(sym) or "N/A", (round(pct, 2) if pct is not None else None))
-            for sym, pct in entries
+            (sym, nom or nmap.get(sym) or "N/A", cmap.get(sym) or "N/A",
+             (round(pct, 2) if pct is not None else None))
+            for sym, nom, pct in entries
         ]
         self._present_screener_results(
             f"Yahoo Screener — {screener_label} (max 50)",
-            ["Symbole", "Pays", "Variation (%)"],
+            ["Symbole", "Nom", "Pays", "Variation (%)"],
             rows,
         )
 
@@ -320,8 +344,6 @@ class ScreenersMixin:
           • Float Short : > 10%
           • Gap Up      : ≥ 5%
         """
-        from finvizfinance.screener.overview import Overview
-
         progress = QProgressDialog(
             "Interrogation de Finviz en cours…",
             "Annuler", 0, 0, self
@@ -343,16 +365,11 @@ class ScreenersMixin:
 
         df = None
         try:
-            import finvizfinance.util as _fv_util
-            from curl_cffi.requests import Session as CurlSession
-            _orig_session = _fv_util.session
-            _fv_util.session = CurlSession(impersonate="chrome")
-            try:
-                fov = Overview()
-                fov.set_filter(filters_dict=FILTERS)
-                df = fov.screener_view(order="Change", limit=100, ascend=False)
-            finally:
-                _fv_util.session = _orig_session
+            # Passage obligé par run_screen : c'est lui qui porte la session
+            # curl_cffi ET la lecture correcte de la colonne Ticker (l'avatar
+            # -lettre de Finviz doublait la première lettre des symboles).
+            from core.finviz_screeners import run_screen
+            df = run_screen(FILTERS, order="Change", limit=100, ascend=False)
         except Exception as e:
             progress.close()
             import traceback
@@ -408,7 +425,8 @@ class ScreenersMixin:
             cap   = _num(row.get("Market Cap"))
             cap_m = round(cap / 1_000_000, 1) if cap else None
             country = str(row.get("Country") or "N/A")
-            results.append((sym, country, chg, price, cap_m, vol))
+            nom   = str(row.get("Company") or "N/A")
+            results.append((sym, nom, country, chg, price, cap_m, vol))
 
         if not results:
             QMessageBox.information(self, "Finviz Gapper",
@@ -417,12 +435,12 @@ class ScreenersMixin:
 
         top = results[:50]
         rows = [
-            (sym, country, chg, price, cap_m, (int(vol) if vol is not None else None))
-            for sym, country, chg, price, cap_m, vol in top
+            (sym, nom, country, chg, price, cap_m, (int(vol) if vol is not None else None))
+            for sym, nom, country, chg, price, cap_m, vol in top
         ]
         self._present_screener_results(
             f"Finviz Gapper (Cap<$300M, $1-$20, Gap>=5%) — {len(top)} résultat(s)",
-            ["Symbole", "Pays", "Gap (%)", "Prix ($)", "Cap (M$)", "Volume"],
+            ["Symbole", "Nom", "Pays", "Gap (%)", "Prix ($)", "Cap (M$)", "Volume"],
             rows,
         )
 
@@ -597,9 +615,13 @@ class ScreenersMixin:
                 f"Événements 48h : {len(covered)} résolus localement, "
                 f"{len(missing)} via yfinance"
             )
-        rows = [(sym, evt, dt) for sym, evt, dt in sorted(results, key=lambda x: (x[2], x[0]))]
+        nmap = self._name_map([r[0] for r in results])
+        rows = [
+            (sym, nmap.get(sym) or "N/A", evt, dt)
+            for sym, evt, dt in sorted(results, key=lambda x: (x[2], x[0]))
+        ]
         self._present_screener_results(
             f"Événements 48h — {len({r[0] for r in results})} symbole(s)",
-            ["Symbole", "Événement", "Date"],
+            ["Symbole", "Nom", "Événement", "Date"],
             rows,
         )

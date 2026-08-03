@@ -14,6 +14,10 @@ if str(SRC_DIR) not in sys.path:
 # pendant les imports/tests qui n'en ont pas explicitement besoin.
 os.environ.setdefault('QSI_DISABLE_C_ACCELERATION', '1')
 os.environ.setdefault('QSI_CONSENSUS_OFFLINE', '1')
+# Filet de sécurité : aucun test ne doit déclencher la complétion des profils
+# d'instruments, qui consommerait le budget de requêtes yfinance. Les tests qui
+# veulent l'exercer lèvent la variable eux-mêmes ET simulent yf.Ticker.
+os.environ.setdefault('QSI_DISABLE_PROFILE_FETCH', '1')
 
 
 @pytest.fixture(scope='session', autouse=True)

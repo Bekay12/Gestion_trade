@@ -1,8 +1,39 @@
 # 📋 Changelog - Stock Analysis Web Dashboard
 
+## Version 1.6.0 - Tickers Finviz corrigés et colonne « Nom » dans toute l'interface (2026-08-03)
+
+### 🐛 Corrections
+
+- **Tous les tickers venant de Finviz partaient avec leur première lettre doublée**
+  - `src/core/finviz_screeners.py` : Finviz place un avatar-lettre dans la cellule Ticker (`<a class="company-ticker"><img …/><span>I</span></a>`, la lettre servant de repli le temps que le logo charge), devant le lien du symbole. `finvizfinance` 1.3.0 remplit chaque cellule avec `td.text`, qui concatène **tout** le texte de la cellule : `IESC` devenait `IIESC`, `AMZN` → `AAMZN`, `TW` → `TTW`. Chaque symbole injecté dans le champ d'analyse échouait ensuite côté yfinance (« No history available for FFUTU »). Mesuré sur une session : 14 symboles sur 14 en échec, 0 synchronisé.
+  - Le ticker est désormais lu sur l'attribut `data-boxover-ticker` du `<td>`, qui fait autorité ; à défaut, l'avatar est retiré du DOM avant que la librairie ne lise le texte. Aucune réparation par heuristique : `AAPL`, `MMM` ou `TTWO` sont des symboles légitimes à première lettre doublée, indiscernables d'un symbole corrompu. Si les deux mécanismes échouent (3ᵉ refonte de la page Finviz), `run_screen()` lève une `RuntimeError` explicite plutôt que de renvoyer une liste corrompue.
+  - `run_screen()` devient le point d'entrée unique vers finvizfinance : il porte à la fois la session `curl_cffi` et l'assainissement du ticker. Le screener Gapper, qui construisait son propre `Overview` dans `ui/mixins/screeners.py`, passe par lui — il avait exactement le même bug.
+  - Verrouillé par `src/tests/test_finviz_screeners.py` (5 tests, HTML figé, aucun accès réseau).
+
+- **Effet de bord : 18 profils fantômes écrits dans le store**
+  - `ensure_instrument_profiles()` acceptait le `info` renvoyé par yfinance pour un symbole inexistant. yfinance ne lève pas : il renvoie un dict non vide mais sans identité, parfois un pseudo-fonds de l'échange « YHD » au nom numérique (`164` pour `AABT`, `24564` pour `TTYL`). 18 profils avaient été écrits, `name` valant le ticker corrompu ; ils comptaient ensuite comme profils **frais**, donc n'étaient jamais corrigés, et polluaient les colonnes Nom et Pays.
+  - `_info_sans_identite()` refuse désormais un profil sans `shortName` ni `longName`, ainsi qu'un nom purement numérique. Les 18 profils existants ont été déplacés vers `market_parquet/instruments_fantomes/` (déplacement, pas suppression : le dossier est hors du glob de lecture). 186 profils valides conservés.
+
+### ✨ Nouveautés
+
+- **Colonne « Nom » sur tous les tableaux de l'interface**
+  - Tableau de résultats (`merged_table`), tableau comparatif multicritère, tableau de comparaison historique, et tous les screeners (Finviz market-wide, Finviz Gapper, Yahoo Screener, top movers, vues store Combined et Golden Cross, Événements 48 h).
+  - Coût réseau nul. Finviz et le screener Yahoo renvoient déjà le nom dans leur réponse ; ailleurs, `market_store.get_name_map()` le lit dans les profils d'instruments (1 requête DuckDB), avec la colonne `name` des features en secours. Un symbole sans profil affiche N/A et se remplit à la passe suivante, comme la colonne Pays.
+  - Nom tronqué à l'affichage et repris en entier en infobulle : sur 27 colonnes, un nom complet poussait les colonnes chiffrées hors de l'écran.
+
+### ♻️ Interne
+
+- **Disposition du tableau de résultats déclarée une seule fois**
+  - `ui/main_window.py` : `MERGED_COLUMNS` (clé logique → en-tête) est la source unique, avec `MERGED_COL['clé']` en remplacement des index littéraux. Une vingtaine d'accès désignaient les colonnes par leur numéro (coloration, statistiques par domaine, recopie vers le tableau comparatif) ; insérer « Nom » les aurait tous décalés en silence. Le tableau comparatif dérive maintenant ses colonnes de la même source.
+  - Verrouillé par `src/tests/test_results_table_columns.py` et `src/tests/test_screener_dialog.py` (8 tests, PyQt offscreen).
+
 ## Version 1.5.0 - Profils d'instruments : stockage partitionné et complétion progressive (2026-08-02)
 
 ### 🐛 Corrections
+
+- **Les screeners store-only renvoyaient une sélection différente à chaque appel**
+  - `src/core/store_screeners.py` : les vues Combined et Golden Cross trient puis tronquent à `MAX_ROWS`, mais leur clé de tri laissait de nombreux ex aequo (même profil, mêmes scores, ou même écart). Ces égalités étaient départagées par l'ordre de sortie de DuckDB, qui varie d'une exécution à l'autre : **5 symboles sur 80 changeaient entre deux affichages consécutifs**. Le symbole clôt désormais la clé de tri. Vérifié : sélection identique sur trois exécutions successives.
+  - Conséquence visible : la colonne « Pays » ne se complétait jamais, puisque chaque affichage introduisait des symboles jamais rencontrés. La complétion progressive converge maintenant — 80 lignes sur 80 renseignées après deux passes.
 
 - **Les profils d'instruments se perdaient entre processus**
   - `src/market_store.py` : `upsert_instrument()` écrit désormais dans un fichier par symbole (`instruments/symbol=XXX/part0.parquet`), comme les features. Il réécrivait auparavant un fichier unique partagé en entier à chaque appel — lire tout, remplacer une ligne, réécrire tout — sous la seule protection d'un `threading.Lock` local au processus. Les scripts `*_scan.py` et le worker en sous-processus écrivant en parallèle, le dernier écrivain gagnait : **124 profils subsistaient pour 1853 symboles** présents dans le store de features. La colonne « Pays » des screeners affichait N/A pour 94 % des lignes, et `sector`, `industry`, `exchange` et `market_cap` manquaient de la même façon.
@@ -13,7 +44,8 @@
 - **Complétion progressive des profils**
   - `ensure_instrument_profiles(symbols, max_fetch, max_age_days)` complète les profils manquants ou périmés **par petits lots**. Appelée après l'affichage d'un screener, dans un thread détaché : la liste s'affiche immédiatement, et se complète pour la fois suivante.
   - Plafond configurable dans `src/config.py` : `INSTRUMENT_PROFILE_FETCH_LIMIT` (25) et `INSTRUMENT_PROFILE_MAX_AGE_DAYS` (90). Le budget de requêtes yfinance étant une contrainte dure, une liste de 500 résultats ne peut jamais déclencher 500 appels.
-  - Ne récupère rien avec `QSI_CONSENSUS_OFFLINE=1`. Un symbole en échec n'interrompt pas les suivants et ne remonte jamais jusqu'à l'interface.
+  - Interrupteur dédié `QSI_DISABLE_PROFILE_FETCH=1`. Volontairement distinct de `QSI_CONSENSUS_OFFLINE`, dont le sens est étroit (lookups de consensus) et que `ui/main_window.py` pose systématiquement au démarrage : s'appuyer dessus empêchait toute complétion dans l'application. Le conftest des tests pose l'interrupteur par défaut, pour qu'aucun test ne puisse consommer de requêtes.
+  - Un symbole en échec n'interrompt pas les suivants et ne remonte jamais jusqu'à l'interface.
   - `missing_instrument_profiles()` liste les symboles à compléter sans aucune requête réseau.
   - `read_instruments()` lit tous les profils en une requête DuckDB avec `union_by_name=true`, ce qui tolère les fichiers écrits avant l'ajout des nouvelles colonnes : aucune migration de schéma n'est nécessaire.
 

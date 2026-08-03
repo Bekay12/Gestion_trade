@@ -18,7 +18,12 @@ PyQt5 GUI layer.
 
 - Add screener/export behavior to the relevant **mixin**, not to `main_window.py`.
 - Any screener result feeds `_present_screener_results(title, headers, rows)` with the symbol
-  in column 0.
+  in column 0 and the company name in column 1 (header exactly `"Nom"` — the dialog truncates
+  that column and moves the full text to a tooltip).
+- **`merged_table` columns are addressed by key, never by index**: `MERGED_COLUMNS` /
+  `MERGED_COL['clé']` in `main_window.py` is the single source of the layout, and the
+  multi-criteria comparison table derives its columns from it. Adding a column means adding a
+  tuple there, nothing else.
 - **`QProgressDialog.close()` sets `wasCanceled()` to True** — never branch on
   `wasCanceled()` after `close()`, or the handler always returns before displaying results.
   (This silently broke the Finviz gapper once.)
