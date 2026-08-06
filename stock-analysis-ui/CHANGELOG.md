@@ -1,5 +1,65 @@
 # 📋 Changelog - Stock Analysis Web Dashboard
 
+## Version 1.7.0 - Optimisateur hybride : lot 1, démarrage et cohérence (2026-08-05)
+
+### 🐛 Corrections
+
+- **Le CLI de l'optimisateur mourait à l'import**
+  - `trading_c.cpython-310-x86_64-linux-gnu.so` avait été compilé le 2026-04-18 avec AddressSanitizer (`QSI_DEBUG_C_MODE=1 QSI_USE_ASAN=1`). Son chargement ne lève pas, il **avorte le processus**, donc le `try/except` de `_diagnose_import` était impuissant et `python optimisateur_hybride.py` mourait sans message. Un garde-fou inspecte désormais le binaire avant tout `dlopen` et se replie sur le chemin Python, et le module a été recompilé avec les drapeaux de production.
+
+- **Les 4 seuils optimisés n'avaient aucun effet mais partaient en production**
+  - `evaluate_config` calculait les seuils RSI, Volume, ADX et Score puis appelait `backtest_signals_c_extended`, qui n'a aucun paramètre de seuils : `py_backtest_symbol` ne prend que `(prices, volumes, coeffs, montant, cost)`. Quatre des quatorze dimensions étaient donc du bruit, et ces valeurs jamais évaluées étaient sauvegardées en `th1`, `th4`, `th5`, `th8` puis appliquées aux signaux réels. L'objectif passe par `backtest_signals_with_events` avec `domain_thresholds`, pour un surcoût mesuré de 1 %.
+
+- **Les `trades` et le `success_rate` sauvegardés venaient d'une autre configuration**
+  - La sauvegarde lisait `optimizer.meilleur_trades`, qui suit la meilleure configuration jamais vue, pas le vecteur écrit sur la même ligne. Sous `workers=-1` ces compteurs restaient dans les sous-processus, si bien que `strategy='differential'` sur un groupe sans historique n'écrivait **jamais** rien. Les métriques voyagent désormais avec leur vecteur.
+
+- **Trois plages concurrentes par paramètre, quatre divergences**
+  - `core/optim_params.py` devient la seule description du vecteur. Exemple : `a_price_slope` était cherché sur (-1.5, 3.0), bridé à (-0.5, 3.0) à l'évaluation et à (0.0, 3.0) à la sauvegarde. `th_score`, non relevé par l'audit, était cherché sur (2.0, 6.0) et bridé à (1.0, 6.0).
+
+- **Le budget d'évaluations était ignoré d'un facteur 19**
+  - `popsize` de SciPy est un multiplicateur : la population vaut `popsize * dimension`. Passer 200 avec 36 dimensions donnait 7 200 individus par génération, soit environ 1,45 million d'évaluations par groupe au lieu des 75 000 visés. Le budget est désormais calculé, réparti entre stratégies en mode `hybrid`, et le menu affiche la valeur réellement utilisée, contre 3 500 annoncés pour 30 000 utilisés.
+
+- **Le croisement génétique produisait des individus hors bornes**
+  - BLX-α étend l'intervalle parental sans borner ; seule la mutation bornait, et avec 10 % de probabilité par gène. Le meilleur individu retourné pouvait donc sortir du domaine et être sauvegardé tel quel.
+
+- **Coût de transaction incohérent d'un facteur 50**
+  - C'est un montant absolu par trade et non un pourcentage, contrairement au docstring. Les deux défauts contradictoires, `1.0` dans la fonction et `0.02` passé par le CLI, sont remplacés par une constante unique à `1.0`, et une colonne `transaction_cost` dit désormais dans quel monde chaque ligne a été mesurée.
+
+- **La relecture des lignes historiques d'avant la colonne `use_price_extras` perdait ou faussait leurs features de prix**
+  - La base réelle (`signaux/optimization_hist.db`, 545 lignes, 43 colonnes) ne porte pas la colonne `use_price_extras` : `depuis_colonnes()` retombait sur le milieu des bornes pour un drapeau absent, ce qui l'arrondit à 1 (activé). Les 545 lignes auraient donc été rejouées avec les features de prix activées et leurs 3 extras les plus récents (`a16..a18`, `th16..th18`) au milieu de leurs bornes, soit des configurations qu'aucun run n'a jamais évaluées. Un drapeau de feature absent d'une ligne historique vaut désormais 0 (désactivé), jamais le milieu des bornes.
+  - Séparément, 185 de ces 545 lignes portent un ancien drapeau par feature (`use_price_slope`, `use_price_acc`) que le vecteur courant ne modélise plus. Après arbitrage de l'utilisateur, leur rejeu restaure `use_price_extras=1` et reporte ces anciens poids sur `a_price_slope`/`a_price_acc`, plutôt que de les faire retomber sur les 14 paramètres de base comme l'aurait fait une relecture stricte du seul contrat courant.
+
+- **Le baseline historique était mesuré par un autre moteur que le score auquel il était comparé**
+  - Une fois l'objectif basculé sur `backtest_signals_with_events`, `hist_avg_gain`, `hist_total_trades` et `hist_success_rate` venaient encore d'une boucle `backtest_signals_c_extended`, qui n'a aucun paramètre de seuils et ignore donc les 8 seuils, les 2 seuils globaux et les deux dictionnaires d'extras. La ligne de fin de groupe, `✅ {domaine}: gain 22.94 vs 5.10`, opposait ainsi un backtest entièrement paramétré à un backtest de coefficients seuls, et le résumé repris dans le rapport final portait le même défaut. La décision de sauvegarde, elle, n'était pas touchée : elle compare `hist_objective_score`, déjà mesuré par `evaluate_config`. Le baseline passe désormais par `optimizer.mesure_de()`, et `backtest_signals_c_extended` n'est plus importé par le module.
+
+- **Une quatrième description du vecteur avait survécu, la plus longue**
+  - Le bloc qui reconstruit le vecteur historique posait à la main 8 coefficients, 4 seuils, 2 globaux, 11 extras de prix puis 11 extras fondamentaux, dans un ordre littéral, alors que `core/optim_params.py` prévient que cet ordre EST celui du vecteur. Il dérive maintenant de `params.indices()` et lève si un emplacement reste sans valeur, au lieu de laisser passer un zéro silencieux. Un test vérifie que chaque valeur atterrit à l'index annoncé par le contrat.
+
+### 🔁 Conséquence sur l'historique déjà en base
+
+- **76 des 545 lignes de `signaux/optimization_hist.db` rejouent désormais différemment**
+  - C'est le comportement voulu, rendu visible pour la première fois parce que les 4 seuils mordent enfin. Deux causes, mesurées en lecture seule sur la base réelle. D'abord, 48 lignes portent `NULL` dans `th1`, `th4`, `th5` et `th8` ; de ces quatre seuils, seul `th_vol` voit son défaut de rejeu bouger, de 1.0 vers le milieu de ses bornes, 1.5. Ensuite, `contraindre()` bride ce qui sortait du domaine déclaré : 48 lignes ont un `seuil_vente` hors des bornes (-6.0, -1.0), 3 un `seuil_achat` montant jusqu'à 46.4, et 2 un `th_score` descendu à 0.5.
+  - Ces ensembles se recoupent. Le décompte distinct : 48 lignes au titre du défaut de `th_vol`, 26 lignes de plus au titre du `seuil_vente`, 2 de plus au titre du `seuil_achat`, 0 de plus au titre du `th_score`, soit 76 lignes sur 545.
+  - Les colonnes `transaction_cost` et `seed`, nouvelles, distinguent une ligne écrite avant le lot d'une ligne écrite après : une ligne qui ne les porte pas a été mesurée dans l'ancien monde.
+
+### ✨ Nouveautés
+
+- **Runs rejouables** : la graine devient explicite, amorce `numpy` et `random`, et est stockée dans une colonne `seed`.
+- **Contrat de paramètres testable** : `core/optim_params.py` et `core/optim_budget.py`, verrouillés par `test_optim_params.py` et `test_optim_budget.py`, soit 30 fonctions de test pour 47 cas collectés, hors réseau. Le module n'en avait aucun. En y ajoutant `test_optim_sauvegarde.py` et `test_c_module_guard.py`, le lot apporte 47 fonctions de test pour 64 cas collectés, et la suite par défaut (`pytest -m "not integration"`) est à 123 passed, 15 deselected.
+
+### ♻️ Interne
+
+- Suppression du `warnings.filterwarnings("ignore")` de niveau module. Hors pytest, il rendait muet tout avertissement Python émis par le processus après l'import du module, GUI comprise, effet mesuré et confirmé (avant/après, avec un avertissement de contrôle). Sous pytest, l'effet était nul : pytest encadre chaque test de son propre `warnings.catch_warnings()` et réinitialise ses filtres, si bien que le filtre global posé à l'import n'a jamais influencé le résumé d'avertissements de la suite (39 avertissements tiers mesurés à l'identique avant et après, sur la suite ciblée comme sur la suite complète).
+- Le cache secteur prend `config.CACHE_DIR`, absolu, et crée son dossier à l'écriture. Trois dossiers `cache_data/` parasites existaient, dont un créé par une simple exécution de pytest.
+- Le pool de threads est créé une fois par optimiseur au lieu d'être reconstruit à chaque appel d'objectif, et `workers=-1` passe à `workers=1`, ce qui supprime la sur-souscription et la sérialisation des séries à chaque génération.
+- Suppression de `get_best_gain_csv`, morte, et des imports dupliqués.
+- `save_optimization_results` tient enfin la promesse de son docstring de ne rien propager à l'appelant : `params.vers_colonnes()` et la composition des colonnes sont passées à l'intérieur du `try`, alors qu'un vecteur de mauvaise taille y aurait fait remonter une `ValueError`.
+
+### ⚠️ Connu, non traité dans ce lot
+
+- Un run complet reste hors de portée : l'objectif coûte 7,6 s par backtest, `get_trading_signal` étant appelé une fois par barre et recalculant tous les indicateurs, avec une requête SQLite par barre. C'est l'objet du lot 2.
+- `get_sector` et `classify_cap_range` consomment toujours une requête yfinance par symbole. Lot 3.
+
 ## Version 1.6.0 - Tickers Finviz corrigés, colonnes « Nom » et « Pays », nombres arrondis (2026-08-03)
 
 ### 🐛 Corrections
