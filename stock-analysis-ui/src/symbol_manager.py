@@ -2,10 +2,11 @@
 Module pour gérer les symboles boursiers dans SQLite - Version sans emojis pour Windows.
 """
 
+import json
 import logging
 import sqlite3
 from pathlib import Path
-from datetime import datetime
+from datetime import datetime, timedelta
 import yfinance as yf
 from typing import List, Dict, Optional, Tuple
 from config import DB_PATH
@@ -508,6 +509,69 @@ def get_all_popular_symbols(max_count: Optional[int] = None, exclude_symbols: Op
     exclude = set(exclude_symbols or [])
     symbols = [s for s in get_symbols_by_list_type('popular', active_only=True) if s not in exclude]
     return symbols[:max_count] if max_count is not None else symbols
+
+
+def get_popular_symbols_by_sector(sector: str, max_count: Optional[int] = None,
+                                  exclude_symbols: Optional[set] = None) -> List[str]:
+    """Symboles populaires d'un secteur, moins ceux à exclure.
+
+    Requis par optimisateur_hybride.clean_sector_cap_groups() pour compléter un
+    secteur avec des populaires du même secteur. Sans cette fonction, l'appel
+    échouait dans un `except Exception: pass` et le complément était tiré au
+    hasard dans tout le dataset, hors secteur.
+    """
+    exclude = set(exclude_symbols or [])
+    symbols = [s for s in get_symbols_by_sector(sector, list_type='popular', active_only=True)
+               if s not in exclude]
+    return symbols[:max_count] if max_count is not None else symbols
+
+
+def get_cleaned_group_cache(sector: str, cap_range: str, ttl_days: int = 20) -> Optional[List[str]]:
+    """Groupe (secteur × cap_range) déjà nettoyé, s'il a moins de ttl_days jours.
+
+    La table `cleaned_groups_cache` est créée par init_symbols_table() ; seuls
+    ses accesseurs avaient disparu. Ce cache est ce qui évite de revalider les
+    groupes à chaque optimisation, donc de reconsommer le budget yfinance.
+
+    Sorties:
+        symboles (list[str] | None): None si absent ou périmé
+    """
+    init_symbols_table()
+    conn = sqlite3.connect(DB_PATH)
+    try:
+        ligne = conn.execute(
+            'SELECT symbols_json, cached_at FROM cleaned_groups_cache '
+            'WHERE sector = ? AND cap_range = ?',
+            (sector, cap_range),
+        ).fetchone()
+    finally:
+        conn.close()
+
+    if not ligne:
+        return None
+    symbols_json, cached_at = ligne
+    try:
+        if datetime.now() - datetime.fromisoformat(str(cached_at)) > timedelta(days=ttl_days):
+            return None
+        return json.loads(symbols_json)
+    except (TypeError, ValueError):
+        # Horodatage ou JSON illisible : cache traité comme absent.
+        return None
+
+
+def save_cleaned_group_cache(sector: str, cap_range: str, symbols: List[str]) -> None:
+    """Enregistre un groupe nettoyé dans le cache (voir get_cleaned_group_cache)."""
+    init_symbols_table()
+    conn = sqlite3.connect(DB_PATH)
+    try:
+        conn.execute(
+            'INSERT OR REPLACE INTO cleaned_groups_cache '
+            '(sector, cap_range, symbols_json, cached_at) VALUES (?, ?, ?, ?)',
+            (sector, cap_range, json.dumps(list(symbols)), datetime.now().isoformat()),
+        )
+        conn.commit()
+    finally:
+        conn.close()
 
 def get_symbols_by_sector_and_cap(sector: str, cap_range: str, list_type: str = None, active_only: bool = True) -> List[str]:
     """Récupère les symboles d'un secteur ET d'une gamme de capitalisation."""

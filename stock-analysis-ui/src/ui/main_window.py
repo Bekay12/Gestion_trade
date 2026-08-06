@@ -3551,9 +3551,15 @@ if __name__ == "__main__":
     sys.exit(app.exec_())
 
     #TODO:
-    # - Ajouter un bouton pour exporter les resultats (CSV/Excel)
+
     # - Ajouter dates d'annonces / résultats dans les signaux (ex: earnings date)
-    # - harmoniser l'affichage des plots (embedded + external)
-    # - améliorer le threading / gestion des erreurs
-    # - Ajouter le earning dates et tous les autres nouveaux criteres a l'analyse et au backtest
-    # - Ajouter un bouton pour choisir si backup des resultats avant analyse ou pas
+    # - Ajouter une collone pour (next event) qui donne le nombre de jour avant le prochain événement (earnings, dividend, split, etc.) mettre a zero si c'est aujourd'hui
+    # - Ajouter une collone pour (next event type) qui donne le type du prochain événement (earnings, dividend, split, etc.)
+    # - Ajouter une collone pour (previous event) qui donne le nombre de jours depuis le dernier événement (earnings, dividend, split, etc.) >= 1
+    # - Ajouter une collone pour (previous event type) qui donne le type du dernier événement (earnings, dividend, split, etc.)
+    # - Ajouter une collone dividend_yield (%) pour les actions qui versent un dividende
+    # - Ajouter une collone dividend_growth (%) pour les actions qui versent un dividende
+    # - Ajouter une collone pour le P/E ratio (Price to Earnings ratio) 
+    # - Ajouter une collone qui donne le Big growth score sur la base du code Big_Growth.py
+    # - Ajouter une collone qui donne le secure score sur la base du Sichere_Unternehmen_Scan.py
+    # - Ajouter un bouton pour afficher les collones extra et reorganiser l'ordre des collones dans le tableau de resultat de facon coherente
