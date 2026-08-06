@@ -98,3 +98,110 @@ def test_le_cache_ne_change_aucun_resultat() -> None:
     chaud = _backtest(prix, volumes, "TEST_IDENTITE")
 
     assert froid == chaud
+
+
+def _base_avec_une_ligne(chemin, secteur: str = "Technology", a1: float = 1.28):
+    """
+    Cree une base optimization_runs portant une ligne.
+
+    ATTENTION, piege verifie le 2026-08-06 : la requete de
+    _extract_best_parameters_sans_cache exige SANS REPLI les colonnes
+    a9, a10, th9, th10, use_price_slope, use_price_acc, a11 a a15,
+    th11 a th15 et use_fundamentals (qsi.py:126-138). Seules a16 a a18,
+    th16 a th18 et use_price_extras recoivent un `NULL AS`. Une table plus
+    courte ferait echouer la requete et rendre {} silencieusement, donnant un
+    echec de test sans rapport avec le sujet.
+    """
+    import sqlite3
+
+    conn = sqlite3.connect(chemin)
+    conn.execute("""
+        CREATE TABLE IF NOT EXISTS optimization_runs (
+            id INTEGER PRIMARY KEY AUTOINCREMENT,
+            timestamp DATETIME NOT NULL,
+            sector TEXT NOT NULL,
+            market_cap_range TEXT,
+            gain_moy REAL, success_rate REAL, trades INTEGER,
+            seuil_achat REAL, seuil_vente REAL,
+            a1 REAL, a2 REAL, a3 REAL, a4 REAL, a5 REAL, a6 REAL, a7 REAL, a8 REAL,
+            th1 REAL, th2 REAL, th3 REAL, th4 REAL, th5 REAL, th6 REAL, th7 REAL, th8 REAL,
+            a9 REAL, a10 REAL, th9 REAL, th10 REAL,
+            use_price_slope INTEGER DEFAULT 0, use_price_acc INTEGER DEFAULT 0,
+            a11 REAL, a12 REAL, a13 REAL, a14 REAL, a15 REAL,
+            th11 REAL, th12 REAL, th13 REAL, th14 REAL, th15 REAL,
+            use_fundamentals INTEGER DEFAULT 0
+        )
+    """)
+    conn.execute(
+        "INSERT INTO optimization_runs ("
+        " timestamp, sector, market_cap_range, gain_moy, trades,"
+        " seuil_achat, seuil_vente,"
+        " a1, a2, a3, a4, a5, a6, a7, a8,"
+        " th1, th2, th3, th4, th5, th6, th7, th8,"
+        " a9, a10, th9, th10, use_price_slope, use_price_acc,"
+        " a11, a12, a13, a14, a15, th11, th12, th13, th14, th15, use_fundamentals"
+        ") VALUES ("
+        " '2026-01-01 00:00:00', ?, 'Large', 10.0, 5,"
+        " 4.2, -2.0,"
+        " ?, 1, 1, 1, 1, 1, 1, 1,"
+        " 50, 0, 0, 1.5, 25, 0, 0.5, 4,"
+        " 0, 0, 0, 0, 0, 0,"
+        " 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0)",
+        (secteur, a1))
+    conn.commit()
+    conn.close()
+
+
+def test_extract_best_parameters_ne_lit_la_base_qu_une_fois(monkeypatch, tmp_path) -> None:
+    """Verrouille : 1160 requetes SQLite par backtest devenaient une seule."""
+    import qsi
+
+    chemin = str(tmp_path / "optimization_hist.db")
+    _base_avec_une_ligne(chemin)
+
+    appels = []
+    vrai = qsi._extract_best_parameters_sans_cache
+
+    def compte(db_path):
+        appels.append(db_path)
+        return vrai(db_path)
+
+    monkeypatch.setattr(qsi, "_extract_best_parameters_sans_cache", compte)
+    qsi._BEST_PARAMS_CACHE.clear()
+
+    for _ in range(50):
+        qsi.extract_best_parameters(chemin)
+
+    assert len(appels) == 1, f"{len(appels)} lectures de base, 1 attendue"
+
+
+def test_une_ecriture_en_base_invalide_le_cache(tmp_path) -> None:
+    """La cle derivee de l'etat du fichier doit rendre l'invalidation automatique."""
+    import time
+
+    import qsi
+
+    chemin = str(tmp_path / "optimization_hist.db")
+    _base_avec_une_ligne(chemin, a1=1.0)
+    qsi._BEST_PARAMS_CACHE.clear()
+
+    premier = qsi.extract_best_parameters(chemin)
+    assert premier, "la base de test devrait produire au moins un secteur"
+
+    # La granularite de mtime peut valoir une seconde sur certains systemes de
+    # fichiers ; la taille du fichier entre aussi dans la cle, et une ligne
+    # supplementaire la change.
+    time.sleep(1.1)
+    _base_avec_une_ligne(chemin, secteur="Healthcare", a1=2.0)
+
+    second = qsi.extract_best_parameters(chemin)
+
+    assert set(second) != set(premier), "le cache n'a pas ete invalide"
+
+
+def test_une_base_absente_ne_leve_pas(tmp_path) -> None:
+    """Un chemin invalide doit rendre un dict vide, pas une exception."""
+    import qsi
+
+    qsi._BEST_PARAMS_CACHE.clear()
+    assert qsi.extract_best_parameters(str(tmp_path / "absente.db")) == {}

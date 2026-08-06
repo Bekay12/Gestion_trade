@@ -79,24 +79,72 @@ BEST_PARAM_EXTRAS: Dict[str, Dict[str, Union[int, float]]] = {}
 PRICE_FEATURE_WINDOW = 15
 PRICE_FEATURE_ACCEL_WINDOW = 15
 
+# Memoisation de la lecture des meilleurs parametres. get_trading_signal
+# l'appelle une fois PAR BARRE, soit 1160 requetes SQLite par backtest pour
+# 14 % du temps, alors que la reponse ne change pas pendant un run.
+# La cle porte l'etat du fichier, donc une ecriture en base invalide le cache
+# d'elle-meme : aucune portee explicite a gerer, et le comportement reste
+# correct si un autre processus ecrit pendant un run.
+_BEST_PARAMS_CACHE = _BoundedCache(maxsize=8)
+
+
 def extract_best_parameters(db_path: str = None) -> Dict[str, Tuple[Tuple[float, ...], Tuple[float, ...], Tuple[float, float]]]:
     """
-    Extrait les meilleurs coefficients et seuils pour chaque secteur à partir de SQLite.
-    Sélectionne la ligne la plus récente (par Timestamp) pour chaque secteur.
+    --------------------------------------------------------------------------
+    Objectif:
+        Rendre les meilleurs coefficients et seuils par secteur, en memoisant
+        la lecture tant que le fichier de base n'a pas change.
 
-    Args:
-        db_path (str): Chemin vers la base SQLite contenant l'historique d'optimisation.
+    Inputs:
+        db_path (str | None): chemin de la base, defaut config.OPTIMIZATION_DB_PATH
 
-    Returns:
-        Dict[str, Tuple[Tuple[float, ...], Tuple[float, ...], Tuple[float, float]]]: 
-        Dictionnaire avec pour chaque secteur: (coefficients_8, thresholds_8, globals_2, gain)
+    Outputs:
+        parametres (Dict): {secteur: (coeffs_8, seuils_8, globaux_2, gain, extras)}
+        Le dictionnaire est PARTAGE entre appelants : le lire, ne pas le muter.
+    --------------------------------------------------------------------------
     """
     if db_path is None:
         from config import OPTIMIZATION_DB_PATH
         db_path = OPTIMIZATION_DB_PATH
+
+    cle = None
+    try:
+        etat = os.stat(db_path)
+        cle = (str(db_path), etat.st_mtime_ns, etat.st_size)
+    except OSError:
+        # Base absente ou illisible : on ne memoise pas, la fonction interne
+        # journalise et rend un dict vide.
+        cle = None
+
+    if cle is not None:
+        connu = _BEST_PARAMS_CACHE.get(cle)
+        if connu is not None:
+            return connu
+
+    resultat = _extract_best_parameters_sans_cache(db_path)
+
+    if cle is not None:
+        _BEST_PARAMS_CACHE[cle] = resultat
+    return resultat
+
+
+def _extract_best_parameters_sans_cache(db_path: str) -> Dict[str, Tuple[Tuple[float, ...], Tuple[float, ...], Tuple[float, float]]]:
+    """
+    --------------------------------------------------------------------------
+    Objectif:
+        Lire reellement la base. Ne jamais appeler directement : passer par
+        extract_best_parameters(), qui memoise.
+
+    Inputs:
+        db_path (str): chemin de la base, deja resolu
+
+    Outputs:
+        parametres (Dict): {secteur: (coeffs_8, seuils_8, globaux_2, gain, extras)}
+    --------------------------------------------------------------------------
+    """
     try:
         import sqlite3
-        
+
         conn = sqlite3.connect(db_path)
         conn.row_factory = sqlite3.Row  # Accès par colonne
         cursor = conn.cursor()
