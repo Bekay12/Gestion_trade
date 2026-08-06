@@ -57,7 +57,9 @@
 
 ### ⚠️ Connu, non traité dans ce lot
 
-- Un run complet reste hors de portée : l'objectif coûte 7,6 s par backtest, `get_trading_signal` étant appelé une fois par barre et recalculant tous les indicateurs, avec une requête SQLite par barre. C'est l'objet du lot 2.
+- **Régression de performance assumée en ligne de commande.** Rendre les 4 seuils effectifs a imposé d'épingler l'objectif sur `backtest_signals_with_events`, le moteur C n'ayant aucun paramètre de seuils. Mesuré le 2026-08-06 sur 1210 barres : 7,17 s pour le chemin Python contre 0,0002 s pour `backtest_signals_c_extended` avec le module C, soit un facteur 37 000. L'interface graphique n'est pas concernée, elle pose `QSI_DISABLE_C_ACCELERATION=1` et empruntait déjà le chemin Python. Le compromis est assumé : garder le moteur C laissait 4 des 14 dimensions inertes à l'optimisation tout en écrivant ces valeurs en base, où elles pilotaient les signaux réels.
+- Un run complet reste donc hors de portée. Le profil situe précisément le coût : 96 % du temps part dans `get_trading_signal`, appelé une fois par barre, dont l'ADX recalculé intégralement à chaque barre (47 %), `extract_best_parameters` et ses 1160 requêtes SQLite (14 %) et le RSI (7 %). C'est un O(n²) : sortir ces calculs de la boucle ne change aucun résultat, seulement le temps. Objet du lot 2.
+- L'évolution différentielle est passée de `workers=-1` à `workers=1`, pour que les mesures enregistrées par `evaluate_config` restent accessibles au processus parent. Restaurer le parallélisme demanderait de rendre l'optimiseur sérialisable, ce que le `ThreadPoolExecutor` porté par l'instance empêche aujourd'hui. Sans intérêt tant que l'objectif coûte 37 000 fois trop cher.
 - `get_sector` et `classify_cap_range` consomment toujours une requête yfinance par symbole. Lot 3.
 
 ## Version 1.6.0 - Tickers Finviz corrigés, colonnes « Nom » et « Pays », nombres arrondis (2026-08-03)

@@ -746,12 +746,32 @@ class HybridOptimizer:
                 ser_data = self.stock_series.get(symbol)
                 if not ser_data:
                     return 0.0, 0, 0
-                # 🚀 TOUJOURS utiliser l'accélération C (même avec features)
                 # backtest_signals_c_extended n'a AUCUN parametre de seuils :
                 # py_backtest_symbol ne prend que (prices, volumes, coeffs,
                 # montant, cost). Les 4 seuils optimises y etaient donc perdus.
-                # with_events les honore via domain_thresholds, pour +1 % de
-                # cout mesure le 2026-08-05.
+                # with_events les honore via domain_thresholds.
+                #
+                # COUT REEL, mesure le 2026-08-06 sur 1210 barres. Le "+1 %"
+                # qu'annoncait ce commentaire n'etait vrai que sans module C :
+                #   with_events (Python)            7,17 s
+                #   c_extended avec C_ACCELERATION   0,0002 s
+                # soit un facteur 37 000. En interface graphique la question ne
+                # se pose pas, QSI_DISABLE_C_ACCELERATION=1 y ramenant de toute
+                # facon c_extended sur ce meme chemin Python ; en ligne de
+                # commande, ou le module C se charge, le surcout est entier.
+                #
+                # Il est assume ici : le moteur C ne peut PAS honorer les
+                # seuils, donc le garder rendait 4 des 14 dimensions inertes a
+                # l'optimisation tout en les ecrivant en base, ou elles
+                # pilotaient les signaux reels. Justesse d'abord.
+                #
+                # Le surcout n'est pas une fatalite du Python : 96 % du temps
+                # part dans get_trading_signal, appele une fois PAR BARRE, qui
+                # recalcule tous les indicateurs sur tout l'historique (ADX
+                # 47 %, RSI 7 %) et relit les parametres en base a chaque barre
+                # (extract_best_parameters 14 %, soit 1160 requetes SQLite).
+                # Sortir ces calculs de la boucle ne change aucun resultat.
+                # C'est le defaut N2, objet du lot 2.
                 result, _evenements = backtest_signals_with_events(
                     ser_data['Close'], ser_data['Volume'], "default",
                     self.montant, self.transaction_cost,
