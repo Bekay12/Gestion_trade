@@ -22,7 +22,7 @@ from core import optim_budget
 from tqdm import tqdm
 # import yfinance as yf  # Import paresseux - chargé seulement si nécessaire
 from collections import deque, namedtuple
-from core.cache import _BoundedCache
+from core.cache import _BoundedCache, TA_CACHE
 from scipy.optimize import differential_evolution
 from scipy.stats import qmc
 from typing import Dict, List, Optional
@@ -1625,6 +1625,13 @@ def optimize_sector_coefficients_hybrid(
         }
     finally:
         optimizer.shutdown()
+        # Frontiere naturelle de liberation du cache d'instantanes techniques.
+        # Sa cle porte le nom du symbole et les groupes secteur x cap_range ne
+        # partagent pas de symboles : les entrees du groupe qui s'acheve ne
+        # resserviront jamais, et sans ce vidage l'etat stable d'un run complet
+        # serait le plafond de 100 000 entrees (~196 Mo) tenu jusqu'a la sortie
+        # du process. Voir core/cache.py, section « CYCLE DE VIE REEL ».
+        TA_CACHE.clear()
 
     return best_coeffs, best_score, success_rate, all_thresholds, summary
 

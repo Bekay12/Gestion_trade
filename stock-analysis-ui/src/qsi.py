@@ -3061,6 +3061,13 @@ def analyse_signaux_populaires(
             if verbose:
                 print(f"{s['Symbole']:<8} : Erreur backtest ({e})")
 
+    # Frontiere naturelle de liberation du cache d'instantanes techniques : le
+    # lot de backtests est termine, aucune de ses entrees ne resservira (la cle
+    # porte le nom du symbole). Sans ce vidage, une session graphique qui
+    # enchaine les analyses immobilise jusqu'a ~196 Mo pour toute la duree du
+    # process. Voir core/cache.py, section « CYCLE DE VIE REEL ».
+    TA_CACHE.clear()
+
     # 🔧 Dédupliquer par symbole (garder le premier = celui avec le meilleur taux)
     seen_symbols = set()
     backtest_results_dedupe = []
