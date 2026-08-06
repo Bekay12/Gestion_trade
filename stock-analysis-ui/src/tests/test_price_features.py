@@ -16,6 +16,7 @@ import numpy as np
 from qsi import get_trading_signal, BEST_PARAM_EXTRAS
 from trading_c_acceleration.qsi_optimized import backtest_signals_with_events
 from optimisateur_hybride import HybridOptimizer
+from core import optim_params as contrat
 
 pytestmark = pytest.mark.integration
 
@@ -82,10 +83,11 @@ def test_price_features_flow():
     print(f"   Price-feature optimizer bounds: {len(opt_pf.bounds)} parameters")
     print(f"   Delta: {len(opt_pf.bounds) - len(opt_base.bounds)} extra params for price features")
     
-    if len(opt_pf.bounds) == 24:
-        print("   ✅ Bounds correctly extended (18 + 6 for price features)")
+    attendu_prix = len(contrat.bornes(prix=True))
+    if len(opt_pf.bounds) == attendu_prix:
+        print(f"   ✅ Bounds correctly extended (contrat: {attendu_prix} bounds with price features)")
     else:
-        print(f"   ❌ Unexpected bound count: {len(opt_pf.bounds)}")
+        print(f"   ❌ Unexpected bound count: {len(opt_pf.bounds)} (attendu {attendu_prix})")
         return False
     
     # 5. Test evaluate_config with price params
