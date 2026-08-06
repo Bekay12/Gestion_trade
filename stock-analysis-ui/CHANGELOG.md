@@ -1,5 +1,23 @@
 # 📋 Changelog - Stock Analysis Web Dashboard
 
+## Version 1.8.0 - Optimisateur hybride : lot 2, coût de l'objectif (2026-08-06)
+
+### 🚀 Performances
+
+- **Le cache d'instantanés techniques était dimensionné à 500 entrées pour 1160 barres**
+  - `TA_CACHE` mémoïse les indicateurs par barre et sa clé se répète bien d'une évaluation à l'autre, la série de prix ne changeant pas. Mais il retenait 500 instantanés quand un backtest de 5 ans en produit 1160 pour un seul symbole : il évinçait les premières barres avant d'avoir pu les réutiliser, et son taux de réussite était nul. Porté à 100 000 entrées, un plafond LRU qui pèse environ 196 Mo une fois plein (mesure au conteneur réel, environ 2,06 Ko par instantané, pas une allocation immédiate), il couvre 1160 barres pour une cinquantaine de symboles à environ 2,4 Mo par symbole réellement en cache. Mesuré sur la même série, résultats identiques au bit près : la deuxième évaluation passe de 7,18 s à 2,36 s.
+
+- **`extract_best_parameters` interrogeait SQLite une fois par barre**
+  - Soit 1160 requêtes par backtest, pour 14 % du temps, alors que la réponse ne change pas pendant un run. Elle est désormais mémoïsée avec une clé portant la date de modification et la taille du fichier de base, ce qui rend l'invalidation automatique : une écriture en base, même par un autre processus, invalide le cache d'elle-même. C'est ce qui lève l'objection du lot 1, qui avait écarté cette mémoïsation parce qu'elle aurait changé le comportement en cours de run.
+
+- **Étage 3 (sortir les indicateurs de la boucle) remesuré et refermé sans objet**
+  - La spec conditionnait l'ouverture de ce troisième étage à une remesure après les deux corrections ci-dessus. Remesuré sur le même script de référence (1210 barres, quatre évaluations) : la deuxième évaluation, celle du régime stable d'une optimisation qui enchaîne les jeux de coefficients sur la même série, passe de 7,18 s à environ 0,58 s, un gain d'environ 12,6x, très au-delà du seuil de 3x fixé pour justifier l'étage 3. Il n'est pas ouvert et ne fait l'objet d'aucun plan de suite ; voir la section « Étage 3 » de `docs/superpowers/specs/2026-08-06-optimisateur-hybride-lot2-performance-design.md`.
+
+### ⚠️ Connu, non traité dans ce lot
+
+- Le module C reste une implémentation divergente de la stratégie, hors du chemin d'optimisation. À seuils alignés, les deux moteurs rendent des résultats de signe opposé sur trois séries sur trois, sept divergences structurelles l'expliquant, dont Ichimoku absent du C et un ADX calculé une seule fois pour toute la série. Voir `docs/superpowers/specs/2026-08-06-optimisateur-hybride-lot2-performance-design.md`.
+- `a3` et `th_score` sont deux dimensions inertes de l'espace de recherche, prouvées telles par lecture du code et par mesure. Les retirer ferait passer le vecteur de 14 à 12 dimensions.
+
 ## Version 1.7.0 - Optimisateur hybride : lot 1, démarrage et cohérence (2026-08-05)
 
 ### 🐛 Corrections

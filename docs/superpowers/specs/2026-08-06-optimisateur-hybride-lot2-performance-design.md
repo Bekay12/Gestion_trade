@@ -110,21 +110,38 @@ circuler, y compris si un autre processus écrit pendant un run.
 `extract_best_parameters` touche la base **une fois**, pas 1160. Après une
 écriture en base, l'appel suivant relit et rend la nouvelle valeur.
 
-### Étage 3 : sortir les indicateurs de la boucle, conditionnel
+### Étage 3 : sortir les indicateurs de la boucle, verdict
 
-À n'ouvrir qu'après avoir remesuré les étages 1 et 2. L'étage 1 rendant le
-calcul des indicateurs quasi gratuit dès la deuxième évaluation, cet étage peut
-n'avoir plus d'objet. S'il en reste un, la voie est de calculer les séries
-d'indicateurs une fois puis de parcourir les barres en lisant des tableaux
-pré-calculés.
+**Sans objet. L'étage 1 a absorbé le coût.** Remesuré le 2026-08-06 sur le
+script de référence (1210 barres, quatre évaluations consécutives, `TA_CACHE`
+partagé d'une évaluation à l'autre comme en production) :
 
-Ce serait valide : la boucle passe `prices.iloc[:i+1]`, et **toutes** les
-grandeurs dérivées sont des fenêtres glissantes fixes lues au dernier point
-(`rolling(window=30)`, EMA, RSI Wilder, ADX), donc causales et indépendantes de
-la longueur de la tranche. La valeur à la barre `i` calculée sur la tranche est
-identique à celle calculée sur la série complète et lue à l'indice `i`. Le
-repli `.mean()` sur toute la tranche n'existe que sous 30 points, et la boucle
-démarre à la barre 50 : il ne se déclenche jamais.
+| Évaluation | Avant le lot 2 | Après étages 1 et 2 |
+|---|---|---|
+| 1 (cache froid) | 7,17 s | 5,75 à 5,77 s |
+| 2 (cache chaud) | 7,18 s | 0,57 à 0,59 s |
+| 3 | (non mesurée) | 0,57 s |
+| 4 | (non mesurée) | 0,58 s |
+
+Deux exécutions indépendantes du script donnent les mêmes chiffres à 0,02 s
+près, et le même gain et le même nombre de trades sur les quatre évaluations
+(déterminisme confirmé). La deuxième évaluation, celle qui représente le
+régime stable d'une optimisation qui enchaîne les jeux de coefficients sur la
+même série, passe de 7,18 s à environ 0,58 s, soit un gain d'environ 12,6x,
+très au-delà du seuil de 3x fixé pour ouvrir l'étage 3 (le brief demandait de
+profiler seulement si l'évaluation 2 restait au-dessus de 2,4 s). Le profilage
+de l'étape 2 n'a donc pas été nécessaire.
+
+L'argument de conception reste correct a posteriori, il explique le résultat :
+la boucle passe `prices.iloc[:i+1]`, et **toutes** les grandeurs dérivées sont
+des fenêtres glissantes fixes lues au dernier point (`rolling(window=30)`,
+EMA, RSI Wilder, ADX), donc causales et indépendantes de la longueur de la
+tranche. Une fois que `TA_CACHE` retient effectivement les 1160 instantanés
+d'une série (étage 1) et que la lecture des paramètres ne repasse plus par
+SQLite à chaque barre (étage 2), il ne reste plus, à l'intérieur de la boucle,
+de calcul redondant assez coûteux pour justifier de sortir le calcul des
+indicateurs en un passage vectorisé préalable. L'étage 3 n'est pas ouvert et
+ne fait l'objet d'aucun plan de suite.
 
 ## Tests
 
@@ -143,9 +160,12 @@ temporaire via `tmp_path`.
 
 ## Risques nommés
 
-- **Mémoire.** Le plafond de 100 000 entrées vaut environ 20 Mo. Le chiffre est
-  à réécrire dans le commentaire de la constante si la taille d'un instantané
-  change.
+- **Mémoire.** Le plafond de 100 000 entrées vaut environ 196 Mo au plafond
+  (mesuré directement au conteneur réel, tâche 1, environ 2,06 Ko par
+  instantané, pas les ~20 Mo initialement estimés sur les seuls flottants
+  bruts). C'est un plafond LRU, pas une allocation : le cache ne monte qu'à
+  l'ensemble réellement utilisé, soit environ 2,4 Mo par symbole pour un
+  backtest de 1160 barres.
 - **Clé du cache.** Elle arrondit le prix à deux décimales et le volume à la
   centaine. Sans danger aujourd'hui, `prices_len` et `symbol` en faisant partie,
   mais une collision deviendrait silencieuse. À consigner à côté de la clé.
@@ -153,7 +173,8 @@ temporaire via `tmp_path`.
   sur un système de fichiers à granularité d'une seconde pourraient ne pas
   invalider. La taille du fichier entre dans la clé pour réduire ce cas ; le
   risque résiduel est à consigner.
-- **Étage 3 possiblement sans objet.** Ne pas l'engager avant la remesure.
+- **Étage 3.** Remesuré et tranché sans objet (tâche 3) : voir la section
+  « Étage 3 » ci-dessus.
 
 ## Traçabilité
 
@@ -161,5 +182,5 @@ temporaire via `tmp_path`.
 |---|---|---|
 | `TA_CACHE` saturé à 500 pour 1160 barres | mesure du 2026-08-06 | 1 |
 | 1160 requêtes SQLite par backtest | profil du 2026-08-06 | 2 |
-| ADX recalculé à chaque barre, 47 % | profil du 2026-08-06 | 3, conditionnel |
+| ADX recalculé à chaque barre, 47 % | profil du 2026-08-06 | 3, sans objet après remesure (tâche 3) |
 | C et Python non équivalents | mesure du 2026-08-06 | hors périmètre, documenté |
