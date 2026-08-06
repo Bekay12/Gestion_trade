@@ -43,8 +43,15 @@ DERIV_CACHE: Dict[tuple, Dict[str, float]] = _BoundedCache(maxsize=500)
 # Mesure du 2026-08-06, meme serie, resultats identiques au bit pres :
 #     maxsize=500    eval1 7,23 s   eval2 7,18 s   eval3 7,13 s
 #     maxsize=5000   eval1 7,09 s   eval2 2,36 s   eval3 2,35 s
-# 100 000 entrees couvrent 1160 barres pour une cinquantaine de symboles, soit
-# environ 20 Mo : un instantane porte une vingtaine de flottants plus sa cle.
+# 100 000 est un PLAFOND, pas une allocation : le cache est LRU, donc il ne
+# monte qu'a l'ensemble reellement utilise (1160 barres x nb de symboles du
+# groupe en cours). Mesure tracemalloc du 2026-08-06 sur la structure reelle
+# ecrite en qsi.py:402-427 (24 champs par instantane, cle a 4 elements) : un
+# cache rempli a 100 000 entrees pese environ 196 Mo, soit ~2,06 Ko/entree
+# (le dict Python par instantane domine, pas les flottants bruts). A cette
+# echelle, 1160 entrees (un symbole) pesent environ 2,4 Mo et 58 000 entrees
+# (un groupe de cinquante symboles) environ 114 Mo : le plafond n'est atteint
+# que si la charge le justifie.
 TA_CACHE_MAXSIZE = 100_000
 
 TA_CACHE: Dict[tuple, Dict[str, float]] = _BoundedCache(maxsize=TA_CACHE_MAXSIZE)

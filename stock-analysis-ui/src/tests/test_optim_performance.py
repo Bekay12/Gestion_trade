@@ -15,6 +15,7 @@ import numpy as np
 import pandas as pd
 import pytest
 
+import qsi
 from core import cache as cache_module
 from trading_c_acceleration.qsi_optimized import backtest_signals_with_events
 
@@ -70,11 +71,30 @@ def test_ta_cache_retient_un_backtest_complet() -> None:
 
 
 def test_le_cache_ne_change_aucun_resultat() -> None:
-    """Deuxieme evaluation servie par le cache : resultat identique au bit pres."""
-    cache_module.TA_CACHE.clear()
+    """Cache neutralise (froid) contre cache chaud : resultat identique au bit pres.
+
+    qsi.get_trading_signal lit et ecrit le nom TA_CACHE tel que lie dans le namespace
+    de qsi.py (qsi.py:20 : `from core.cache import ... TA_CACHE`), un import qui capture
+    l'objet au moment ou le module est charge. Remplacer core.cache.TA_CACHE par un objet
+    different ne changerait donc rien au comportement reel : c'est qsi.TA_CACHE qu'il faut
+    neutraliser pour que la version « froide » n'utilise vraiment aucun cache.
+
+    Neutralisation : un _BoundedCache(maxsize=0) s'auto-vide a chaque ecriture (le
+    `__setitem__` de _BoundedCache evince des que len(self) > maxsize, donc l'entree qui
+    vient d'etre inseree est retiree immediatement), si bien qu'aucun `get()` ne peut jamais
+    trouver quoi que ce soit : chaque barre est recalculee depuis zero, comme sans cache.
+    """
     prix, volumes = _serie()
 
-    froid = _backtest(prix, volumes, "TEST_IDENTITE")
+    original_ta_cache = qsi.TA_CACHE
+    try:
+        qsi.TA_CACHE = cache_module._BoundedCache(maxsize=0)
+        froid = _backtest(prix, volumes, "TEST_IDENTITE")
+    finally:
+        qsi.TA_CACHE = original_ta_cache
+
+    cache_module.TA_CACHE.clear()
+    _backtest(prix, volumes, "TEST_IDENTITE")  # echauffement : remplit le cache
     chaud = _backtest(prix, volumes, "TEST_IDENTITE")
 
     assert froid == chaud
