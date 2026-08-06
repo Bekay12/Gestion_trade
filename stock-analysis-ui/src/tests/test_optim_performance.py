@@ -12,6 +12,7 @@ identiques au bit pres :
 Aucun acces reseau, aucune base reelle.
 """
 import os
+from collections import OrderedDict
 
 import numpy as np
 import pandas as pd
@@ -75,6 +76,11 @@ def test_ta_cache_retient_un_backtest_complet() -> None:
 def test_le_cache_ne_change_aucun_resultat() -> None:
     """Cache neutralise (froid) contre cache chaud : resultat identique au bit pres.
 
+    Couvre les DEUX etages du lot. Neutraliser TA_CACHE seul laissait
+    _BEST_PARAMS_CACHE chaud dans les deux runs, si bien que l'assertion ne
+    disait rien de l'etage 2 : le froid n'etait pas une reference reellement
+    non memoisee.
+
     qsi.get_trading_signal lit et ecrit le nom TA_CACHE tel que lie dans le namespace
     de qsi.py (qsi.py:20 : `from core.cache import ... TA_CACHE`), un import qui capture
     l'objet au moment ou le module est charge. Remplacer core.cache.TA_CACHE par un objet
@@ -85,21 +91,111 @@ def test_le_cache_ne_change_aucun_resultat() -> None:
     `__setitem__` de _BoundedCache evince des que len(self) > maxsize, donc l'entree qui
     vient d'etre inseree est retiree immediatement), si bien qu'aucun `get()` ne peut jamais
     trouver quoi que ce soit : chaque barre est recalculee depuis zero, comme sans cache.
+    Le meme procede s'applique a _BEST_PARAMS_CACHE, qui est du meme type : la lecture
+    de la base est alors refaite a chaque barre, comme avant l'etage 2.
     """
     prix, volumes = _serie()
 
     original_ta_cache = qsi.TA_CACHE
+    original_best_params_cache = qsi._BEST_PARAMS_CACHE
     try:
         qsi.TA_CACHE = cache_module._BoundedCache(maxsize=0)
+        qsi._BEST_PARAMS_CACHE = cache_module._BoundedCache(maxsize=0)
         froid = _backtest(prix, volumes, "TEST_IDENTITE")
     finally:
         qsi.TA_CACHE = original_ta_cache
+        qsi._BEST_PARAMS_CACHE = original_best_params_cache
 
     cache_module.TA_CACHE.clear()
-    _backtest(prix, volumes, "TEST_IDENTITE")  # echauffement : remplit le cache
+    qsi._BEST_PARAMS_CACHE.clear()
+    _backtest(prix, volumes, "TEST_IDENTITE")  # echauffement : remplit les deux caches
     chaud = _backtest(prix, volumes, "TEST_IDENTITE")
 
     assert froid == chaud
+
+
+class _CacheAvecEvictionConcurrente(cache_module._BoundedCache):
+    """
+    Rejoue de facon deterministe la course entre deux threads du pool de symboles.
+
+    La fenetre est celle qui separe, dans `_BoundedCache.get` et
+    `_BoundedCache.__setitem__`, le test `key in self` du `move_to_end(key)`.
+    Un autre thread qui evince exactement cette cle par `popitem(last=False)`
+    pendant cet intervalle fait lever une `KeyError` a `move_to_end`.
+
+    Plutot que d'esperer l'entrelacement par un test de charge, on le pose :
+    `__contains__` rend la vraie reponse PUIS supprime la cle, une seule fois.
+    Le code teste reste celui de `_BoundedCache`, herite tel quel ; la
+    sous-classe ne choisit que l'instant de l'eviction.
+    """
+
+    def __init__(self, maxsize: int = 500):
+        super().__init__(maxsize)
+        self.evincer_au_prochain_test = False
+
+    def __contains__(self, key) -> bool:
+        present = super().__contains__(key)
+        if present and self.evincer_au_prochain_test:
+            self.evincer_au_prochain_test = False
+            OrderedDict.__delitem__(self, key)
+        return present
+
+
+def test_get_survit_a_une_eviction_concurrente() -> None:
+    """Sans la protection, `get` leve une KeyError au lieu de rendre un defaut.
+
+    Consequence de cette KeyError en production : elle remonte de
+    get_trading_signal jusqu'au `except Exception` par barre de
+    qsi_optimized.py, qui ajoute un signal 'NEUTRE' et poursuit. La panne se
+    traduit donc par un resultat silencieusement different, ce que ce lot
+    s'interdit.
+    """
+    cache = _CacheAvecEvictionConcurrente(maxsize=10)
+    cache["k"] = {"valeur": 1}
+
+    cache.evincer_au_prochain_test = True
+    assert cache.get("k", "defaut") == "defaut"
+    assert "k" not in cache
+
+
+def test_setitem_survit_a_une_eviction_concurrente() -> None:
+    """Sans la protection, reecrire une cle evincee entre-temps leve une KeyError."""
+    cache = _CacheAvecEvictionConcurrente(maxsize=10)
+    cache["k"] = {"valeur": 1}
+
+    cache.evincer_au_prochain_test = True
+    cache["k"] = {"valeur": 2}
+
+    assert cache["k"] == {"valeur": 2}
+    assert len(cache) == 1
+
+
+def test_le_cache_reste_borne_et_sans_erreur_sous_charge_multithread() -> None:
+    """Complement non deterministe : plafond respecte et aucune exception a 8 threads.
+
+    Les deux tests ci-dessus prouvent la correction sur la fenetre exacte ; ce
+    test-ci verifie qu'aucune AUTRE sequence « tester puis agir » ne casse sous
+    concurrence reelle, ce qu'un entrelacement pose ne peut pas montrer.
+    """
+    from concurrent.futures import ThreadPoolExecutor
+
+    cache = cache_module._BoundedCache(maxsize=64)
+    erreurs: list[BaseException] = []
+
+    def marteler(depart: int) -> None:
+        try:
+            for i in range(depart, depart + 3000):
+                cle = i % 200
+                cache[cle] = i
+                cache.get(cle)
+        except BaseException as exc:   # noqa: BLE001 - on veut TOUTE exception
+            erreurs.append(exc)
+
+    with ThreadPoolExecutor(max_workers=8) as pool:
+        list(pool.map(marteler, range(0, 8000, 1000)))
+
+    assert not erreurs, f"exceptions sous concurrence : {erreurs[:3]}"
+    assert len(cache) <= 64, f"plafond depasse : {len(cache)} entrees"
 
 
 def _base_avec_une_ligne(chemin, secteur: str = "Technology", a1: float = 1.28):
