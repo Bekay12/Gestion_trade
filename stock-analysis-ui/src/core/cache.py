@@ -36,4 +36,15 @@ DERIV_CACHE: Dict[tuple, Dict[str, float]] = _BoundedCache(maxsize=500)
 #       last_macd, prev_macd, last_signal, prev_signal, variation_30j/180j,
 #       volume_mean/std, current_volume, last_bb_percent, last_adx,
 #       last_ichimoku_base/conversion.
-TA_CACHE: Dict[tuple, Dict[str, float]] = _BoundedCache(maxsize=500)
+# Un backtest de 5 ans parcourt environ 1160 barres et produit donc 1160
+# instantanes pour UN seul symbole. A 500, le cache evincait les premieres
+# barres avant de pouvoir les reutiliser : son taux de reussite etait nul et
+# chaque evaluation repayait le calcul complet des indicateurs.
+# Mesure du 2026-08-06, meme serie, resultats identiques au bit pres :
+#     maxsize=500    eval1 7,23 s   eval2 7,18 s   eval3 7,13 s
+#     maxsize=5000   eval1 7,09 s   eval2 2,36 s   eval3 2,35 s
+# 100 000 entrees couvrent 1160 barres pour une cinquantaine de symboles, soit
+# environ 20 Mo : un instantane porte une vingtaine de flottants plus sa cle.
+TA_CACHE_MAXSIZE = 100_000
+
+TA_CACHE: Dict[tuple, Dict[str, float]] = _BoundedCache(maxsize=TA_CACHE_MAXSIZE)
