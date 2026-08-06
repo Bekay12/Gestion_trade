@@ -79,6 +79,18 @@ BEST_PARAM_EXTRAS: Dict[str, Dict[str, Union[int, float]]] = {}
 PRICE_FEATURE_WINDOW = 15
 PRICE_FEATURE_ACCEL_WINDOW = 15
 
+class _LectureParametresEchouee(Exception):
+    """
+    Signale un echec reel de lecture de la base (verrou SQLite, fichier
+    corrompu, permission refusee), distinct d'une table absente ou vide qui
+    est un etat legitime et memoisable. Leve uniquement par
+    _extract_best_parameters_sans_cache ; extract_best_parameters la
+    convertit en dict vide sans la memoiser, pour que l'appel suivant
+    reessaie au lieu de figer un {} perimee derriere l'etat de fichier
+    courant.
+    """
+
+
 # Memoisation de la lecture des meilleurs parametres. get_trading_signal
 # l'appelle une fois PAR BARRE, soit 1160 requetes SQLite par backtest pour
 # 14 % du temps, alors que la reponse ne change pas pendant un run.
@@ -101,6 +113,11 @@ def extract_best_parameters(db_path: str = None) -> Dict[str, Tuple[Tuple[float,
     Outputs:
         parametres (Dict): {secteur: (coeffs_8, seuils_8, globaux_2, gain, extras)}
         Le dictionnaire est PARTAGE entre appelants : le lire, ne pas le muter.
+        Un echec de lecture (verrou, corruption) rend aussi {}, mais n'est
+        JAMAIS memoise : l'appel suivant relit la base. BEST_PARAM_EXTRAS,
+        lui, n'est reconstruit que sur une vraie lecture ; un hit de cache le
+        laisse tel quel. Sans effet tant qu'un seul chemin de base est
+        utilise par process (le cas actuel), a surveiller si cela change.
     --------------------------------------------------------------------------
     """
     if db_path is None:
@@ -121,7 +138,13 @@ def extract_best_parameters(db_path: str = None) -> Dict[str, Tuple[Tuple[float,
         if connu is not None:
             return connu
 
-    resultat = _extract_best_parameters_sans_cache(db_path)
+    try:
+        resultat = _extract_best_parameters_sans_cache(db_path)
+    except _LectureParametresEchouee:
+        # Echec reel (verrou, corruption, permission) : ne pas memoiser sous
+        # cle courante, sans quoi ce {} de circonstance resterait servi
+        # jusqu'a la prochaine ecriture qui change mtime/taille.
+        return {}
 
     if cle is not None:
         _BEST_PARAMS_CACHE[cle] = resultat
@@ -140,6 +163,12 @@ def _extract_best_parameters_sans_cache(db_path: str) -> Dict[str, Tuple[Tuple[f
 
     Outputs:
         parametres (Dict): {secteur: (coeffs_8, seuils_8, globaux_2, gain, extras)}
+
+    Leve:
+        _LectureParametresEchouee: en cas d'echec reel de lecture (verrou,
+        corruption, permission). Une table absente ou une base sans lignes
+        reste un dict vide RENDU normalement, pas une exception : c'est un
+        etat legitime, memoisable par l'appelant.
     --------------------------------------------------------------------------
     """
     try:
@@ -288,15 +317,15 @@ def _extract_best_parameters_sans_cache(db_path: str) -> Dict[str, Tuple[Tuple[f
         
         return result
 
-    except FileNotFoundError:
+    except FileNotFoundError as e:
         print(f"🚫 Base de données {db_path} non trouvée")
         print("   💡 Exécute: python migration_csv_to_sqlite.py")
-        return {}
+        raise _LectureParametresEchouee(str(e)) from e
     except Exception as e:
         print(f"⚠️ Erreur lors de l'extraction depuis SQLite: {e}")
         import traceback
         traceback.print_exc()
-        return {}
+        raise _LectureParametresEchouee(str(e)) from e
 
 def get_trading_signal(prices, volumes, domaine, domain_coeffs=None, domain_thresholds=None,
                       variation_seuil=-20, volume_seuil=100000, return_derivatives: bool = False, symbol: str = None,

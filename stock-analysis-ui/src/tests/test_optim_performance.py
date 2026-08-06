@@ -11,6 +11,8 @@ identiques au bit pres :
 
 Aucun acces reseau, aucune base reelle.
 """
+import os
+
 import numpy as np
 import pandas as pd
 import pytest
@@ -173,12 +175,19 @@ def test_extract_best_parameters_ne_lit_la_base_qu_une_fois(monkeypatch, tmp_pat
         qsi.extract_best_parameters(chemin)
 
     assert len(appels) == 1, f"{len(appels)} lectures de base, 1 attendue"
+    # Invariant central du lot : la reponse memoisee doit egaler une lecture
+    # non memoisee, au bit pres (contrainte globale du plan).
+    assert qsi.extract_best_parameters(chemin) == vrai(chemin)
 
 
 def test_une_ecriture_en_base_invalide_le_cache(tmp_path) -> None:
-    """La cle derivee de l'etat du fichier doit rendre l'invalidation automatique."""
-    import time
-
+    """La cle derivee de l'etat du fichier doit rendre l'invalidation automatique,
+    y compris sans delai artificiel : c'est le cas le plus realiste et le plus
+    difficile. Mesure du 2026-08-06 : inserer une deuxieme ligne dans une base
+    SQLite neuve laisse st_size a 8192 dans les deux cas (la ligne tient dans la
+    page deja allouee) ; seul st_mtime_ns bouge, de quelques millisecondes, et
+    cela suffit sans qu'aucun sleep soit necessaire.
+    """
     import qsi
 
     chemin = str(tmp_path / "optimization_hist.db")
@@ -188,15 +197,73 @@ def test_une_ecriture_en_base_invalide_le_cache(tmp_path) -> None:
     premier = qsi.extract_best_parameters(chemin)
     assert premier, "la base de test devrait produire au moins un secteur"
 
-    # La granularite de mtime peut valoir une seconde sur certains systemes de
-    # fichiers ; la taille du fichier entre aussi dans la cle, et une ligne
-    # supplementaire la change.
-    time.sleep(1.1)
     _base_avec_une_ligne(chemin, secteur="Healthcare", a1=2.0)
 
     second = qsi.extract_best_parameters(chemin)
 
     assert set(second) != set(premier), "le cache n'a pas ete invalide"
+
+
+def test_granularite_grossiere_ne_detecte_pas_lecriture(monkeypatch, tmp_path) -> None:
+    """Limite connue, documentee plutot que masquee : si mtime_ns ET la taille sont
+    identiques entre deux etats (systeme de fichiers a granularite grossiere, ou
+    ecriture qui ne change ni l'un ni l'autre), aucune des deux composantes de la
+    cle ne detecte l'ecriture, et le cache sert alors une reponse perimee jusqu'a
+    la prochaine ecriture qui change reellement mtime ou taille.
+    """
+    import qsi
+
+    chemin = str(tmp_path / "optimization_hist.db")
+    _base_avec_une_ligne(chemin, a1=1.0)
+    qsi._BEST_PARAMS_CACHE.clear()
+
+    etat_gele = os.stat(chemin)
+    vrai_stat = os.stat
+
+    def stat_gele(chemin_demande, *args, **kwargs):
+        if str(chemin_demande) == chemin:
+            return etat_gele
+        return vrai_stat(chemin_demande, *args, **kwargs)
+
+    monkeypatch.setattr(qsi.os, "stat", stat_gele)
+
+    premier = qsi.extract_best_parameters(chemin)
+    _base_avec_une_ligne(chemin, secteur="Healthcare", a1=2.0)
+    second = qsi.extract_best_parameters(chemin)
+
+    assert set(second) == set(premier), (
+        "limite connue : mtime_ns et taille geles ne detectent pas l'ecriture"
+    )
+
+
+def test_un_echec_de_lecture_n_est_pas_memoise_et_reessaie(monkeypatch, tmp_path) -> None:
+    """Un echec reel de lecture (verrou SQLite, corruption, permission) ne doit
+    pas figer un {} en cache sous la cle de l'etat de fichier courant : l'appel
+    suivant doit reessayer, pas servir la reponse perimee du premier echec.
+    """
+    import qsi
+
+    chemin = str(tmp_path / "optimization_hist.db")
+    _base_avec_une_ligne(chemin)
+    qsi._BEST_PARAMS_CACHE.clear()
+
+    vrai = qsi._extract_best_parameters_sans_cache
+    appels = []
+
+    def echoue_puis_reussit(db_path):
+        appels.append(db_path)
+        if len(appels) == 1:
+            raise qsi._LectureParametresEchouee("verrou simule")
+        return vrai(db_path)
+
+    monkeypatch.setattr(qsi, "_extract_best_parameters_sans_cache", echoue_puis_reussit)
+
+    premier = qsi.extract_best_parameters(chemin)
+    assert premier == {}, "un echec de lecture doit rendre un dict vide, pas lever"
+
+    second = qsi.extract_best_parameters(chemin)
+    assert second, "l'appel suivant doit reessayer au lieu de servir un {} memorise"
+    assert len(appels) == 2, f"{len(appels)} tentatives, 2 attendues (echec puis succes)"
 
 
 def test_une_base_absente_ne_leve_pas(tmp_path) -> None:
