@@ -22,7 +22,7 @@ from core import optim_budget
 from tqdm import tqdm
 # import yfinance as yf  # Import paresseux - chargé seulement si nécessaire
 from collections import deque, namedtuple
-from core.cache import _BoundedCache, TA_CACHE
+from core.cache import _BoundedCache, DERIV_CACHE, TA_CACHE
 from scipy.optimize import differential_evolution
 from scipy.stats import qmc
 from typing import Dict, List, Optional
@@ -1632,6 +1632,9 @@ def optimize_sector_coefficients_hybrid(
         # serait le plafond de 100 000 entrees (~196 Mo) tenu jusqu'a la sortie
         # du process. Voir core/cache.py, section « CYCLE DE VIE REEL ».
         TA_CACHE.clear()
+        # Meme frontiere, meme raison : DERIV_CACHE porte lui aussi le symbole
+        # dans sa cle et suit desormais le meme plafond.
+        DERIV_CACHE.clear()
 
     return best_coeffs, best_score, success_rate, all_thresholds, summary
 

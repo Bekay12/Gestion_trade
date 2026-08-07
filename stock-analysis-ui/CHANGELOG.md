@@ -1,5 +1,28 @@
 # 📋 Changelog - Stock Analysis Web Dashboard
 
+## Version 1.8.1 - Optimisateur hybride : ce que le lot 2 avait laissé (2026-08-07)
+
+Le lot 2 avait mesuré son gain en agrégat (7,18 s à ~0,58 s) sans profiler ce qui
+restait. Un profil de l'évaluation à cache chaud montre que l'essentiel du temps
+restant était encore du travail redondant. Mesure sur huit évaluations, deux
+séries de 1210 barres, **gain, trades et gagnants identiques au bit près avant et
+après** : moyenne à chaud **0,895 s → 0,057 s, soit 15,7x**.
+
+### 🚀 Performances
+
+- **`DERIV_CACHE` était resté dimensionné à 500, exactement le défaut corrigé sur son jumeau**
+  - Il porte la même clé que `TA_CACHE` (`symbol`, dernier prix, dernier volume, `prices_len`) et la même volumétrie : 1160 entrées pour un seul symbole sur un backtest de 5 ans. À 500, il évinçait les premières barres avant réutilisation et son taux de réussite était nul, si bien que le repli reconstruisait le RSI complet (`ta.momentum.RSIIndicator` sur toute la tranche) **à chaque barre** dès que les features de prix étaient actives : 1160 reconstructions, 52 % du temps de l'évaluation au profil. Porté au même plafond de 100 000, et vidé aux deux mêmes frontières naturelles que `TA_CACHE`, dont il partage le cycle de vie. Effet seul sur un vecteur avec extras de prix : 0,858 s → 0,055 s.
+
+- **Trois `pct_change` sur la tranche complète, une fois par barre, dont deux totalement morts**
+  - `momentum_10` et `sharpe` (avec son intermédiaire `returns`, dont `.std()` était évalué deux fois) étaient calculés à chaque barre et **lus nulle part**. Supprimés, sans effet possible sur un résultat. Le troisième, `volatility`, est bien consommé (il fixe `m4` et multiplie le score) mais ne dépend que des prix : il rejoint l'instantané `TA_CACHE`, comme les variations et les moyennes de volume. Ces trois appels formaient le O(n²) restant, 3480 appels pour 57 % du temps d'une évaluation à cache chaud. Le NaN est préservé tel quel, `NaN > 0.05` étant faux.
+
+- **Les deux EMA de repli étaient recalculées à chaque cache hit**
+  - `snap.get(cle, defaut)` évalue `defaut` **avant** d'appeler `get()`. Écrites en argument par défaut, `prices.ewm(span=20).mean()` et `span=50` étaient donc recalculées sur toute la tranche à chaque barre, y compris quand le cache répondait : 2320 calculs inutiles par backtest. Le repli reste possible mais n'est plus payé que s'il sert.
+
+### ✅ Tests
+
+- Trois tests verrouillent `DERIV_CACHE` sur le modèle de ceux du lot 2 : plafond, rétention d'un backtest complet, et identité du résultat entre cache neutralisé et cache chaud avec les features de prix actives. Suite complète : 137 tests, hors réseau et hors base réelle.
+
 ## Version 1.8.0 - Optimisateur hybride : lot 2, coût de l'objectif (2026-08-06)
 
 ### 🚀 Performances

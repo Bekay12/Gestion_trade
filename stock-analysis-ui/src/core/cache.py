@@ -61,7 +61,24 @@ class _BoundedCache(OrderedDict):
 
 # Cache des dérivées de prix par (symbol, len(prices)).
 # Clés: price_slope_rel, price_acc_rel, rsi_slope_rel, volume_slope_rel.
-DERIV_CACHE: Dict[tuple, Dict[str, float]] = _BoundedCache(maxsize=500)
+#
+# Meme defaut que TA_CACHE ci-dessous, et pour la meme raison : la cle porte
+# `prices_len`, donc un backtest de 1160 barres produit 1160 entrees pour UN
+# symbole. A 500, les premieres barres etaient evincees avant d'avoir pu
+# resservir et le taux de reussite etait nul. Le lot 2 avait corrige TA_CACHE
+# et laisse celui-ci en l'etat, si bien que le repli recalculait le RSI complet
+# (ta.momentum.RSIIndicator sur toute la tranche) a chaque barre des que les
+# features de prix etaient actives. Mesure au profil du 2026-08-07, vecteur
+# avec extras de prix : 1160 reconstructions du RSI pour 52 % du temps de
+# l'evaluation.
+# Une entree ne porte que 5 flottants, contre 24 champs pour un instantane
+# TA_CACHE : a plafond egal elle pese donc nettement moins. Comme pour
+# TA_CACHE, c'est un PLAFOND et non une allocation, et le cache est vide aux
+# deux memes frontieres (fin de groupe d'optimisation, fin de boucle de
+# backtest de l'interface).
+DERIV_CACHE_MAXSIZE = 100_000
+
+DERIV_CACHE: Dict[tuple, Dict[str, float]] = _BoundedCache(maxsize=DERIV_CACHE_MAXSIZE)
 
 # Cache des indicateurs techniques (scalaires instantanés) par (symbol, len(prices)).
 # Clés: last_close, last_ema20/50/200, last_rsi, prev_rsi, delta_rsi,

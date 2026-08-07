@@ -73,6 +73,68 @@ def test_ta_cache_retient_un_backtest_complet() -> None:
         f"{len(cache_module.TA_CACHE)} instantanes retenus, {attendu} attendus")
 
 
+def _backtest_extras_prix(prix, volumes, symbole: str) -> tuple[float, int]:
+    """Backtest avec les features de prix actives, seul chemin qui peuple DERIV_CACHE."""
+    resultat, _evenements = backtest_signals_with_events(
+        prix, volumes, "default", 50, 1.0,
+        domain_coeffs={"default": COEFFS},
+        domain_thresholds={"default": SEUILS},
+        seuil_achat=ACHAT, seuil_vente=VENTE,
+        extra_params={
+            'use_price_extras': 1,
+            'a_price_slope': 1.0, 'th_price_slope': 0.0,
+            'a_price_rsi_slope': 1.0, 'th_price_rsi_slope': 0.0,
+            'a_price_vol_slope': 1.0, 'th_price_vol_slope': 0.0,
+        },
+        symbol_name=symbole)
+    return resultat["gain_total"], resultat["trades"]
+
+
+def test_deriv_cache_dimensionne_comme_son_jumeau() -> None:
+    """Meme cle, meme volumetrie que TA_CACHE, donc meme plafond.
+
+    Le lot 2 avait corrige TA_CACHE et laisse DERIV_CACHE a 500, si bien que le
+    RSI complet etait reconstruit a chaque barre des que les features de prix
+    etaient actives.
+    """
+    assert cache_module.DERIV_CACHE_MAXSIZE >= 50_000
+    assert cache_module.DERIV_CACHE._maxsize == cache_module.DERIV_CACHE_MAXSIZE
+
+
+def test_deriv_cache_retient_un_backtest_complet() -> None:
+    """Verrouille la regression : a 500, il saturait avant de pouvoir resservir."""
+    cache_module.DERIV_CACHE.clear()
+    prix, volumes = _serie()
+
+    _backtest_extras_prix(prix, volumes, "TEST_DERIV_RETENTION")
+
+    attendu = NB_BARRES - PREMIERE_BARRE
+    assert len(cache_module.DERIV_CACHE) >= attendu, (
+        f"{len(cache_module.DERIV_CACHE)} derivees retenues, {attendu} attendues")
+
+
+def test_deriv_cache_ne_change_aucun_resultat() -> None:
+    """Cache neutralise contre cache chaud, features de prix actives.
+
+    Comme pour TA_CACHE, c'est le nom lie dans le namespace de qsi.py qu'il faut
+    remplacer : `from core.cache import DERIV_CACHE` capture l'objet a l'import.
+    """
+    prix, volumes = _serie(graine=11)
+
+    original = qsi.DERIV_CACHE
+    try:
+        qsi.DERIV_CACHE = cache_module._BoundedCache(maxsize=0)
+        froid = _backtest_extras_prix(prix, volumes, "TEST_DERIV_FROID")
+    finally:
+        qsi.DERIV_CACHE = original
+
+    cache_module.DERIV_CACHE.clear()
+    _backtest_extras_prix(prix, volumes, "TEST_DERIV_CHAUD")
+    chaud = _backtest_extras_prix(prix, volumes, "TEST_DERIV_CHAUD")
+
+    assert froid == chaud, f"cache froid {froid} != cache chaud {chaud}"
+
+
 def test_le_cache_ne_change_aucun_resultat() -> None:
     """Cache neutralise (froid) contre cache chaud : resultat identique au bit pres.
 

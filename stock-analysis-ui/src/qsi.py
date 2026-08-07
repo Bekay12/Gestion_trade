@@ -327,6 +327,31 @@ def _extract_best_parameters_sans_cache(db_path: str) -> Dict[str, Tuple[Tuple[f
         traceback.print_exc()
         raise _LectureParametresEchouee(str(e)) from e
 
+def _derniere_volatilite(prices) -> float:
+    """
+    --------------------------------------------------------------------------
+    Objectif:
+        Rendre la volatilite au dernier point, seule valeur consommee par le
+        score. Elle ne depend que des prix, jamais des coefficients optimises :
+        elle appartient donc a l'instantane TA_CACHE, au meme titre que les
+        variations et les moyennes de volume.
+
+    Inputs:
+        prices (pd.Series): serie des cloture
+
+    Outputs:
+        volatilite (float): ecart-type sur 20 barres des rendements, ou 0.05
+            si la serie ne permet pas de la calculer. Un NaN est rendu tel
+            quel : `NaN > 0.05` etant faux, il laisse le multiplicateur m4
+            inchange, comportement d'origine a preserver.
+    --------------------------------------------------------------------------
+    """
+    serie = prices.pct_change().rolling(20).std()
+    if isinstance(serie, pd.Series) and not serie.empty:
+        return float(serie.iloc[-1])
+    return 0.05
+
+
 def get_trading_signal(prices, volumes, domaine, domain_coeffs=None, domain_thresholds=None,
                       variation_seuil=-20, volume_seuil=100000, return_derivatives: bool = False, symbol: str = None,
                       cap_range: str = None, price_extras: Dict[str, Union[int, float]] = None,
@@ -383,8 +408,15 @@ def get_trading_signal(prices, volumes, domaine, domain_coeffs=None, domain_thre
     snap = TA_CACHE.get(cache_key) if cache_key is not None else None
     if snap is not None:
         last_close = float(snap.get('last_close', float(prices.iloc[-1])))
-        last_ema20 = float(snap.get('last_ema20', float(prices.ewm(span=20, adjust=False).mean().iloc[-1])))
-        last_ema50 = float(snap.get('last_ema50', float(prices.ewm(span=50, adjust=False).mean().iloc[-1])))
+        # `snap.get(cle, defaut)` evalue `defaut` AVANT d'appeler get() : ecrites
+        # en argument par defaut, ces deux EMA etaient donc recalculees sur toute
+        # la tranche a chaque barre, y compris quand le cache repondait. Soit
+        # 2 320 calculs inutiles par backtest de 1 160 barres. Le repli reste
+        # possible, mais il n'est plus paye que s'il sert.
+        _ema20 = snap.get('last_ema20')
+        _ema50 = snap.get('last_ema50')
+        last_ema20 = float(_ema20) if _ema20 is not None else float(prices.ewm(span=20, adjust=False).mean().iloc[-1])
+        last_ema50 = float(_ema50) if _ema50 is not None else float(prices.ewm(span=50, adjust=False).mean().iloc[-1])
         last_ema200 = float(snap.get('last_ema200', last_ema50))
         last_rsi = float(snap.get('last_rsi', 50.0))
         prev_rsi = float(snap.get('prev_rsi', last_rsi))
@@ -406,6 +438,8 @@ def get_trading_signal(prices, volumes, domaine, domain_coeffs=None, domain_thre
         last_adx = float(snap.get('last_adx', 0.0))
         last_ichimoku_base = float(snap.get('last_ichimoku_base', last_close))
         last_ichimoku_conversion = float(snap.get('last_ichimoku_conversion', last_close))
+        _vol = snap.get('last_volatility')
+        last_volatility = float(_vol) if _vol is not None else _derniere_volatilite(prices)
     else:
         # Calcul initial puis mise en cache
         macd, signal_line = calculate_macd(prices)
@@ -473,6 +507,7 @@ def get_trading_signal(prices, volumes, domaine, domain_coeffs=None, domain_thre
         ichimoku_conversion = ichimoku.ichimoku_conversion_line()
         last_ichimoku_base = float(ichimoku_base.iloc[-1]) if len(ichimoku_base) > 0 else last_close
         last_ichimoku_conversion = float(ichimoku_conversion.iloc[-1]) if len(ichimoku_conversion) > 0 else last_close
+        last_volatility = _derniere_volatilite(prices)
 
         # Mise en cache
         if cache_key is not None:
@@ -501,6 +536,7 @@ def get_trading_signal(prices, volumes, domaine, domain_coeffs=None, domain_thre
                 'last_adx': last_adx,
                 'last_ichimoku_base': last_ichimoku_base,
                 'last_ichimoku_conversion': last_ichimoku_conversion,
+                'last_volatility': last_volatility,
             }
 
     volume_mean_harmonized = float(volume_mean_usd)
@@ -530,21 +566,18 @@ def get_trading_signal(prices, volumes, domaine, domain_coeffs=None, domain_thre
     strong_downtrend = (last_close < last_ichimoku_base) and (last_close < last_ichimoku_conversion)
     adx_strong_trend = last_adx > 25  # Tendance forte
 
-    # Momentum 10 jours
-    momentum_10 = prices.pct_change(10)
-
-    # Volatilité
-    volatility = prices.pct_change().rolling(20).std()
-
-    # CORRECTION 3: Conversion de la volatilité en scalaire
-    if isinstance(volatility, pd.Series) and not volatility.empty:
-        volatility = float(volatility.iloc[-1])
-    else:
-        volatility = 0.05
-
-    # Ratio de Sharpe à court terme
-    returns = prices.pct_change()
-    sharpe = returns.mean() / returns.std() * np.sqrt(252) if returns.std() > 0 else 0
+    # La volatilite vient de l'instantane TA_CACHE (voir _derniere_volatilite).
+    # Elle ne depend que des prix, donc elle se cache comme les autres mesures
+    # techniques, alors qu'elle etait recalculee sur toute la tranche a chaque
+    # barre, cache chaud ou non.
+    #
+    # Deux autres grandeurs etaient calculees ici et n'etaient lues nulle part :
+    # `momentum_10` (prices.pct_change(10)) et `sharpe`, avec son intermediaire
+    # `returns` (prices.pct_change(), puis .std() evalue deux fois). Elles sont
+    # supprimees. Ces trois pct_change sur la tranche complete, une fois par
+    # barre, formaient le O(n^2) restant : mesures au profil, 3 480 appels pour
+    # 57 % du temps d'une evaluation a cache chaud.
+    volatility = last_volatility
 
     score = 0
     # a3 (RSI cross mid) est gelé à 0.0 pour éviter l'optimisation d'une feature redondante
@@ -3067,6 +3100,9 @@ def analyse_signaux_populaires(
     # enchaine les analyses immobilise jusqu'a ~196 Mo pour toute la duree du
     # process. Voir core/cache.py, section « CYCLE DE VIE REEL ».
     TA_CACHE.clear()
+    # Meme frontiere, meme raison : DERIV_CACHE porte lui aussi le symbole dans
+    # sa cle et suit desormais le meme plafond.
+    DERIV_CACHE.clear()
 
     # 🔧 Dédupliquer par symbole (garder le premier = celui avec le meilleur taux)
     seen_symbols = set()
