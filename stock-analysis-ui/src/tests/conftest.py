@@ -14,6 +14,10 @@ if str(SRC_DIR) not in sys.path:
 # pendant les imports/tests qui n'en ont pas explicitement besoin.
 os.environ.setdefault('QSI_DISABLE_C_ACCELERATION', '1')
 os.environ.setdefault('QSI_CONSENSUS_OFFLINE', '1')
+# Filet de sécurité : aucun test ne doit déclencher la complétion des profils
+# d'instruments, qui consommerait le budget de requêtes yfinance. Les tests qui
+# veulent l'exercer lèvent la variable eux-mêmes ET simulent yf.Ticker.
+os.environ.setdefault('QSI_DISABLE_PROFILE_FETCH', '1')
 
 
 @pytest.fixture(scope='session', autouse=True)
@@ -35,6 +39,14 @@ def isolate_real_database(tmp_path_factory):
         symboles seraient inconnus et declencheraient autant de requetes
         yfinance, alors que le budget de requetes est une contrainte dure.
 
+        OPTIMIZATION_DB_PATH est isole sur le meme principe, et pour la meme
+        raison de COPIE : get_trading_signal appelle extract_best_parameters()
+        sans argument a chaque barre, donc tout backtest lance depuis la suite
+        ouvrait signaux/optimization_hist.db, la base reelle. C'est un SELECT,
+        mais cela rend les tests dependants de l'environnement, ce que le plan
+        interdit ; sur une base vide les parametres optimises disparaitraient
+        et les resultats de backtest changeraient.
+
     Entrees:
         tmp_path_factory (TempPathFactory): fixture pytest de repertoire temporaire
 
@@ -44,14 +56,22 @@ def isolate_real_database(tmp_path_factory):
     """
     import config
 
+    tmp_dir = tmp_path_factory.mktemp('db')
+
     real_db = Path(config.DB_PATH)
-    db_copy = tmp_path_factory.mktemp('db') / 'stock_analysis.db'
+    db_copy = tmp_dir / 'stock_analysis.db'
     if real_db.exists():
         shutil.copy2(real_db, db_copy)
+
+    real_optim_db = Path(config.OPTIMIZATION_DB_PATH)
+    optim_db_copy = tmp_dir / 'optimization_hist.db'
+    if real_optim_db.exists():
+        shutil.copy2(real_optim_db, optim_db_copy)
 
     mp = pytest.MonkeyPatch()
     mp.setattr(config, 'DB_PATH', str(db_copy), raising=False)
     mp.setattr(config, 'MARKET_DATA_DB_PATH', str(db_copy), raising=False)
+    mp.setattr(config, 'OPTIMIZATION_DB_PATH', str(optim_db_copy), raising=False)
 
     # `from config import DB_PATH` copie la VALEUR dans le module importateur :
     # patcher config seul ne suffit pas. Les modules de test en font autant
@@ -59,13 +79,17 @@ def isolate_real_database(tmp_path_factory):
     # que cette fixture ne s'execute. On reecrit donc toute copie deja prise,
     # ou qu'elle se trouve — sinon un test ecrit dans la copie mais relit la
     # vraie base, et ses assertions portent sur le mauvais fichier.
-    real_db_str = str(real_db)
+    remplacements = {
+        'DB_PATH': (str(real_db), str(db_copy)),
+        'MARKET_DATA_DB_PATH': (str(real_db), str(db_copy)),
+        'OPTIMIZATION_DB_PATH': (str(real_optim_db), str(optim_db_copy)),
+    }
     for module in list(sys.modules.values()):
         if module is None or not hasattr(module, '__dict__'):
             continue
-        for attr in ('DB_PATH', 'MARKET_DATA_DB_PATH'):
-            if getattr(module, attr, None) == real_db_str:
-                mp.setattr(module, attr, str(db_copy), raising=False)
+        for attr, (valeur_reelle, valeur_copie) in remplacements.items():
+            if getattr(module, attr, None) == valeur_reelle:
+                mp.setattr(module, attr, valeur_copie, raising=False)
 
     yield db_copy
     mp.undo()

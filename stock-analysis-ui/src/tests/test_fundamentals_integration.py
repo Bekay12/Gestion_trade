@@ -10,7 +10,7 @@ sys.path.insert(0, str(Path(__file__).parent))
 import pytest
 import pandas as pd
 import numpy as np
-from fundamentals_cache import get_fundamental_metrics, clear_fundamentals_cache
+from fundamentals_cache import get_fundamental_metrics
 
 pytestmark = pytest.mark.integration
 
@@ -165,30 +165,31 @@ def test_optimizer_bounds():
     
     try:
         from optimisateur_hybride import HybridOptimizer
+        from core import optim_params as contrat
         import yfinance as yf
-        
+
         # Create minimal stock data
         prices = yf.download('AAPL', start='2024-01-01', end='2024-01-31', progress=False)['Close']
         data = {'AAPL': {'Close': prices, 'Volume': pd.Series(np.random.randint(10000000, 50000000, len(prices)), index=prices.index)}}
-        
-        # Test 1: Base optimizer (18 params)
+
+        # Test 1: Base optimizer, valeurs derivees du contrat pour ne plus se perimer
         opt_base = HybridOptimizer(data, 'Technology', use_price_features=False, use_fundamentals_features=False)
-        assert len(opt_base.bounds) == 18, f"Expected 18 bounds, got {len(opt_base.bounds)}"
+        assert len(opt_base.bounds) == len(contrat.bornes())
         print(f"   Base optimizer: {len(opt_base.bounds)} parameters")
-        
-        # Test 2: With price features (24 params)
+
+        # Test 2: With price features
         opt_price = HybridOptimizer(data, 'Technology', use_price_features=True, use_fundamentals_features=False)
-        assert len(opt_price.bounds) == 24, f"Expected 24 bounds, got {len(opt_price.bounds)}"
+        assert len(opt_price.bounds) == len(contrat.bornes(prix=True))
         print(f"   With price features: {len(opt_price.bounds)} parameters")
-        
-        # Test 3: With fundamentals features (28 params)
+
+        # Test 3: With fundamentals features
         opt_fund = HybridOptimizer(data, 'Technology', use_price_features=False, use_fundamentals_features=True)
-        assert len(opt_fund.bounds) == 28, f"Expected 28 bounds, got {len(opt_fund.bounds)}"
+        assert len(opt_fund.bounds) == len(contrat.bornes(fond=True))
         print(f"   With fundamentals features: {len(opt_fund.bounds)} parameters")
-        
-        # Test 4: With both (34 params: 18 + 6 price + 10 fund)
+
+        # Test 4: With both
         opt_both = HybridOptimizer(data, 'Technology', use_price_features=True, use_fundamentals_features=True)
-        assert len(opt_both.bounds) == 34, f"Expected 34 bounds, got {len(opt_both.bounds)}"
+        assert len(opt_both.bounds) == len(contrat.bornes(prix=True, fond=True))
         print(f"   With both features: {len(opt_both.bounds)} parameters")
         
         print("✅ HybridOptimizer bounds extend correctly for fundamentals")

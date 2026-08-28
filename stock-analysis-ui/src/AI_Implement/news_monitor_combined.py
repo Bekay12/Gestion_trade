@@ -20,12 +20,12 @@ Usage :
   python news_monitor_combined.py --no-fundamentals
 """
 
-import argparse, asyncio, csv, json, math, os, time
+import argparse, csv, json, math, time
 from datetime import datetime, timezone
 from pathlib import Path
 from zoneinfo import ZoneInfo
 
-import aiohttp, feedparser, requests
+import feedparser, requests
 import yfinance as yf
 import pandas as pd
 import warnings

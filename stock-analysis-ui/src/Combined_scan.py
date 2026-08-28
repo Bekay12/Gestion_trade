@@ -32,7 +32,7 @@ Usage:
   python Combined_scan.py --min-growth 3 --min-safe 4
   python Combined_scan.py --random 200 --workers 10
 """
-import os, sys, time, logging, argparse, threading, math, random
+import sys, time, logging, argparse, threading, math, random
 from pathlib import Path
 from concurrent.futures import ThreadPoolExecutor, as_completed
 
@@ -376,13 +376,13 @@ def run_scan(symbols, max_workers=10, min_growth=0, min_safe=0,
     t0    = time.time()
 
     print(f"\n{'='*70}")
-    print(f"  COMBINED SCANNER — Big Growth + Sichere Unternehmen")
+    print("  COMBINED SCANNER — Big Growth + Sichere Unternehmen")
     print(f"  {total} symboles | {max_workers} threads")
     print(f"{'='*70}")
-    print(f"  🚀 G1=CA>20% | G2=Marge>30% | G3=Underval | G4=Momentum | G5=Volume")
-    print(f"  🛡️  S1=MCap>10Mrd€ | S2=D/E<100% | S3=Beta<0.8 | S4=Div>0%")
-    print(f"      S5=FCF_M>5% | S6=FCF_G>0% | S7=Rev+EPS>3%")
-    print(f"  💎 Dual Champion = G>=3 ET S>=5")
+    print("  🚀 G1=CA>20% | G2=Marge>30% | G3=Underval | G4=Momentum | G5=Volume")
+    print("  🛡️  S1=MCap>10Mrd€ | S2=D/E<100% | S3=Beta<0.8 | S4=Div>0%")
+    print("      S5=FCF_M>5% | S6=FCF_G>0% | S7=Rev+EPS>3%")
+    print("  💎 Dual Champion = G>=3 ET S>=5")
     print(f"{'='*70}\n")
 
     with ThreadPoolExecutor(max_workers=max_workers) as pool:
@@ -431,7 +431,7 @@ def run_scan(symbols, max_workers=10, min_growth=0, min_safe=0,
     elapsed = time.time()-t0
     print(f"\n✅ Terminé en {elapsed:.0f}s — {len(df)} résultats filtrés")
     if skipped > 0 and _skip_reasons:
-        print(f"\n⚠️  Skips :")
+        print("\n⚠️  Skips :")
         for r,c in sorted(_skip_reasons.items(), key=lambda x:-x[1]):
             print(f"  {c:4d}x {r}")
     return df
@@ -444,10 +444,10 @@ def print_summary(df):
     if df.empty: return
 
     print(f"\n{'='*160}")
-    print(f"  RÉSUMÉ — COMBINED SCANNER")
+    print("  RÉSUMÉ — COMBINED SCANNER")
     print(f"{'='*160}")
 
-    print(f"\n  📊 Répartition par profil :")
+    print("\n  📊 Répartition par profil :")
     for profil in ["💎 Dual Champion","🚀 Pure Growth","🛡️  Pure Safe","⚖️  Balanced","⚪ Below"]:
         sub = df[df["profil"] == profil]
         if not sub.empty:
@@ -473,7 +473,7 @@ def print_summary(df):
     dual = df[df["profil"] == "💎 Dual Champion"]
     if not dual.empty:
         print(f"\n  {'='*155}")
-        print(f"  SECTEURS — 💎 Dual Champions")
+        print("  SECTEURS — 💎 Dual Champions")
         stats = dual.groupby("secteur").agg(
             count          =("score_total","size"),
             avg_growth     =("score_growth","mean"),
@@ -485,7 +485,7 @@ def print_summary(df):
         ).sort_values("count", ascending=False)
         print(stats.to_string())
 
-    print(f"\n  📊 Distribution score total (max=12) :")
+    print("\n  📊 Distribution score total (max=12) :")
     for s in range(12, -1, -1):
         c = len(df[df["score_total"] == s])
         if c > 0:

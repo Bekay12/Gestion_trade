@@ -30,9 +30,13 @@ The two screener families are **intentionally separate**:
 - `finviz_screeners.py` = whole-market discovery. Presets map a strategy → a Finviz
   `filter_dict` (exact keys/options from `finvizfinance.constants.filter_dict`).
 
-Both return `{title, headers, rows}` with the symbol in column 0, consumed by
-`ScreenerResultsDialog`. Country columns come from `market_store.get_country_map()` (store,
-best-effort) or natively from the Finviz response.
+Both return `{title, headers, rows}` with the symbol in column 0 and the company name in
+column 1, consumed by `ScreenerResultsDialog`. Name and country columns come from
+`market_store.get_name_map()` / `get_country_map()` (store, best-effort, 0 network) or
+natively from the Finviz response (`Company`, `Country`).
+
+`run_screen()` is the only allowed entry point into finvizfinance — it owns both the curl_cffi
+session and the ticker-cell sanitizing (see the note in `../CLAUDE.md`).
 
 Keep pure-calc modules (`indicators`, `cache`, `charts`) free of network and DB calls so they
 stay unit-testable offline.

@@ -10,7 +10,6 @@ Nouveau backend : market_parquet/timeline/<category>/symbol=<SYM>/part0.parquet
 """
 
 import logging
-from datetime import datetime
 from typing import Dict, Any
 
 import market_store as ms

@@ -38,6 +38,20 @@ CAP_FALLBACK_ENABLED = False
 
 
 # ===================================================================
+# PROFILS D'INSTRUMENTS — complétion progressive
+# ===================================================================
+# Nombre maximal de profils (pays, nom, secteur, bêta…) récupérés auprès de
+# yfinance après l'affichage d'un screener. Le budget de requêtes est une
+# contrainte dure : ce plafond garantit qu'une liste de 500 résultats ne
+# déclenche jamais 500 appels. Les manquants sont repris au prochain affichage.
+INSTRUMENT_PROFILE_FETCH_LIMIT = 25
+
+# Au-delà de cette ancienneté, un profil existant est rafraîchi. Ces données
+# (pays, secteur, place de cotation) changent rarement.
+INSTRUMENT_PROFILE_MAX_AGE_DAYS = 90
+
+
+# ===================================================================
 # CACHE UTILITIES — backend Parquet (via market_store)
 # ===================================================================
 # Les anciennes fonctions get_pickle_cache / save_pickle_cache sont
@@ -50,7 +64,7 @@ CAP_FALLBACK_ENABLED = False
 # transition via le fallback ci-dessous.
 
 import pandas as pd
-from datetime import datetime, timedelta
+from datetime import datetime
 
 
 def get_pickle_cache(symbol: str, cache_type: str = 'financial', ttl_hours: int = 24):

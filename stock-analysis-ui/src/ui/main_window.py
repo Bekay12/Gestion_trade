@@ -28,14 +28,13 @@ os.environ.setdefault('QSI_DISABLE_C_ACCELERATION', '1')
 # Segfault mitigation: avoid curl_cffi/yfinance recommendation fetches in desktop callbacks.
 os.environ.setdefault('QSI_CONSENSUS_OFFLINE', '1')
 
-from qsi import analyse_signaux_populaires, analyse_et_affiche, load_symbols_from_txt
+from qsi import load_symbols_from_txt
 from core.indicators import calculate_rsi_scalar, calculate_macd_scalar, calculate_bollinger_extreme
-from qsi import download_stock_data, backtest_signals, plot_unified_chart, get_trading_signal, resolve_symbol_scoring_context
+from qsi import download_stock_data, plot_unified_chart, get_trading_signal
 import qsi
 from ui.workers import (
     AnalysisThread, DownloadThread, ParquetSyncThread, LogCapture,
-    SYMBOL_MANAGER_AVAILABLE, get_symbol_info_from_db,
-    get_symbols_by_list_type, get_recent_symbols,
+    SYMBOL_MANAGER_AVAILABLE, get_symbols_by_list_type, get_recent_symbols,
     _fetch_yf_info_with_timeout, _is_valid_ticker_info, _get_sector_cache_first,
 )
 from ui.mixins.screeners import ScreenersMixin
@@ -47,6 +46,128 @@ except Exception:
 
 
 _CRASH_LOG_FILE = None
+
+# ---------------------------------------------------------------------------
+# Disposition du tableau de résultats (`self.merged_table`)
+# ---------------------------------------------------------------------------
+# Source UNIQUE de la disposition : (clé logique, en-tête affiché). Les accès
+# aux cellules passent par MERGED_COL['clé'] et non par un index littéral.
+# Motif : une vingtaine d'accès en dur (coloration, stats par domaine, tableau
+# comparatif) désignaient les colonnes par leur numéro ; insérer « Nom » les
+# aurait tous décalés silencieusement, chacun lisant alors la mauvaise colonne.
+MERGED_COLUMNS = [
+    ('symbole',      'Symbole'),
+    ('nom',          'Nom'),
+    ('pays',         'Pays'),
+    ('signal',       'Signal'),
+    ('score',        'Score'),
+    ('prix',         'Prix\n(USD)'),
+    ('tendance',     'Tendance'),
+    ('rsi',          'RSI'),
+    ('volume_moyen', 'Volume\nmoyen($)'),
+    ('domaine',      'Domaine'),
+    ('cap_range',    'Cap\nRange'),
+    ('score_seuil',  'Score/\nSeuil'),
+    ('fiabilite',    'Fiabilite\n(%)'),
+    ('nb_trades',    'Nb\nTrades'),
+    ('gagnants',     'Gagnants'),
+    # COLONNES FINANCIÈRES
+    ('rev_growth',   'Rev.\nGrowth(%)'),
+    ('ebitda_yield', 'EBITDA\nYield(%)'),
+    ('fcf_yield',    'FCF\nYield(%)'),
+    ('de_ratio',     'D/E\nRatio'),
+    ('market_cap',   'Market\nCap(B$)'),
+    ('roe',          'ROE\n(%)'),
+    # COLONNES DÉRIVÉES
+    ('dprice',       'dPrice'),
+    ('var5j',        'Var5j\n(%)'),
+    ('drsi',         'dRSI'),
+    ('dvolrel',      'dVol\nRel'),
+    # COLONNES BACKTEST
+    ('gain_total',   'Gain\ntotal($)'),
+    ('gain_moyen',   'Gain\nmoyen($)'),
+    # INFO
+    ('consensus',    'Consensus'),
+]
+MERGED_LABELS = [label for _, label in MERGED_COLUMNS]
+MERGED_COL = {cle: index for index, (cle, _) in enumerate(MERGED_COLUMNS)}
+
+# Au-delà, le nom est tronqué à l'affichage et repris en entier en infobulle :
+# sur 27 colonnes, un nom complet pousse les colonnes chiffrées hors de l'écran.
+LONGUEUR_NOM_MAX = 28
+
+
+def _nom_abrege(nom: str) -> str:
+    """Nom d'entreprise ramené à LONGUEUR_NOM_MAX caractères."""
+    texte = str(nom or '').strip()
+    if len(texte) <= LONGUEUR_NOM_MAX:
+        return texte
+    return texte[:LONGUEUR_NOM_MAX - 1].rstrip() + '…'
+
+
+# Nombre maximal de décimales affichées dans les cellules chiffrées. Les valeurs
+# calculées (Score/Seuil, dPrice, dRSI…) arrivent en double précision et
+# s'affichaient sur 15 chiffres, ce qui noyait la colonne.
+DECIMALES_MAX = 6
+
+
+def formater_nombre(valeur) -> str:
+    """Nombre en texte, au plus DECIMALES_MAX décimales, sans zéro inutile.
+
+    Volontairement sans notation scientifique : `1.23456789e-05` devient
+    `0.000012`, lisible dans une colonne étroite. Une valeur non numérique est
+    rendue telle quelle.
+    """
+    try:
+        nombre = float(valeur)
+    except (TypeError, ValueError):
+        return str(valeur)
+    if nombre != nombre or nombre in (float('inf'), float('-inf')):
+        return str(valeur)
+    arrondi = round(nombre, DECIMALES_MAX)
+    if arrondi == 0:
+        # Évite le « -0 » d'un arrondi de valeur négative infime.
+        return '0'
+    return f"{arrondi:.{DECIMALES_MAX}f}".rstrip('0').rstrip('.') or '0'
+
+
+class CelluleNumerique(QTableWidgetItem):
+    """Cellule chiffrée : affichage arrondi, tri sur la valeur réelle.
+
+    QTableWidgetItem compare `data(DisplayRole)`. Quand cette donnée est un
+    texte, le tri est lexicographique : mesuré sur la colonne Score, l'ordre
+    croissant donnait 10.2, 100, puis 9.5. La valeur numérique est donc gardée à
+    part, dans `valeur`, et sert à la comparaison comme à tout recalcul
+    (statistiques par domaine), pendant que la cellule n'affiche que l'arrondi.
+    """
+
+    def __init__(self, valeur, texte: str | None = None) -> None:
+        super().__init__(formater_nombre(valeur) if texte is None else texte)
+        self.valeur = float(valeur)
+
+    def __lt__(self, autre) -> bool:
+        autre_valeur = getattr(autre, 'valeur', None)
+        if autre_valeur is None:
+            return super().__lt__(autre)
+        return self.valeur < autre_valeur
+
+
+def valeur_cellule(item, defaut: float = 0.0) -> float:
+    """Valeur numérique d'une cellule, sans repasser par le texte affiché.
+
+    Le texte étant arrondi à DECIMALES_MAX, le reparser perdrait de la
+    précision ; il ne sert que de secours pour une cellule non chiffrée.
+    """
+    if item is None:
+        return defaut
+    valeur = getattr(item, 'valeur', None)
+    if valeur is not None:
+        return float(valeur)
+    try:
+        brut = str(item.text()).replace('%', '').replace('$', '').replace(',', '').strip()
+        return float(brut)
+    except (TypeError, ValueError):
+        return defaut
 
 
 def _install_runtime_diagnostics():
@@ -722,18 +843,7 @@ class MainWindow(QMainWindow, ScreenersMixin, ExportMixin):
         self.merged_table = QTableWidget()
         self.merged_table.setMinimumHeight(600)
         self.merged_table.setSizePolicy(QSizePolicy.Expanding, QSizePolicy.Expanding)
-        merged_columns = [
-        'Symbole','Signal','Score','Prix\n(USD)','Tendance','RSI','Volume\nmoyen($)','Domaine','Cap\nRange','Score/\nSeuil',
-        'Fiabilite\n(%)','Nb\nTrades','Gagnants',
-        # COLONNES FINANCIÈRES
-        'Rev.\nGrowth(%)','EBITDA\nYield(%)','FCF\nYield(%)','D/E\nRatio','Market\nCap(B$)','ROE\n(%)',
-        # COLONNES DERIVÉES
-        'dPrice','Var5j\n(%)','dRSI','dVol\nRel',
-        # COLONNES BACKTEST
-        'Gain\ntotal($)','Gain\nmoyen($)',
-        # INFO
-        'Consensus'
-        ]
+        merged_columns = MERGED_LABELS
         # Add table to Results tab, not Analyze tab
         # 🔧 Boutons d'export dans l'onglet Résultats
         export_buttons_layout = QHBoxLayout()
@@ -1714,12 +1824,10 @@ class MainWindow(QMainWindow, ScreenersMixin, ExportMixin):
                 return default
 
         def _set_item(row: int, col: int, value, *, numeric: bool = False):
-            item = QTableWidgetItem(str(value))
-            if numeric:
-                try:
-                    item.setData(2, float(value))
-                except Exception:
-                    pass
+            # Une colonne chiffrée dont la valeur n'est pas exploitable (« N/A »)
+            # reste une cellule texte : il n'y a rien à arrondir ni à trier.
+            nombre = _parse_numeric(value, None) if numeric else None
+            item = CelluleNumerique(nombre) if nombre is not None else QTableWidgetItem(str(value))
             self.merged_table.setItem(row, col, item)
 
         def _colorize(item, kind: str, value):
@@ -1779,6 +1887,12 @@ class MainWindow(QMainWindow, ScreenersMixin, ExportMixin):
 
             min_fiab_threshold = self.fiab_threshold_spin.value() if hasattr(self, 'fiab_threshold_spin') else 30
             bt_map = getattr(self, 'backtest_map', {}) or {}
+            symboles_affiches = [
+                str(r.get('Symbole', '')).strip()
+                for r in self.current_results if isinstance(r, dict)
+            ]
+            noms_map = self._name_map(symboles_affiches)
+            pays_map = self._country_map(symboles_affiches)
             results_to_display = []
 
             for result in self.current_results:
@@ -1810,57 +1924,73 @@ class MainWindow(QMainWindow, ScreenersMixin, ExportMixin):
                 gain_total = signal.get('Gain_total', bt.get('gain_total', 0.0) if bt else 0.0)
                 gain_moyen = signal.get('Gain_moyen', bt.get('gain_moyen', 0.0) if bt else 0.0)
 
+                # Le nom vient du store (0 requête réseau) ; N/A tant que le
+                # profil d'instrument du symbole n'a pas encore été récupéré.
+                nom = str(signal.get('Nom') or noms_map.get(sym) or 'N/A')
+
                 values = {
-                    0: sym,
-                    1: signal.get('Signal', 'N/A'),
-                    2: signal.get('Score', 0.0),
-                    3: signal.get('Prix', 0.0),
-                    4: signal.get('Tendance', 'N/A'),
-                    5: signal.get('RSI', 0.0),
-                    6: signal.get('Volume moyen', 0.0),
-                    7: signal.get('Domaine', 'Inconnu'),
-                    8: signal.get('CapRange', 'Unknown'),
-                    9: score / seuil_achat if score >= 0 and seuil_achat else (score / seuil_vente if score < 0 and seuil_vente else 0.0),
-                    10: fiab,
-                    11: nb_trades,
-                    12: gagnants,
-                    13: signal.get('Rev. Growth (%)', 0.0),
-                    14: signal.get('EBITDA Yield (%)', 0.0),
-                    15: signal.get('FCF Yield (%)', 0.0),
-                    16: signal.get('D/E Ratio', 0.0),
-                    17: signal.get('Market Cap (B$)', 0.0),
-                    18: signal.get('ROE (%)', 0.0),
-                    19: signal.get('dPrice', 0.0),
-                    20: signal.get('Var5j (%)', 0.0),
-                    21: signal.get('dRSI', 0.0),
-                    22: signal.get('dVolRel', 0.0),
-                    23: gain_total,
-                    24: gain_moyen,
-                    25: signal.get('Consensus', 'N/A'),
+                    'symbole': sym,
+                    'nom': _nom_abrege(nom),
+                    'pays': str(signal.get('Pays') or pays_map.get(sym) or 'N/A'),
+                    'signal': signal.get('Signal', 'N/A'),
+                    'score': signal.get('Score', 0.0),
+                    'prix': signal.get('Prix', 0.0),
+                    'tendance': signal.get('Tendance', 'N/A'),
+                    'rsi': signal.get('RSI', 0.0),
+                    'volume_moyen': signal.get('Volume moyen', 0.0),
+                    'domaine': signal.get('Domaine', 'Inconnu'),
+                    'cap_range': signal.get('CapRange', 'Unknown'),
+                    'score_seuil': score / seuil_achat if score >= 0 and seuil_achat else (score / seuil_vente if score < 0 and seuil_vente else 0.0),
+                    'fiabilite': fiab,
+                    'nb_trades': nb_trades,
+                    'gagnants': gagnants,
+                    'rev_growth': signal.get('Rev. Growth (%)', 0.0),
+                    'ebitda_yield': signal.get('EBITDA Yield (%)', 0.0),
+                    'fcf_yield': signal.get('FCF Yield (%)', 0.0),
+                    'de_ratio': signal.get('D/E Ratio', 0.0),
+                    'market_cap': signal.get('Market Cap (B$)', 0.0),
+                    'roe': signal.get('ROE (%)', 0.0),
+                    'dprice': signal.get('dPrice', 0.0),
+                    'var5j': signal.get('Var5j (%)', 0.0),
+                    'drsi': signal.get('dRSI', 0.0),
+                    'dvolrel': signal.get('dVolRel', 0.0),
+                    'gain_total': gain_total,
+                    'gain_moyen': gain_moyen,
+                    'consensus': signal.get('Consensus', 'N/A'),
                 }
 
-                numeric_cols = {2, 3, 5, 6, 9, 10, 11, 12, 13, 14, 15, 16, 17, 18, 19, 20, 21, 22, 23, 24}
-                for col, value in values.items():
-                    _set_item(row, col, value, numeric=col in numeric_cols)
+                numeric_cols = {
+                    'score', 'prix', 'rsi', 'volume_moyen', 'score_seuil', 'fiabilite',
+                    'nb_trades', 'gagnants', 'rev_growth', 'ebitda_yield', 'fcf_yield',
+                    'de_ratio', 'market_cap', 'roe', 'dprice', 'var5j', 'drsi',
+                    'dvolrel', 'gain_total', 'gain_moyen',
+                }
+                for cle, value in values.items():
+                    _set_item(row, MERGED_COL[cle], value, numeric=cle in numeric_cols)
 
-                _colorize(self.merged_table.item(row, 1), 'signal', values[1])
-                _colorize(self.merged_table.item(row, 4), 'trend', values[4])
-                _colorize(self.merged_table.item(row, 10), 'fiab', values[10] if values[10] != 'N/A' else 0)
-                _colorize(self.merged_table.item(row, 13), 'gain', values[13])
-                _colorize(self.merged_table.item(row, 14), 'gain', values[14])
-                _colorize(self.merged_table.item(row, 15), 'gain', values[15])
-                _colorize(self.merged_table.item(row, 16), 'ratio_low', values[16])
-                _colorize(self.merged_table.item(row, 18), 'gain', values[18])
-                _colorize(self.merged_table.item(row, 19), 'positive', values[19])
-                _colorize(self.merged_table.item(row, 20), 'positive', values[20])
-                _colorize(self.merged_table.item(row, 21), 'positive', values[21])
-                _colorize(self.merged_table.item(row, 22), 'positive', values[22])
-                _colorize(self.merged_table.item(row, 23), 'gain', values[23])
-                _colorize(self.merged_table.item(row, 24), 'gain', values[24])
+                # Nom complet en infobulle, la cellule étant tronquée.
+                item_nom = self.merged_table.item(row, MERGED_COL['nom'])
+                if item_nom is not None:
+                    item_nom.setToolTip(nom)
 
-                consensus_item = self.merged_table.item(row, 25)
+                def _colorer(cle: str, kind: str, valeur=None) -> None:
+                    _colorize(self.merged_table.item(row, MERGED_COL[cle]), kind,
+                              values[cle] if valeur is None else valeur)
+
+                _colorer('signal', 'signal')
+                _colorer('tendance', 'trend')
+                _colorer('fiabilite', 'fiab',
+                         values['fiabilite'] if values['fiabilite'] != 'N/A' else 0)
+                for cle in ('rev_growth', 'ebitda_yield', 'fcf_yield', 'roe',
+                            'gain_total', 'gain_moyen'):
+                    _colorer(cle, 'gain')
+                _colorer('de_ratio', 'ratio_low')
+                for cle in ('dprice', 'var5j', 'drsi', 'dvolrel'):
+                    _colorer(cle, 'positive')
+
+                consensus_item = self.merged_table.item(row, MERGED_COL['consensus'])
                 if consensus_item is not None:
-                    consensus_lower = str(values[25]).lower()
+                    consensus_lower = str(values['consensus']).lower()
                     if 'strong buy' in consensus_lower or 'achat fort' in consensus_lower:
                         consensus_item.setForeground(QColor(0, 128, 0))
                     elif 'buy' in consensus_lower or 'achat' in consensus_lower:
@@ -2315,21 +2445,15 @@ class MainWindow(QMainWindow, ScreenersMixin, ExportMixin):
             
             for row in range(self.merged_table.rowCount()):
                 try:
-                    # Colonne 7: Domaine
-                    domaine_item = self.merged_table.item(row, 7)
+                    domaine_item = self.merged_table.item(row, MERGED_COL['domaine'])
                     domaine = domaine_item.text() if domaine_item and domaine_item.text().strip() else 'Inconnu'
                     
-                    # Colonne 11: Nb Trades
-                    trades_item = self.merged_table.item(row, 11)
-                    nb_trades = int(trades_item.data(Qt.EditRole)) if trades_item and trades_item.data(Qt.EditRole) is not None else 0
-                    
-                    # Colonne 12: Gagnants
-                    gagnants_item = self.merged_table.item(row, 12)
-                    gagnants = int(gagnants_item.data(Qt.EditRole)) if gagnants_item and gagnants_item.data(Qt.EditRole) is not None else 0
-                    
-                    # Colonne 23: Gain total ($)
-                    gain_item = self.merged_table.item(row, 23)
-                    gain = float(gain_item.data(Qt.EditRole)) if gain_item and gain_item.data(Qt.EditRole) is not None else 0.0
+                    # valeur_cellule() lit la valeur portée par la cellule, jamais
+                    # son texte arrondi. L'ancien int(data(EditRole)) levait sur
+                    # un « 3.0 » et la ligne était abandonnée en silence.
+                    nb_trades = int(valeur_cellule(self.merged_table.item(row, MERGED_COL['nb_trades'])))
+                    gagnants = int(valeur_cellule(self.merged_table.item(row, MERGED_COL['gagnants'])))
+                    gain = valeur_cellule(self.merged_table.item(row, MERGED_COL['gain_total']))
                     
                     if domaine not in domain_stats:
                         domain_stats[domaine] = {'trades': 0, 'gagnants': 0, 'gain': 0.0}
@@ -2410,7 +2534,7 @@ class MainWindow(QMainWindow, ScreenersMixin, ExportMixin):
             symbols_per_domain = {}
             for row in range(self.merged_table.rowCount()):
                 try:
-                    domaine_item = self.merged_table.item(row, 7)
+                    domaine_item = self.merged_table.item(row, MERGED_COL['domaine'])
                     domaine = domaine_item.text() if domaine_item else 'Inconnu'
                     symbols_per_domain[domaine] = symbols_per_domain.get(domaine, 0) + 1
                 except Exception:
@@ -2560,7 +2684,7 @@ class MainWindow(QMainWindow, ScreenersMixin, ExportMixin):
             all_symbols = []
             for row in range(self.merged_table.rowCount()):
                 try:
-                    sym = self.merged_table.item(row, 0).text()
+                    sym = self.merged_table.item(row, MERGED_COL['symbole']).text()
                     if sym:
                         all_symbols.append(sym)
                 except Exception:
@@ -2755,10 +2879,12 @@ class MainWindow(QMainWindow, ScreenersMixin, ExportMixin):
                     if isinstance(edit_value, (int, float)):
                         text = _format_numeric_like_source(text, edit_value)
 
-                item = QTableWidgetItem(text)
+                # Une cellule chiffrée reste chiffrée dans la copie, sinon le
+                # tableau comparatif retomberait sur un tri lexicographique.
+                valeur_source = getattr(source_item, 'valeur', None)
+                item = (CelluleNumerique(valeur_source, text) if valeur_source is not None
+                        else QTableWidgetItem(text))
                 if source_item:
-                    # Keep the already-formatted text from source_item to preserve UI rounding.
-                    item.setData(Qt.EditRole, source_item.data(Qt.EditRole))
                     item.setForeground(source_item.foreground())
                     item.setBackground(source_item.background())
                     item.setFont(source_item.font())
@@ -2773,32 +2899,32 @@ class MainWindow(QMainWindow, ScreenersMixin, ExportMixin):
             symbols_data = {}
             for row in range(self.merged_table.rowCount()):
                 try:
-                    sym_item = self.merged_table.item(row, 0)
+                    sym_item = self.merged_table.item(row, MERGED_COL['symbole'])
                     if not sym_item:
                         continue
                     sym = sym_item.text()
                     if sym in symbols_to_compare:
-                        score = safe_float(table_text(row, 2))
-                        prix = safe_float(table_text(row, 3))
-                        rsi = safe_float(table_text(row, 5))
-                        domaine = table_text(row, 7, 'N/A')
-                        score_seuil = safe_float(table_text(row, 9))
-                        fiab = safe_float(table_text(row, 10))
-                        trades = int(safe_float(table_text(row, 11)))
-                        gagnants = int(safe_float(table_text(row, 12)))
-                        rev_growth = safe_float(table_text(row, 13))
-                        ebitda = safe_float(table_text(row, 14))
-                        fcf = safe_float(table_text(row, 15))
-                        debt_to_equity = safe_float(table_text(row, 16))
-                        market_cap = safe_float(table_text(row, 17))
-                        roe = safe_float(table_text(row, 18))
-                        dprice = safe_float(table_text(row, 19))
-                        var5j = safe_float(table_text(row, 20))
-                        drsi = safe_float(table_text(row, 21))
-                        dvol = safe_float(table_text(row, 22))
-                        gain_total = safe_float(table_text(row, 23))
-                        gain_moyen = safe_float(table_text(row, 24))
-                        consensus = table_text(row, 25, 'N/A')
+                        score = safe_float(table_text(row, MERGED_COL['score']))
+                        prix = safe_float(table_text(row, MERGED_COL['prix']))
+                        rsi = safe_float(table_text(row, MERGED_COL['rsi']))
+                        domaine = table_text(row, MERGED_COL['domaine'], 'N/A')
+                        score_seuil = safe_float(table_text(row, MERGED_COL['score_seuil']))
+                        fiab = safe_float(table_text(row, MERGED_COL['fiabilite']))
+                        trades = int(safe_float(table_text(row, MERGED_COL['nb_trades'])))
+                        gagnants = int(safe_float(table_text(row, MERGED_COL['gagnants'])))
+                        rev_growth = safe_float(table_text(row, MERGED_COL['rev_growth']))
+                        ebitda = safe_float(table_text(row, MERGED_COL['ebitda_yield']))
+                        fcf = safe_float(table_text(row, MERGED_COL['fcf_yield']))
+                        debt_to_equity = safe_float(table_text(row, MERGED_COL['de_ratio']))
+                        market_cap = safe_float(table_text(row, MERGED_COL['market_cap']))
+                        roe = safe_float(table_text(row, MERGED_COL['roe']))
+                        dprice = safe_float(table_text(row, MERGED_COL['dprice']))
+                        var5j = safe_float(table_text(row, MERGED_COL['var5j']))
+                        drsi = safe_float(table_text(row, MERGED_COL['drsi']))
+                        dvol = safe_float(table_text(row, MERGED_COL['dvolrel']))
+                        gain_total = safe_float(table_text(row, MERGED_COL['gain_total']))
+                        gain_moyen = safe_float(table_text(row, MERGED_COL['gain_moyen']))
+                        consensus = table_text(row, MERGED_COL['consensus'], 'N/A')
                         
                         symbols_data[sym] = {
                             'Score': score,
@@ -2887,10 +3013,10 @@ class MainWindow(QMainWindow, ScreenersMixin, ExportMixin):
             
             # Créer un tableau QTableWidget pour afficher la comparaison
             table = QTableWidget()
-            columns = ['Rang', 'Symbole', 'Signal', 'Score', 'Prix', 'Tendance', 'RSI', 'Volume moyen($)', 'Domaine', 'Cap Range',
-                      'Score/Seuil', 'Fiabilité (%)', 'Nb Trades', 'Gagnants', 'Rev Growth (%)', 'EBITDA (%)', 'FCF (%)',
-                      'D/E', 'Market Cap (B$)', 'ROE (%)', 'dPrice', 'Var5j (%)', 'dRSI', 'dVolRel', 'Gain total ($)',
-                      'Gain moyen ($)', 'Consensus', 'Pertinence']
+            # Colonnes recopiées du tableau de résultats, donc dérivées de la même
+            # source (MERGED_LABELS) : ajouter une colonne là-bas l'ajoute ici.
+            colonnes_source = [label.replace('\n', ' ') for label in MERGED_LABELS]
+            columns = ['Rang'] + colonnes_source + ['Pertinence']
             table.setColumnCount(len(columns))
             table.setHorizontalHeaderLabels(columns)
             table.horizontalHeader().setSectionResizeMode(QHeaderView.ResizeToContents)
@@ -2914,24 +3040,25 @@ class MainWindow(QMainWindow, ScreenersMixin, ExportMixin):
                 # Rechercher la ligne source une seule fois pour recopier toutes les colonnes
                 source_row = None
                 for r in range(self.merged_table.rowCount()):
-                    item = self.merged_table.item(r, 0)
+                    item = self.merged_table.item(r, MERGED_COL['symbole'])
                     if item and item.text() == sym:
                         source_row = r
                         break
                 if source_row is None:
                     continue
 
-                # Copier les cellules 0..25 depuis le tableau source vers 1..26 (0 est reserve au rang)
-                for source_col, target_col in enumerate(range(1, 27), start=0):
+                # Recopie de toutes les colonnes source vers 1..N (0 est réservé au rang)
+                for source_col in range(len(colonnes_source)):
                     source_item = self.merged_table.item(source_row, source_col)
-                    table.setItem(row, target_col, clone_table_item(source_item, table_text(source_row, source_col, '')))
+                    table.setItem(row, source_col + 1,
+                                  clone_table_item(source_item, table_text(source_row, source_col, '')))
 
                 # Pertinence affichée telle quelle pour garder le tri du tableau source
                 item = QTableWidgetItem(f"{pertinence:.2f}%")
                 item.setData(Qt.EditRole, pertinence)
                 item.setBackground(Qt.yellow)
                 item.setToolTip(f"Points: {points_by_symbol.get(sym, 0)} / {max_points}")
-                table.setItem(row, 27, item)
+                table.setItem(row, len(columns) - 1, item)
             
             table.setSortingEnabled(True)
             table.setMinimumHeight(300)
@@ -3204,10 +3331,11 @@ class MainWindow(QMainWindow, ScreenersMixin, ExportMixin):
             
             # Créer le tableau
             table = QTableWidget()
-            table.setColumnCount(11)
+            table.setColumnCount(12)
             table.setRowCount(len(sorted_symbols))
+            noms_map = self._name_map(sorted_symbols)
             table.setHorizontalHeaderLabels([
-                'Rang', 'Symbole', 'Date', 'Prix Historique', 'Prix Actuel',
+                'Rang', 'Symbole', 'Nom', 'Date', 'Prix Historique', 'Prix Actuel',
                 'Performance (%)', 'RSI', 'MACD', 'Vol. Rel', 'Volatilité (%)', 'Avis'
             ])
             
@@ -3224,19 +3352,25 @@ class MainWindow(QMainWindow, ScreenersMixin, ExportMixin):
                 
                 # Symbole
                 table.setItem(row, 1, QTableWidgetItem(symbol))
+
+                # Nom de l'entreprise (store local, 0 requête réseau)
+                nom = noms_map.get(symbol) or 'N/A'
+                item = QTableWidgetItem(_nom_abrege(nom))
+                item.setToolTip(nom)
+                table.setItem(row, 2, item)
                 
                 # Date d'analyse
-                table.setItem(row, 2, QTableWidgetItem(data['Date']))
+                table.setItem(row, 3, QTableWidgetItem(data['Date']))
                 
                 # Prix historique
                 item = QTableWidgetItem(f"${data['Prix Historique']:.2f}")
                 item.setData(Qt.EditRole, data['Prix Historique'])
-                table.setItem(row, 3, item)
+                table.setItem(row, 4, item)
                 
                 # Prix actuel
                 item = QTableWidgetItem(f"${data['Prix Actuel']:.2f}")
                 item.setData(Qt.EditRole, data['Prix Actuel'])
-                table.setItem(row, 4, item)
+                table.setItem(row, 5, item)
                 
                 # Performance
                 perf = data['Performance (%)']
@@ -3246,7 +3380,7 @@ class MainWindow(QMainWindow, ScreenersMixin, ExportMixin):
                     item.setForeground(QColor(0, 128, 0))  # Vert
                 else:
                     item.setForeground(QColor(255, 0, 0))  # Rouge
-                table.setItem(row, 5, item)
+                table.setItem(row, 6, item)
                 
                 # RSI
                 rsi = data['RSI']
@@ -3254,29 +3388,29 @@ class MainWindow(QMainWindow, ScreenersMixin, ExportMixin):
                 item.setData(Qt.EditRole, rsi)
                 if rsi < 30 or rsi > 70:
                     item.setForeground(QColor(255, 140, 0))  # Orange (extrême)
-                table.setItem(row, 6, item)
+                table.setItem(row, 7, item)
                 
                 # MACD
                 macd = data['MACD']
                 item = QTableWidgetItem(f"{macd:+.4f}")
                 item.setData(Qt.EditRole, macd)
-                table.setItem(row, 7, item)
+                table.setItem(row, 8, item)
                 
                 # Volume Relatif
                 vol = data['Volume Rel']
                 item = QTableWidgetItem(f"{vol:.2f}x")
                 item.setData(Qt.EditRole, vol)
-                table.setItem(row, 8, item)
+                table.setItem(row, 9, item)
                 
                 # Volatilité
                 vol_std = data['Volatilité (%)']
                 item = QTableWidgetItem(f"{vol_std:.2f}%")
                 item.setData(Qt.EditRole, vol_std)
-                table.setItem(row, 9, item)
+                table.setItem(row, 10, item)
                 
                 # Avis (justification)
                 avis = self._generate_historical_verdict(data)
-                table.setItem(row, 10, QTableWidgetItem(avis))
+                table.setItem(row, 11, QTableWidgetItem(avis))
             
             table.setSortingEnabled(True)
             table.setMinimumHeight(350)
@@ -3417,9 +3551,15 @@ if __name__ == "__main__":
     sys.exit(app.exec_())
 
     #TODO:
-    # - Ajouter un bouton pour exporter les resultats (CSV/Excel)
+
     # - Ajouter dates d'annonces / résultats dans les signaux (ex: earnings date)
-    # - harmoniser l'affichage des plots (embedded + external)
-    # - améliorer le threading / gestion des erreurs
-    # - Ajouter le earning dates et tous les autres nouveaux criteres a l'analyse et au backtest
-    # - Ajouter un bouton pour choisir si backup des resultats avant analyse ou pas
+    # - Ajouter une collone pour (next event) qui donne le nombre de jour avant le prochain événement (earnings, dividend, split, etc.) mettre a zero si c'est aujourd'hui
+    # - Ajouter une collone pour (next event type) qui donne le type du prochain événement (earnings, dividend, split, etc.)
+    # - Ajouter une collone pour (previous event) qui donne le nombre de jours depuis le dernier événement (earnings, dividend, split, etc.) >= 1
+    # - Ajouter une collone pour (previous event type) qui donne le type du dernier événement (earnings, dividend, split, etc.)
+    # - Ajouter une collone dividend_yield (%) pour les actions qui versent un dividende
+    # - Ajouter une collone dividend_growth (%) pour les actions qui versent un dividende
+    # - Ajouter une collone pour le P/E ratio (Price to Earnings ratio) 
+    # - Ajouter une collone qui donne le Big growth score sur la base du code Big_Growth.py
+    # - Ajouter une collone qui donne le secure score sur la base du Sichere_Unternehmen_Scan.py
+    # - Ajouter un bouton pour afficher les collones extra et reorganiser l'ordre des collones dans le tableau de resultat de facon coherente

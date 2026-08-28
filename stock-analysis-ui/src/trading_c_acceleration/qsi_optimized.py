@@ -3,18 +3,11 @@
 
 import numpy as np
 import pandas as pd
-import yfinance as yf
-import ta
-import time
-import csv
-from matplotlib import dates as mdates
 import logging
 import warnings
-import requests
 from pathlib import Path
-from datetime import datetime, timedelta
-from typing import List, Dict, Union
-from concurrent.futures import ThreadPoolExecutor
+from datetime import datetime
+from typing import Dict, Union
 
 # Import du module C (après compilation)
 import sys
@@ -41,6 +34,46 @@ def _is_c_acceleration_disabled() -> bool:
     val = str(os.environ.get('QSI_DISABLE_C_ACCELERATION', '')).strip().lower()
     return val in {'1', 'true', 'yes', 'on'}
 
+
+def _so_instrumente(chemin: str) -> bool:
+    """
+    --------------------------------------------------------------------------
+    Objectif:
+        Dire si une bibliotheque compilee embarque AddressSanitizer, sans la
+        charger.
+
+        Un binaire construit avec -fsanitize=address ne leve pas : il fait
+        avorter le processus au dlopen. Aucun try/except ne l'attrape, il faut
+        donc l'ecarter avant. Constate le 2026-08-05 : le .so du 2026-04-18
+        tuait l'import de optimisateur_hybride.py.
+
+    Inputs:
+        chemin (str): chemin de la bibliotheque
+
+    Outputs:
+        instrumente (bool): False si le fichier est illisible
+    --------------------------------------------------------------------------
+    """
+    try:
+        with open(chemin, 'rb') as binaire:
+            return b'__asan_' in binaire.read()
+    except OSError:
+        return False
+
+
+def _binaires_candidats(module_name: str) -> list[str]:
+    """Bibliotheques compilees du dossier de ce module portant ce nom."""
+    dossier = os.path.dirname(os.path.abspath(__file__))
+    try:
+        noms = os.listdir(dossier)
+    except OSError:
+        return []
+    return [
+        os.path.join(dossier, nom) for nom in noms
+        if nom.startswith(module_name) and nom.endswith(('.so', '.pyd', '.dll'))
+    ]
+
+
 def _diagnose_import(module_name: str):
     """Tentative d'import et diagnostic si échec."""
     try:
@@ -53,7 +86,7 @@ def _diagnose_import(module_name: str):
         try:
             print(f"Python executable: {sys.executable}")
             print(f"CWD: {os.getcwd()}")
-            print(f"sys.path:")
+            print("sys.path:")
             for p in sys.path:
                 print(f"  {p}")
         except Exception:
@@ -85,10 +118,20 @@ if _is_c_acceleration_disabled():
     trading_c, C_ACCELERATION = None, False
     print("⚠️ Accélération C désactivée via QSI_DISABLE_C_ACCELERATION=1")
 else:
-    trading_c, C_ACCELERATION = _diagnose_import('trading_c')
-    if not C_ACCELERATION:
-        print("⚠️ Module C non disponible - Mode Python standard")
-        print("   Compilez avec: python setup.py build_ext --inplace")
+    _instrumentes = [c for c in _binaires_candidats('trading_c') if _so_instrumente(c)]
+    if _instrumentes:
+        # Refus AVANT le dlopen : un binaire ASan abort le processus.
+        trading_c, C_ACCELERATION = None, False
+        print("⚠️ Module C ignoré : binaire compilé avec AddressSanitizer")
+        for _binaire in _instrumentes:
+            print(f"   {_binaire}")
+        print("   Recompilez sans QSI_DEBUG_C_MODE ni QSI_USE_ASAN :")
+        print("   python setup.py build_ext --inplace")
+    else:
+        trading_c, C_ACCELERATION = _diagnose_import('trading_c')
+        if not C_ACCELERATION:
+            print("⚠️ Module C non disponible - Mode Python standard")
+            print("   Compilez avec: python setup.py build_ext --inplace")
 
 warnings.filterwarnings("ignore", category=FutureWarning)
 logging.basicConfig(level=logging.INFO, filename='stock_analysis.log', filemode='a', format='%(asctime)s - %(levelname)s - %(message)s')
@@ -165,13 +208,12 @@ def save_to_evolutive_csv(signals, filename="signaux_trading.csv"):
     except Exception as e:
         print(f"🚨 Erreur sauvegarde CSV: {e}")
 
-from typing import Tuple, Dict, Union, List
+from typing import Tuple
 
 BEST_PARAM_EXTRAS: Dict[str, Dict[str, Union[int, float]]] = {}
 
 def extract_best_parameters(db_path: str = None) -> Dict[str, Tuple[Tuple[float, ...], Tuple[float, ...], Tuple[float, float]]]:
     if db_path is None:
-        import sys
         from pathlib import Path
         config_dir = Path(__file__).parent.parent.resolve()
         db_path = str(config_dir / 'signaux' / 'optimization_hist.db')
@@ -335,7 +377,8 @@ def backtest_signals_c_extended(prices: Union[pd.Series, pd.DataFrame], volumes:
         seuil_achat: Seuil global d'achat
         seuil_vente: Seuil global de vente
         montant: Montant par trade
-        transaction_cost: Coût de transaction en %
+        transaction_cost: Coût par trade, en MONTANT absolu et non en pourcentage
+            (profit = (close - entry) / entry * montant - transaction_cost)
         price_extras: Dict avec use_price_slope, use_price_acc, a9, a10, th9, th10
         fundamentals_extras: Dict avec use_fundamentals, a11-a15, th11-th15
         symbol_name: Nom du symbole (pour charger les métriques fondamentales)
@@ -445,7 +488,7 @@ def backtest_signals_c_extended(prices: Union[pd.Series, pd.DataFrame], volumes:
         result = trading_c.backtest_symbol(prices_array, volumes_array, coeffs_tuple, montant, transaction_cost)
         return result
         
-    except Exception as e:
+    except Exception:
         # Fallback Python en cas d'erreur
         # print(f"⚠️ C extended error, fallback Python: {e}")
         result_dict, _ = backtest_signals_with_events(
@@ -493,7 +536,7 @@ def backtest_signals_accelerated(prices: Union[pd.Series, pd.DataFrame], volumes
 
     # Debug: vérifier si les paramètres sont chargés
     if domain_coeffs is None and not best_params:
-        print(f"⚠️ backtest_signals: Aucun paramètre optimisé trouvé")
+        print("⚠️ backtest_signals: Aucun paramètre optimisé trouvé")
     
     selected_key = domaine
     if cap_range:
@@ -544,7 +587,8 @@ def backtest_signals_accelerated(prices: Union[pd.Series, pd.DataFrame], volumes
     if C_ACCELERATION and min_holding_bars == MIN_HOLDING_BARS:
         try:
             # NOTE: Ne PAS écraser seuil_achat/seuil_vente ici - ils sont déjà correctement définis
-            # depuis globals_thresholds (lignes 343-345) ou les valeurs par défaut
+            # par le dépaquetage de globals_thresholds depuis best_params[selected_key],
+            # plus haut dans cette fonction, ou par les valeurs par défaut.
             
             # Nettoyage des données (éliminer NaN)
             clean_prices = prices.fillna(method='ffill').fillna(method='bfill')
@@ -592,7 +636,7 @@ def backtest_signals_with_events(prices, volumes, domaine, montant=50, transacti
     """
     try:
         from qsi import get_trading_signal as qsi_get_trading_signal
-    except Exception as e:
+    except Exception:
         return {"trades": 0, "gagnants": 0, "taux_reussite": 0, "gain_total": 0.0, "gain_moyen": 0.0, "drawdown_max": 0.0}, []
 
     if isinstance(prices, pd.DataFrame):

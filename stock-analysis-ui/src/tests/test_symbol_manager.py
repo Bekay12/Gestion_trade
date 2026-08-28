@@ -3,8 +3,7 @@
 import pytest
 
 from symbol_manager import (
-    init_symbols_table, sync_txt_to_sqlite, get_symbols_by_list_type,
-    get_symbols_by_sector, get_symbols_by_cap_range, get_all_sectors,
+    init_symbols_table, sync_txt_to_sqlite, get_symbols_by_sector, get_symbols_by_cap_range, get_all_sectors,
     get_all_cap_ranges, get_symbol_count, get_symbols_by_sector_and_cap
 )
 
