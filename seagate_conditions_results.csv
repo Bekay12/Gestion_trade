@@ -1,28 +1,33 @@
 ticker,nom,secteur,score,C1_CA_Growth,C1_ok,C2_Marge,C2_ok,C3_Valorisation,C3_ok,C4_Momentum,C4_ok,C5_Volume,C5_ok
-SOFI,"SoFi Technologies, Inc.",Financial Services,4,42.5%,True,83.5%,True,2/3 proxies,True,8.3%,True,1.06x,False
-GRAB,Grab Holdings Limited,Technology,3,23.5%,True,40.2%,True,2/3 proxies,True,-6.0%,False,1.01x,False
-SMCI,"Super Micro Computer, Inc.",Technology,3,122.7%,True,8.4%,False,3/3 proxies,True,-6.0%,False,1.39x,True
-OWL,Blue Owl Capital Inc.,Financial Services,3,10.3%,False,58.6%,True,2/3 proxies,True,10.0%,True,0.78x,False
-CCL,Carnival Corporation Ltd.,Consumer Cyclical,3,6.1%,False,56.0%,True,2/3 proxies,True,24.6%,True,1.0x,False
-IREN,IREN LIMITED,Financial Services,3,-0.0%,False,68.4%,True,0/3 proxies,False,46.9%,True,1.33x,True
-MARA,"MARA Holdings, Inc.",Financial Services,3,-18.4%,False,45.3%,True,2/3 proxies,True,59.3%,True,0.89x,False
-AAL,"American Airlines Group, Inc.",Industrials,2,10.8%,False,22.9%,False,1/3 proxies,False,47.1%,True,1.21x,True
-AMD,"Advanced Micro Devices, Inc.",Technology,2,37.8%,True,53.1%,True,1/3 proxies,False,N/A,False,N/A,False
-JOBY,"Joby Aviation, Inc.",Industrials,2,N/A,False,38.0%,True,1/3 proxies,False,0.1%,False,1.22x,True
-NOK,Nokia Corporation Sponsored,Technology,2,2.4%,False,45.4%,True,1/3 proxies,False,70.8%,False,1.37x,True
-RIG,Transocean Ltd (Switzerland),Energy,2,19.3%,False,42.2%,True,2/3 proxies,True,-12.8%,False,0.75x,False
-MU,"Micron Technology, Inc.",Technology,2,196.3%,True,58.4%,True,1/3 proxies,False,145.3%,False,1.19x,False
-PLTR,Palantir Technologies Inc.,Technology,2,84.7%,True,84.1%,True,1/3 proxies,False,-13.6%,False,0.85x,False
-IONQ,"IonQ, Inc.",Technology,2,754.7%,True,36.1%,True,1/3 proxies,False,78.6%,False,1.18x,False
-PLUG,"Plug Power, Inc.",Industrials,2,22.3%,True,-31.2%,False,2/3 proxies,True,18.1%,False,1.01x,False
-ONDS,Ondas Inc,Technology,2,1079.9%,True,44.8%,True,1/3 proxies,False,-12.0%,False,1.02x,False
-INTC,Intel Corporation,Technology,1,7.2%,False,37.2%,True,1/3 proxies,False,170.4%,False,1.16x,False
-CTRA,Coterra Energy Inc.,Energy,1,18.6%,False,74.6%,True,1/3 proxies,False,7.0%,False,0.87x,False
-WULF,TeraWulf Inc.,Financial Services,1,-1.1%,False,64.0%,True,0/3 proxies,False,83.9%,False,0.88x,False
-KEEL,Keel Infrastructure Corp.,Technology,1,-22.4%,False,-20.8%,False,0/3 proxies,False,165.1%,False,1.32x,True
-SNAP,Snap Inc.,Communication Services,1,12.1%,False,55.8%,True,1/3 proxies,False,7.3%,False,0.91x,False
-F,Ford Motor Company,Consumer Cyclical,1,6.4%,False,7.1%,False,0/3 proxies,False,24.2%,True,1.19x,False
-ITUB,Itau Unibanco Banco Holding SA,Financial Services,1,-2.1%,False,0.0%,False,2/3 proxies,True,1.0%,False,1.0x,False
-BBAI,"BigBear.ai, Inc.",Technology,0,-0.9%,False,25.8%,False,1/3 proxies,False,7.1%,False,1.13x,False
-TSLA,"Tesla, Inc.",Consumer Cyclical,0,15.8%,False,19.1%,False,0/3 proxies,False,6.0%,False,0.86x,False
-SMR,NuScale Power Corporation,Industrials,0,-95.8%,False,23.8%,False,1/3 proxies,False,-9.2%,False,1.19x,False
+AGEN,Agenus Inc.,Healthcare,4,40.2%,True,97.4%,True,2/3 proxies,True,99.0%,False,2.46x,True
+DUOL,"Duolingo, Inc.",Technology,4,26.5%,True,72.7%,True,2/3 proxies,True,32.4%,True,0.78x,False
+TIGO,Millicom International Cellular,Communication Services,4,45.1%,True,77.1%,True,2/3 proxies,True,11.7%,True,0.94x,False
+ERO,Ero Copper Corp.,Basic Materials,4,110.4%,True,42.8%,True,2/3 proxies,True,12.3%,True,0.83x,False
+ORCL,Oracle Corporation,Technology,4,20.6%,True,65.8%,True,3/3 proxies,True,-21.1%,False,1.27x,True
+BE,Bloom Energy Corporation,Industrials,4,165.5%,True,31.7%,True,2/3 proxies,True,-22.7%,False,1.37x,True
+AMD,"Advanced Micro Devices, Inc.",Technology,3,37.8%,True,53.1%,True,1/3 proxies,False,46.0%,True,0.84x,False
+CRDO,Credo Technology Group Holding ,Technology,3,157.0%,True,68.0%,True,0/3 proxies,False,22.9%,True,0.99x,False
+AMSC,American Superconductor Corpora,Industrials,3,29.6%,True,30.8%,True,3/3 proxies,True,-39.2%,False,0.71x,False
+VRT,"Vertiv Holdings, LLC",Industrials,3,24.1%,True,38.0%,True,2/3 proxies,True,-20.8%,False,1.13x,False
+LITE,Lumentum Holdings Inc.,Technology,2,90.1%,True,40.8%,True,1/3 proxies,False,-14.6%,False,0.83x,False
+AMZn,"Amazon.com, Inc.",Consumer Cyclical,2,19.6%,False,50.8%,True,2/3 proxies,True,1.4%,False,1.18x,False
+SMCI,"Super Micro Computer, Inc.",Technology,2,122.7%,True,8.4%,False,3/3 proxies,True,13.9%,False,0.97x,False
+QCOM,QUALCOMM Incorporated,Technology,2,-4.0%,False,54.2%,True,3/3 proxies,True,-12.5%,False,0.85x,False
+FCEL,"FuelCell Energy, Inc.",Industrials,2,-4.9%,False,-18.2%,False,2/3 proxies,True,66.1%,False,1.28x,True
+ARM,Arm Holdings plc,Technology,2,22.4%,True,97.5%,True,1/3 proxies,False,34.3%,False,0.69x,False
+KRMN,Karman Holdings Inc.,Industrials,2,51.0%,True,41.0%,True,1/3 proxies,False,-14.2%,False,1.19x,False
+SPIR,"Spire Global, Inc.",Industrials,2,-33.7%,False,42.3%,True,2/3 proxies,True,-18.1%,False,0.56x,False
+RKLB,Rocket Lab Corporation,Industrials,2,63.5%,True,36.6%,True,1/3 proxies,False,-5.4%,False,0.85x,False
+PLUG,"Plug Power, Inc.",Industrials,2,22.3%,True,-31.2%,False,2/3 proxies,True,-34.9%,False,0.76x,False
+PL,Planet Labs PBC,Industrials,2,42.1%,True,55.6%,True,1/3 proxies,False,-38.5%,False,0.82x,False
+ASTS,"AST SpaceMobile, Inc.",Technology,2,1952.2%,True,44.8%,True,1/3 proxies,False,10.1%,False,0.84x,False
+6503.T,MITSUBISHI ELECTRIC CORP,Industrials,1,14.0%,False,32.5%,True,0/3 proxies,False,-9.5%,False,0.9x,False
+CLS,"Celestica, Inc.",Technology,1,62.4%,True,12.0%,False,1/3 proxies,False,-11.1%,False,1.05x,False
+LUNR,"Intuitive Machines, Inc.",Industrials,1,198.7%,True,9.7%,False,1/3 proxies,False,-43.7%,False,0.73x,False
+IREN,IREN LIMITED,Financial Services,1,-0.0%,False,68.4%,True,1/3 proxies,False,-25.4%,False,1.0x,False
+6969.T,MATSUO ELECTRIC CO,Technology,1,-3.5%,False,22.2%,False,2/3 proxies,True,-20.9%,False,0.95x,False
+NEE,"NextEra Energy, Inc.",Utilities,1,12.4%,False,61.0%,True,1/3 proxies,False,-8.8%,False,1.04x,False
+APLD,Applied Digital Corporation,Technology,1,406.6%,True,25.9%,False,1/3 proxies,False,-21.6%,False,0.93x,False
+6962.T,DAISHINKU CORP,Technology,0,10.3%,False,23.2%,False,1/3 proxies,False,0.0%,False,0.69x,False
+BLDP,"Ballard Power Systems, Inc.",Industrials,0,15.4%,False,16.4%,False,1/3 proxies,False,-36.7%,False,0.86x,False
+GHM,Graham Corporation,Industrials,0,13.0%,False,23.6%,False,0/3 proxies,False,7.1%,False,1.13x,False
