@@ -77,7 +77,12 @@ _SRC_DIR = Path(DB_PATH).parent
 PARQUET_DIR = _SRC_DIR / "market_parquet"
 
 # Verrous fichiers partagés (instruments.parquet écrit par plusieurs threads)
-_INSTRUMENTS_LOCK = threading.Lock()
+# Ce verrou n'est plus utilisé : chaque symbole écrit dans son propre fichier,
+# il n'y a donc plus de ressource partagée à sérialiser. Il était de toute
+# façon inopérant entre processus distincts — c'est précisément ce qui faisait
+# perdre les profils quand un scan et l'application écrivaient en parallèle.
+# Conservé le temps de vérifier qu'aucun appelant externe ne l'importe.
+_INSTRUMENTS_LOCK = threading.Lock()  # noqa: F841  (voir la note ci-dessus)
 
 # ---------------------------------------------------------------------------
 # Helpers internes (identiques à cache_db.py pour cohérence)
@@ -218,7 +223,30 @@ def _parquet_path(category: str, symbol: str) -> Path:
 
 
 def _instruments_path() -> Path:
+    """Ancien fichier unique — conservé pour la migration uniquement.
+
+    Ne plus écrire ici : ce fichier partagé était réécrit en entier à chaque
+    upsert (lire tout / remplacer une ligne / réécrire tout), sous la seule
+    protection d'un `threading.Lock` local au processus. Les scripts *_scan.py
+    et le worker en sous-processus écrivant en parallèle, le dernier écrivain
+    gagnait et les autres symboles disparaissaient : 124 lignes subsistaient
+    pour 1853 symboles présents dans le store de features.
+    """
     return PARQUET_DIR / "instruments" / "instruments.parquet"
+
+
+def _instrument_path(symbol: str) -> Path:
+    """Fichier d'un seul symbole : `instruments/symbol=XXX/part0.parquet`.
+
+    Même partitionnement que les features. Chaque processus n'écrit que son
+    propre fichier, donc plus de collision possible et plus de verrou requis.
+    """
+    return _parquet_path("instruments", symbol)
+
+
+def _instruments_glob() -> str:
+    """Motif de lecture de tous les profils, pour DuckDB."""
+    return str(PARQUET_DIR / "instruments" / "symbol=*" / "part0.parquet")
 
 
 def _fx_rates_daily_path() -> Path:
@@ -439,15 +467,50 @@ def _duckdb_query(sql: str, params: list | None = None) -> pd.DataFrame:
 # Instruments (profils statiques)
 # ---------------------------------------------------------------------------
 
+def _first_trade_date(info: dict) -> Optional[str]:
+    """Convertit firstTradeDateEpochUtc en 'YYYY-MM-DD', ou None."""
+    epoch = info.get("firstTradeDateEpochUtc") or info.get("firstTradeDateMilliseconds")
+    if epoch is None:
+        return None
+    try:
+        valeur = float(epoch)
+    except (TypeError, ValueError):
+        return None
+    # yfinance renvoie tantôt des secondes, tantôt des millisecondes.
+    if valeur > 1e11:
+        valeur /= 1000.0
+    try:
+        return datetime.utcfromtimestamp(valeur).strftime("%Y-%m-%d")
+    except (OverflowError, OSError, ValueError):
+        return None
+
+
 def upsert_instrument(symbol: str, info: dict) -> None:
+    """Écrit le profil statique d'un symbole dans SON PROPRE fichier Parquet.
+
+    Un fichier par symbole (`instruments/symbol=XXX/part0.parquet`), comme les
+    features. Aucune lecture-modification-écriture d'un fichier partagé, donc
+    aucune collision entre processus concurrents.
+    """
     symbol = _normalize_symbol(symbol)
     ensure_market_data_schema()
-    path = _instruments_path()
+    path = _instrument_path(symbol)
+    path.parent.mkdir(parents=True, exist_ok=True)
     now = _utcnow()
     currency = _safe_text(info.get("currency")) or "USD"
     fx_rate_to_usd = _get_rate_to_usd(currency)
     market_cap = _safe_float(info.get("marketCap"))
     enterprise_value = _safe_float(info.get("enterpriseValue"))
+
+    # `first_seen_at` doit survivre aux rafraîchissements : on relit la valeur
+    # existante si le profil est déjà là, sinon la date du jour.
+    first_seen = now
+    if path.exists():
+        ancien = _safe_read_parquet(path)
+        if not ancien.empty and "first_seen_at" in ancien.columns:
+            valeur = ancien.iloc[0].get("first_seen_at")
+            if valeur:
+                first_seen = str(valeur)
 
     new_row = pd.DataFrame([{
         "symbol": symbol,
@@ -467,28 +530,47 @@ def upsert_instrument(symbol: str, info: dict) -> None:
         "market_cap_usd": _to_usd(market_cap, fx_rate_to_usd),
         "enterprise_value": enterprise_value,
         "enterprise_value_usd": _to_usd(enterprise_value, fx_rate_to_usd),
-        "first_seen_at": now,
+        # ── Champs ajoutés ──
+        # Devise de PUBLICATION des comptes, distincte de la devise de
+        # cotation. Un titre coté en HKD peut publier en USD : convertir ses
+        # fondamentaux avec fx_rate_to_usd (dérivé de la cotation) applique
+        # alors une conversion de trop.
+        "financial_currency": _safe_text(info.get("financialCurrency")),
+        # Bêta : lu par le screener Sichere Unternehmen (critère S3), qui
+        # devait jusqu'ici le redemander à yfinance faute d'être stocké.
+        "beta": _safe_float(info.get("beta")),
+        # Flottant réel. shares_outstanding surestime la quantité négociable
+        # des titres détenus par une famille ou un État, ce qui fausse les
+        # critères de liquidité.
+        "float_shares": _safe_float(info.get("floatShares")),
+        # Début de l'historique disponible : permet de savoir si une fenêtre
+        # de backtest est couverte, au lieu de tourner en silence sur trop peu
+        # de points.
+        "first_trade_date": _first_trade_date(info),
+        # Identifiant stable au travers des changements de ticker. yfinance ne
+        # le fournit PAS dans .info : il faudrait un appel séparé (Ticker.isin),
+        # ce qui doublerait le coût en requêtes. La colonne reste donc vide sauf
+        # si un appelant fournit lui-même la valeur.
+        "isin": _safe_text(info.get("isin")),
+        "exchange_timezone": _safe_text(info.get("exchangeTimezoneName")),
+        "first_seen_at": first_seen,
         "last_profile_refresh": now,
         "source": "yfinance",
     }])
 
-    with _INSTRUMENTS_LOCK:
-        if path.exists():
-            existing = _safe_read_parquet(path)
-            existing = existing[existing["symbol"] != symbol] if not existing.empty else pd.DataFrame(columns=new_row.columns)
-            combined = pd.concat([existing, new_row], ignore_index=True)
-        else:
-            combined = new_row
-        pq.write_table(pa.Table.from_pandas(combined, preserve_index=False), str(path))
+    pq.write_table(pa.Table.from_pandas(new_row, preserve_index=False), str(path))
 
 
 def _get_instrument_profile(symbol: str) -> dict:
+    """Profil statique d'un symbole, lu depuis son fichier partitionné."""
     symbol = _normalize_symbol(symbol)
-    path = _instruments_path()
+    path = _instrument_path(symbol)
     if not path.exists():
         return {}
     df = _safe_read_parquet(path)
-    row = df[df["symbol"] == symbol]
+    if df.empty:
+        return {}
+    row = df[df["symbol"] == symbol] if "symbol" in df.columns else df
     if row.empty:
         return {}
     r = row.iloc[0].to_dict()
@@ -1466,26 +1548,220 @@ def get_latest_features(symbols: List[str] | None = None) -> pd.DataFrame:
     return df
 
 
-def get_country_map(symbols: List[str] | None = None) -> dict:
-    """Retourne {symbol: country} depuis le parquet `instruments` (0 requête réseau).
-    Utilisé pour afficher le pays dans les screeners store-based."""
-    path = _instruments_path()
-    if not path.exists():
-        return {}
+def read_instruments(symbols: List[str] | None = None,
+                     columns: List[str] | None = None) -> pd.DataFrame:
+    """Lit les profils d'instruments partitionnés, en UNE requête DuckDB.
+
+    union_by_name=true est indispensable : les fichiers écrits avant l'ajout
+    des colonnes beta / financial_currency / float_shares / first_trade_date /
+    isin / exchange_timezone ne les contiennent pas, et deviennent NULL au lieu
+    de faire échouer la lecture. Aucune migration de schéma n'est donc requise.
+    DataFrame vide si aucun profil n'existe encore.
+    """
+    ensure_market_data_schema()
+    col_clause = "*" if not columns else ", ".join(columns)
+    sql = f"SELECT {col_clause} FROM read_parquet(?, union_by_name=true)"
     try:
-        df = _safe_read_parquet(path, columns=["symbol", "country"])
+        df = _duckdb_query(sql, [_instruments_glob()])
     except Exception:
-        try:
-            df = _safe_read_parquet(path)
-        except Exception:
-            return {}
-    if df.empty or "symbol" not in df.columns or "country" not in df.columns:
-        return {}
-    if symbols:
+        logger.debug("[STORE] read_instruments : aucun profil lisible", exc_info=True)
+        return pd.DataFrame()
+    if symbols and not df.empty and "symbol" in df.columns:
         wanted = {_normalize_symbol(s) for s in symbols}
         df = df[df["symbol"].isin(wanted)]
-    return {str(s): (str(c) if c is not None else None)
+    return df
+
+
+def migrate_instruments_to_partitioned() -> dict:
+    """Éclate l'ancien fichier unique en un fichier par symbole (idempotent).
+
+    Ne supprime pas l'original : il reste comme filet tant que le résultat n'a
+    pas été vérifié. Ne réécrit pas un profil déjà partitionné.
+
+    Sorties:
+        bilan (dict): {migres, deja_presents, source_absente}
+    """
+    source = _instruments_path()
+    if not source.exists():
+        return {"migres": 0, "deja_presents": 0, "source_absente": True}
+
+    df = _safe_read_parquet(source)
+    if df.empty or "symbol" not in df.columns:
+        return {"migres": 0, "deja_presents": 0, "source_absente": True}
+
+    migres = deja = 0
+    for _, ligne in df.iterrows():
+        symbole = _normalize_symbol(str(ligne["symbol"]))
+        cible = _instrument_path(symbole)
+        if cible.exists():
+            deja += 1
+            continue
+        cible.parent.mkdir(parents=True, exist_ok=True)
+        une_ligne = pd.DataFrame([ligne.to_dict()])
+        pq.write_table(pa.Table.from_pandas(une_ligne, preserve_index=False), str(cible))
+        migres += 1
+
+    logger.info("[STORE] migration instruments : %d migrés, %d déjà présents", migres, deja)
+    return {"migres": migres, "deja_presents": deja, "source_absente": False}
+
+
+def missing_instrument_profiles(symbols: Iterable[str], max_age_days: int = 90) -> List[str]:
+    """Symboles sans profil, ou dont le profil est plus vieux que max_age_days.
+
+    Lecture seule, aucune requête réseau. L'ordre d'entrée est conservé pour
+    que le rafraîchissement suive l'ordre d'affichage du screener.
+    """
+    voulus, vus = [], set()
+    for s in symbols or []:
+        n = _normalize_symbol(str(s))
+        if n and n not in vus:
+            vus.add(n)
+            voulus.append(n)
+    if not voulus:
+        return []
+
+    df = read_instruments(voulus, columns=["symbol", "last_profile_refresh"])
+    frais = set()
+    if not df.empty and "symbol" in df.columns:
+        limite = datetime.utcnow() - timedelta(days=max_age_days)
+        for symbole, rafraichi in zip(df["symbol"], df.get("last_profile_refresh", [])):
+            try:
+                if rafraichi and datetime.fromisoformat(str(rafraichi)) >= limite:
+                    frais.add(str(symbole))
+            except (TypeError, ValueError):
+                # Horodatage illisible : on considère le profil comme périmé.
+                continue
+    return [s for s in voulus if s not in frais]
+
+
+def _info_sans_identite(info: dict) -> bool:
+    """Vrai si `info` ne porte aucun nom d'entreprise exploitable.
+
+    yfinance ne lève pas sur un symbole inexistant : il renvoie un dict non vide
+    mais sans identité (parfois avec `exchange` ou `currency`, jamais de nom).
+    Écrire ce dict produisait un profil fantôme dont `name` valait le symbole
+    lui-même, compté ensuite comme profil frais donc jamais corrigé. Un profil
+    sans nom n'est pas un profil : on refuse de l'écrire.
+
+    Deuxième forme observée le 2026-08-03 : sur certains symboles inexistants,
+    yfinance renvoie un pseudo-fonds de l'échange « YHD » dont le nom est un
+    simple nombre (« 164 » pour AABT, « 24564 » pour TTYL). Un nom d'entreprise
+    n'est jamais un nombre nu.
+    """
+    nom = _safe_text(info.get("shortName")) or _safe_text(info.get("longName"))
+    if not nom:
+        return True
+    return nom.strip().replace(" ", "").isdigit()
+
+
+def ensure_instrument_profiles(symbols: Iterable[str],
+                               max_fetch: int = 25,
+                               max_age_days: int = 90) -> dict:
+    """
+    --------------------------------------------------------------------------
+    Objectif:
+        Compléter les profils d'instruments manquants ou périmés, PAR PETITS
+        LOTS. Conçu pour être appelé après l'affichage d'un screener : la liste
+        se complète au fil de l'usage, sans jamais lancer un rattrapage massif.
+
+        Le budget de requêtes yfinance est une contrainte dure du projet. Un
+        rattrapage global des 1735 symboles sans profil coûterait autant de
+        requêtes ; ce plafond par appel est ce qui rend l'opération soutenable.
+
+    Entrees:
+        symbols (Iterable[str]): symboles concernés, dans l'ordre d'affichage
+        max_fetch (int): nombre maximal de requêtes réseau pour CET appel
+        max_age_days (int): au-delà, un profil existant est rafraîchi
+
+    Sorties:
+        bilan (dict): {manquants, recuperes, ignores, echecs}
+    --------------------------------------------------------------------------
+    """
+    manquants = missing_instrument_profiles(symbols, max_age_days=max_age_days)
+    bilan = {"manquants": len(manquants), "recuperes": 0, "ignores": 0, "echecs": 0}
+    if not manquants:
+        return bilan
+
+    # Interrupteur DÉDIÉ à cette fonction. Ne pas se rabattre sur
+    # QSI_CONSENSUS_OFFLINE : ce drapeau a un sens étroit (désactiver les
+    # lookups de consensus) et l'UI desktop le pose systématiquement au
+    # démarrage — s'en servir ici empêchait toute complétion dans
+    # l'application, alors que les autres appels yfinance continuaient.
+    if os.getenv("QSI_DISABLE_PROFILE_FETCH") == "1":
+        bilan["ignores"] = len(manquants)
+        logger.info("[STORE] complétion désactivée : %d profils non récupérés", len(manquants))
+        return bilan
+
+    a_traiter = manquants[:max(0, int(max_fetch))]
+    bilan["ignores"] = len(manquants) - len(a_traiter)
+
+    for symbole in a_traiter:
+        try:
+            info = yf.Ticker(symbole).info or {}
+            if not info or _info_sans_identite(info):
+                bilan["echecs"] += 1
+                continue
+            upsert_instrument(symbole, info)
+            bilan["recuperes"] += 1
+        except Exception as exc:
+            # Un symbole en échec ne doit jamais interrompre les suivants ni
+            # remonter jusqu'à l'interface.
+            bilan["echecs"] += 1
+            logger.warning("[STORE] profil %s non récupéré (%s: %s)",
+                           symbole, type(exc).__name__, exc)
+
+    logger.info("[STORE] profils : %d récupérés, %d reportés, %d échecs (sur %d manquants)",
+                bilan["recuperes"], bilan["ignores"], bilan["echecs"], bilan["manquants"])
+    return bilan
+
+
+def get_country_map(symbols: List[str] | None = None) -> dict:
+    """Retourne {symbol: country} depuis les profils d'instruments (0 requête réseau).
+    Utilisé pour afficher le pays dans les screeners store-based.
+
+    Un symbole absent de ce dictionnaire n'a pas de profil enregistré : la
+    colonne « Pays » affiche alors N/A. C'est le cas nominal pour un symbole
+    jamais analysé ; ensure_instrument_profiles() comble le manque au fil de
+    l'usage.
+    """
+    df = read_instruments(symbols, columns=["symbol", "country"])
+    if df.empty or "symbol" not in df.columns or "country" not in df.columns:
+        return {}
+    return {str(s): (str(c) if c is not None and c == c else None)
             for s, c in zip(df["symbol"], df["country"])}
+
+
+def get_name_map(symbols: List[str] | None = None) -> dict:
+    """Retourne {symbol: nom d'entreprise} depuis les profils (0 requête réseau).
+
+    Alimente la colonne « Nom » de tous les tableaux de l'interface. Même contrat
+    que get_country_map : un symbole sans profil est absent du dictionnaire et
+    s'affiche N/A, puis se remplit au fil des appels de
+    ensure_instrument_profiles(). Le nom long n'est pas retenu : il déborde la
+    largeur de colonne sans rien apprendre de plus que le nom court.
+    """
+    df = read_instruments(symbols, columns=["symbol", "name", "short_name"])
+    if df.empty or "symbol" not in df.columns:
+        return {}
+
+    def _texte(valeur) -> str | None:
+        # valeur == valeur écarte les NaN, qu'un profil ancien laisse dans les
+        # colonnes ajoutées après son écriture (lecture union_by_name).
+        if valeur is None or valeur != valeur:
+            return None
+        texte = str(valeur).strip()
+        return texte or None
+
+    noms = {}
+    for ligne in df.itertuples(index=False):
+        symbole = _texte(getattr(ligne, "symbol", None))
+        if not symbole:
+            continue
+        nom = _texte(getattr(ligne, "short_name", None)) or _texte(getattr(ligne, "name", None))
+        # Un profil dont le nom se réduit au symbole n'apporte rien à la colonne.
+        if nom and nom.upper() != symbole.upper():
+            noms[symbole] = nom
+    return noms
 
 
 # ---------------------------------------------------------------------------

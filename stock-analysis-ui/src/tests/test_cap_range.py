@@ -13,16 +13,21 @@ def test_classify_cap_range_is_importable_from_symbol_manager() -> None:
 
 
 def test_qsi_import_chain_is_intact() -> None:
-    """Verrouille : les 5 noms importés par qsi.py ligne 45-48 se déclarent d'un bloc."""
+    """Verrouille : les 5 noms que qsi importe de symbol_manager restent disponibles."""
+    # qsi importe ces cinq noms d'un seul bloc try/except ImportError. Un seul
+    # nom manquant faisait echouer l'import entier et basculait qsi sur un
+    # repli « methode txt », en perdant silencieusement les quatre autres.
     from qsi import (
         init_symbols_table,
         sync_txt_to_sqlite,
         get_symbols_by_list_type,
         get_symbols_by_sector_and_cap,
-        classify_cap_range as qsi_classify_cap_range
+        classify_cap_range as qsi_classify_cap_range,
     )
-    assert classify_cap_range is not None
-    assert qsi_classify_cap_range is not None
+
+    for fonction in (init_symbols_table, sync_txt_to_sqlite, get_symbols_by_list_type,
+                     get_symbols_by_sector_and_cap, qsi_classify_cap_range):
+        assert callable(fonction)
 
 
 @pytest.mark.parametrize("input_value,expected", [
