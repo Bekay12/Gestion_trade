@@ -13,7 +13,7 @@ from requests.adapters import HTTPAdapter
 from urllib3.util.retry import Retry
 
 CACHE_DIR = Path(os.getenv("DATA_CACHE_DIR", "cache"))
-CACHE_DIR.mkdir(exist_ok=True)
+CACHE_DIR.mkdir(parents=True, exist_ok=True)
 
 
 def _create_session_with_retry(max_retries: int = 3) -> requests.Session:
