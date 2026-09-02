@@ -7,7 +7,6 @@ import pickle
 from pathlib import Path
 from datetime import datetime
 
-import pandas as pd
 import requests
 import yfinance as yf
 from requests.adapters import HTTPAdapter

@@ -1,14 +1,6 @@
 # qsi.py — façade publique ; le code est progressivement migré dans core/.
 # Importez depuis qsi comme avant : aucun appelant n'a besoin de changer.
 
-<<<<<<< HEAD
-# Ce script télécharge les données boursières, calcule les indicateurs techniques et affiche
-
-# Import paresseux pour accélérer le chargement (yfinance ~1.9s)
-# import yfinance as yf  # Chargé à la demande dans download_stock_data
-
-=======
->>>>>>> 978e7c70cfbf4e61452e6f0df73d74f7b56595c5
 # Set non-interactive backend if no GUI app has already configured one
 import matplotlib
 if matplotlib.get_backend().lower() in ('agg', ''):
@@ -22,30 +14,18 @@ import logging
 import warnings
 import json
 from pathlib import Path
-from datetime import datetime, timedelta
+from datetime import datetime
 from typing import List, Dict, Union
-from collections import OrderedDict  # gardé pour compatibilité d'imports existants
-from concurrent.futures import ThreadPoolExecutor
 from core.indicators import calculate_macd  # migré dans core/
-from core.cache import _BoundedCache, DERIV_CACHE, TA_CACHE  # migré dans core/
+from core.cache import _BoundedCache, DERIV_CACHE, TA_CACHE  # noqa: F401  (migré dans core/, ré-exporté : d'autres modules font `from qsi import _BoundedCache`)
 from core.io import save_to_evolutive_csv  # migré dans core/
 import sys
 import os
-import sqlite3
 import yfinance as yf
-<<<<<<< HEAD
-# Use Path for cross-platform compatibility
-from pathlib import Path
 _trading_accel_path = Path(__file__).parent / "trading_c_acceleration"
 if _trading_accel_path.exists():
     sys.path.insert(0, str(_trading_accel_path.parent))
-from trading_c_acceleration.qsi_optimized import backtest_signals, extract_best_parameters, backtest_signals_with_events
-=======
-_trading_accel_path = Path(__file__).parent / "trading_c_acceleration"
-if _trading_accel_path.exists():
-    sys.path.insert(0, str(_trading_accel_path.parent))
-from trading_c_acceleration.qsi_optimized import backtest_signals, backtest_signals_with_events
->>>>>>> 978e7c70cfbf4e61452e6f0df73d74f7b56595c5
+from trading_c_acceleration.qsi_optimized import backtest_signals, backtest_signals_with_events  # noqa: F401  (ré-exporté : api.py fait `from qsi import backtest_signals`)
 
 # Import config et cache utilities
 try:
@@ -59,8 +39,10 @@ except ImportError:
 
 # Import du gestionnaire de symboles
 try:
-    from symbol_manager import (
-        init_symbols_table, sync_txt_to_sqlite, 
+    # noqa sur le bloc : ces noms sont ré-exportés par la façade qsi, et
+    # l'import sert aussi de test de disponibilité de symbol_manager.
+    from symbol_manager import (  # noqa: F401
+        init_symbols_table, sync_txt_to_sqlite,
         get_symbols_by_list_type, get_symbols_by_sector_and_cap,
         classify_cap_range
     )
@@ -97,35 +79,101 @@ BEST_PARAM_EXTRAS: Dict[str, Dict[str, Union[int, float]]] = {}
 PRICE_FEATURE_WINDOW = 15
 PRICE_FEATURE_ACCEL_WINDOW = 15
 
-<<<<<<< HEAD
-# Cache des indicateurs techniques (instantanés scalaires) par symbole et longueur
-# Stocke uniquement les dernières valeurs nécessaires au scoring pour éviter recomputations
-# Clé: (symbol, len(prices)) → dict avec clés: last_close, last_ema20, last_ema50, last_ema200,
-# last_rsi, prev_rsi, delta_rsi, last_macd, prev_macd, last_signal, prev_signal,
-# variation_30j, variation_180j, volume_mean, volume_std, current_volume,
-# last_bb_percent, last_adx, last_ichimoku_base, last_ichimoku_conversion
-TA_CACHE: Dict[tuple, Dict[str, float]] = {}
+class _LectureParametresEchouee(Exception):
+    """
+    Signale un echec reel de lecture de la base (verrou SQLite, fichier
+    corrompu, permission refusee), distinct d'une table absente ou vide qui
+    est un etat legitime et memoisable. Leve uniquement par
+    _extract_best_parameters_sans_cache ; extract_best_parameters la
+    convertit en dict vide sans la memoiser, pour que l'appel suivant
+    reessaie au lieu de figer un {} perimee derriere l'etat de fichier
+    courant.
+    """
 
-=======
->>>>>>> 978e7c70cfbf4e61452e6f0df73d74f7b56595c5
+
+# Memoisation de la lecture des meilleurs parametres. get_trading_signal
+# l'appelle une fois PAR BARRE, soit 1160 requetes SQLite par backtest pour
+# 14 % du temps, alors que la reponse ne change pas pendant un run.
+# La cle porte l'etat du fichier, donc une ecriture en base invalide le cache
+# d'elle-meme : aucune portee explicite a gerer, et le comportement reste
+# correct si un autre processus ecrit pendant un run.
+_BEST_PARAMS_CACHE = _BoundedCache(maxsize=8)
+
+
 def extract_best_parameters(db_path: str = None) -> Dict[str, Tuple[Tuple[float, ...], Tuple[float, ...], Tuple[float, float]]]:
     """
-    Extrait les meilleurs coefficients et seuils pour chaque secteur à partir de SQLite.
-    Sélectionne la ligne la plus récente (par Timestamp) pour chaque secteur.
+    --------------------------------------------------------------------------
+    Objectif:
+        Rendre les meilleurs coefficients et seuils par secteur, en memoisant
+        la lecture tant que le fichier de base n'a pas change.
 
-    Args:
-        db_path (str): Chemin vers la base SQLite contenant l'historique d'optimisation.
+    Inputs:
+        db_path (str | None): chemin de la base, defaut config.OPTIMIZATION_DB_PATH
 
-    Returns:
-        Dict[str, Tuple[Tuple[float, ...], Tuple[float, ...], Tuple[float, float]]]: 
-        Dictionnaire avec pour chaque secteur: (coefficients_8, thresholds_8, globals_2, gain)
+    Outputs:
+        parametres (Dict): {secteur: (coeffs_8, seuils_8, globaux_2, gain, extras)}
+        Le dictionnaire est PARTAGE entre appelants : le lire, ne pas le muter.
+        Un echec de lecture (verrou, corruption) rend aussi {}, mais n'est
+        JAMAIS memoise : l'appel suivant relit la base. BEST_PARAM_EXTRAS,
+        lui, n'est reconstruit que sur une vraie lecture ; un hit de cache le
+        laisse tel quel. Sans effet tant qu'un seul chemin de base est
+        utilise par process (le cas actuel), a surveiller si cela change.
+    --------------------------------------------------------------------------
     """
     if db_path is None:
         from config import OPTIMIZATION_DB_PATH
         db_path = OPTIMIZATION_DB_PATH
+
+    cle = None
+    try:
+        etat = os.stat(db_path)
+        cle = (str(db_path), etat.st_mtime_ns, etat.st_size)
+    except OSError:
+        # Base absente ou illisible : on ne memoise pas, la fonction interne
+        # journalise et rend un dict vide.
+        cle = None
+
+    if cle is not None:
+        connu = _BEST_PARAMS_CACHE.get(cle)
+        if connu is not None:
+            return connu
+
+    try:
+        resultat = _extract_best_parameters_sans_cache(db_path)
+    except _LectureParametresEchouee:
+        # Echec reel (verrou, corruption, permission) : ne pas memoiser sous
+        # cle courante, sans quoi ce {} de circonstance resterait servi
+        # jusqu'a la prochaine ecriture qui change mtime/taille.
+        return {}
+
+    if cle is not None:
+        _BEST_PARAMS_CACHE[cle] = resultat
+    return resultat
+
+
+def _extract_best_parameters_sans_cache(db_path: str) -> Dict[str, Tuple[Tuple[float, ...], Tuple[float, ...], Tuple[float, float]]]:
+    """
+    --------------------------------------------------------------------------
+    Objectif:
+        Lire reellement la base. Ne jamais appeler directement : passer par
+        extract_best_parameters(), qui memoise.
+
+    Inputs:
+        db_path (str): chemin de la base, deja resolu
+
+    Outputs:
+        parametres (Dict): {secteur: (coeffs_8, seuils_8, globaux_2, gain, extras)}
+
+    Leve:
+        _LectureParametresEchouee: en cas d'echec reel de lecture (verrou,
+        corruption, permission). Une table absente ou une base sans lignes
+        reste un dict vide RENDU normalement, pas une exception : c'est un
+        etat legitime, memoisable par l'appelant.
+    --------------------------------------------------------------------------
+    """
     try:
         import sqlite3
-        
+
         conn = sqlite3.connect(db_path)
         conn.row_factory = sqlite3.Row  # Accès par colonne
         cursor = conn.cursor()
@@ -269,15 +317,40 @@ def extract_best_parameters(db_path: str = None) -> Dict[str, Tuple[Tuple[float,
         
         return result
 
-    except FileNotFoundError:
+    except FileNotFoundError as e:
         print(f"🚫 Base de données {db_path} non trouvée")
-        print(f"   💡 Exécute: python migration_csv_to_sqlite.py")
-        return {}
+        print("   💡 Exécute: python migration_csv_to_sqlite.py")
+        raise _LectureParametresEchouee(str(e)) from e
     except Exception as e:
         print(f"⚠️ Erreur lors de l'extraction depuis SQLite: {e}")
         import traceback
         traceback.print_exc()
-        return {}
+        raise _LectureParametresEchouee(str(e)) from e
+
+def _derniere_volatilite(prices) -> float:
+    """
+    --------------------------------------------------------------------------
+    Objectif:
+        Rendre la volatilite au dernier point, seule valeur consommee par le
+        score. Elle ne depend que des prix, jamais des coefficients optimises :
+        elle appartient donc a l'instantane TA_CACHE, au meme titre que les
+        variations et les moyennes de volume.
+
+    Inputs:
+        prices (pd.Series): serie des cloture
+
+    Outputs:
+        volatilite (float): ecart-type sur 20 barres des rendements, ou 0.05
+            si la serie ne permet pas de la calculer. Un NaN est rendu tel
+            quel : `NaN > 0.05` etant faux, il laisse le multiplicateur m4
+            inchange, comportement d'origine a preserver.
+    --------------------------------------------------------------------------
+    """
+    serie = prices.pct_change().rolling(20).std()
+    if isinstance(serie, pd.Series) and not serie.empty:
+        return float(serie.iloc[-1])
+    return 0.05
+
 
 def get_trading_signal(prices, volumes, domaine, domain_coeffs=None, domain_thresholds=None,
                       variation_seuil=-20, volume_seuil=100000, return_derivatives: bool = False, symbol: str = None,
@@ -335,8 +408,15 @@ def get_trading_signal(prices, volumes, domaine, domain_coeffs=None, domain_thre
     snap = TA_CACHE.get(cache_key) if cache_key is not None else None
     if snap is not None:
         last_close = float(snap.get('last_close', float(prices.iloc[-1])))
-        last_ema20 = float(snap.get('last_ema20', float(prices.ewm(span=20, adjust=False).mean().iloc[-1])))
-        last_ema50 = float(snap.get('last_ema50', float(prices.ewm(span=50, adjust=False).mean().iloc[-1])))
+        # `snap.get(cle, defaut)` evalue `defaut` AVANT d'appeler get() : ecrites
+        # en argument par defaut, ces deux EMA etaient donc recalculees sur toute
+        # la tranche a chaque barre, y compris quand le cache repondait. Soit
+        # 2 320 calculs inutiles par backtest de 1 160 barres. Le repli reste
+        # possible, mais il n'est plus paye que s'il sert.
+        _ema20 = snap.get('last_ema20')
+        _ema50 = snap.get('last_ema50')
+        last_ema20 = float(_ema20) if _ema20 is not None else float(prices.ewm(span=20, adjust=False).mean().iloc[-1])
+        last_ema50 = float(_ema50) if _ema50 is not None else float(prices.ewm(span=50, adjust=False).mean().iloc[-1])
         last_ema200 = float(snap.get('last_ema200', last_ema50))
         last_rsi = float(snap.get('last_rsi', 50.0))
         prev_rsi = float(snap.get('prev_rsi', last_rsi))
@@ -358,6 +438,8 @@ def get_trading_signal(prices, volumes, domaine, domain_coeffs=None, domain_thre
         last_adx = float(snap.get('last_adx', 0.0))
         last_ichimoku_base = float(snap.get('last_ichimoku_base', last_close))
         last_ichimoku_conversion = float(snap.get('last_ichimoku_conversion', last_close))
+        _vol = snap.get('last_volatility')
+        last_volatility = float(_vol) if _vol is not None else _derniere_volatilite(prices)
     else:
         # Calcul initial puis mise en cache
         macd, signal_line = calculate_macd(prices)
@@ -425,6 +507,7 @@ def get_trading_signal(prices, volumes, domaine, domain_coeffs=None, domain_thre
         ichimoku_conversion = ichimoku.ichimoku_conversion_line()
         last_ichimoku_base = float(ichimoku_base.iloc[-1]) if len(ichimoku_base) > 0 else last_close
         last_ichimoku_conversion = float(ichimoku_conversion.iloc[-1]) if len(ichimoku_conversion) > 0 else last_close
+        last_volatility = _derniere_volatilite(prices)
 
         # Mise en cache
         if cache_key is not None:
@@ -453,6 +536,7 @@ def get_trading_signal(prices, volumes, domaine, domain_coeffs=None, domain_thre
                 'last_adx': last_adx,
                 'last_ichimoku_base': last_ichimoku_base,
                 'last_ichimoku_conversion': last_ichimoku_conversion,
+                'last_volatility': last_volatility,
             }
 
     volume_mean_harmonized = float(volume_mean_usd)
@@ -482,21 +566,18 @@ def get_trading_signal(prices, volumes, domaine, domain_coeffs=None, domain_thre
     strong_downtrend = (last_close < last_ichimoku_base) and (last_close < last_ichimoku_conversion)
     adx_strong_trend = last_adx > 25  # Tendance forte
 
-    # Momentum 10 jours
-    momentum_10 = prices.pct_change(10)
-
-    # Volatilité
-    volatility = prices.pct_change().rolling(20).std()
-
-    # CORRECTION 3: Conversion de la volatilité en scalaire
-    if isinstance(volatility, pd.Series) and not volatility.empty:
-        volatility = float(volatility.iloc[-1])
-    else:
-        volatility = 0.05
-
-    # Ratio de Sharpe à court terme
-    returns = prices.pct_change()
-    sharpe = returns.mean() / returns.std() * np.sqrt(252) if returns.std() > 0 else 0
+    # La volatilite vient de l'instantane TA_CACHE (voir _derniere_volatilite).
+    # Elle ne depend que des prix, donc elle se cache comme les autres mesures
+    # techniques, alors qu'elle etait recalculee sur toute la tranche a chaque
+    # barre, cache chaud ou non.
+    #
+    # Deux autres grandeurs etaient calculees ici et n'etaient lues nulle part :
+    # `momentum_10` (prices.pct_change(10)) et `sharpe`, avec son intermediaire
+    # `returns` (prices.pct_change(), puis .std() evalue deux fois). Elles sont
+    # supprimees. Ces trois pct_change sur la tranche complete, une fois par
+    # barre, formaient le O(n^2) restant : mesures au profil, 3 480 appels pour
+    # 57 % du temps d'une evaluation a cache chaud.
+    volatility = last_volatility
 
     score = 0
     # a3 (RSI cross mid) est gelé à 0.0 pour éviter l'optimisation d'une feature redondante
@@ -648,7 +729,6 @@ def get_trading_signal(prices, volumes, domaine, domain_coeffs=None, domain_thre
         extras = price_extras
         if extras is None:
             try:
-                from typing import Any
                 extras = BEST_PARAM_EXTRAS.get(selected_key or domaine, {})
             except Exception:
                 extras = {}
@@ -1330,8 +1410,7 @@ def compute_financial_derivatives(symbol: str, lookback_quarters: int = 4) -> di
 # ===================================================================
 # SEGMENTATION PAR CAPITALISATION
 # ===================================================================
-# Note: classify_cap_range() est maintenant dans symbol_manager.py
-# Les appels à classify_cap_range_from_market_cap() sont obsoletes; utiliser classify_cap_range() a la place
+# `classify_cap_range()` est défini dans `symbol_manager.py`
 
 # ✅ Cache mémoire pour éviter les requêtes DB répétées
 _SYMBOL_INFO_CACHE = {}
@@ -1345,11 +1424,7 @@ def get_symbol_info_from_db(symbol: str) -> dict:
     if symbol in _SYMBOL_INFO_CACHE:
         return _SYMBOL_INFO_CACHE[symbol]
     
-<<<<<<< HEAD
-    result = {'sector': None, 'cap_range': 'Unknown', 'market_cap_b': 0.0}
-=======
     result = {'sector': None, 'cap_range': 'Unknown', 'market_cap_b': 0.0, 'currency': 'USD'}
->>>>>>> 978e7c70cfbf4e61452e6f0df73d74f7b56595c5
     try:
         import sqlite3
         from config import DB_PATH
@@ -1357,14 +1432,6 @@ def get_symbol_info_from_db(symbol: str) -> dict:
             conn = sqlite3.connect(DB_PATH)
             conn.row_factory = sqlite3.Row
             cursor = conn.cursor()
-<<<<<<< HEAD
-            cursor.execute("""
-                SELECT sector, market_cap_range, market_cap_value 
-                FROM symbols 
-                WHERE symbol = ? AND is_active = 1
-                LIMIT 1
-            """, (symbol,))
-=======
             try:
                 cursor.execute("""
                     SELECT sector, market_cap_range, market_cap_value, currency
@@ -1379,18 +1446,14 @@ def get_symbol_info_from_db(symbol: str) -> dict:
                     WHERE symbol = ? AND is_active = 1
                     LIMIT 1
                 """, (symbol,))
->>>>>>> 978e7c70cfbf4e61452e6f0df73d74f7b56595c5
             row = cursor.fetchone()
             conn.close()
             if row:
                 result['sector'] = row['sector'] if row['sector'] else None
                 result['cap_range'] = row['market_cap_range'] if row['market_cap_range'] else 'Unknown'
                 result['market_cap_b'] = float(row['market_cap_value']) if row['market_cap_value'] else 0.0
-<<<<<<< HEAD
-=======
                 if 'currency' in row.keys():
                     result['currency'] = str(row['currency'] or 'USD').upper()
->>>>>>> 978e7c70cfbf4e61452e6f0df73d74f7b56595c5
     except Exception:
         pass
     
@@ -1398,11 +1461,7 @@ def get_symbol_info_from_db(symbol: str) -> dict:
     return result
 
 
-<<<<<<< HEAD
-def update_symbol_info_in_db(symbol: str, sector: str = None, cap_range: str = None, market_cap_b: float = None):
-=======
 def update_symbol_info_in_db(symbol: str, sector: str = None, cap_range: str = None, market_cap_b: float = None, currency: str = None):
->>>>>>> 978e7c70cfbf4e61452e6f0df73d74f7b56595c5
     """Met à jour sector/cap_range/market_cap dans stock_analysis.db après récupération yfinance.
     
     Aussi actualise le cache mémoire.
@@ -1415,8 +1474,6 @@ def update_symbol_info_in_db(symbol: str, sector: str = None, cap_range: str = N
         
         conn = sqlite3.connect(DB_PATH)
         cursor = conn.cursor()
-<<<<<<< HEAD
-=======
 
         inferred_cap_range = cap_range
         try:
@@ -1424,7 +1481,6 @@ def update_symbol_info_in_db(symbol: str, sector: str = None, cap_range: str = N
                 inferred_cap_range = classify_cap_range(float(market_cap_b))
         except Exception:
             inferred_cap_range = cap_range
->>>>>>> 978e7c70cfbf4e61452e6f0df73d74f7b56595c5
         
         # Vérifier si le symbole existe
         cursor.execute("SELECT id FROM symbols WHERE symbol = ?", (symbol,))
@@ -1437,14 +1493,6 @@ def update_symbol_info_in_db(symbol: str, sector: str = None, cap_range: str = N
             if sector:
                 updates.append("sector = ?")
                 params.append(sector)
-<<<<<<< HEAD
-            if cap_range and cap_range != 'Unknown':
-                updates.append("market_cap_range = ?")
-                params.append(cap_range)
-            if market_cap_b and market_cap_b > 0:
-                updates.append("market_cap_value = ?")
-                params.append(market_cap_b)
-=======
             if inferred_cap_range and inferred_cap_range != 'Unknown':
                 updates.append("market_cap_range = ?")
                 params.append(inferred_cap_range)
@@ -1454,7 +1502,6 @@ def update_symbol_info_in_db(symbol: str, sector: str = None, cap_range: str = N
             if currency:
                 updates.append("currency = ?")
                 params.append(str(currency).upper())
->>>>>>> 978e7c70cfbf4e61452e6f0df73d74f7b56595c5
             if updates:
                 updates.append("last_checked = datetime('now')")
                 params.append(symbol)
@@ -1462,15 +1509,9 @@ def update_symbol_info_in_db(symbol: str, sector: str = None, cap_range: str = N
         else:
             # Insérer nouveau symbole
             cursor.execute("""
-<<<<<<< HEAD
-                INSERT INTO symbols (symbol, sector, market_cap_range, market_cap_value, list_type, is_active)
-                VALUES (?, ?, ?, ?, 'popular', 1)
-            """, (symbol, sector, cap_range, market_cap_b or 0.0))
-=======
                 INSERT INTO symbols (symbol, sector, market_cap_range, market_cap_value, currency, is_active)
                 VALUES (?, ?, ?, ?, ?, 1)
             """, (symbol, sector, inferred_cap_range, market_cap_b or 0.0, str(currency or 'USD').upper()))
->>>>>>> 978e7c70cfbf4e61452e6f0df73d74f7b56595c5
         
         conn.commit()
         conn.close()
@@ -1478,14 +1519,9 @@ def update_symbol_info_in_db(symbol: str, sector: str = None, cap_range: str = N
         # Mettre à jour le cache mémoire
         _SYMBOL_INFO_CACHE[symbol] = {
             'sector': sector or _SYMBOL_INFO_CACHE.get(symbol, {}).get('sector'),
-<<<<<<< HEAD
-            'cap_range': cap_range or _SYMBOL_INFO_CACHE.get(symbol, {}).get('cap_range', 'Unknown'),
-            'market_cap_b': market_cap_b or _SYMBOL_INFO_CACHE.get(symbol, {}).get('market_cap_b', 0.0)
-=======
             'cap_range': inferred_cap_range or _SYMBOL_INFO_CACHE.get(symbol, {}).get('cap_range', 'Unknown'),
             'market_cap_b': market_cap_b or _SYMBOL_INFO_CACHE.get(symbol, {}).get('market_cap_b', 0.0),
             'currency': str(currency or _SYMBOL_INFO_CACHE.get(symbol, {}).get('currency', 'USD')).upper(),
->>>>>>> 978e7c70cfbf4e61452e6f0df73d74f7b56595c5
         }
     except Exception:
         pass
@@ -1505,29 +1541,6 @@ def get_cap_range_for_symbol(symbol: str) -> str:
     db_info = get_symbol_info_from_db(symbol)
     if db_info['cap_range'] and db_info['cap_range'] != 'Unknown':
         return db_info['cap_range']
-<<<<<<< HEAD
-    
-    # Étape 2️⃣: Essayer le cache pickle
-    try:
-        if get_pickle_cache is not None:
-            d = get_pickle_cache(symbol, 'financial', ttl_hours=24*365)
-            if d is not None and isinstance(d, dict):
-                mc_b = float(d.get('market_cap_val', 0.0) or 0.0)
-                if mc_b > 0:
-                    try:
-                        from symbol_manager import classify_cap_range
-                        result = classify_cap_range(mc_b)
-                        if result and result != 'Unknown':
-                            return result
-                    except Exception:
-                        if mc_b < 2.0:
-                            return 'Small'
-                        if mc_b < 10.0:
-                            return 'Mid'
-                        if mc_b < 200.0:
-                            return 'Large'
-                        return 'Mega'
-=======
 
     # Si la market cap est connue en DB, reconstruire la tranche directement.
     try:
@@ -1584,7 +1597,6 @@ def get_cap_range_for_symbol(symbol: str) -> str:
                 except Exception:
                     pass
                 return result
->>>>>>> 978e7c70cfbf4e61452e6f0df73d74f7b56595c5
     except Exception:
         pass
     
@@ -2051,7 +2063,7 @@ def get_symbol_classification(symbols: List[str]) -> Dict:
     return {
         "strategy": "context_fallback",
         "max_age_hours": fallback_age,
-        "source": f"contexte (nouveaux symboles)",
+        "source": "contexte (nouveaux symboles)",
         "new_symbols": new_symbols,
         "total_symbols": len(clean_symbols),
         "known_symbols": 0
@@ -2081,7 +2093,7 @@ def log_new_symbols(new_symbols: set, context: str = "unknown"):
             # print(f"🆕 {len(new_symbols)} nouveaux symboles (voir cache_logs/nouveaux_symboles.log)")
             pass
             
-    except Exception as e:
+    except Exception:
         # print(f"⚠️ Impossible de logger: {e}")
         pass
 
@@ -2347,11 +2359,11 @@ def download_stock_data(symbols: List[str], period: str) -> Dict[str, Dict[str, 
                                             'Currency': str(clean_data['Currency'].iloc[-1]) if 'Currency' in clean_data.columns and len(clean_data) else 'USD',
                                             'FxRateToUSD': _safe_float(clean_data['FxRateToUSD'].iloc[-1], 1.0) if 'FxRateToUSD' in clean_data.columns and len(clean_data) else 1.0,
                                         }
-                    except Exception as e:
+                    except Exception:
                         # print(f"⚠️ Erreur traitement {symbol}: {e}")
                         pass
                 
-            except Exception as e:
+            except Exception:
                 # print(f"🚨 Erreur batch: {e}")
                 
                 # Fallback: téléchargements individuels
@@ -2373,7 +2385,7 @@ def download_stock_data(symbols: List[str], period: str) -> Dict[str, Dict[str, 
                                     'Currency': str(clean_data['Currency'].iloc[-1]) if 'Currency' in clean_data.columns and len(clean_data) else 'USD',
                                     'FxRateToUSD': _safe_float(clean_data['FxRateToUSD'].iloc[-1], 1.0) if 'FxRateToUSD' in clean_data.columns and len(clean_data) else 1.0,
                                 }
-                    except Exception as e2:
+                    except Exception:
                         # print(f"⚠️ Fallback échoué {symbol}: {e2}")
                         pass
     
@@ -2408,9 +2420,6 @@ def auto_register_analyzed_symbols(symbols: List[str], list_type: str = 'popular
     """
     try:
         from symbol_manager import init_symbols_table, auto_add_to_popular
-        from symbol_manager import sync_txt_to_sqlite
-        import sqlite3
-        from config import DB_PATH
         
         if not symbols:
             return
@@ -2423,7 +2432,7 @@ def auto_register_analyzed_symbols(symbols: List[str], list_type: str = 'popular
         if added > 0:
             print(f"🔄 {added} nouveaux symboles auto-enregistrés dans popular")
             
-    except Exception as e:
+    except Exception:
         # Silencieux - ne pas bloquer l'analyse si l'enregistrement échoue
         pass
 
@@ -2763,12 +2772,8 @@ def analyse_signaux_populaires(
     period="12mo", afficher_graphiques=True,
     chunk_size=20, verbose=True,
     save_csv=True, plot_all=False,
-<<<<<<< HEAD
-    max_workers=5, taux_reussite_min=30
-=======
     max_workers=5, taux_reussite_min=30,
     min_holding_days=7,
->>>>>>> 978e7c70cfbf4e61452e6f0df73d74f7b56595c5
 ):
     """
     Analyse les signaux pour les actions populaires, affiche les résultats, effectue le backtest,
@@ -2778,10 +2783,7 @@ def analyse_signaux_populaires(
     Args:
         max_workers: Nombre de threads pour analyse parallèle (défaut: 4)
         taux_reussite_min: Seuil minimum de fiabilité pour l'évaluation filtrée (défaut: 30)
-<<<<<<< HEAD
-=======
         min_holding_days: Durée minimale de détention en jours actifs (défaut: 7)
->>>>>>> 978e7c70cfbf4e61452e6f0df73d74f7b56595c5
     """
     import matplotlib.pyplot as plt
     from concurrent.futures import ThreadPoolExecutor, as_completed
@@ -2810,58 +2812,6 @@ def analyse_signaux_populaires(
             if len(prices) < 50:
                 return None
 
-<<<<<<< HEAD
-            # Récupération du secteur et cap_range depuis la DB d'abord (rapide)
-            db_info = get_symbol_info_from_db(symbol)
-            domaine = db_info['sector'] if db_info['sector'] else None
-            cap_range = db_info['cap_range']
-            
-            # Si la DB n'a pas le secteur, fallback yfinance ou cache
-            if not domaine:
-                try:
-                    if OFFLINE_MODE:
-                        if get_pickle_cache is not None:
-                            fin_cache = get_pickle_cache(symbol, 'financial', ttl_hours=24*365)
-                            domaine = fin_cache.get('sector', 'Inconnu') if fin_cache else "Inconnu"
-                        else:
-                            domaine = "Inconnu"
-                    else:
-                        info = yf.Ticker(symbol).info
-                        domaine = info.get("sector", "Inconnu")
-                        # Sauvegarder en DB pour les prochaines fois
-                        mc_raw = info.get('marketCap')
-                        mc_b = float(mc_raw) / 1e9 if mc_raw else 0.0
-                        if mc_b > 0 and (cap_range == 'Unknown' or not cap_range):
-                            cap_range = classify_cap_range(mc_b)
-                        update_symbol_info_in_db(symbol, sector=domaine, cap_range=cap_range, market_cap_b=mc_b)
-                except Exception:
-                    domaine = "Inconnu"
-            
-            # Recherche de la clé de paramètres optimisés
-            selected_key = None
-            if cap_range and cap_range != "Unknown":
-                comp_key = f"{domaine}_{cap_range}"
-                if comp_key in best_params:
-                    selected_key = comp_key
-            if not selected_key and domaine in best_params:
-                selected_key = domaine
-            
-            # ✅ Extraire les seuils globaux optimisés depuis best_params
-            seuil_achat_opt = None
-            seuil_vente_opt = None
-            if selected_key and selected_key in best_params:
-                params = best_params[selected_key]
-                if len(params) > 2 and params[2]:
-                    globals_th = params[2]
-                    if isinstance(globals_th, (tuple, list)) and len(globals_th) >= 2:
-                        seuil_achat_opt = float(globals_th[0])
-                        seuil_vente_opt = float(globals_th[1])
-
-            # 🔧 Récupérer les extras depuis les paramètres
-            extras_to_use = None
-            if selected_key and selected_key in best_params and len(best_params[selected_key]) > 4:
-                extras_to_use = best_params[selected_key][4]
-=======
             # Résoudre le contexte exact une seule fois, puis l'utiliser pour le score et les dérivées
             scoring_context = resolve_symbol_scoring_context(symbol, best_params=best_params)
             domaine = scoring_context['domaine']
@@ -2870,7 +2820,6 @@ def analyse_signaux_populaires(
             seuil_achat_opt = scoring_context['seuil_achat']
             seuil_vente_opt = scoring_context['seuil_vente']
             extras_to_use = scoring_context['price_extras']
->>>>>>> 978e7c70cfbf4e61452e6f0df73d74f7b56595c5
             
             # Récupération du signal et des dérivés avec seuils globaux optimisés + extras
             signal, last_price, trend, last_rsi, volume_mean, score, derivatives = get_trading_signal(
@@ -2889,8 +2838,6 @@ def analyse_signaux_populaires(
                         comp_key = f"{domaine}_{cap_range}"
                         if comp_key in best_params:
                             selected_key = comp_key
-<<<<<<< HEAD
-=======
 
             # ✅ Backfill DB: persister secteur/cap/market_cap récupérés par yfinance
             # pour que les analyses futures n'aient plus 'Inconnu'/'Unknown'
@@ -2920,7 +2867,6 @@ def analyse_signaux_populaires(
                     update_symbol_info_in_db(symbol, sector=_db_sector, cap_range=_db_cap, market_cap_b=_db_mc)
                 except Exception:
                     pass
->>>>>>> 978e7c70cfbf4e61452e6f0df73d74f7b56595c5
             
             # 🔍 Debug: afficher le résultat pour comprendre le filtrage
             if verbose and signal == "NEUTRE":
@@ -2935,7 +2881,7 @@ def analyse_signaux_populaires(
                     print(f"      📊 Paramètres base: coeffs={coeffs}")
                     print(f"         seuils={thresholds}, globaux={globals_th}")
                     if extras and isinstance(extras, dict):
-                        print(f"      ✨ Features supplémentaires:")
+                        print("      ✨ Features supplémentaires:")
                         for key, val in extras.items():
                             print(f"         {key}: {val}")
                     elif extras:
@@ -3148,6 +3094,16 @@ def analyse_signaux_populaires(
             if verbose:
                 print(f"{s['Symbole']:<8} : Erreur backtest ({e})")
 
+    # Frontiere naturelle de liberation du cache d'instantanes techniques : le
+    # lot de backtests est termine, aucune de ses entrees ne resservira (la cle
+    # porte le nom du symbole). Sans ce vidage, une session graphique qui
+    # enchaine les analyses immobilise jusqu'a ~196 Mo pour toute la duree du
+    # process. Voir core/cache.py, section « CYCLE DE VIE REEL ».
+    TA_CACHE.clear()
+    # Meme frontiere, meme raison : DERIV_CACHE porte lui aussi le symbole dans
+    # sa cle et suit desormais le meme plafond.
+    DERIV_CACHE.clear()
+
     # 🔧 Dédupliquer par symbole (garder le premier = celui avec le meilleur taux)
     seen_symbols = set()
     backtest_results_dedupe = []
@@ -3177,7 +3133,7 @@ def analyse_signaux_populaires(
     if total_trades > 0:
         taux_global = total_gagnants / total_trades * 100
         print("\n" + "="*115)
-        print(f"🌍 Résultat global :")
+        print("🌍 Résultat global :")
         print(f" - Taux de réussite = {taux_global:.1f}%")
         print(f" - Nombre de trades = {total_trades}")
         print(f" - Total investi réel = {total_investi_reel:.2f} $ (50 $ par action analysée)")
@@ -3384,7 +3340,7 @@ def analyse_signaux_populaires(
         # Sauvegarde spéciale pour vos symboles personnels
         mes_signaux_valides = [s for s in signaux_valides if s['Symbole'] in mes_symbols]
         if mes_signaux_valides:
-            special_filename = f"mes_signaux_fiables_.csv"
+            special_filename = "mes_signaux_fiables_.csv"
             if verbose:
                 print(f"💠 Sauvegarde de {len(mes_signaux_valides)} signaux personnels fiables dans {special_filename}")
             save_to_evolutive_csv(mes_signaux_valides, special_filename)

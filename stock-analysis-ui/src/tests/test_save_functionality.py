@@ -134,7 +134,7 @@ def test_save_functionality():
         if results:
             print(f"  ✅ Requête d'extraction fonctionne ({len(results)} secteurs)")
         else:
-            print(f"  ❌ Requête d'extraction échouée")
+            print("  ❌ Requête d'extraction échouée")
             all_present = False
         
         conn.close()

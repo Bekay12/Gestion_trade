@@ -1,4 +1,0 @@
-TEST_A
-TEST_B
-TEST_C
-TEST_D

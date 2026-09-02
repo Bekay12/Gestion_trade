@@ -34,7 +34,10 @@ Random_List= [
     
 ]
 
-p_Ticker = [ "DDD","BLNK","APD","AG","GMAB","NTES","ZS","HTCO","FABC","BLNK","ERO","HBM","CMCL","ADAM","ANIP","TRVG"]
+p_Ticker = [  "AGEN", "DUOL", "TIGO", "ERO", "AMZn", "CRDO", "LITE", "VRT", "CLS", "AMD", "ARM",
+             "QCOM", "ORCL", "SMCI", "AMSC", "6503.T", "6969.T", "6962.T", "BE", "FCEL", "PLUG", 
+             "BLDP", "NEE", "RKLB", "ASTS", "LUNR", "PL", "SPIR", "KRMN", "GHM", "IREN", "APLD"
+             ]
 TICKERS =  p_Ticker
 # ─────────────────────────────────────────────────────────────
 # CONDITION 1 — Croissance structurelle du CA (>20% YoY)

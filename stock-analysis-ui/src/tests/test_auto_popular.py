@@ -8,7 +8,6 @@ from symbol_manager import (
     init_symbols_table,
     sync_txt_to_sqlite,
     get_symbols_by_list_type,
-    auto_add_to_popular,
     sync_all_to_popular,
     DB_PATH
 )

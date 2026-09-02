@@ -16,17 +16,14 @@ Usage :
 """
 
 import argparse
-import asyncio
 import csv
 import json
 import math
-import os
 import time
 from datetime import datetime, timezone
 from pathlib import Path
 from zoneinfo import ZoneInfo
 
-import aiohttp
 import feedparser
 import requests
 import yfinance as yf

@@ -19,8 +19,17 @@ def main():
     args_file = sys.argv[1]
     result_file = sys.argv[2]
 
+    # FRONTIERE DE SECURITE — desérialisation pickle.
+    # Sûr ici, et uniquement ici : args_file est créé par ui/workers.py via
+    # tempfile.mkstemp(), donc en mode 0600 sous un nom imprévisible, écrit par
+    # le processus parent, puis lu par ce processus enfant qu'il a lui-même
+    # lancé. Le contenu n'a aucune origine externe : ni réseau, ni entrée
+    # utilisateur, ni fichier du dépôt.
+    # Ne jamais élargir ce chemin à un fichier reçu, téléchargé ou dont le nom
+    # vient d'un argument utilisateur : pickle.load() exécute du code arbitraire
+    # à la désérialisation. Pour un tel besoin, passer à JSON.
     with open(args_file, "rb") as f:
-        args = pickle.load(f)
+        args = pickle.load(f)  # noqa: S301  (voir la note de frontière ci-dessus)
 
     # Setup import paths (same as main_window.py's PROJECT_SRC)
     src_dir = os.path.dirname(os.path.abspath(__file__))

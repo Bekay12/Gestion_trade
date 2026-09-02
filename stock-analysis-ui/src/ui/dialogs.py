@@ -16,15 +16,21 @@ class ScreenerResultsDialog(QDialog):
     cocher un sous-ensemble, puis injecter uniquement sa sélection.
     """
 
+    # Au-delà, un nom d'entreprise est tronqué à l'affichage (texte complet en
+    # infobulle) : « Taiwan Semiconductor Manufacturing Company Limited » étirait
+    # la colonne au point de pousser les colonnes chiffrées hors de la fenêtre.
+    LONGUEUR_NOM_MAX = 32
+
     def __init__(self, title, headers, rows, parent=None, symbol_col=0, preselect=True):
         super().__init__(parent)
         self.setWindowTitle(title)
         self.setModal(True)
-        self.resize(580, 500)
+        self.resize(760, 500)
         # Une colonne « # » (rang) est préfixée pour porter l'ordre du screener :
         # le symbole de l'appelant glisse donc d'une position vers la droite.
         self._symbol_col = symbol_col + 1
         full_headers = ["#"] + list(headers)
+        self._nom_col = full_headers.index("Nom") if "Nom" in full_headers else None
 
         layout = QVBoxLayout(self)
 
@@ -52,6 +58,12 @@ class ScreenerResultsDialog(QDialog):
                     item.setData(Qt.EditRole, val)        # tri numérique correct
                     item.setText(self._fmt(val))
                     item.setTextAlignment(Qt.AlignRight | Qt.AlignVCenter)
+                elif c == self._nom_col:
+                    nom = str(val)
+                    item.setToolTip(nom)
+                    if len(nom) > self.LONGUEUR_NOM_MAX:
+                        nom = nom[:self.LONGUEUR_NOM_MAX - 1].rstrip() + "…"
+                    item.setText(nom)
                 else:
                     item.setText(str(val))
                 if c == self._symbol_col:

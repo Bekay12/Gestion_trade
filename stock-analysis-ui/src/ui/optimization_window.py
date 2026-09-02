@@ -4,7 +4,7 @@ from pathlib import Path
 from PyQt5.QtWidgets import (
     QMainWindow, QWidget, QVBoxLayout, QHBoxLayout, QGridLayout,
     QLabel, QSpinBox, QDoubleSpinBox, QPushButton, QTextEdit, QListWidget,
-    QListWidgetItem, QMessageBox, QTabWidget, QGroupBox, QScrollArea
+    QListWidgetItem, QMessageBox, QTabWidget, QGroupBox
 )
 from PyQt5.QtCore import Qt
 
@@ -204,7 +204,7 @@ class OptimizationWindow(QMainWindow):
             fixed_ratio = self.fixed_ratio_spin.value()
             ttl_days = self.ttl_days_spin.value()
             
-            self.logs_text.append(f"⚙️ Paramètres:")
+            self.logs_text.append("⚙️ Paramètres:")
             self.logs_text.append(f"   - Min symboles: {min_sym}")
             self.logs_text.append(f"   - Max symboles: {max_sym}")
             self.logs_text.append(f"   - Ratio FIXE: {fixed_ratio:.1%} (aléatoire: {1-fixed_ratio:.1%})")
@@ -289,7 +289,7 @@ class OptimizationWindow(QMainWindow):
             self.details_text.setText("\n".join(details_lines))
             
             self.logs_text.append("="*50)
-            self.logs_text.append(f"✅ OPTIMISATION COMPLÈTE!")
+            self.logs_text.append("✅ OPTIMISATION COMPLÈTE!")
             self.logs_text.append(f"   Total: {len(flat_cleaned)} symboles")
             self.logs_text.append("="*50)
             
@@ -302,7 +302,6 @@ class OptimizationWindow(QMainWindow):
     def clear_cache(self):
         """Vider le cache de groupes nettoyés."""
         try:
-            import pickle
             from pathlib import Path
             cache_file = Path("cache_data/cleaned_groups_cache.pkl")
             if cache_file.exists():

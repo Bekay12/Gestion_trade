@@ -1,13 +1,3 @@
-<<<<<<< HEAD
-Symbole,Signal,Score,Prix,Tendance,RSI,Domaine,CapRange,ParamKey,Volume moyen,Consensus,ConsensusMean,dPrice,dMACD,dRSI,dVolRel,Rev. Growth (%),EBITDA Yield (%),FCF Yield (%),D/E Ratio,Market Cap (B$),Fiabilite,detection_time
-NXP,ACHAT,7.68,14.510000228881836,Hausse,75.78,Financial Services,Small,Financial Services_Small,205890.0,Neutre,,0.42,15.13,4.26,-6.79,9.1,0.0,0.0,0.0,0.75,42.857142857142854,2026-02-14 13:41:37
-ENR.DE,ACHAT,7.54,162.10000610351562,Hausse,68.0,Industrials,Large,Industrials_Large,2342776.67,Achat,1.8,1.47,2.76,0.36,0.68,8.2,2.47,2.75,33.02,135.4,100.0,2026-02-14 13:41:37
-SEMR,ACHAT,4.0,11.829999923706055,Baisse,61.18,Technology,Small,Technology_Small,2646003.33,Neutre,,-0.03,-23.08,-1.37,-5.54,15.1,0.14,3.47,4.67,1.79,50.0,2026-02-14 13:41:37
-IMNM,ACHAT,6.115,22.15999984741211,Baisse,45.74,Healthcare,Mid,Healthcare_Mid,1853443.33,Achat,1.15385,-2.23,-43.35,-4.79,-8.37,0.0,-10.14,-4.64,1.52,2.75,100.0,2026-02-14 13:41:37
-ALAB,ACHAT,5.482,129.32000732421875,Baisse,40.12,Technology,Large,Technology_Large,5851280.0,Achat,1.73913,-2.5,1.43,-1.18,11.88,103.9,0.37,0.37,2.46,30.89,60.0,2026-02-14 13:41:37
-NVDA,ACHAT,7.16,182.80999755859375,Baisse,47.82,Technology,Mega,Technology_Mega,171188010.0,Achat,1.34921,0.96,199.7,3.62,-5.31,62.5,2.49,1.16,9.1,4590.38,50.0,2026-02-14 13:41:37
-AVGO,ACHAT,6.63,325.1700134277344,Baisse,45.01,Technology,Mega,Technology_Mega,26503956.67,Achat,1.22,0.91,-29.61,3.52,-21.83,16.4,20.68,1.55,166.03,1614.12,75.0,2026-02-14 13:41:37
-=======
 Symbole,Signal,Score,Prix,Devise,FxRateToUSD,Tendance,RSI,Domaine,CapRange,ParamKey,Volume moyen,Consensus,ConsensusMean,_seuil_achat_used,_seuil_vente_used,_selected_param_key,dPrice,Var5j (%),dRSI,dVolRel,Rev. Growth (%),EBITDA Yield (%),FCF Yield (%),FCF (B$),EBITDA (B$),D/E Ratio,Market Cap (B$),ROE (%),Fiabilite,detection_time
 3037.TW,ACHAT,5.25,20.427613113075495,TWD,0.03176922723650932,Hausse,65.01,Inconnu,Large,,346735484.6761378,Achat,1.52941,4.2,-4.2,Inconnu,2.09,0.78,1.38,10.27,18.1,2.47,-0.48,-0.15,0.78,56.33,32.18,7.31,83.33333333333334,2026-04-19 23:13:07
 DD,ACHAT,4.8,47.349998474121094,USD,1.0,Hausse,54.92,Basic Materials,Large,Basic Materials_Large,174731886.3941574,Neutre,,1.8,-4.8,Basic Materials_Large,0.33,0.21,0.93,-1.25,0.0,6.87,71.17,13.44,1.51,24.48,18.88,0.52,100.0,2026-04-19 23:13:07
@@ -23,4 +13,3 @@ BAND,VENTE,-13.5,23.010000228881836,USD,1.0,Hausse,77.37,Technology,Small,Techno
 FLTR,VENTE,-9.0,25.450000762939453,USD,1.0,Hausse,64.62,Unknown,Small,Unknown_Small,21094359.046611786,Neutre,,3.0,-3.1,Unknown_Small,0.03,0.0,2.29,-3.05,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,100.0,2026-04-19 23:13:07
 BF-B,VENTE,-6.4,29.149999618530273,USD,1.0,Hausse,61.06,Consumer Defensive,Large,Consumer Defensive_Large,171105074.46654,Neutre,2.88235,1.1,-5.8,Consumer Defensive_Large,0.9,-1.15,1.23,-0.43,2.0,7.62,4.49,0.6,1.21,67.25,13.33,20.42,33.33333333333333,2026-04-19 23:13:07
 HP,VENTE,-4.4,33.63999938964844,USD,1.0,Baisse,43.86,Energy,Mid,Energy_Mid,47912551.22678121,Achat,2.5,1.2,-4.0,Energy_Mid,-0.33,-3.0,-1.18,-1.7,50.2,16.64,5.28,0.19,0.89,75.24,3.55,-10.96,100.0,2026-04-19 23:13:07
->>>>>>> 978e7c70cfbf4e61452e6f0df73d74f7b56595c5

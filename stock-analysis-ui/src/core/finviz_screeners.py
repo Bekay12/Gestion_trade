@@ -8,8 +8,16 @@ les siens. Coût : 1 requête Finviz par screener (0 requête yfinance).
 
 Chaque preset mappe une stratégie vers un dict de filtres Finviz (clés/options
 exactes issues de finvizfinance.constants.filter_dict).
+
+`run_screen()` est le point d'entrée unique vers finvizfinance : il porte le
+contournement du bot-blocking ET la lecture correcte de la colonne Ticker (voir
+_OverviewTickerPropre). Tout nouvel écran Finviz doit passer par lui.
 """
+import logging
+
 import pandas as pd
+
+logger = logging.getLogger(__name__)
 
 # Presets : nom interne → {title, filters, order}
 PRESETS = {
@@ -131,22 +139,127 @@ def _num(v):
         return None
 
 
-def _run_finviz(filters: dict, order: str = "Change", limit: int = 100, ascend: bool = False) -> pd.DataFrame:
-    """Exécute un screen Finviz Overview avec contournement du bot-blocking
-    (session curl_cffi impersonate). Retourne le DataFrame brut de finvizfinance.
-    Lève une exception explicite si la dépendance manque."""
+# Avatar-lettre placé par Finviz dans la cellule Ticker, devant le lien du
+# symbole : <a class="company-ticker"><img …/><span>I</span></a>. Son <span> de
+# repli (la 1re lettre, affichée le temps que le logo charge) fait partie du
+# texte de la cellule.
+_SELECTEUR_AVATAR = "a.company-ticker"
+
+# Attribut du <td> qui porte le symbole non décoré (données de l'infobulle).
+_ATTRIBUT_TICKER = "data-boxover-ticker"
+
+
+def _ticker_fiable(ligne) -> str | None:
+    """Symbole lu sur l'attribut `data-boxover-ticker` du <td>, ou None."""
+    for cellule in ligne.find_all("td"):
+        valeur = (cellule.get(_ATTRIBUT_TICKER) or "").strip()
+        if valeur:
+            return valeur.upper()
+    return None
+
+
+def _construire_overview():
+    """Sous-classe d'Overview qui lit la colonne Ticker sans l'avatar-lettre.
+
+    finvizfinance 1.3.0 remplit chaque cellule avec `td.text`, qui concatène TOUT
+    le texte de la cellule. Depuis la refonte du screener Finviz, la cellule
+    Ticker contient l'avatar-lettre en plus du symbole, d'où « IIESC » pour
+    « IESC » : chaque symbole partait avec sa première lettre doublée, échouait
+    côté yfinance (« No history available ») et polluait le store de profils.
+
+    Deux mécanismes indépendants, du plus fiable au moins fiable :
+      1. l'attribut `data-boxover-ticker` du <td>, qui fait autorité ;
+      2. à défaut, la suppression de l'avatar du DOM avant que la librairie ne
+         lise le texte de la cellule.
+    `lignes_fiables` compte les lignes couvertes par l'un des deux, ce qui permet
+    à run_screen() de détecter une 3e refonte de la structure Finviz.
+
+    Aucune réparation par heuristique : « AAPL » ou « MMM » sont des symboles
+    légitimes à première lettre doublée, indiscernables d'un symbole corrompu.
+    """
     from finvizfinance.screener.overview import Overview
+
+    class _OverviewTickerPropre(Overview):
+        def __init__(self):
+            super().__init__()
+            self.lignes_fiables = 0
+
+        def _get_table(self, rows, df, num_col_index, table_header, limit=-1):
+            # Même découpe que Base._get_table, pour que l'ordre des tickers
+            # relevés ici corresponde aux lignes ajoutées au DataFrame.
+            lignes = rows[1:]
+            if limit != -1:
+                lignes = lignes[0:limit]
+
+            tickers = []
+            for ligne in lignes:
+                fiable = _ticker_fiable(ligne)
+                avatars = ligne.select(_SELECTEUR_AVATAR)
+                for avatar in avatars:
+                    avatar.decompose()
+                if fiable or avatars:
+                    self.lignes_fiables += 1
+                tickers.append(fiable)
+
+            resultat = super()._get_table(rows, df, num_col_index, table_header, limit)
+
+            if tickers and "Ticker" in getattr(resultat, "columns", []):
+                for position, ticker in zip(resultat.index[-len(tickers):], tickers):
+                    if ticker:
+                        resultat.at[position, "Ticker"] = ticker
+            return resultat
+
+    return _OverviewTickerPropre()
+
+
+def _verifier_tickers(df: pd.DataFrame, lignes_fiables: int) -> None:
+    """Échoue bruyamment si la structure Finviz n'est plus reconnue.
+
+    Une liste de tickers corrompue est pire qu'une erreur : elle consomme le
+    budget yfinance sur des symboles inexistants et écrit des profils fantômes
+    dans le store. On ne lève que si AUCUNE ligne n'a pu être lue par un
+    mécanisme fiable ET que les symboles portent la signature de la corruption
+    (première lettre doublée en masse) — sinon une page légitimement sans logo
+    déclencherait une fausse alerte.
+    """
+    if df is None or df.empty or "Ticker" not in df.columns:
+        return
+    if lignes_fiables:
+        return
+
+    tickers = [str(t).strip() for t in df["Ticker"] if str(t).strip()]
+    suspects = [t for t in tickers if len(t) > 1 and t[0] == t[1]]
+    if tickers and len(suspects) >= max(3, 0.6 * len(tickers)):
+        raise RuntimeError(
+            f"Finviz : structure de la cellule Ticker non reconnue "
+            f"({len(suspects)}/{len(tickers)} symboles à première lettre doublée, "
+            f"ex. {suspects[:3]}). Le sélecteur '{_SELECTEUR_AVATAR}' et l'attribut "
+            f"'{_ATTRIBUT_TICKER}' de core/finviz_screeners.py sont à remettre à jour."
+        )
+    logger.warning("[FINVIZ] aucun ticker lu depuis une source fiable ; "
+                   "structure de page inhabituelle mais symboles plausibles")
+
+
+def run_screen(filters: dict, order: str = "Change", limit: int = 100,
+               ascend: bool = False) -> pd.DataFrame:
+    """Exécute un screen Finviz Overview avec contournement du bot-blocking
+    (session curl_cffi impersonate) et colonne Ticker assainie. Retourne le
+    DataFrame de finvizfinance. Lève une exception explicite si la dépendance
+    manque ou si la structure de la page n'est plus reconnue."""
     import finvizfinance.util as _fv_util
     from curl_cffi.requests import Session as CurlSession
 
     _orig = _fv_util.session
     _fv_util.session = CurlSession(impersonate="chrome")
     try:
-        fov = Overview()
+        fov = _construire_overview()
         fov.set_filter(filters_dict=filters)
-        return fov.screener_view(order=order, limit=limit, ascend=ascend)
+        df = fov.screener_view(order=order, limit=limit, ascend=ascend)
     finally:
         _fv_util.session = _orig
+
+    _verifier_tickers(df, fov.lignes_fiables)
+    return df
 
 
 def run_preset(key: str, limit: int = 100) -> dict:
@@ -155,11 +268,13 @@ def run_preset(key: str, limit: int = 100) -> dict:
     if preset is None:
         raise ValueError(f"Preset Finviz inconnu : {key}")
 
-    df = _run_finviz(
+    df = run_screen(
         preset["filters"], order=preset.get("order", "Change"),
         limit=limit, ascend=preset.get("ascend", False),
     )
-    headers = ["Symbole", "Secteur", "Pays", "Cap", "P/E", "Prix", "Var %"]
+    # Le nom vient de la colonne « Company » de la réponse Finviz : aucune
+    # requête supplémentaire, et il est disponible même hors catalogue local.
+    headers = ["Symbole", "Nom", "Secteur", "Pays", "Cap", "P/E", "Prix", "Var %"]
     rows = []
     if df is not None and not df.empty:
         for _, r in df.iterrows():
@@ -169,6 +284,7 @@ def run_preset(key: str, limit: int = 100) -> dict:
             change = _num(r.get("Change"))
             rows.append([
                 sym,
+                str(r.get("Company") or "N/A"),
                 str(r.get("Sector") or "N/A"),
                 str(r.get("Country") or "N/A"),
                 str(r.get("Market Cap") or "N/A"),

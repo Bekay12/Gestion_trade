@@ -32,18 +32,32 @@ services:
       
       - key: FLASK_SECRET_KEY
         generateValue: true
-      
+
+      # Cle d'API : sans elle, les routes protegees repondent 503.
+      # Render genere la valeur ; la recuperer dans le dashboard pour
+      # la fournir en en-tete X-API-Key cote client.
+      - key: API_KEY
+        generateValue: true
+
+      # Origines autorisees pour CORS. Vide = same-origin uniquement,
+      # ce qui suffit tant que l'interface est servie par cette app.
+      - key: CORS_ORIGINS
+        value: ""
+
       - key: BIND_PORT
         value: 10000
-      
+
+      # Requis par Render : le service doit ecouter sur toutes les interfaces
+      # du conteneur. L'exposition publique est mediee par le proxy Render.
       - key: BIND_ADDRESS
         value: 0.0.0.0
-    
+
     # Health check
     healthCheckPath: /health
-    
-    # Auto deploy
-    autoDeploy: true
+
+    # Deploiement manuel : un push sur master ne doit pas mettre en ligne
+    # une API sans relecture. Repasser a true en connaissance de cause.
+    autoDeploy: false
     
     # Build command (optionnel, Docker gère ça)
     # buildCommand: pip install -r requirements.txt
