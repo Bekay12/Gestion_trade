@@ -1,0 +1,119 @@
+{
+  "channel": {
+    "id": "UCdSNM4mXuWBr3EYKe0ScWHw",
+    "name": "Academy Germain Trading",
+    "url": "https://www.youtube.com/channel/UCdSNM4mXuWBr3EYKe0ScWHw"
+  },
+  "last_video": {
+    "id": "B33yDi_2fr4",
+    "title": "DAS TRADER : Installer et Configurer son Setup Complet | TUTO Débutant",
+    "upload_date": "20260820"
+  },
+  "last_run": "2026-08-21T08:56:06.823867+00:00",
+  "videos": {
+    "XId81GbCEXs": {
+      "title": "Tout Savoir Sur IPO SpaceX",
+      "ingested_at": "2026-08-21T08:53:26.223300+00:00",
+      "status": "ok",
+      "upload_date": "20260626",
+      "transcript": "transcripts/2026-06-26_tout-savoir-sur-ipo-spacex.md",
+      "caption_manual": false
+    },
+    "xE--ta2zlgg": {
+      "title": "DayTrade Recap 06 aout 2026",
+      "ingested_at": "2026-08-21T08:53:37.843268+00:00",
+      "status": "ok",
+      "upload_date": "20260806",
+      "transcript": "transcripts/2026-08-06_daytrade-recap-06-aout-2026.md",
+      "caption_manual": false
+    },
+    "zzLsSz1iWPc": {
+      "title": "DayTrade Recap 05 aout 2026",
+      "ingested_at": "2026-08-21T08:53:49.289246+00:00",
+      "status": "ok",
+      "upload_date": "20260806",
+      "transcript": "transcripts/2026-08-06_daytrade-recap-05-aout-2026.md",
+      "caption_manual": false
+    },
+    "AP-i3-0vQJM": {
+      "title": "DayTrade Recap 07 aout 2026",
+      "ingested_at": "2026-08-21T08:54:11.036175+00:00",
+      "status": "ok",
+      "upload_date": "20260808",
+      "transcript": "transcripts/2026-08-08_daytrade-recap-07-aout-2026.md",
+      "caption_manual": false
+    },
+    "uWalgM9WRMg": {
+      "title": "DayTrade Recap 10 aout 2026",
+      "ingested_at": "2026-08-21T08:54:22.458496+00:00",
+      "status": "ok",
+      "upload_date": "20260810",
+      "transcript": "transcripts/2026-08-10_daytrade-recap-10-aout-2026.md",
+      "caption_manual": false
+    },
+    "OU28PZeMmLo": {
+      "title": "DayTrade Recap 11 aout 2026",
+      "ingested_at": "2026-08-21T08:54:33.939935+00:00",
+      "status": "ok",
+      "upload_date": "20260811",
+      "transcript": "transcripts/2026-08-11_daytrade-recap-11-aout-2026.md",
+      "caption_manual": false
+    },
+    "6TDU7QgAXnY": {
+      "title": "DayTrade Recap 11 aout 2026 After market",
+      "ingested_at": "2026-08-21T08:54:45.776467+00:00",
+      "status": "ok",
+      "upload_date": "20260811",
+      "transcript": "transcripts/2026-08-11_daytrade-recap-11-aout-2026-after-market.md",
+      "caption_manual": false
+    },
+    "INoYHDsLuKs": {
+      "title": "DayTrade Recap 12 aout 2026",
+      "ingested_at": "2026-08-21T08:54:57.362632+00:00",
+      "status": "ok",
+      "upload_date": "20260813",
+      "transcript": "transcripts/2026-08-13_daytrade-recap-12-aout-2026.md",
+      "caption_manual": false
+    },
+    "ZBZ1NcSjC0M": {
+      "title": "DayTrade Recap 17 aout 2026",
+      "ingested_at": "2026-08-21T08:55:09.050376+00:00",
+      "status": "ok",
+      "upload_date": "20260817",
+      "transcript": "transcripts/2026-08-17_daytrade-recap-17-aout-2026.md",
+      "caption_manual": false
+    },
+    "fXGko_xK2A4": {
+      "title": "DayTrade Recap 18 aout 2026",
+      "ingested_at": "2026-08-21T08:55:20.886593+00:00",
+      "status": "ok",
+      "upload_date": "20260818",
+      "transcript": "transcripts/2026-08-18_daytrade-recap-18-aout-2026.md",
+      "caption_manual": false
+    },
+    "1Zutb_fBmlw": {
+      "title": "DayTrade Recap 19 aout 2026",
+      "ingested_at": "2026-08-21T08:55:32.398541+00:00",
+      "status": "ok",
+      "upload_date": "20260819",
+      "transcript": "transcripts/2026-08-19_daytrade-recap-19-aout-2026.md",
+      "caption_manual": false
+    },
+    "QLBy2SaATkk": {
+      "title": "DayTrade Recap 20 aout 2026 * stock in play* STKH, WETO & WETO",
+      "ingested_at": "2026-08-21T08:55:44.138316+00:00",
+      "status": "ok",
+      "upload_date": "20260820",
+      "transcript": "transcripts/2026-08-20_daytrade-recap-20-aout-2026-stock-in-play-stkh-weto-weto.md",
+      "caption_manual": false
+    },
+    "B33yDi_2fr4": {
+      "title": "DAS TRADER : Installer et Configurer son Setup Complet | TUTO Débutant",
+      "ingested_at": "2026-08-21T08:55:55.600879+00:00",
+      "status": "ok",
+      "upload_date": "20260820",
+      "transcript": "transcripts/2026-08-20_das-trader-installer-et-configurer-son-setup-complet-tuto-de.md",
+      "caption_manual": false
+    }
+  }
+}

@@ -1,0 +1,282 @@
+Symbol,Security Name,Market Category,Trigger Time
+AUROW,Aurora Innov Inc Wts,Q,8/20/2026 9:30:00 AM
+OSRHW,"OSR Health, Inc. Warrant",R,8/20/2026 9:30:00 AM
+LGCL,Lucas GC Limited Cl A OS,R,8/20/2026 9:30:00 AM
+SLSN,Solesence Cmn,R,8/20/2026 9:30:00 AM
+ONFO,Onfolio Holdings Inc. Cm St,R,8/20/2026 9:30:00 AM
+TNON,Tenon Medical Inc Cm,R,8/20/2026 9:30:00 AM
+MRNA,"Moderna, Inc. Common Stock",Q,8/20/2026 9:30:00 AM
+RNWWW,ReNew Energy Global plc Wt,Q,8/20/2026 9:30:00 AM
+DAICW,"CID HoldCo, Inc. Warrants",Q,8/20/2026 9:30:00 AM
+WFF,WF Hldg Ltd Ord,R,8/20/2026 9:30:00 AM
+AZI,Autozi Internet Tech Cl A OS,R,8/20/2026 9:30:00 AM
+GRML,Greenland Mines Ltd Cmn Stk,R,8/20/2026 9:30:00 AM
+ZSTK,ZeroStack Corp. CS,R,8/20/2026 9:30:00 AM
+RDAC,Rising Dragon Acq Cp Ord,R,8/20/2026 9:30:00 AM
+BZFDW,"BuzzFeed, Inc. Wts",R,8/20/2026 9:30:00 AM
+DBGI,"Digital Brands Group, Inc. Cm",R,8/20/2026 9:30:00 AM
+MSS,Maison Solutions Inc. Cl A Cm,R,8/20/2026 9:30:00 AM
+SMST,Def Dly Tg 2x Sh MSTR,Q,8/20/2026 9:30:00 AM
+FTFT,Future FinTech Group Inc.,R,8/20/2026 9:30:00 AM
+QTEX,QTREX Quantum Ltd. Ord Shs,R,8/20/2026 9:30:01 AM
+OSRH,"OSR Health, Inc. Comm Stock",R,8/20/2026 9:30:01 AM
+ODYS,Odysight.ai Inc. Common Stock,R,8/20/2026 9:30:01 AM
+CONI,GraniteShs 2x Sh COIN,Q,8/20/2026 9:30:01 AM
+CDTTW,CDT Equity Inc. Warrant,R,8/20/2026 9:30:01 AM
+CISS,C3is Inc. Common Stock,R,8/20/2026 9:30:01 AM
+FGL,Founder Group Ltd Cl A Ord Shs,R,8/20/2026 9:30:01 AM
+RCKTW,"Rocket Pharmaceuticals, Inc.",R,8/20/2026 9:30:01 AM
+ZNB,Zeta Network Group Class A Ord,R,8/20/2026 9:30:01 AM
+LPAAW,Launch One Acq Warrant,Q,8/20/2026 9:30:01 AM
+RYOJ,rYojbaba Co Cmn Shs,R,8/20/2026 9:30:01 AM
+TNONW,Tenon Med Inc Wt,R,8/20/2026 9:30:01 AM
+SURG,"SurgePays, Inc. Cm St",R,8/20/2026 9:30:01 AM
+BTOG,Bit Origin Limited Cl A Ord Sh,R,8/20/2026 9:30:01 AM
+BIAF,"bioAffinity Technologies, Cm",R,8/20/2026 9:30:01 AM
+FDMMW,Freedom Metals Acq Warrant,Q,8/20/2026 9:30:01 AM
+HVII,Hennessy Cap Invest Corp OS,Q,8/20/2026 9:30:01 AM
+AIXI,XIAO-I Corporation,Q,8/20/2026 9:30:01 AM
+GDEVW,GDEV Inc. Wt,Q,8/20/2026 9:30:01 AM
+KRKR,36Kr Holdings Inc. ADS,R,8/20/2026 9:30:01 AM
+LGHL,Lion Group Holding Ltd. ADS,R,8/20/2026 9:30:01 AM
+YJ,Yunji Inc. ADS,R,8/20/2026 9:30:01 AM
+BABX,GrShs 2x Lg BABA Dly,Q,8/20/2026 9:30:07 AM
+MGN,Megan Holdings Ltd Cl A Ord Sh,R,8/20/2026 9:30:18 AM
+CIRC,Circle8 Group Inc Common Stock,Q,8/20/2026 9:30:22 AM
+PUR,Df Dly Tg 2XLg PURR,Q,8/20/2026 9:30:45 AM
+PFSA,"Profusa, Inc.",R,8/20/2026 9:30:50 AM
+KBAB,KraneShares Trust,Q,8/20/2026 9:30:52 AM
+BABU,Direxion BABA 2x Bull ETF,Q,8/20/2026 9:30:53 AM
+GLMD,Galmed Pharmaceuticals Ltd,R,8/20/2026 9:31:05 AM
+RDACR,Rising Dragon Acq Rts,R,8/20/2026 9:31:21 AM
+BGM,BGM Group Ltd. Class A Ord Shs,R,8/20/2026 9:31:32 AM
+CNET,ZW Data Action Techno,R,8/20/2026 9:31:49 AM
+BAOS,Baosheng Media Group OS,R,8/20/2026 9:32:03 AM
+SMCZ,Def Dly Tg 2x Sh SMCI,Q,8/20/2026 9:32:16 AM
+FWACR,Futurewave Acquisition Rt,R,8/20/2026 9:32:27 AM
+SKDD,GraniteShs 2x Shrt SK Hyn Dly,Q,8/20/2026 9:32:51 AM
+EDSA,Edesa Biotech Cm Shs,R,8/20/2026 9:32:53 AM
+JBSS,John B Sanfilippo & Son Inc,Q,8/20/2026 9:32:55 AM
+AIXC,"AIxCrypto Holdings, Inc. Cmn",R,8/20/2026 9:33:15 AM
+ELOG,Eastern International Ord Sh,R,8/20/2026 9:34:26 AM
+JAGX,"Jaguar Health, Inc. Cmn",R,8/20/2026 9:35:07 AM
+BBBYW,Neighborhood Intelligence Wts,Q,8/20/2026 9:35:17 AM
+DSYWW,Big Tree Cloud Hlds Ltd Wts,R,8/20/2026 9:35:19 AM
+CLIR,ClearSign Technologies Corp,R,8/20/2026 9:35:43 AM
+EYPT,"EyePoint, Inc. Common Stock",Q,8/20/2026 9:36:03 AM
+NTWOW,Newbury Street II Acq Warrant ,Q,8/20/2026 9:38:39 AM
+MASK,3 E Ntwk Tech Gp Ord A,R,8/20/2026 9:39:03 AM
+NBP,NovaBridge Biosciences ADS,Q,8/20/2026 9:39:06 AM
+SXTC,China SXT Pharma Class A Ords,R,8/20/2026 9:40:23 AM
+YYAI,AiRWA Inc. Common Stock,R,8/20/2026 9:40:51 AM
+TWLVR,Twelve Seas Inv Co III Rt,Q,8/20/2026 9:41:18 AM
+SABSW,SAB Biotherapeutics Wt,R,8/20/2026 9:42:20 AM
+PWCM,PowerCompute Inc Cmn,R,8/20/2026 9:45:18 AM
+MPG,Thm Lvg Shs 2X lg MP,Q,8/20/2026 9:45:29 AM
+NWGL,CL Workshop Group Limited ADS,R,8/20/2026 9:45:41 AM
+PSIG,PS International Gp Ltd Ord Sh,R,8/20/2026 9:46:43 AM
+ZTG,Zenta Grp Cp Ltd Ord A,R,8/20/2026 9:46:56 AM
+UCL,uCloudlink Group Inc. ADS,Q,8/20/2026 9:47:03 AM
+YDES,YD Bio Limited Ordinary Shares,Q,8/20/2026 9:47:53 AM
+CXAIW,CXApp Inc. Warrant,R,8/20/2026 9:48:39 AM
+USGG,Thm LvgShs 2Xlg USAR Dly,Q,8/20/2026 9:49:10 AM
+ARQQW,Arqit Quantum Inc. Wt,R,8/20/2026 9:50:41 AM
+EJH,E-Home Hshld Ltd Srv Ord Shs,R,8/20/2026 9:50:49 AM
+PMEC,Primech Holdings Ltd. Os,R,8/20/2026 9:51:21 AM
+YYGH,YY Group Holding Limited,R,8/20/2026 9:52:31 AM
+NBIL,GraniteShares ETF 2X Lng NBIS,Q,8/20/2026 9:53:03 AM
+EXYN,"Exyn Technologies, Inc. Cmn ",R,8/20/2026 9:53:52 AM
+ONDG,Thm LvgShs 2Xlg ONDS Dly,Q,8/20/2026 9:54:33 AM
+NUR,Nuran Wireless Cmn Shs,R,8/20/2026 9:55:14 AM
+OFAL,OFA Group Ord A,R,8/20/2026 9:55:40 AM
+OLOX,Olenox Industries Inc Cmn,R,8/20/2026 9:56:35 AM
+LESL,"Leslies, Inc. Cm St",Q,8/20/2026 9:57:02 AM
+NXTC,"NextCure, Inc. Common Stock",Q,8/20/2026 9:57:35 AM
+DFSCW,DEFSEC Technologies Inc Wt,R,8/20/2026 9:57:58 AM
+OPENZ,Opendoor Technologies Inc,Q,8/20/2026 9:59:10 AM
+REBN,"Reborn Coffee, Inc.",R,8/20/2026 9:59:15 AM
+POM,POMDOCTOR LIMITED ADS,Q,8/20/2026 9:59:37 AM
+CAPR,"Capricor Therapeutics, Inc.",Q,8/20/2026 10:00:42 AM
+LYTS,LSI Industries Inc,Q,8/20/2026 10:01:12 AM
+DAVEW,Dave Inc. Warrants,Q,8/20/2026 10:01:43 AM
+GENVR,Gen Digital Inc. CVR,Q,8/20/2026 10:02:02 AM
+ENLV,Enlivex Ltd.,R,8/20/2026 10:02:04 AM
+SPKLW,Spark I Acquisition WT,Q,8/20/2026 10:04:26 AM
+RCON,Recon Tch Ltd Cl A Ord,R,8/20/2026 10:04:36 AM
+BTLN,Brightline Interactive Cmn Stk,R,8/20/2026 10:06:45 AM
+KWMWW,K Wave Media Warrant,R,8/20/2026 10:07:29 AM
+TROO,"TROOPS, Inc. Ord Shs",R,8/20/2026 10:07:34 AM
+MSAIW,MultiSensor AI Holdings Wt,R,8/20/2026 10:08:13 AM
+ASTLW,Algoma Steel Group Inc. Wt,Q,8/20/2026 10:08:19 AM
+HQWWW,Horizon Quantum Hldg Warrant,R,8/20/2026 10:08:44 AM
+MKDWW,MKDWELL Tech Inc. W,R,8/20/2026 10:12:07 AM
+KC,Kingsoft Cloud Hlds Ltd ADS,Q,8/20/2026 10:13:51 AM
+AIIR,Air Global PLC Ordinary Shares,R,8/20/2026 10:14:38 AM
+AVXX,TdTr Df Dy Tgt2X Lg AVAV,Q,8/20/2026 10:14:46 AM
+FEMY,Femasys Inc. Cm St,R,8/20/2026 10:15:04 AM
+UUUG,Thm LvgShs 2Xlg UUUU Dly,Q,8/20/2026 10:15:47 AM
+OPENL,Opendoor Technologies Inc,Q,8/20/2026 10:17:18 AM
+EIKN,"Eikon Therapeutics, Inc. Cmn ",Q,8/20/2026 10:18:03 AM
+CRMU,Thm Lvg Shs 2X lg CRML ,Q,8/20/2026 10:18:23 AM
+ABLVW,Able View Global Inc. Wt,R,8/20/2026 10:19:08 AM
+RCAX,Tdl Df Dy Tg 2x Lg RCAT,Q,8/20/2026 10:19:08 AM
+IGACR,Invest Green Acquisition Right,Q,8/20/2026 10:19:11 AM
+SLXNW,Silexion Therapeutics Corp W,R,8/20/2026 10:19:59 AM
+STAK,STAK Inc. Ord A,R,8/20/2026 10:22:22 AM
+VCIG,VCI Global Ltd Ord,R,8/20/2026 10:24:05 AM
+AMODW,Alpha Modus Hldgs Wt,R,8/20/2026 10:24:25 AM
+VERI,"Veritone, Inc. CM",Q,8/20/2026 10:24:47 AM
+APLMW,Apollomics Inc. WT,R,8/20/2026 10:25:40 AM
+ASBPW,Aspire Biopharma Holdings Wt,R,8/20/2026 10:26:18 AM
+RADX,Radiopharm Theranostics ADS,R,8/20/2026 10:28:13 AM
+VWAV,VisionWave Hldgs Cmn,Q,8/20/2026 10:29:34 AM
+JTAI,Jet.AI Inc. Common Stock,R,8/20/2026 10:30:09 AM
+BDMDW,Baird Medical Investment Holdi,R,8/20/2026 10:30:09 AM
+GSUN,Golden Sun Tch Gp Ltd Cl A OS,R,8/20/2026 10:30:23 AM
+YOUL,Youlife Group Inc.,R,8/20/2026 10:32:57 AM
+RGTX,Def Dly Tg 2x Lg RGTI,Q,8/20/2026 10:35:15 AM
+SION,"Sionna Therapeutics, Inc.",Q,8/20/2026 10:35:18 AM
+WATR,Air Water Ventures Ord Sh,Q,8/20/2026 10:36:04 AM
+ERNAW,Ernexa Therapeutics Warrants,R,8/20/2026 10:38:37 AM
+FRGT,Freight Tech Inc. Ord Shs,R,8/20/2026 10:39:22 AM
+KBSX,FST Corp. Ordinary Shares,Q,8/20/2026 10:42:33 AM
+BCTXZ,BriaCell Thera Cp Wt 2030,R,8/20/2026 10:44:22 AM
+ARBEW,Arbe Robotics Ltd. Wt,R,8/20/2026 10:47:18 AM
+IONX,Tdl Tr Def Dly Tgt 2X Lg,Q,8/20/2026 10:50:25 AM
+IONL,GrntShs ETF Tr 2x Lng ION Dly,Q,8/20/2026 10:51:26 AM
+BETR,Better Home & Finance Cl A CS,Q,8/20/2026 10:52:01 AM
+IACQW,Irenic Acquisition Corp Wt,Q,8/20/2026 10:53:11 AM
+NIVF,NewGenIvf Group Limited Os,R,8/20/2026 10:53:33 AM
+JSPRW,Jasper Therapeutics Wts,R,8/20/2026 10:53:40 AM
+BNCWW,CEA Industries Inc. Wt,R,8/20/2026 10:54:43 AM
+FLD,"Fold Holdings, Inc. CL A CM",R,8/20/2026 10:55:08 AM
+SLDPW,"Solid Power, Inc. Wt",Q,8/20/2026 10:55:25 AM
+WYHG,Wing Yip Fd Hldgs Grp ADS,R,8/20/2026 10:58:02 AM
+CURX,Curanex Pharmaceuticals Inc CS,R,8/20/2026 10:58:40 AM
+THCH,TH Intl Ltd Ord,R,8/20/2026 11:00:17 AM
+GRMLW,Greenland Mines Ltd Warrant,R,8/20/2026 11:04:47 AM
+ABTS,Abits Group Inc Ord Shs,R,8/20/2026 11:06:51 AM
+NEOV,NeoVolta Inc. Cm St,R,8/20/2026 11:07:29 AM
+AMPGZ,Amplitech Group Inc Series B R,R,8/20/2026 11:10:53 AM
+QPUX,Td Df 2X Dy Lg Pr Qu,Q,8/20/2026 11:11:15 AM
+TCGX,TCGX Acq Cp Ord A,R,8/20/2026 11:11:57 AM
+AARD,"Aardvark Therapeutics, Inc. CS",Q,8/20/2026 11:13:44 AM
+DYNCW,Dynamix Corporation Warrant,Q,8/20/2026 11:16:18 AM
+FGIWW,FGI Industries Ltd. Wt,R,8/20/2026 11:16:37 AM
+EXYNW,"Exyn Technologies, Inc Warrant",R,8/20/2026 11:16:47 AM
+GCLWW,GCL Global Hldgs Wts,Q,8/20/2026 11:17:08 AM
+CHECW,Chenghe Acquisition III Co. Wt,Q,8/20/2026 11:19:51 AM
+GRABW,Grab Holdings Limited Wt,Q,8/20/2026 11:21:13 AM
+RDTL,GrntSh ETF Tr 2x Lng RDDT Dly,Q,8/20/2026 11:23:33 AM
+PIIIW,P3 Health Warrants,R,8/20/2026 11:23:44 AM
+CRWL,GraniteShs 2x Lg CRWD,Q,8/20/2026 11:23:51 AM
+VBIO,Valion Bio Cmn,R,8/20/2026 11:26:23 AM
+FACWW,Factorial Energy Inc. Warrant,Q,8/20/2026 11:30:28 AM
+PBMWW,Psyence Biomedical Ltd. Wts,R,8/20/2026 11:32:39 AM
+RKLX,Def Dly Tg 2x Lg RKLB,Q,8/20/2026 11:35:48 AM
+NTRP,NextTrip Inc Cmn,R,8/20/2026 11:37:24 AM
+GIPR,Generation Income Propertie Cm,R,8/20/2026 11:37:46 AM
+SHAZ,SharonAI Hldgs Cmn A,R,8/20/2026 11:39:44 AM
+SATLW,Satellogic Inc. Wt,R,8/20/2026 11:41:14 AM
+FOXXW,Foxx Development Holdings In W,R,8/20/2026 11:42:33 AM
+RGTIW,Rigetti Computing Wts,R,8/20/2026 11:45:43 AM
+VTIX,Virtuix Hldgs Cmn A,Q,8/20/2026 11:45:55 AM
+NBIG,Thm Lvg Shs 2X lg NBIS,Q,8/20/2026 11:46:02 AM
+SAIHW,SAIHEAT Limited Wt,R,8/20/2026 11:46:45 AM
+NIPG,NIP Group Inc. American Dep Sh,Q,8/20/2026 11:47:00 AM
+OKLL,Tdl Df Dy Tgt 2X Lg OKLO,Q,8/20/2026 11:47:04 AM
+UECG,Thm Lvg Shs 2X lg UEC,Q,8/20/2026 11:50:30 AM
+ICUCW,SeaStar Med Hldg Cp Wt,R,8/20/2026 11:51:50 AM
+CISO,"CISO Global, Inc. Cm St",R,8/20/2026 11:53:51 AM
+WMT,Walmart Inc Cmn,Q,8/20/2026 11:54:30 AM
+NCOOW,Sthrn Cr Acq I Cp Wt,Q,8/20/2026 11:55:10 AM
+EOSE,Eos Energy Enterprs Cl A Cm,R,8/20/2026 11:56:13 AM
+HUBCW,Hub Cyber Security Ltd. Wt,R,8/20/2026 11:57:03 AM
+INIO,INNIO N.V. Ordinary Shares,Q,8/20/2026 11:58:17 AM
+ALOY,REalloys Inc. Common Stock,R,8/20/2026 12:02:01 PM
+AIAI,AIAI Holdings Corp Cl A CS,Q,8/20/2026 12:02:46 PM
+OPENW,Opendoor Technologies Inc,Q,8/20/2026 12:04:20 PM
+GLSI,Greenwich LifeScience Comm Stk,R,8/20/2026 12:07:28 PM
+GTERW,Globa Terra Acq Warrants,Q,8/20/2026 12:07:30 PM
+GTERR,Globa Terra Acq Rights,Q,8/20/2026 12:07:52 PM
+CXAI,CXApp Inc. Class A Common Stk,R,8/20/2026 12:07:52 PM
+CXIIW,Churchill Capital Corp XII Wts,Q,8/20/2026 12:09:51 PM
+PYXS,"Pyxis Oncology, Inc. CS",Q,8/20/2026 12:10:26 PM
+ICG,Intchains Group Limited ADS,R,8/20/2026 12:10:36 PM
+SVAQW,Silicon Vlly Acq Cp Wt,Q,8/20/2026 12:16:46 PM
+AGEN,Agenus Inc.,R,8/20/2026 12:18:27 PM
+ARTCW,Art Technology Acquisition Wts,Q,8/20/2026 12:22:31 PM
+UPB,Upstream Bio Cmn,Q,8/20/2026 12:22:40 PM
+AIOS,AIOS Tech Inc. Cl A,R,8/20/2026 12:25:35 PM
+FCEL,"FuelCell Energy, Inc.",Q,8/20/2026 12:34:21 PM
+SPRY,ARS Pharma Inc Cmn,Q,8/20/2026 12:44:01 PM
+NRSN,NeuroSense Thera Ltd Ord,R,8/20/2026 12:44:52 PM
+KDKRW,"Kodiak AI, Inc. Warrants",R,8/20/2026 12:48:30 PM
+BSAAR,BEST SPAC I Acquisition Corp R,R,8/20/2026 12:49:24 PM
+CCCTW,Columbus Cr Cp I Wt,Q,8/20/2026 12:52:46 PM
+VOGX,Vogenx Inc Cmn,R,8/20/2026 12:53:35 PM
+PARAW,"Banzai International, Inc. W",R,8/20/2026 12:55:47 PM
+EQPT,EquipmentShare.com Cl A Cm Stk,Q,8/20/2026 1:00:34 PM
+GRNQ,Greenpro Capital Corp. Cmn Stk,R,8/20/2026 1:02:55 PM
+SPWRW,SunPower Inc Warrant,R,8/20/2026 1:05:16 PM
+ZCMD,Zhongchao Cl A Ordinary Shs,R,8/20/2026 1:08:15 PM
+SHLS,Shoals Technologies Cl A CM,Q,8/20/2026 1:09:28 PM
+YB,Yuanbao ADS,Q,8/20/2026 1:09:50 PM
+SCAG,Scage Future ADS,Q,8/20/2026 1:12:48 PM
+MTEKW,Maris-Tech Ltd. Wts,R,8/20/2026 1:12:59 PM
+LHSW,Lianhe Swl Intl Gp Ld Cl A Ord,R,8/20/2026 1:13:08 PM
+BNAI,Brand Engagement Cmn Stk,R,8/20/2026 1:15:30 PM
+ISUL,GraniteShares ETF 2X Lng ISRG,Q,8/20/2026 1:15:49 PM
+FCUV,Focus Universal Inc. Cm,R,8/20/2026 1:16:16 PM
+CTXR,Citius Pharmaceuticals Cm St,R,8/20/2026 1:19:23 PM
+CDTG,CDT Environmental Technology I,R,8/20/2026 1:20:29 PM
+SORA,AsiaStrategy Ord Shs,R,8/20/2026 1:22:32 PM
+ZEO,Zeo Energy Corp CL A Cmn Stk,R,8/20/2026 1:42:54 PM
+BCAR,D. Boral ARC Acq I Cl A OS,Q,8/20/2026 1:52:28 PM
+AHMA,Ambitions Enterprise M Cl A OS,R,8/20/2026 1:54:33 PM
+IEAGR,Infinite Eagle Acq Rights,Q,8/20/2026 2:02:44 PM
+BRLSW,Borealis Foods Wt,R,8/20/2026 2:04:05 PM
+ECOR,"electroCore, Inc. Common Stk",R,8/20/2026 2:06:41 PM
+DFSC,DEFSEC Technologies Inc. Cm,R,8/20/2026 2:09:39 PM
+NEXRW,Nexera Technologies Ltd Wt,R,8/20/2026 2:13:11 PM
+XCUR,"Exicure, Inc. Common Stock",R,8/20/2026 2:16:56 PM
+BIAFW,"bioAffinity Technologies, Wt",R,8/20/2026 2:18:49 PM
+LATAW,Galata Acquisition Corp. II Wt,Q,8/20/2026 2:28:37 PM
+RNAZ,TransCode Therapeutics Cm,R,8/20/2026 2:30:02 PM
+LIVE,Live Ventures Inc Cmn Stk,R,8/20/2026 2:30:58 PM
+CJMB,Callan JMB Inc. Comm Stk,R,8/20/2026 2:35:49 PM
+OKTG,Thm Lvg Shs 2X lg OKTA,Q,8/20/2026 2:47:38 PM
+ADXN,Addex Therapeutics Ltd ADS,R,8/20/2026 2:48:01 PM
+BIOA,"BioAge Labs, Inc. Common Stock",Q,8/20/2026 2:48:22 PM
+TURB,"Turbo Energy, S.A.",R,8/20/2026 2:50:43 PM
+FOXX,Foxx Development Hold Inc CS,R,8/20/2026 2:52:25 PM
+RDZNW,Roadzen Inc Wts,R,8/20/2026 2:55:37 PM
+ELVA,Electrovaya Inc. cm,R,8/20/2026 3:02:51 PM
+SAGT,SAGTEC GLB LTD Ord A,R,8/20/2026 3:04:04 PM
+BETRW,Better Home & Finance Holdi Wt,Q,8/20/2026 3:04:44 PM
+PODC,"PodcastOne, Inc. Cmn",R,8/20/2026 3:11:26 PM
+APMD,"Apnimed, Inc. CS",Q,8/20/2026 3:12:53 PM
+CMND,Clearmind Medicine Inc. Cmn,R,8/20/2026 3:17:48 PM
+BRUNW,Boost Run Wt,R,8/20/2026 3:19:55 PM
+YICCW,Yorkville International Capita,Q,8/20/2026 3:24:10 PM
+CTSO,Cytosorbents Corp Cmn Stk,R,8/20/2026 3:26:10 PM
+AZIO,"Azio AI Holdings, Inc. Cmn",R,8/20/2026 3:27:58 PM
+AMIX,"Autonomix Medical, Inc. Cmn",R,8/20/2026 3:29:19 PM
+QUMSR,Quantumsphere Acq Rt,Q,8/20/2026 3:32:19 PM
+HCWB,HCW Biologics Inc. Cm,R,8/20/2026 3:32:20 PM
+GYGY,"Game Your Game, Inc. CS",R,8/20/2026 3:36:42 PM
+LNZAW,LanzaTech Global Wts,R,8/20/2026 3:40:23 PM
+BCARW,D. Boral ARC Acquisition I WT,Q,8/20/2026 3:46:08 PM
+NMRA,Neumora Therapeutics Cmn,Q,8/20/2026 3:47:26 PM
+MB,MasterBeef Grp Ord,R,8/20/2026 3:49:53 PM
+PTORW,Praetorian Acquisition Cp Wt,Q,8/20/2026 3:49:54 PM
+BEAGR,Bold Eagle Acquisition Corp Rt,Q,8/20/2026 3:50:58 PM
+SDAWW,SunCar Technology Group Wt,R,8/20/2026 3:51:49 PM
+QMLS,"QumulusAI, Inc. Common Stock",Q,8/20/2026 3:52:47 PM
+MNPR,Monopar Therapeutics Inc Cmn,R,8/20/2026 3:55:56 PM
+ALEC,"Alector, Inc. Common Stock",Q,8/20/2026 3:56:12 PM
+RAIN,Rain Enhancement Tech Cl A CS,R,8/20/2026 3:59:40 PM
+IQ,"iQIYI, Inc. ADS",Q,8/20/2026 3:59:51 PM
+EDIT,"Editas Medicine, Inc. Cm St",Q,8/20/2026 3:59:52 PM
+BNR,Burning Rock Biotech Ltd ADS,Q,8/20/2026 4:00:00 PM
+20260821041525

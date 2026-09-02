@@ -1,0 +1,31 @@
+{
+  "capital": 10000,
+  "risk_pct": 0.01,
+  "_aide": "borrow: 'easy' | 'hard' | 'none', releve chez le courtier. Absent (null) = toute position vendeuse refusee (R7/R9). Aucune source publique ne diffuse cette donnee.",
+  "plans": [
+    {
+      "symbol": "CNET",
+      "direction": "short",
+      "catalyst": "Titre sous Rule 201, flottant reduit - thse de retombee",
+      "entry": 1.39, "stop": 1.55, "targets": [1.10],
+      "invalidation": "Reprise au-dessus du plus haut du jour",
+      "borrow": null, "borrow_rate": null
+    },
+    {
+      "symbol": "CDTG",
+      "direction": "short",
+      "catalyst": "Chute de 39 pourcent sous la cloture precedente",
+      "entry": 1.83, "stop": 2.05, "targets": [1.40],
+      "invalidation": "Depot 8-K avant l'ouverture",
+      "borrow": "hard", "borrow_rate": 0.85
+    },
+    {
+      "symbol": "UCL",
+      "direction": "long",
+      "catalyst": "Rebond technique apres capitulation",
+      "entry": 0.39, "stop": 0.35, "targets": [0.50],
+      "invalidation": "Nouveau plus bas",
+      "borrow": null, "borrow_rate": null
+    }
+  ]
+}

@@ -1,0 +1,616 @@
+<title>Permis de Trader</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Bricolage+Grotesque:opsz,wght@12..96,600;12..96,800&family=IBM+Plex+Mono:wght@400;500;600&family=Newsreader:ital,opsz,wght@0,6..72,400;0,6..72,500;0,6..72,600;1,6..72,400&display=swap">
+
+<style>
+:root{
+  --paper:#FAF8F4;
+  --surface:#FFFFFF;
+  --surface-2:#F2EEE6;
+  --ink:#1A1815;
+  --ink-2:#4A4539;
+  --muted:#7A7365;
+  --line:#DED7C9;
+  --accent:#B57614;
+  --accent-soft:#F3E6CC;
+  --ok:#3E7A55;
+  --ok-soft:#E2EFE5;
+  --ko:#A33B32;
+  --ko-soft:#F6E3E0;
+  --shadow:0 1px 2px rgba(26,24,21,.06),0 8px 24px -12px rgba(26,24,21,.18);
+  --radius:3px;
+}
+@media (prefers-color-scheme:dark){
+  :root:not([data-theme="light"]){
+    --paper:#14120F;
+    --surface:#1C1A16;
+    --surface-2:#24211B;
+    --ink:#EDE9E1;
+    --ink-2:#C4BDAF;
+    --muted:#918A7C;
+    --line:#332F27;
+    --accent:#D99B33;
+    --accent-soft:#3A2E17;
+    --ok:#6FA97F;
+    --ok-soft:#1E2C22;
+    --ko:#D4685C;
+    --ko-soft:#2E1D1A;
+    --shadow:0 1px 2px rgba(0,0,0,.4),0 8px 24px -12px rgba(0,0,0,.6);
+  }
+}
+:root[data-theme="dark"]{
+  --paper:#14120F;
+  --surface:#1C1A16;
+  --surface-2:#24211B;
+  --ink:#EDE9E1;
+  --ink-2:#C4BDAF;
+  --muted:#918A7C;
+  --line:#332F27;
+  --accent:#D99B33;
+  --accent-soft:#3A2E17;
+  --ok:#6FA97F;
+  --ok-soft:#1E2C22;
+  --ko:#D4685C;
+  --ko-soft:#2E1D1A;
+  --shadow:0 1px 2px rgba(0,0,0,.4),0 8px 24px -12px rgba(0,0,0,.6);
+}
+
+*{box-sizing:border-box}
+body{
+  margin:0;background:var(--paper);color:var(--ink);
+  font-family:Newsreader,Georgia,"Times New Roman",serif;
+  font-size:17px;line-height:1.6;
+  -webkit-font-smoothing:antialiased;
+}
+h1,h2,h3{font-family:"Bricolage Grotesque",system-ui,sans-serif;font-weight:800;text-wrap:balance;margin:0;line-height:1.1}
+.mono{font-family:"IBM Plex Mono",ui-monospace,monospace;font-variant-numeric:tabular-nums}
+button{font:inherit;color:inherit;cursor:pointer}
+:focus-visible{outline:2px solid var(--accent);outline-offset:3px}
+
+.wrap{max-width:720px;margin:0 auto;padding:0 24px}
+
+/* ---------- rail ---------- */
+.rail{
+  position:sticky;top:0;z-index:10;background:var(--paper);
+  border-bottom:1px solid var(--line);
+}
+.rail-in{max-width:720px;margin:0 auto;padding:12px 24px;display:flex;align-items:center;gap:16px}
+.rail-id{font-family:"Bricolage Grotesque",sans-serif;font-weight:800;font-size:14px;letter-spacing:-.01em;white-space:nowrap}
+.rail-id span{color:var(--accent)}
+.bar{flex:1;height:4px;background:var(--surface-2);border-radius:2px;overflow:hidden}
+.bar-fill{height:100%;background:var(--accent);width:0;transition:width .35s cubic-bezier(.4,0,.2,1)}
+.rail-count{font-family:"IBM Plex Mono",monospace;font-size:12px;color:var(--muted);font-variant-numeric:tabular-nums;white-space:nowrap}
+.theme-btn{background:none;border:1px solid var(--line);border-radius:var(--radius);padding:4px 8px;font-size:12px;font-family:"IBM Plex Mono",monospace;color:var(--muted)}
+.theme-btn:hover{border-color:var(--accent);color:var(--accent)}
+
+/* ---------- screens ---------- */
+.screen{display:none;padding:48px 0 80px}
+.screen.on{display:block;animation:rise .4s cubic-bezier(.2,.7,.3,1)}
+@keyframes rise{from{opacity:0;transform:translateY(8px)}to{opacity:1;transform:none}}
+@media (prefers-reduced-motion:reduce){
+  .screen.on{animation:none}
+  .bar-fill{transition:none}
+}
+
+/* ---------- home ---------- */
+.eyebrow{font-family:"IBM Plex Mono",monospace;font-size:11px;letter-spacing:.14em;text-transform:uppercase;color:var(--accent);margin-bottom:20px}
+.home h1{font-size:clamp(38px,7vw,60px);letter-spacing:-.03em;margin-bottom:20px}
+.lede{font-size:19px;color:var(--ink-2);max-width:60ch;margin-bottom:14px}
+.lede em{font-style:italic;color:var(--ink)}
+.note{font-size:15px;color:var(--muted);max-width:62ch}
+
+.modes{display:grid;gap:12px;margin:36px 0 28px}
+.mode{
+  display:flex;align-items:baseline;gap:16px;width:100%;text-align:left;
+  background:var(--surface);border:1px solid var(--line);border-radius:var(--radius);
+  padding:18px 20px;transition:border-color .18s,transform .18s;
+}
+.mode:hover{border-color:var(--accent);transform:translateX(3px)}
+.mode-n{font-family:"IBM Plex Mono",monospace;font-size:12px;color:var(--accent);font-weight:600;white-space:nowrap}
+.mode-t{font-family:"Bricolage Grotesque",sans-serif;font-weight:600;font-size:17px;display:block;margin-bottom:2px}
+.mode-d{font-size:15px;color:var(--muted);line-height:1.45}
+
+.best{
+  border-left:2px solid var(--accent);padding:2px 0 2px 16px;
+  font-size:15px;color:var(--ink-2);margin-bottom:28px;
+}
+
+/* ---------- domains ---------- */
+.dom-list{display:grid;gap:8px;margin:28px 0}
+.dom{
+  display:flex;align-items:center;gap:14px;width:100%;text-align:left;
+  background:var(--surface);border:1px solid var(--line);border-radius:var(--radius);padding:14px 18px;
+  transition:border-color .18s;
+}
+.dom:hover{border-color:var(--accent)}
+.dom-name{flex:1;font-size:16px}
+.dom-meta{font-family:"IBM Plex Mono",monospace;font-size:12px;color:var(--muted)}
+
+/* ---------- question ---------- */
+.q-head{display:flex;align-items:center;gap:12px;margin-bottom:18px}
+.q-dom{font-family:"IBM Plex Mono",monospace;font-size:11px;letter-spacing:.1em;text-transform:uppercase;color:var(--accent);background:var(--accent-soft);padding:3px 8px;border-radius:2px}
+.q-multi{font-family:"IBM Plex Mono",monospace;font-size:11px;color:var(--muted)}
+.q-text{font-size:23px;line-height:1.35;font-family:"Bricolage Grotesque",sans-serif;font-weight:600;letter-spacing:-.015em;margin-bottom:26px}
+
+.opts{display:grid;gap:9px;margin-bottom:26px}
+.opt{
+  display:flex;gap:14px;align-items:flex-start;width:100%;text-align:left;
+  background:var(--surface);border:1px solid var(--line);border-radius:var(--radius);
+  padding:14px 16px;transition:border-color .15s,background .15s;
+}
+.opt:hover:not(:disabled){border-color:var(--accent)}
+.opt:disabled{cursor:default}
+.opt-k{font-family:"IBM Plex Mono",monospace;font-size:13px;font-weight:600;color:var(--muted);flex-shrink:0;line-height:1.5}
+.opt-t{flex:1;font-size:16px;line-height:1.45}
+.opt[aria-pressed="true"]{border-color:var(--accent);background:var(--accent-soft)}
+.opt[aria-pressed="true"] .opt-k{color:var(--accent)}
+.opt.right{border-color:var(--ok);background:var(--ok-soft)}
+.opt.right .opt-k{color:var(--ok)}
+.opt.wrong{border-color:var(--ko);background:var(--ko-soft)}
+.opt.wrong .opt-k{color:var(--ko)}
+
+.act{display:flex;gap:12px;align-items:center;flex-wrap:wrap}
+.btn{
+  background:var(--ink);color:var(--paper);border:1px solid var(--ink);
+  border-radius:var(--radius);padding:11px 22px;font-family:"Bricolage Grotesque",sans-serif;
+  font-weight:600;font-size:15px;transition:opacity .15s;
+}
+.btn:hover{opacity:.86}
+.btn:disabled{opacity:.32;cursor:not-allowed}
+.btn-ghost{background:none;color:var(--ink-2);border-color:var(--line)}
+.btn-ghost:hover{border-color:var(--accent);color:var(--accent);opacity:1}
+
+/* ---------- feedback ---------- */
+.fb{margin-bottom:26px;border-left:2px solid;padding:2px 0 2px 18px}
+.fb.ok{border-color:var(--ok)}
+.fb.ko{border-color:var(--ko)}
+.fb-v{font-family:"Bricolage Grotesque",sans-serif;font-weight:700;font-size:14px;letter-spacing:.02em;margin-bottom:7px}
+.fb.ok .fb-v{color:var(--ok)}
+.fb.ko .fb-v{color:var(--ko)}
+.fb-x{font-size:16px;color:var(--ink-2);line-height:1.55}
+.fb-src{font-family:"IBM Plex Mono",monospace;font-size:12px;color:var(--muted);margin-top:9px}
+
+/* ---------- result ---------- */
+.score{display:flex;align-items:baseline;gap:14px;margin-bottom:8px}
+.score-n{font-family:"Bricolage Grotesque",sans-serif;font-weight:800;font-size:clamp(56px,12vw,86px);letter-spacing:-.04em;line-height:1}
+.score-d{font-family:"IBM Plex Mono",monospace;font-size:18px;color:var(--muted)}
+.verdict{font-family:"Bricolage Grotesque",sans-serif;font-weight:700;font-size:20px;margin-bottom:10px}
+.verdict.pass{color:var(--ok)}
+.verdict.fail{color:var(--ko)}
+
+.breakdown{margin:36px 0 30px;border-top:1px solid var(--line)}
+.br-row{display:grid;grid-template-columns:1fr 92px 52px;align-items:center;gap:14px;padding:13px 0;border-bottom:1px solid var(--line)}
+.br-name{font-size:15px}
+.br-track{height:5px;background:var(--surface-2);border-radius:3px;overflow:hidden}
+.br-fill{height:100%;border-radius:3px}
+.br-num{font-family:"IBM Plex Mono",monospace;font-size:13px;text-align:right;color:var(--ink-2)}
+
+.weak{background:var(--surface-2);border-radius:var(--radius);padding:20px 22px;margin-bottom:30px}
+.weak h3{font-size:15px;margin-bottom:10px}
+.weak ul{margin:0;padding-left:18px;font-size:15px;color:var(--ink-2)}
+.weak li{margin-bottom:5px}
+
+.foot{border-top:1px solid var(--line);margin-top:56px;padding:22px 0 0;font-size:13px;color:var(--muted);line-height:1.6}
+</style>
+
+<div class="rail">
+  <div class="rail-in">
+    <div class="rail-id">PERMIS DE <span>TRADER</span></div>
+    <div class="bar"><div class="bar-fill" id="bar"></div></div>
+    <div class="rail-count mono" id="count"></div>
+    <button class="theme-btn mono" id="theme" title="Changer de thème">◐</button>
+  </div>
+</div>
+
+<!-- ============ ACCUEIL ============ -->
+<section class="screen on home" id="s-home">
+  <div class="wrap">
+    <div class="eyebrow">Évaluation · Day trading actions US</div>
+    <h1>Connais-tu vraiment la méthode&nbsp;?</h1>
+    <p class="lede">Quarante questions tirées des règles documentées dans <em>docu/methode/</em> et <em>docu/synthese/</em>. Correction immédiate, source citée, bilan par domaine.</p>
+    <p class="note">Le seuil de réussite est fixé à 35 sur 40 — délibérément élevé. Sur une méthode où une seule erreur de dimensionnement efface des semaines de gains, savoir « à peu près » n'est pas savoir.</p>
+
+    <div class="best" id="best" style="display:none"></div>
+
+    <div class="modes">
+      <button class="mode" data-mode="exam">
+        <span class="mode-n">01</span>
+        <span><span class="mode-t">Examen blanc</span><span class="mode-d">40 questions tirées de tous les domaines, dans un ordre aléatoire. Le format de référence.</span></span>
+      </button>
+      <button class="mode" data-mode="domain">
+        <span class="mode-n">02</span>
+        <span><span class="mode-t">Entraînement par domaine</span><span class="mode-d">Travailler un seul sujet — utile après un bilan qui révèle une faiblesse précise.</span></span>
+      </button>
+      <button class="mode" data-mode="weak">
+        <span class="mode-n">03</span>
+        <span><span class="mode-t">Reprendre mes erreurs</span><span class="mode-d">Rejouer uniquement les questions ratées à la dernière session.</span></span>
+      </button>
+    </div>
+
+    <div class="foot">
+      Contenu dérivé du cours Academy Germain (459 p.) et de 13 vidéos de la chaîne du même auteur.
+      Ce questionnaire évalue la compréhension d'une méthode enseignée par un tiers ; il ne la valide pas
+      et ne constitue pas un conseil d'investissement.
+    </div>
+  </div>
+</section>
+
+<!-- ============ CHOIX DOMAINE ============ -->
+<section class="screen" id="s-domain">
+  <div class="wrap">
+    <div class="eyebrow">Entraînement ciblé</div>
+    <h1 style="font-size:34px;margin-bottom:12px">Choisir un domaine</h1>
+    <p class="note">Le chiffre indique le nombre de questions disponibles.</p>
+    <div class="dom-list" id="domlist"></div>
+    <button class="btn btn-ghost" data-go="home">Retour</button>
+  </div>
+</section>
+
+<!-- ============ QUESTION ============ -->
+<section class="screen" id="s-quiz">
+  <div class="wrap">
+    <div class="q-head">
+      <span class="q-dom" id="qdom"></span>
+      <span class="q-multi mono" id="qmulti"></span>
+    </div>
+    <div class="q-text" id="qtext"></div>
+    <div class="opts" id="qopts"></div>
+    <div id="qfb"></div>
+    <div class="act">
+      <button class="btn" id="validate">Valider</button>
+      <button class="btn" id="next" style="display:none">Suivante</button>
+      <button class="btn btn-ghost" data-go="home">Abandonner</button>
+    </div>
+  </div>
+</section>
+
+<!-- ============ RÉSULTAT ============ -->
+<section class="screen" id="s-result">
+  <div class="wrap">
+    <div class="eyebrow">Relevé de session</div>
+    <div class="score"><span class="score-n mono" id="rn">0</span><span class="score-d mono" id="rd"></span></div>
+    <div class="verdict" id="rv"></div>
+    <p class="note" id="rc"></p>
+    <div class="breakdown" id="rb"></div>
+    <div class="weak" id="rw" style="display:none"></div>
+    <div class="act">
+      <button class="btn" data-go="home">Nouvelle session</button>
+      <button class="btn btn-ghost" id="redo" style="display:none">Reprendre mes erreurs</button>
+    </div>
+  </div>
+</section>
+
+<script>
+"use strict";
+
+/* ---------------- domaines ---------------- */
+const DOM = {
+  fond:  "Entreprise & dilution",
+  march: "Marchés & prix",
+  short: "Vente à découvert",
+  cata:  "Catalyseurs & filings",
+  risk:  "Risque & dimensionnement",
+  rout:  "Routine & plan",
+  outil: "Outils",
+  disc:  "Exclusion & discipline"
+};
+
+/* ---------------- banque de questions ----------------
+   c = index(es) de la bonne réponse ; multi si tableau > 1 */
+const Q = [
+/* --- Entreprise & dilution --- */
+{d:"fond",q:"Le flottant (float) d'une action désigne :",o:["Toutes les actions émises par la société","Les actions réellement disponibles à l'échange public","Les actions détenues par les dirigeants","Le volume échangé sur la séance"],c:[1],
+ x:"Le flottant exclut les titres bloqués — détenus par les insiders ou sous période de blocage. Les confondre avec les actions en circulation fausse tous les calculs qui en dépendent : intérêt vendeur en % du flottant, rotation, amplitude attendue.",s:"synthese/02"},
+{d:"fond",q:"Pourquoi un flottant réduit amplifie-t-il les mouvements ?",o:["Parce que le cours est plus bas","Parce qu'un volume d'achat modeste doit remonter loin dans le carnet pour être servi","Parce que les frais de courtage sont plus élevés","Parce que la société publie plus souvent"],c:[1],
+ x:"Peu de titres disponibles signifie que la demande épuise vite les offres proches et doit aller chercher des prix éloignés. C'est ce qui rend ces titres intéressants — et ce qui rend le stop difficile à tenir.",s:"synthese/02"},
+{d:"fond",q:"Quels instruments diluent l'actionnaire existant ? (plusieurs réponses)",o:["Le placement privé","Le rachat d'actions par la société","Les warrants","Le programme ATM (at-the-market)"],c:[0,2,3],
+ x:"Le rachat d'actions fait l'inverse : il réduit le nombre de titres et produit une relution. Les trois autres augmentent le nombre d'actions en circulation.",s:"synthese/02"},
+{d:"fond",q:"Qu'est-ce qui rend les warrants faciles à sous-estimer ?",o:["Ils sont interdits aux petites capitalisations","Ils diluent immédiatement à l'émission","Ils promettent une dilution différée, pas immédiate","Ils ne sont jamais publiés dans les dépôts"],c:[2],
+ x:"Un warrant est un droit d'acheter des actions futures à prix fixé. La dilution est réelle mais décalée dans le temps, donc absente du prix au moment de l'annonce.",s:"synthese/02"},
+{d:"fond",q:"L'autonomie financière (cash runway) d'une société intéresse le day trader parce que :",o:["Elle détermine le dividende","Une autonomie courte rend une émission d'actions nécessaire, donc anticipable","Elle fixe le prix d'introduction en bourse","Elle est publiée en temps réel"],c:[1],
+ x:"On ne cherche pas à valoriser l'entreprise mais à savoir si elle est contrainte d'émettre. C'est ce qui transforme l'analyse fondamentale en outil intraday.",s:"synthese/02"},
+
+/* --- Marchés & prix --- */
+{d:"march",q:"Quelle est la différence entre le carnet d'ordres et le time & sales ?",o:["Aucune, ce sont deux noms du même outil","Le carnet montre les intentions, le tape montre les exécutions","Le carnet est payant, le tape est gratuit","Le tape ne fonctionne qu'en pré-marché"],c:[1],
+ x:"Une intention affichée au carnet peut être retirée ; une exécution inscrite au tape, non. C'est ce qui fait du tape le document le plus fiable des deux.",s:"synthese/03"},
+{d:"march",q:"Un cours situé sous le VWAP indique :",o:["Que les vendeurs dominent la séance","Que le titre va nécessairement remonter","Qu'un halt est imminent","Que le flottant a augmenté"],c:[0],
+ x:"Le VWAP ne prédit pas, il situe. Sous le VWAP, le prix moyen payé depuis l'ouverture est supérieur au cours actuel : la pression vendeuse l'emporte.",s:"synthese/03"},
+{d:"march",q:"Dans DAS Trader, la fenêtre appelée « montage » correspond à :",o:["Le graphique en chandeliers","Le level 2, depuis lequel partent aussi les ordres","La liste de surveillance","Le journal des positions"],c:[1],
+ x:"Le montage n'est pas un simple afficheur de carnet : c'est de là que se passent, s'annulent et se rappellent les ordres.",s:"chaine/05"},
+{d:"march",q:"En pré-marché, la lecture du tape est particulièrement révélatrice parce que :",o:["Les frais sont réduits","Le volume est faible, donc chaque transaction pèse","Les institutionnels sont absents du marché","Les spreads sont plus serrés"],c:[1],
+ x:"Faible volume signifie que chaque exécution est visible individuellement. Des lots de quelques actions signalent du particulier, des blocs importants signalent un intervenant institutionnel.",s:"synthese/03"},
+{d:"march",q:"Une suspension de cotation (halt) est :",o:["Une panne technique de la plateforme","Un mécanisme de protection prévisible, déclenché sur nouvelle ou volatilité","Une sanction contre le trader","Un événement propre au pré-marché"],c:[1],
+ x:"Les halts ont leurs types et leurs règles de reprise. Les subir comme un aléa est une erreur de préparation, pas une fatalité.",s:"synthese/03"},
+
+/* --- Vente à découvert --- */
+{d:"short",q:"Avant de vendre à découvert, le trader doit obtenir :",o:["Une autorisation de la SEC","Un locate auprès de son courtier","Un compte à effet de levier","Une confirmation du market maker"],c:[1],
+ x:"Le locate est la confirmation que le courtier peut trouver les titres à emprunter. C'est un préalable obligatoire, pas une formalité.",s:"methode/R7"},
+{d:"short",q:"Vendre à découvert sans locate s'appelle :",o:["Un short exempt","Un naked short, illégal aux États-Unis","Un short squeeze","Un buy-in"],c:[1],
+ x:"La vente à découvert nue est interdite. La réglementation impose la confirmation d'emprunt préalable.",s:"methode/R7"},
+{d:"short",q:"Le coût d'emprunt (borrow rate) :",o:["N'est prélevé que si le trade est perdant","Court chaque jour, même si le cours ne bouge pas","Est fixé une fois pour toutes à l'ouverture de la position","Est offert sur les titres difficiles à emprunter"],c:[1],
+ x:"C'est un coût fixe quotidien. Sur un taux élevé, il peut absorber le gain espéré — il s'intègre au calcul du rapport gain/risque, il ne se découvre pas après coup.",s:"methode/R7"},
+{d:"short",q:"Formule du coût journalier d'emprunt :",o:["(Valeur position × taux annuel) / 365","Valeur position × taux annuel","(Valeur position / taux annuel) × 365","Taux annuel / nombre d'actions"],c:[0],
+ x:"Le taux est annualisé ; il faut le ramener au jour. Une position de 10 000 $ à 50 %/an coûte environ 13,70 $ par jour.",s:"methode/R7"},
+{d:"short",q:"La restriction Rule 201 (SSR) se déclenche quand un titre :",o:["Gagne 10 % ou plus dans la séance","Perd 10 % ou plus par rapport à la clôture de la veille","Franchit son plus haut annuel","Est suspendu deux fois dans la journée"],c:[1],
+ x:"Le déclencheur est une baisse de 10 % sous la clôture précédente. Elle reste active jusqu'à la clôture du lendemain, pas seulement pour la séance en cours.",s:"methode/R7"},
+{d:"short",q:"Avec la Rule 201 active, une vente à découvert ne peut se faire :",o:["Qu'au prix acheteur (bid)","Qu'à l'offre (ask) ou au-dessus","Qu'en pré-marché","Qu'au prix de clôture de la veille"],c:[1],
+ x:"L'interdiction de frapper le bid empêche les vendeurs d'accélérer la baisse. Concrètement, l'exécution devient plus difficile et plus chère.",s:"methode/R7"},
+{d:"short",q:"Un titre classé « indisponible à l'emprunt » signifie :",o:["Qu'il faut payer un supplément","Qu'il n'est pas jouable à la vente à découvert ce jour-là","Que la Rule 201 est active","Que le flottant est supérieur à 20 M"],c:[1],
+ x:"Trois états existent : facile à emprunter, difficile à emprunter (coûteux), et indisponible. Le troisième n'est pas un obstacle à contourner, c'est une fin de non-recevoir.",s:"methode/R7"},
+{d:"short",q:"Formule de l'intérêt vendeur (short interest %) :",o:["Actions vendues à découvert / volume moyen","(Actions vendues à découvert / flottant) × 100","Volume du jour / flottant","Actions vendues / actions en circulation"],c:[1],
+ x:"Rapporté au flottant, pas aux actions en circulation — c'est précisément pourquoi la distinction du flottant compte.",s:"methode/R8"},
+{d:"short",q:"La rotation du flottant se calcule par :",o:["Volume du jour / flottant","Flottant / volume du jour","Actions vendues à découvert / flottant","Volume du jour / actions en circulation"],c:[0],
+ x:"Elle mesure combien de fois le flottant a changé de mains dans la séance, donc l'intensité réelle du mouvement.",s:"methode/R8"},
+{d:"short",q:"Les « jours pour couvrir » (days to cover) mesurent :",o:["La durée légale avant de déboucler","Le nombre de jours de volume moyen nécessaire aux vendeurs pour racheter","Le délai de règlement-livraison","La durée de validité d'un locate"],c:[1],
+ x:"Actions vendues à découvert divisées par le volume quotidien moyen. Plus le chiffre est élevé, plus les vendeurs sont piégés si le titre monte.",s:"methode/R8"},
+
+/* --- Catalyseurs & filings --- */
+{d:"cata",q:"Un dépôt S-3 actif signale :",o:["Que la dilution a déjà eu lieu","Une autorisation d'émettre : la dilution devient possible","Une introduction en bourse imminente","Un rachat d'actions programmé"],c:[1],
+ x:"Le S-3 est le permis, pas l'acte. Un titre qui s'envole alors qu'un S-3 est actif est un candidat à la dilution, pas une histoire de croissance.",s:"synthese/04"},
+{d:"cata",q:"Un dépôt 424B signale :",o:["Que l'émission se concrétise réellement","Qu'un dirigeant a vendu ses titres","Un résultat trimestriel","Une suspension de cotation"],c:[0],
+ x:"C'est la différence décisive avec le S-3 : autorisation d'émettre d'un côté, émission effective de l'autre.",s:"synthese/04"},
+{d:"cata",q:"Le formulaire 8-K sert à annoncer :",o:["Les comptes annuels","Un événement significatif","Les positions des grands gestionnaires","Les opérations des dirigeants"],c:[1],
+ x:"C'est le canal de l'annonce soudaine — donc le canal du catalyseur.",s:"synthese/04"},
+{d:"cata",q:"Quel test le cours impose-t-il avant d'inscrire un titre à la liste de surveillance ?",o:["Un volume supérieur à 10 M","Le catalyseur doit être explicable en une phrase","Une capitalisation supérieure à 1 Md$","Trois séances de hausse consécutives"],c:[1],
+ x:"Si on ne peut pas résumer en une phrase pourquoi ce titre devrait bouger aujourd'hui, c'est en général qu'on n'a pas lu le communiqué en entier.",s:"methode/R11"},
+{d:"cata",q:"Pourquoi lire le communiqué entier plutôt que son titre ?",o:["Par obligation réglementaire","Parce que titre et contenu réel divergent régulièrement","Parce que le titre est publié en retard","Parce que le titre n'est pas archivé"],c:[1],
+ x:"Cette divergence est même à l'origine d'une partie des mouvements exploitables : le marché réagit au titre avant de lire le contenu.",s:"synthese/04"},
+{d:"cata",q:"Les catalyseurs spéculatifs se distinguent des autres parce qu'ils :",o:["Sont toujours haussiers","Ne reposent sur aucune information nouvelle sur l'entreprise","Sont publiés sur EDGAR","Concernent uniquement les biotechs"],c:[1],
+ x:"Mouvements auto-entretenus — phénomènes liés aux options courtes, rachats forcés. Violents et imprévisibles, précisément parce qu'aucun fait nouveau ne les ancre.",s:"synthese/04"},
+
+/* --- Risque & dimensionnement --- */
+{d:"risk",q:"Dans quel ordre les décisions de dimensionnement se prennent-elles ?",o:["Taille, puis stop, puis risque accepté","Risque accepté, puis niveau d'invalidation, puis taille","Stop, puis taille, puis risque","Cible, puis taille, puis stop"],c:[1],
+ x:"La taille est une conséquence, pas un choix. L'inverser produit mécaniquement la faute suivante : une position trop grosse fait ignorer son propre stop.",s:"methode/R1"},
+{d:"risk",q:"Formule de la taille de position :",o:["Capital / prix d'entrée","Risque accepté / |prix d'entrée − prix du stop|","Capital × 1 % × prix d'entrée","Risque accepté × prix du stop"],c:[1],
+ x:"Le dénominateur est le risque par action. Un stop plus large donne mécaniquement une position plus petite, à risque total constant.",s:"methode/R1"},
+{d:"risk",q:"Taux de risque par trade recommandé pour un débutant (0-6 mois) :",o:["0,5 %","1 %","2 %","5 %"],c:[0],
+ x:"La progression est graduelle : 0,5 % débutant, 1 % intermédiaire après trois mois positifs, 1 à 2 % confirmé, 2 à 3 % professionnel.",s:"methode/R1"},
+{d:"risk",q:"Rapport gain/risque minimal en dessous duquel un trade ne se prend pas :",o:["1:1","1:2","1:3","1:5"],c:[1],
+ x:"1:2 est le plancher, 1:3 la cible recommandée. Sous 1:2, les frais et l'émotionnel font basculer en dessous du seuil de rentabilité.",s:"methode/R2"},
+{d:"risk",q:"Avec un rapport gain/risque de 1:3, quel taux de réussite suffit à l'équilibre ?",o:["Environ 25 %","Environ 50 %","Environ 65 %","Environ 75 %"],c:[0],
+ x:"C'est la fonction du rapport gain/risque : rendre la rentabilité indépendante du besoin d'avoir raison. On peut se tromper trois fois sur quatre et rester profitable.",s:"methode/R2"},
+{d:"risk",q:"La perte journalière maximale recommandée se situe à :",o:["0,5 % du capital","2 à 3 % du capital","10 % du capital","Il n'y a pas de limite journalière"],c:[1],
+ x:"Atteinte, elle impose de fermer les positions et d'arrêter la journée. Après deux ou trois pertes, la décision n'est plus rationnelle.",s:"methode/R3"},
+{d:"risk",q:"À partir d'un drawdown de 10 à 15 %, la réaction prescrite est :",o:["Augmenter la taille pour se refaire","Réduire les tailles de 50 % et revoir la stratégie","Ne rien changer","Arrêter définitivement"],c:[1],
+ x:"L'échelle est graduée : 5-10 % réduire d'un quart, 10-15 % réduire de moitié, 15-20 % passage en simulation, au-delà de 20 % arrêt complet.",s:"methode/R4"},
+{d:"risk",q:"Un stop loss peut être déplacé :",o:["Dans les deux sens selon la conviction","Jamais, sous aucune condition","Uniquement pour protéger un gain acquis","Uniquement à la baisse en cas de forte volatilité"],c:[2],
+ x:"Il ne recule jamais. « Je le déplace, je suis sûr que ça va revenir » est la formulation exacte du mécanisme qui transforme une perte bornée en perte ouverte.",s:"methode/R5"},
+{d:"risk",q:"Pourquoi une perte de 50 % est-elle plus grave qu'elle n'en a l'air ?",o:["Les frais doublent","Il faut ensuite gagner 100 % pour revenir au point de départ","Le courtier clôture le compte","La fiscalité s'alourdit"],c:[1],
+ x:"L'asymétrie du drawdown : perte et récupération ne sont pas symétriques, et l'écart se creuse avec la profondeur. C'est de cette arithmétique que découle toute la gestion du risque.",s:"synthese/05"},
+
+/* --- Routine & plan --- */
+{d:"rout",q:"À quoi sert le pré-marché selon le cours ?",o:["À prendre ses positions avant les autres","À analyser, pas à opérer","À clôturer les positions de la veille","À rien, il faut dormir"],c:[1],
+ x:"Volume faible et fourchettes larges rendent l'exécution défavorable. Le travail y est de préparation, pas d'exécution.",s:"methode/R10"},
+{d:"rout",q:"Que prescrit le cours pour les toutes premières minutes après l'ouverture ?",o:["Entrer immédiatement pour capter le mouvement","Ne pas opérer, sauf plan explicite prévu à l'avance","Fermer toutes les positions","Doubler la taille habituelle"],c:[1],
+ x:"Les ordres accumulés pendant la nuit s'exécutent en même temps et produisent des signaux peu fiables. Il faut laisser le marché trouver sa direction.",s:"methode/R10"},
+{d:"rout",q:"La fenêtre où volume et liquidité sont maximaux se situe :",o:["4h00 – 6h30 EST","9h30 – 9h35 EST","10h00 – 11h30 EST","11h30 – 14h00 EST"],c:[2],
+ x:"C'est la fenêtre principale. Le milieu de journée, à l'inverse, est signalé comme une période d'activité réduite aux signaux moins fiables.",s:"methode/R10"},
+{d:"rout",q:"Que doit contenir un plan de trade ? (plusieurs réponses)",o:["Le catalyseur en une phrase","Le niveau d'invalidation","L'avis d'un autre trader","L'événement qui annulerait le trade"],c:[0,1,3],
+ x:"Sept entrées au total, dont la taille calculée et les objectifs échelonnés. Sa fonction est de déplacer la décision hors du moment où l'on est exposé.",s:"methode/R11"},
+{d:"rout",q:"Un dépôt réglementaire tombant avant l'ouverture doit :",o:["Être ignoré, le plan est fait","Avoir été prévu comme condition d'invalidation du plan","Faire doubler la position","Déclencher un achat automatique"],c:[1],
+ x:"Décider à l'avance qu'un tel dépôt annule le trade évite d'avoir à en juger dans l'urgence, au pire moment.",s:"synthese/04"},
+
+/* --- Outils --- */
+{d:"outil",q:"Quelle est la différence entre un screener et un scanner ?",o:["Aucune","Le screener filtre à un instant donné, le scanner alerte en continu","Le screener est payant, le scanner est gratuit","Le scanner ne fonctionne qu'après clôture"],c:[1],
+ x:"Le premier construit la liste avant l'ouverture, le second signale ce qui démarre pendant la séance. Ils sont complémentaires, pas substituables.",s:"methode/03-outils"},
+{d:"outil",q:"Le volume relatif (RVOL) est le filtre décisif parce qu'il détecte :",o:["La taille de l'entreprise","Si l'activité du jour sort de l'ordinaire","Le niveau de dette","Le nombre d'actionnaires"],c:[1],
+ x:"Il ne demande pas si le titre est gros ou petit, mais s'il se passe quelque chose aujourd'hui. Seuil retenu : supérieur à 2.",s:"methode/R6"},
+{d:"outil",q:"Quelle fonction est à la fois gratuite et la plus discriminante du dispositif ?",o:["Le scanner temps réel","La consultation des dépôts réglementaires (EDGAR)","Le fil de nouvelles payant","La plateforme d'exécution"],c:[1],
+ x:"C'est elle qui distingue un catalyseur de dilution d'une histoire de croissance — et elle ne coûte rien.",s:"methode/03-outils"},
+{d:"outil",q:"Dans quel ordre investir si le budget est limité ?",o:["Scanner temps réel d'abord","Nouvelles rapides avant la veille temps réel","Plateforme premium d'abord","Tout en même temps"],c:[1],
+ x:"Payer la veille temps réel avant de maîtriser la lecture des dépôts revient à acheter des alertes qu'on ne saura pas qualifier.",s:"methode/03-outils"},
+{d:"outil",q:"Pourquoi un outil dédié au flottant est-il nécessaire ?",o:["Pour connaître le dividende","Parce que le chiffre le plus accessible n'est pas toujours le flottant réel","Pour passer les ordres plus vite","Pour calculer les frais de courtage"],c:[1],
+ x:"Confondre actions en circulation et flottant fausse tous les indicateurs dérivés. Sur un flottant réduit, la vérification est obligatoire.",s:"methode/R6"},
+
+/* --- Exclusion & discipline --- */
+{d:"disc",q:"Quelle combinaison doit faire RENONCER à une position vendeuse ?",o:["Volume élevé + gap haussier","Rule 201 active + titre difficile à emprunter + flottant réduit + intérêt vendeur élevé","Capitalisation faible + prix bas","Catalyseur dilutif + volume important"],c:[1],
+ x:"C'est la règle R9. Les vendeurs en place paient chaque jour, ne peuvent plus frapper le bid, et la moindre poussée les force à racheter — ce qui alimente la hausse contre laquelle on se positionne.",s:"methode/R9"},
+{d:"disc",q:"Pourquoi la configuration d'exclusion est-elle particulièrement piégeuse ?",o:["Elle est rare et donc mal connue","Elle ressemble à la meilleure opportunité de vente à découvert","Elle n'apparaît qu'en pré-marché","Elle est interdite par le courtier"],c:[1],
+ x:"Titre survolté, flottant réduit, pessimisme généralisé : tout ce qui donne envie de vendre. C'est exactement pourquoi elle coûte cher.",s:"synthese/07"},
+{d:"disc",q:"Quel est le mécanisme d'échec récurrent documenté par la chaîne ?",o:["Prendre ses profits trop tôt","Attendre un repli pour renforcer une position qui va contre soi","Trader trop peu souvent","Placer un stop trop large"],c:[1],
+ x:"Il se présente à l'esprit comme de la patience alors qu'il est un refus de constater. C'est l'étape qui transforme une perte bornée en perte ouverte.",s:"synthese/05"},
+{d:"disc",q:"Pourquoi ne pas décider depuis un téléphone ?",o:["La connexion est trop lente","Une seule source est visible à la fois, donc la décision se prend sur une fraction de l'information","Les courtiers l'interdisent","Les frais sont plus élevés"],c:[1],
+ x:"Le poste de travail existe parce que la décision exige graphique, carnet et exécutions simultanément. C'est une règle de complétude de l'information, pas de confort.",s:"methode/R13"},
+{d:"disc",q:"Dans quels cas faut-il s'abstenir d'opérer ? (plusieurs réponses)",o:["Après trois pertes dans la séance","En état de fatigue ou de pression financière","Quand on entre pour ne pas rater quelque chose","Quand le rapport gain/risque dépasse 1:3"],c:[0,1,2],
+ x:"Un rapport gain/risque élevé est au contraire une raison d'agir. Les trois autres sont des motifs d'abstention explicites — l'abstention étant traitée comme une compétence, pas comme une faiblesse.",s:"methode/R12"},
+{d:"disc",q:"Selon la spécification de l'agent, la règle d'exclusion doit être implémentée comme :",o:["Une alerte informative","Un blocage qui refuse d'armer l'ordre","Une suggestion en fin de séance","Une statistique mensuelle"],c:[1],
+ x:"La séance perdante n'a pas eu lieu par ignorance de la règle. Un agent qui se contente d'avertir reproduit la même situation avec une étape de plus.",s:"methode/05"}
+];
+
+/* ---------------- état ---------------- */
+const PASS = 35, EXAM = 40;
+let queue = [], idx = 0, sel = new Set(), answered = false, results = [];
+
+const $ = id => document.getElementById(id);
+const store = {
+  get(k){ try { return JSON.parse(localStorage.getItem(k)); } catch(e){ return null; } },
+  set(k,v){ try { localStorage.setItem(k, JSON.stringify(v)); } catch(e){} }
+};
+
+/* ---------------- thème ---------------- */
+$("theme").onclick = () => {
+  const cur = document.documentElement.getAttribute("data-theme");
+  const isDark = cur === "dark" || (!cur && matchMedia("(prefers-color-scheme:dark)").matches);
+  const next = isDark ? "light" : "dark";
+  document.documentElement.setAttribute("data-theme", next);
+  store.set("agt-theme", next);
+};
+(function(){ const t = store.get("agt-theme"); if(t) document.documentElement.setAttribute("data-theme", t); })();
+
+/* ---------------- navigation ---------------- */
+function show(id){
+  document.querySelectorAll(".screen").forEach(s => s.classList.remove("on"));
+  $(id).classList.add("on");
+  window.scrollTo({top:0, behavior:"instant"});
+}
+document.addEventListener("click", e => {
+  const go = e.target.closest("[data-go]");
+  if(go && go.dataset.go === "home"){ renderHome(); show("s-home"); progress(0,0); }
+});
+
+function progress(cur, total){
+  $("bar").style.width = total ? (cur/total*100)+"%" : "0%";
+  $("count").textContent = total ? cur+" / "+total : "";
+}
+
+/* ---------------- accueil ---------------- */
+function renderHome(){
+  const best = store.get("agt-best");
+  const b = $("best");
+  if(best){
+    b.style.display = "block";
+    b.innerHTML = "Meilleur résultat : <strong class='mono'>"+best.score+" / "+best.total+"</strong> — "+
+                  (best.score >= PASS ? "seuil atteint." : "seuil non atteint (35 requis).");
+  } else b.style.display = "none";
+  const wrong = store.get("agt-wrong") || [];
+  document.querySelector('[data-mode="weak"]').disabled = wrong.length === 0;
+  document.querySelector('[data-mode="weak"]').style.opacity = wrong.length ? 1 : .4;
+}
+
+document.querySelectorAll(".mode").forEach(btn => btn.onclick = () => {
+  const m = btn.dataset.mode;
+  if(m === "exam") start(shuffle(Q.slice()).slice(0, EXAM));
+  else if(m === "domain"){ renderDomains(); show("s-domain"); }
+  else {
+    const w = store.get("agt-wrong") || [];
+    const set = Q.filter(q => w.includes(q.q));
+    if(set.length) start(shuffle(set));
+  }
+});
+
+function renderDomains(){
+  const list = $("domlist");
+  list.innerHTML = "";
+  Object.entries(DOM).forEach(([k,label]) => {
+    const n = Q.filter(q => q.d === k).length;
+    const b = document.createElement("button");
+    b.className = "dom";
+    b.innerHTML = '<span class="dom-name">'+label+'</span><span class="dom-meta mono">'+n+' questions</span>';
+    b.onclick = () => start(shuffle(Q.filter(q => q.d === k)));
+    list.appendChild(b);
+  });
+}
+
+/* ---------------- déroulé ---------------- */
+function shuffle(a){ for(let i=a.length-1;i>0;i--){ const j=Math.floor(Math.random()*(i+1)); [a[i],a[j]]=[a[j],a[i]]; } return a; }
+
+function start(set){
+  queue = set; idx = 0; results = [];
+  show("s-quiz"); renderQ();
+}
+
+function renderQ(){
+  const q = queue[idx];
+  sel = new Set(); answered = false;
+  progress(idx, queue.length);
+
+  $("qdom").textContent = DOM[q.d];
+  $("qmulti").textContent = q.c.length > 1 ? "· plusieurs réponses" : "";
+  $("qtext").textContent = q.q;
+  $("qfb").innerHTML = "";
+  $("validate").style.display = ""; $("validate").disabled = true;
+  $("next").style.display = "none";
+
+  const box = $("qopts"); box.innerHTML = "";
+  q.o.forEach((text, i) => {
+    const b = document.createElement("button");
+    b.className = "opt"; b.setAttribute("aria-pressed","false");
+    b.innerHTML = '<span class="opt-k">'+String.fromCharCode(65+i)+'</span><span class="opt-t"></span>';
+    b.querySelector(".opt-t").textContent = text;
+    b.onclick = () => {
+      if(answered) return;
+      if(q.c.length === 1){ sel.clear(); box.querySelectorAll(".opt").forEach(o=>o.setAttribute("aria-pressed","false")); }
+      if(sel.has(i)){ sel.delete(i); b.setAttribute("aria-pressed","false"); }
+      else { sel.add(i); b.setAttribute("aria-pressed","true"); }
+      $("validate").disabled = sel.size === 0;
+    };
+    box.appendChild(b);
+  });
+}
+
+$("validate").onclick = () => {
+  if(answered) return;
+  answered = true;
+  const q = queue[idx];
+  const correct = new Set(q.c);
+  const good = sel.size === correct.size && [...sel].every(i => correct.has(i));
+
+  $("qopts").querySelectorAll(".opt").forEach((b,i) => {
+    b.disabled = true;
+    if(correct.has(i)) b.classList.add("right");
+    else if(sel.has(i)) b.classList.add("wrong");
+  });
+
+  const fb = document.createElement("div");
+  fb.className = "fb " + (good ? "ok" : "ko");
+  fb.innerHTML = '<div class="fb-v">'+(good ? "Correct" : "Incorrect")+'</div><div class="fb-x"></div><div class="fb-src mono">→ '+q.s+'</div>';
+  fb.querySelector(".fb-x").textContent = q.x;
+  $("qfb").appendChild(fb);
+
+  results.push({q:q.q, d:q.d, good});
+  $("validate").style.display = "none";
+  $("next").style.display = "";
+  $("next").textContent = idx + 1 < queue.length ? "Suivante" : "Voir le relevé";
+  $("next").focus();
+};
+
+$("next").onclick = () => {
+  idx++;
+  if(idx < queue.length) renderQ();
+  else finish();
+};
+
+/* ---------------- relevé ---------------- */
+function finish(){
+  progress(queue.length, queue.length);
+  const score = results.filter(r => r.good).length;
+  const total = results.length;
+  const isExam = total === EXAM;
+  const passed = isExam ? score >= PASS : score/total >= 0.85;
+
+  $("rn").textContent = score;
+  $("rd").textContent = "/ " + total;
+  $("rv").textContent = passed ? "Seuil atteint" : "Seuil non atteint";
+  $("rv").className = "verdict " + (passed ? "pass" : "fail");
+  $("rc").textContent = isExam
+    ? (passed ? "35 bonnes réponses sur 40 étaient requises." : "35 bonnes réponses sur 40 sont requises. Les domaines faibles sont listés plus bas.")
+    : "Sur une série d'entraînement, le repère est de 85 % de bonnes réponses.";
+
+  const by = {};
+  results.forEach(r => { (by[r.d] = by[r.d] || {ok:0, n:0}); by[r.d].n++; if(r.good) by[r.d].ok++; });
+
+  const bd = $("rb"); bd.innerHTML = "";
+  const weak = [];
+  Object.entries(by).sort((a,b) => (a[1].ok/a[1].n) - (b[1].ok/b[1].n)).forEach(([k,v]) => {
+    const pct = v.ok / v.n;
+    if(pct < 0.7) weak.push(DOM[k]);
+    const row = document.createElement("div");
+    row.className = "br-row";
+    row.innerHTML =
+      '<div class="br-name">'+DOM[k]+'</div>'+
+      '<div class="br-track"><div class="br-fill" style="width:'+(pct*100)+'%;background:'+(pct>=0.7?"var(--ok)":"var(--ko)")+'"></div></div>'+
+      '<div class="br-num mono">'+v.ok+'/'+v.n+'</div>';
+    bd.appendChild(row);
+  });
+
+  const w = $("rw");
+  if(weak.length){
+    w.style.display = "block";
+    w.innerHTML = "<h3>À retravailler en priorité</h3><ul>" + weak.map(x => "<li>"+x+"</li>").join("") + "</ul>";
+  } else w.style.display = "none";
+
+  const wrongQ = results.filter(r => !r.good).map(r => r.q);
+  store.set("agt-wrong", wrongQ);
+  $("redo").style.display = wrongQ.length ? "" : "none";
+  $("redo").onclick = () => { const s = Q.filter(q => wrongQ.includes(q.q)); if(s.length) start(shuffle(s)); };
+
+  if(isExam){
+    const best = store.get("agt-best");
+    if(!best || score > best.score) store.set("agt-best", {score, total});
+  }
+  show("s-result");
+}
+
+renderHome();
+</script>

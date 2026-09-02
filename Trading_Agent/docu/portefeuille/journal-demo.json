@@ -1,0 +1,72 @@
+{
+  "initial": 10000.0,
+  "cash": 9952.000000000002,
+  "peak_equity": 10287.4,
+  "stats": {
+    "trades": 4,
+    "wins": 1,
+    "losses": 3,
+    "win_rate": 0.25,
+    "net": -47.99999999999818,
+    "avg_win": 288.4000000000001,
+    "avg_loss": -110.7999999999999,
+    "profit_factor": 0.8676293622142008,
+    "drawdown": 0.032602990065516826,
+    "equity": 9952.000000000002
+  },
+  "open": [],
+  "closed": [
+    {
+      "symbol": "ABCD",
+      "direction": "long",
+      "size": 500,
+      "entry": 5.01,
+      "exit": 5.5888,
+      "opened": "2026-08-21T10:30:00",
+      "closed": "2026-08-21T10:30:00",
+      "pnl": 288.4,
+      "fees": 1.0,
+      "reason": "cible 1",
+      "catalyst": "Contrat gouvernemental annonce en 8-K ce matin"
+    },
+    {
+      "symbol": "LOSS0",
+      "direction": "long",
+      "size": 500,
+      "entry": 5.01,
+      "exit": 4.7904,
+      "opened": "2026-08-21T10:30:00",
+      "closed": "2026-08-21T10:30:00",
+      "pnl": -110.8,
+      "fees": 1.0,
+      "reason": "stop",
+      "catalyst": ""
+    },
+    {
+      "symbol": "LOSS1",
+      "direction": "long",
+      "size": 500,
+      "entry": 5.01,
+      "exit": 4.7904,
+      "opened": "2026-08-21T10:30:00",
+      "closed": "2026-08-21T10:30:00",
+      "pnl": -110.8,
+      "fees": 1.0,
+      "reason": "stop",
+      "catalyst": ""
+    },
+    {
+      "symbol": "LOSS2",
+      "direction": "long",
+      "size": 500,
+      "entry": 5.01,
+      "exit": 4.7904,
+      "opened": "2026-08-21T10:30:00",
+      "closed": "2026-08-21T10:30:00",
+      "pnl": -110.8,
+      "fees": 1.0,
+      "reason": "stop",
+      "catalyst": ""
+    }
+  ]
+}
