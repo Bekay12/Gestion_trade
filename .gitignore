@@ -48,3 +48,6 @@ Thumbs.db
 
 # Parquet files
 *.parquet
+# Google Drive File Stream folder icons
+desktop.ini
+Desktop.ini
