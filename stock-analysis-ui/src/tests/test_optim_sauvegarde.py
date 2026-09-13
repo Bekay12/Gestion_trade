@@ -491,3 +491,228 @@ def test_le_baseline_historique_passe_par_le_meme_moteur(monkeypatch, tmp_path) 
     assert resume['gain_old'] == pytest.approx(65.0)
     assert resume['trades_old'] == 6                 # 2 symboles x 3 trades
     assert resume['success_old'] == pytest.approx(2 / 3 * 100)
+
+
+def test_sauvegarde_amorce_une_base_sans_table(monkeypatch, tmp_path) -> None:
+    """Verrouille l'amorcage : une base neuve doit recevoir la ligne.
+
+    `_ensure_opt_runs_schema` ne faisait que des ALTER TABLE, qui echouent sur
+    « no such table ». Le fichier .db etant cree vide par le simple connect()
+    de lecture de qsi.extract_best_parameters, un poste neuf perdait CHAQUE
+    run : l'INSERT levait, l'exception etait avalee, et la ligne
+    « Sauvegarde: nouveau score ... » s'imprimait quand meme.
+    """
+    import sqlite3
+
+    import config
+
+    chemin = str(tmp_path / "optimization_hist.db")
+    sqlite3.connect(chemin).close()      # base vide, exactement comme en prod
+    monkeypatch.setattr(config, 'OPTIMIZATION_DB_PATH', chemin)
+
+    vecteur = params.contraindre(np.zeros(14))
+    mesure = oh.Mesure(score=12.5, gain_moyen=13.0, trades=7, gagnants=5)
+
+    oh.save_optimization_results(
+        'Technology_Large', vecteur, mesure, cap_range='Large',
+        prix=False, fond=False, transaction_cost=1.0, seed=1234)
+
+    conn = sqlite3.connect(chemin)
+    conn.row_factory = sqlite3.Row
+    ligne = conn.execute("SELECT * FROM optimization_runs").fetchone()
+    conn.close()
+
+    assert ligne is not None
+    assert ligne['sector'] == 'Technology'
+    assert ligne['market_cap_range'] == 'Large'
+    assert np.allclose(params.depuis_colonnes(ligne), vecteur)
+
+
+def test_base_amorcee_est_relisible_par_extract_best_parameters(monkeypatch, tmp_path) -> None:
+    """Verrouille les colonnes que le SELECT de qsi exige sans repli.
+
+    `use_price_slope` et `use_price_acc` ne sont jamais ecrites par
+    l'optimisateur, mais qsi.py les nomme sans `NULL AS`, donc leur absence
+    ferait echouer TOUTE lecture de la base fraichement amorcee.
+    """
+    import sqlite3
+
+    import config
+    import qsi
+
+    chemin = str(tmp_path / "optimization_hist.db")
+    sqlite3.connect(chemin).close()
+    monkeypatch.setattr(config, 'OPTIMIZATION_DB_PATH', chemin)
+
+    vecteur = params.contraindre(np.zeros(14))
+    vecteur[params.indices()['a1']] = 1.25
+    vecteur = params.contraindre(vecteur)
+    oh.save_optimization_results(
+        'Technology_Large', vecteur, mesure=oh.Mesure(
+            score=12.5, gain_moyen=13.0, trades=7, gagnants=5),
+        cap_range='Large', prix=False, fond=False,
+        transaction_cost=1.0, seed=1234)
+
+    relu = qsi.extract_best_parameters(chemin)
+
+    assert 'Technology_Large' in relu
+    coeffs = relu['Technology_Large'][0]
+    assert coeffs[0] == pytest.approx(1.25)
+
+
+def test_echec_de_sauvegarde_n_est_pas_annonce_comme_un_succes(
+        monkeypatch, tmp_path, capsys) -> None:
+    """Verrouille le mensonge principal : la ligne « Sauvegarde » s'imprimait
+    quoi qu'il arrive, juste apres un `save_optimization_results` qui avale son
+    exception. Un run pouvait donc annoncer 13 sauvegardes et n'en ecrire
+    aucune, ce qui est exactement ce qui s'est produit pendant 22 heures.
+    """
+    import config
+
+    # Repertoire inexistant : sqlite3.connect leve « unable to open database
+    # file », soit la meme famille d'echec qu'un verrou ou un disque plein.
+    monkeypatch.setattr(config, 'OPTIMIZATION_DB_PATH',
+                        str(tmp_path / 'absent' / 'hist.db'))
+
+    def logique(**_ignores):
+        return {'gain_total': 20.0, 'trades': 3, 'gagnants': 2}, []
+
+    monkeypatch.setattr(oh, 'backtest_signals_with_events',
+                        _fabrique_faux_backtest(logique))
+    monkeypatch.setattr(oh, 'download_stock_data', lambda symbols, period=None: _donnees(2))
+    monkeypatch.setattr(oh, 'extract_best_parameters', lambda db_path=None: {})
+
+    oh.optimize_sector_coefficients_hybrid(
+        ['SYM0', 'SYM1'], 'Technology_Large', strategy='lhs',
+        budget_evaluations=20, precision=2, cap_range='Large', seed=11)
+
+    sortie = capsys.readouterr().out
+    assert 'NON SAUVEGARDÉ' in sortie
+    assert 'Sauvegarde: nouveau score' not in sortie
+
+
+def test_sauvegarde_rend_compte_de_son_resultat() -> None:
+    """Le contrat qui rend le mensonge impossible : l'appelant doit pouvoir
+    savoir si l'ecriture a eu lieu, au lieu de recevoir None dans les deux cas.
+    """
+    import inspect
+
+    source = inspect.getsource(oh.save_optimization_results)
+    assert 'return True' in source and 'return False' in source
+
+
+def test_symbole_en_echec_est_signale_et_non_compte_comme_zero(
+        monkeypatch, tmp_path, capsys) -> None:
+    """Verrouille le trou le plus couteux : un symbole dont le backtest leve
+    etait silencieusement compte 0 gain / 0 trade. Le score portait alors sur
+    un univers reduit, sans que rien ne l'annonce, et restait compare a des
+    historiques mesures sur l'univers complet.
+    """
+    import config
+
+    monkeypatch.setattr(config, 'OPTIMIZATION_DB_PATH', _base_vide(tmp_path))
+
+    def logique(symbol_name=None, **_ignores):
+        if symbol_name == 'SYM1':
+            raise ValueError('serie inexploitable')
+        return {'gain_total': 20.0, 'trades': 3, 'gagnants': 2}, []
+
+    monkeypatch.setattr(oh, 'backtest_signals_with_events',
+                        _fabrique_faux_backtest(logique))
+    monkeypatch.setattr(oh, 'download_stock_data', lambda symbols, period=None: _donnees(2))
+    monkeypatch.setattr(oh, 'extract_best_parameters', lambda db_path=None: {})
+
+    oh.optimize_sector_coefficients_hybrid(
+        ['SYM0', 'SYM1'], 'Technology_Large', strategy='lhs',
+        budget_evaluations=20, precision=2, cap_range='Large', seed=11)
+
+    sortie = capsys.readouterr().out
+    lignes_echec = [l for l in sortie.splitlines() if 'échec' in l or 'SYM1' in l and '×' in l]
+    assert lignes_echec, "aucune ligne ne signale le symbole en echec"
+    assert any('SYM1' in l for l in lignes_echec)
+    assert 'serie inexploitable' in sortie
+
+
+def test_ligne_historique_illisible_est_signalee(monkeypatch, tmp_path, capsys) -> None:
+    """Verrouille le `continue` muet du rejeu : une ligne historique illisible
+    disparaissait sans trace. Le baseline compare au nouveau score portait donc
+    sur moins de lignes qu'annonce, ce qui peut faire basculer la decision de
+    sauvegarde dans les deux sens.
+    """
+    import sqlite3
+
+    import config
+
+    chemin = _base_vide(tmp_path)
+    monkeypatch.setattr(config, 'OPTIMIZATION_DB_PATH', chemin)
+
+    conn = sqlite3.connect(chemin)
+    conn.execute(
+        "INSERT INTO optimization_runs (timestamp, sector, market_cap_range, "
+        # SQLite est a typage dynamique : un texte entre dans une colonne REAL
+        # et ne casse qu'a la relecture, exactement comme une ligne corrompue.
+        "gain_moy, a1) VALUES ('2026-01-01 00:00:00', 'Technology', 'Large', 5.0, 'corrompu')")
+    conn.commit()
+    conn.close()
+
+    def logique(**_ignores):
+        return {'gain_total': 20.0, 'trades': 3, 'gagnants': 2}, []
+
+    monkeypatch.setattr(oh, 'backtest_signals_with_events',
+                        _fabrique_faux_backtest(logique))
+
+    optimiseur = oh.HybridOptimizer(_donnees(1), 'Technology_Large', seed=5)
+    try:
+        optimiseur.replay_all_historical('Technology_Large')
+    finally:
+        optimiseur.shutdown()
+
+    sortie = capsys.readouterr().out
+    assert 'historique(s) ignorée(s)' in sortie
+
+
+def test_echec_de_l_objectif_de_est_comptabilise(monkeypatch) -> None:
+    """Verrouille la penalite muette de `_de_objective`.
+
+    Toute exception y rendait 1000.0, valeur que l'evolution differentielle
+    lit comme un tres mauvais candidat et non comme une panne. Une defaillance
+    systematique produisait donc une « convergence » sur du bruit, avec un
+    score affiche et sauvegarde comme n'importe quel autre.
+    """
+    optimiseur = oh.HybridOptimizer(_donnees(1), 'X', seed=1)
+    try:
+        def casse(_vecteur):
+            raise RuntimeError('arrondi impossible')
+
+        monkeypatch.setattr(optimiseur, 'round_params', casse)
+
+        valeur = oh._de_objective(np.zeros(14), optimiseur)
+
+        # La penalite reste : DE doit continuer a tourner, c'est son contrat.
+        assert valeur == 1000.0
+        # Mais elle ne doit plus etre indiscernable d'un mauvais candidat.
+        occurrences, message = optimiseur.echecs_objectif()
+        assert occurrences == 1
+        assert 'arrondi impossible' in message
+    finally:
+        optimiseur.shutdown()
+
+
+def test_le_rapport_d_echecs_nomme_les_deux_sources(capsys) -> None:
+    """Le releve de fin de groupe doit citer les symboles exclus ET les
+    defaillances de l'objectif, seules traces qu'un score porte sur moins que
+    ce qu'il annonce.
+    """
+    class _FauxOptimiseur:
+        def echecs_symboles(self):
+            return {'SYM9': (12, 'ValueError: serie vide')}
+
+        def echecs_objectif(self):
+            return (4, 'RuntimeError: arrondi impossible')
+
+    oh._rapporter_echecs(_FauxOptimiseur())
+
+    sortie = capsys.readouterr().out
+    assert 'SYM9' in sortie and '×12' in sortie
+    assert 'serie vide' in sortie
+    assert 'objectif' in sortie.lower() and '×4' in sortie

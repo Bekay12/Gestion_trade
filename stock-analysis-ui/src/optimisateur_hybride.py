@@ -7,6 +7,7 @@ import json
 from datetime import datetime, timedelta
 import random
 import sys
+import threading
 from pathlib import Path
 _trading_accel_path = Path(__file__).parent / "trading_c_acceleration"
 if _trading_accel_path.exists():
@@ -627,6 +628,35 @@ def _vecteur_historique_depuis_champs(coeffs, seuils_moteur,
     return vecteur
 
 
+def _rapporter_echecs(optimizer) -> None:
+    """
+    --------------------------------------------------------------------------
+    Objectif:
+        Annoncer, avant le resume du groupe, tout ce qui n'a PAS participe au
+        score : symboles dont le backtest a leve, et defaillances de l'objectif
+        DE. Sans ce releve, « gain X, trades Y » surestime silencieusement la
+        couverture reelle de la mesure.
+
+    Inputs:
+        optimizer (HybridOptimizer): porteur des deux releves
+
+    Outputs:
+        None
+    --------------------------------------------------------------------------
+    """
+    echecs = optimizer.echecs_symboles()
+    if echecs:
+        print(f"⚠️ {len(echecs)} symbole(s) exclu(s) du score par échec d'évaluation :")
+        for symbole, (occurrences, message) in sorted(echecs.items()):
+            print(f"   • {symbole} (×{occurrences}) — {message}")
+
+    occurrences_objectif, message_objectif = optimizer.echecs_objectif()
+    if occurrences_objectif:
+        print(f"⚠️ L'objectif d'évolution différentielle a échoué "
+              f"(×{occurrences_objectif}) et a été pénalisé sans être mesuré "
+              f"— {message_objectif}")
+
+
 # ----
 # Top-level objective for SciPy DE (picklable on Windows)
 def _de_objective(params_vecteur, optimizer):
@@ -636,8 +666,15 @@ def _de_objective(params_vecteur, optimizer):
     try:
         rounded = optimizer.round_params(params_vecteur)
         return -optimizer.evaluate_config(rounded)
-    except Exception:
-        # Penalize any evaluation failure to keep DE robust
+    except Exception as exc:
+        # La penalite reste, DE doit rester robuste. Mais elle est INDISCERNABLE
+        # d'un tres mauvais candidat : sans ce comptage, une defaillance
+        # systematique produisait une « convergence » sur du bruit, avec un
+        # score affiche et sauvegarde comme n'importe quel autre.
+        try:
+            optimizer._noter_echec_objectif(f"{type(exc).__name__}: {exc}")
+        except Exception:
+            pass
         return 1000.0
 
 class HybridOptimizer:
@@ -703,6 +740,14 @@ class HybridOptimizer:
         self.initial_thresholds = None
         self.meilleur_score = -float('inf')  # 🔧 Meilleur score trouvé (global)
         self.meilleur_trades = 0  # 🔧 Stocker le nombre de trades de la meilleure config
+        # Symboles dont le backtest a leve : {symbole: [occurrences, dernier message]}.
+        # Sans ce relEVE, un symbole en echec etait compte 0 gain / 0 trade a
+        # chaque evaluation, donc le score portait sur un univers plus petit
+        # que celui annonce, en silence.
+        self._echecs_symboles = {}
+        # Defaillances de _de_objective : [occurrences, dernier message].
+        self._echecs_objectif = [0, '']
+        self._verrou_echecs = threading.Lock()
         self.meilleur_success = 0  # 🔧 Stocker le nombre de trades gagnants de la meilleure config
         # 🔧 Pénalité par trade/symbole: à gain égal, moins de trades = meilleur score
         # Ex: 0.02 * 6 trades/symbole = -0.12 sur le score. Assez pour départager,
@@ -782,19 +827,24 @@ class HybridOptimizer:
                     fundamentals_extras=fundamentals_extras,
                     symbol_name=symbol,
                 )
-                return result['gain_total'], result['trades'], result.get('gagnants', 0)
+                return result['gain_total'], result['trades'], result.get('gagnants', 0), None
             except Exception as e:
-                return 0.0, 0, 0
+                # La cause remonte a l'appelant, qui la comptabilise. Un 0 muet
+                # ici est indiscernable d'un symbole qui ne trade simplement
+                # pas, et fausse le score sans laisser de trace.
+                return 0.0, 0, 0, f"{type(e).__name__}: {e}"
         
         try:
             # ⚡⚡ PARALLÉLISATION: Évaluer tous les symboles en parallèle
             # Reuse a shared executor to avoid repeated creation and nested
             # thread oversubscription when the optimizer itself parallelises
             # populations or when SciPy uses workers.
-            futures = [self._symbol_executor.submit(evaluate_symbol, symbol)
-                       for symbol in self.stock_data.keys()]
+            futures = {self._symbol_executor.submit(evaluate_symbol, symbol): symbol
+                       for symbol in self.stock_data.keys()}
             for future in as_completed(futures):
-                gain, trades, success = future.result()
+                gain, trades, success, echec = future.result()
+                if echec is not None:
+                    self._noter_echec_symbole(futures[future], echec)
                 total_gain += gain
                 total_trades += trades
                 total_success += success
@@ -840,6 +890,75 @@ class HybridOptimizer:
         except Exception as e:
             print(f"⚠️ evaluate_config error: {e}")  # Debug: show exceptions
             return -1000.0  # Pénalité pour configurations invalides
+
+    def _noter_echec_symbole(self, symbole: str, message: str) -> None:
+        """
+        --------------------------------------------------------------------------
+        Objectif:
+            Comptabiliser un symbole dont le backtest a leve, pour que la fin
+            du groupe puisse dire lesquels n'ont pas participe au score.
+
+        Inputs:
+            symbole (str): symbole concerne
+            message (str): type et texte de l'exception
+
+        Outputs:
+            None
+        --------------------------------------------------------------------------
+        """
+        # Le verrou ne coute rien : ce chemin n'est emprunte que par un echec,
+        # jamais par une evaluation normale.
+        with self._verrou_echecs:
+            entree = self._echecs_symboles.get(symbole)
+            if entree is None:
+                self._echecs_symboles[symbole] = [1, message]
+            else:
+                entree[0] += 1
+                entree[1] = message
+
+    def _noter_echec_objectif(self, message: str) -> None:
+        """
+        --------------------------------------------------------------------------
+        Objectif:
+            Comptabiliser une defaillance de l'objectif d'evolution
+            differentielle, que la penalite de repli rend invisible.
+
+        Inputs:
+            message (str): type et texte de l'exception
+
+        Outputs:
+            None
+        --------------------------------------------------------------------------
+        """
+        with self._verrou_echecs:
+            self._echecs_objectif[0] += 1
+            self._echecs_objectif[1] = message
+
+    def echecs_objectif(self) -> tuple:
+        """
+        --------------------------------------------------------------------------
+        Objectif:
+            Rendre le releve des defaillances de l'objectif DE.
+
+        Outputs:
+            releve (tuple): (occurrences, dernier message)
+        --------------------------------------------------------------------------
+        """
+        with self._verrou_echecs:
+            return (self._echecs_objectif[0], self._echecs_objectif[1])
+
+    def echecs_symboles(self) -> dict:
+        """
+        --------------------------------------------------------------------------
+        Objectif:
+            Rendre le releve des symboles exclus du score par une exception.
+
+        Outputs:
+            echecs (dict): {symbole: (occurrences, dernier message)}
+        --------------------------------------------------------------------------
+        """
+        with self._verrou_echecs:
+            return {sym: (nb, msg) for sym, (nb, msg) in self._echecs_symboles.items()}
 
     def shutdown(self):
         """Shutdown any internal executors cleanly."""
@@ -1189,6 +1308,7 @@ class HybridOptimizer:
         # `_vecteur_depuis_ligne_historique` y ajoute le seul savoir qui ne
         # relevait pas du contrat : la compatibilite des lignes anterieures a
         # la colonne `use_price_extras`.
+        ignorees = []
         for row in rows:
             try:
                 vecteur = _vecteur_depuis_ligne_historique(
@@ -1198,8 +1318,23 @@ class HybridOptimizer:
                     best_score = score
                     best_params = vecteur.copy()
                     best_label = f"Historical ({row['timestamp']})"
-            except Exception:
+            except Exception as exc:
+                # Le `continue` etait muet : une ligne illisible disparaissait
+                # du baseline sans laisser de trace, et le nouveau score se
+                # retrouvait compare a moins de lignes qu'annonce, ce qui peut
+                # faire basculer la decision de sauvegarde dans les deux sens.
+                try:
+                    horodatage = row['timestamp']
+                except Exception:
+                    horodatage = '?'
+                ignorees.append((horodatage, f"{type(exc).__name__}: {exc}"))
                 continue
+
+        if ignorees:
+            print(f"⚠️ {len(ignorees)} ligne(s) historique(s) ignorée(s) sur "
+                  f"{len(rows)} : illisible(s) ou non rejouable(s)")
+            for horodatage, message in ignorees:
+                print(f"   • {horodatage} — {message}")
 
         if best_params is not None:
             sr = (self.meilleur_success / self.meilleur_trades * 100) if self.meilleur_trades > 0 else 0.0
@@ -1560,6 +1695,8 @@ def optimize_sector_coefficients_hybrid(
         best_score = mesure_retenue.score
         success_rate = (total_success / total_trades * 100) if total_trades > 0 else 0.0
 
+        _rapporter_echecs(optimizer)
+
         # �📊 Rapport synthétique secteur
         if hist_avg_gain is not None:
             delta = best_score - hist_avg_gain
@@ -1602,12 +1739,19 @@ def optimize_sector_coefficients_hybrid(
         should_save = score_is_better and not no_trades
     
         if should_save:
-            save_optimization_results(
+            ecrit = save_optimization_results(
                 domain, best_params, mesure_retenue, cap_range=cap_range,
                 prix=use_price_features, fond=use_fundamentals_features,
                 transaction_cost=transaction_cost, seed=seed)
             hist_str = f"{hist_ref:.2f}" if hist_ref is not None else "N/A"
-            print(f"💾 Sauvegarde: nouveau score {best_score:.2f} ({success_rate:.1f}%) > historique réévalué {hist_str} (trades: {total_trades})")
+            if ecrit:
+                print(f"💾 Sauvegarde: nouveau score {best_score:.2f} ({success_rate:.1f}%) > historique réévalué {hist_str} (trades: {total_trades})")
+            else:
+                # Cette ligne s'imprimait inconditionnellement : un run pouvait
+                # annoncer treize sauvegardes sans en ecrire une seule.
+                print(f"🚫 NON SAUVEGARDÉ ({domain}) : score {best_score:.2f} "
+                      f"({success_rate:.1f}%, trades: {total_trades}) PERDU, "
+                      f"l'écriture en base a échoué (cause ci-dessus)")
         elif no_trades:
             print(f"ℹ️ Pas de sauvegarde: aucun trade généré (score {best_score:.2f} mais 0 trades)")
         else:
@@ -1658,7 +1802,9 @@ def save_optimization_results(domain, vecteur, mesure, cap_range=None,
         seed (int | None): graine du run, pour rejouabilite
 
     Outputs:
-        None. Journalise l'echec sans le propager a l'appelant.
+        ecrit (bool): True si la ligne est commitee, False si l'ecriture a
+            echoue. L'exception n'est jamais propagee, mais l'appelant ne peut
+            plus annoncer une sauvegarde qui n'a pas eu lieu.
     --------------------------------------------------------------------------
     """
     from datetime import datetime
@@ -1668,6 +1814,29 @@ def save_optimization_results(domain, vecteur, mesure, cap_range=None,
     def _ensure_opt_runs_schema(conn):
         try:
             cur = conn.cursor()
+            # AMORCAGE. Sans ce CREATE, une base neuve perdait chaque run :
+            # sqlite3.connect() cree le fichier .db des la premiere LECTURE
+            # (qsi.extract_best_parameters), les ALTER ci-dessous echouaient
+            # tous sur « no such table », et l'INSERT de l'appelant levait la
+            # meme erreur, avalee par son except. Le tronc reste volontairement
+            # minimal : tout le reste est ajoute par les ALTER, seul contrat de
+            # migration, pour qu'une base ancienne et une base neuve
+            # convergent vers le meme schema.
+            cur.execute("""
+                CREATE TABLE IF NOT EXISTS optimization_runs (
+                    id INTEGER PRIMARY KEY AUTOINCREMENT,
+                    timestamp DATETIME NOT NULL,
+                    sector TEXT NOT NULL,
+                    gain_moy REAL, success_rate REAL, trades INTEGER,
+                    seuil_achat REAL, seuil_vente REAL,
+                    a1 REAL, a2 REAL, a3 REAL, a4 REAL,
+                    a5 REAL, a6 REAL, a7 REAL, a8 REAL,
+                    th1 REAL, th2 REAL, th3 REAL, th4 REAL,
+                    th5 REAL, th6 REAL, th7 REAL, th8 REAL,
+                    created_at DATETIME DEFAULT CURRENT_TIMESTAMP,
+                    UNIQUE(sector, timestamp)
+                )
+            """)
             cur.execute("PRAGMA table_info(optimization_runs)")
             cols = {row[1] for row in cur.fetchall()}
             nouvelles = [('market_cap_range', 'TEXT')]
@@ -1675,6 +1844,11 @@ def save_optimization_results(domain, vecteur, mesure, cap_range=None,
                           for spec in EXTRAS_COLONNES_MIGRATION]
             nouvelles += [('use_price_extras', 'INTEGER DEFAULT 0'),
                           ('use_fundamentals', 'INTEGER DEFAULT 0'),
+                          # Jamais ecrites par l'optimisateur, mais nommees
+                          # SANS `NULL AS` par le SELECT de qsi.py : les
+                          # omettre rendrait la base amorcee illisible.
+                          ('use_price_slope', 'INTEGER DEFAULT 0'),
+                          ('use_price_acc', 'INTEGER DEFAULT 0'),
                           ('transaction_cost', 'REAL'),
                           ('seed', 'INTEGER')]
             for nom, decl in nouvelles:
@@ -1731,8 +1905,10 @@ def save_optimization_results(domain, vecteur, mesure, cap_range=None,
         )
         conn.commit()
         print(f"📝 Résultats sauvegardés pour {normalized_sector} ({normalized_cap})")
+        return True
     except Exception as exc:
         print(f"⚠️ Erreur lors de la sauvegarde: {exc}")
+        return False
     finally:
         if conn is not None:
             conn.close()

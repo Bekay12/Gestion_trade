@@ -430,3 +430,30 @@ def test_une_base_absente_ne_leve_pas(tmp_path) -> None:
 
     qsi._BEST_PARAMS_CACHE.clear()
     assert qsi.extract_best_parameters(str(tmp_path / "absente.db")) == {}
+
+
+def test_le_lecteur_duplique_ne_diverge_pas_du_lecteur_memoise(tmp_path, capsys) -> None:
+    """Verrouille la divergence du doublon de trading_c_acceleration.
+
+    `qsi_optimized.extract_best_parameters` est une seconde implementation, non
+    memoisee, dont le message d'erreur renvoie a `migration_csv_to_sqlite.py`,
+    un script qui n'existe pas dans le depot. Tout appelant qui l'importerait
+    par erreur obtiendrait des parametres par un chemin different de celui que
+    verrouille le reste de la suite, et une consigne impossible a suivre.
+    """
+    import qsi
+    from trading_c_acceleration import qsi_optimized
+
+    chemin = str(tmp_path / 'hist.db')
+    _base_avec_une_ligne(chemin)
+
+    attendu = qsi.extract_best_parameters(chemin)
+    obtenu = qsi_optimized.extract_best_parameters(chemin)
+    assert obtenu == attendu
+
+    import sqlite3
+
+    vide = str(tmp_path / 'vide.db')
+    sqlite3.connect(vide).close()
+    qsi_optimized.extract_best_parameters(vide)
+    assert 'migration_csv_to_sqlite' not in capsys.readouterr().out

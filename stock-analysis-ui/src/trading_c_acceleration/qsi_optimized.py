@@ -213,150 +213,32 @@ from typing import Tuple
 BEST_PARAM_EXTRAS: Dict[str, Dict[str, Union[int, float]]] = {}
 
 def extract_best_parameters(db_path: str = None) -> Dict[str, Tuple[Tuple[float, ...], Tuple[float, ...], Tuple[float, float]]]:
-    if db_path is None:
-        from pathlib import Path
-        config_dir = Path(__file__).parent.parent.resolve()
-        db_path = str(config_dir / 'signaux' / 'optimization_hist.db')
-    """Extrait les meilleurs coefficients/seuils par secteur ET tranche de capitalisation.
-
-    Retourne aussi les clés composites "{sector}_{cap_range}" pour faciliter l'accès.
     """
-    import sqlite3
+    --------------------------------------------------------------------------
+    Objectif:
+        Deleguer a l'unique lecteur du projet, qsi.extract_best_parameters.
 
-    try:
-        conn = sqlite3.connect(db_path)
-        conn.row_factory = sqlite3.Row
-        cursor = conn.cursor()
+        Ce module portait une SECONDE implementation, complete et divergente :
+        sans memoisation (donc une requete SQLite par appel, la ou l'appelante
+        de qsi.py en fait une par etat du fichier), sans le repli des colonnes
+        heritees, et avec un message d'erreur renvoyant a
+        `migration_csv_to_sqlite.py`, script qui n'existe pas dans le depot.
+        Aucun appelant ne l'utilisait, mais tout import futur aurait obtenu des
+        parametres par un chemin que rien ne verrouille.
 
-        cursor.execute('''
-            SELECT name FROM sqlite_master 
-            WHERE type='table' AND name='optimization_runs'
-        ''')
-        if not cursor.fetchone():
-            print(f"🚫 Table 'optimization_runs' non trouvée dans {db_path}")
-            print("   Veuillez exécuter migration_csv_to_sqlite.py pour migrer vos données")
-            conn.close()
-            return {}
+        L'import est fait DANS le corps : qsi.py importe ce module au
+        chargement (backtest_signals), un import en tete serait circulaire.
 
-        # Discover columns for optional fields
-        cursor.execute("PRAGMA table_info(optimization_runs)")
-        colnames = {row[1] for row in cursor.fetchall()}
+    Inputs:
+        db_path (str | None): chemin de la base, defaut config.OPTIMIZATION_DB_PATH
 
-        optional_price_cols = [
-            'a16', 'a17', 'a18',
-            'th16', 'th17', 'th18',
-            'use_price_extras',
-        ]
-        optional_price_select = ",\n                ".join(
-            [col if col in colnames else f"NULL AS {col}" for col in optional_price_cols]
-        )
+    Outputs:
+        parametres (Dict): voir qsi.extract_best_parameters
+    --------------------------------------------------------------------------
+    """
+    from qsi import extract_best_parameters as _lecteur_unique
 
-        cursor.execute(f'''
-            SELECT 
-                sector,
-                COALESCE(market_cap_range, 'Unknown') AS market_cap_range,
-                gain_moy,
-                a1, a2, a3, a4, a5, a6, a7, a8,
-                th1, th2, th3, th4, th5, th6, th7, th8,
-                seuil_achat, seuil_vente,
-                a9, a10, th9, th10, use_price_slope, use_price_acc,
-                {optional_price_select},
-                a11, a12, a13, a14, a15, th11, th12, th13, th14, th15, use_fundamentals,
-                timestamp
-            FROM optimization_runs
-            WHERE (sector, COALESCE(market_cap_range, 'Unknown'), timestamp) IN (
-                SELECT sector, COALESCE(market_cap_range, 'Unknown'), MAX(timestamp)
-                FROM optimization_runs 
-                GROUP BY sector, COALESCE(market_cap_range, 'Unknown')
-            )
-            ORDER BY sector, market_cap_range
-        ''')
-
-        rows = cursor.fetchall()
-        conn.close()
-
-        if not rows:
-            print("🚫 Aucune donnée trouvée dans la base SQLite")
-            return {}
-
-        global BEST_PARAM_EXTRAS
-        BEST_PARAM_EXTRAS = {}
-        result = {}
-        for row in rows:
-            sector = str(row['sector']).strip()
-            cap_range = str(row['market_cap_range'] or 'Unknown').strip()
-            gain_moy = float(row['gain_moy'])
-
-            coefficients = tuple(float(row[f'a{i+1}']) for i in range(8))
-            thresholds = tuple(float(row[f'th{i+1}']) for i in range(8))
-            globals_thresholds = (float(row['seuil_achat']), float(row['seuil_vente']))
-
-            # Extract price-related extras; default to zeros if missing
-            def _read_num(col, default):
-                try:
-                    return float(row[col]) if (col in colnames and row[col] is not None) else default
-                except Exception:
-                    return default
-            def _read_int(col, default):
-                try:
-                    return int(row[col]) if (col in colnames and row[col] is not None) else default
-                except Exception:
-                    return default
-
-            price_extras = {
-                'use_price_extras': _read_int('use_price_extras', 0) or int(any(_read_int(col, 0) for col in (
-                    'use_price_slope', 'use_price_acc', 'use_price_rsi_slope', 'use_price_vol_slope', 'use_price_var5j'
-                ))),
-                'a_price_slope': _read_num('a9', 0.0),
-                'a_price_acc': _read_num('a10', 0.0),
-                'th_price_slope': _read_num('th9', 0.0),
-                'th_price_acc': _read_num('th10', 0.0),
-                'a_price_rsi_slope': _read_num('a16', 0.0),
-                'a_price_vol_slope': _read_num('a17', 0.0),
-                'a_price_var5j': _read_num('a18', 0.0),
-                'th_price_rsi_slope': _read_num('th16', 0.0),
-                'th_price_vol_slope': _read_num('th17', 0.0),
-                'th_price_var5j': _read_num('th18', 0.0),
-            }
-            
-            # Extract fundamentals extras (optional, defaults to 0 if not present)
-            fundamentals_extras = {
-                'use_fundamentals': _read_int('use_fundamentals', 0),
-                'a_rev_growth': _read_num('a11', 0.0),
-                'a_eps_growth': _read_num('a12', 0.0),
-                'a_roe': _read_num('a13', 0.0),
-                'a_fcf_yield': _read_num('a14', 0.0),
-                'a_de_ratio': _read_num('a15', 0.0),
-                'th_rev_growth': _read_num('th11', 0.0),
-                'th_eps_growth': _read_num('th12', 0.0),
-                'th_roe': _read_num('th13', 0.0),
-                'th_fcf_yield': _read_num('th14', 0.0),
-                'th_de_ratio': _read_num('th15', 0.0),
-            }
-            
-            # Combine extras
-            all_extras = {**price_extras, **fundamentals_extras}
-            
-            BEST_PARAM_EXTRAS[sector] = all_extras
-
-            # Clé secteur seule (fallback) — 5-tuple comme qsi.py
-            result[sector] = (coefficients, thresholds, globals_thresholds, gain_moy, all_extras)
-
-            # Clé composite secteur + cap_range
-            if cap_range and cap_range.lower() != 'unknown':
-                composite_key = f"{sector}_{cap_range}"
-                result[composite_key] = (coefficients, thresholds, globals_thresholds, gain_moy, all_extras)
-                BEST_PARAM_EXTRAS[composite_key] = all_extras
-
-        return result
-
-    except FileNotFoundError:
-        print(f"🚫 Base de données {db_path} non trouvée")
-        print("   Veuillez exécuter migration_csv_to_sqlite.py pour migrer vos données")
-        return {}
-    except Exception as e:
-        print(f"⚠️ Erreur lors de l'extraction des paramètres: {e}")
-        return {}
+    return _lecteur_unique(db_path)
 
 
 def backtest_signals_c_extended(prices: Union[pd.Series, pd.DataFrame], volumes: Union[pd.Series, pd.DataFrame],
