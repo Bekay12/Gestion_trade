@@ -1,0 +1,271 @@
+\section{Grobe Flow-Analyse}
+\label{sec:flow}
+
+Die Aufgabe dieses Teils ist eine andere als in einer Analyse mit
+vorgegebenen Handlungsoptionen. Es gibt hier keine Alternativen zu
+vergleichen: Die Entscheidung ist gefallen, die \"Ubernahme bezahlt und die
+Verschuldung eingegangen. Zu beantworten sind deshalb zwei Fragen. Erstens,
+ob der Konzern die aufgenommenen Mittel aus eigener Kraft zur\"uckf\"uhren
+kann und wie lange das dauert. Zweitens, welche Rendite ein Anleger
+erwarten darf, der die Aktie zum heutigen Kurs kauft.
+
+\subsection*{Annahmen der Flow-Analyse}
+\addcontentsline{toc}{subsection}{Annahmen der Flow-Analyse}
+
+Alle folgenden Annahmen stehen vor der Rechnung, die sie verbraucht. Sie
+sind in \texttt{scripts/flow.py} an genau einer Stelle hinterlegt; die
+Tabellen dieses Teils sind von diesem Skript erzeugt und nicht abgetippt.
+
+\annahme{\textbf{Ausgangsbestand und Ausgangsverschuldung.} Ausgangspunkt
+sind die eigenen Zahlungsmittel von \MioUSD{\Zahlungsmittel} und die
+Finanzverbindlichkeiten von \MioUSD{\Gesamtverschuldung} zum
+31.\,Dezember 2025. Die Treuhandmittel von \MioUSD{\TreuhandMittel} bleiben
+au{\ss}er Ansatz, weil sie Kunden und Versicherern geh\"oren und zur Tilgung
+nicht zur Verf\"ugung stehen.}
+
+\annahme{\textbf{Umsatzbasis.} Fortgeschrieben wird nicht der berichtete
+Umsatz von \MioUSD{\UmsatzGesamt}, sondern der Pro-forma-Umsatz von
+\MioUSD{\ProFormaUmsatz}. Die \"Ubernahme wurde erst zum 1.\,August 2025
+konsolidiert; der berichtete Umsatz enth\"alt sie nur f\"unf Monate und
+w\"urde die Ertragskraft, aus der die Schulden zu bedienen sind, um rund ein
+Sechstel untertreiben.}
+
+\annahme{\textbf{Organisches Wachstum.} Die drei Szenarien sind keine
+Sch\"atzungen des Verfassers, sondern drei vom Unternehmen selbst
+ver\"offentlichte Wachstumsraten, jeweils konstant fortgeschrieben:
+\Pct{\HJOrganisch} (erstes Halbjahr 2026), \Pct{\OrganischWachstum}
+(Gesch\"aftsjahr 2025) und \Pct{\OrganischWachstumVJ} (Gesch\"aftsjahr
+2024). Das mittlere Szenario tr\"agt die Haupttabellen. Damit muss keine
+Wachstumsannahme erfunden werden, und die Spannweite der Rechnung ist die
+Spannweite der eigenen j\"ungeren Erfahrung des Unternehmens.}
+
+\annahme{\textbf{Marge.} Die bereinigte EBITDAC-Marge von \Pct{\FlowMarge}
+des Jahres 2025 wird unver\"andert fortgeschrieben. Weder ein
+Synergieeffekt noch eine Verw\"asserung durch die \"Ubernahme wird
+unterstellt; beides w\"are nicht belegbar. Im ersten Halbjahr 2026 lag die
+Marge bei \Pct{\HJEBITDACberMarge} und damit nahe an diesem Wert.}
+
+\annahme{\textbf{Zins und Tilgung.} Beide folgen dem im Jahresbericht
+ver\"offentlichten F\"alligkeitsprofil: \MioUSD{\ZinsverpflichtungJahrEins}
+Zinsen im ersten Jahr, \MioUSD{\ZinsverpflichtungZweiDrei} f\"ur die Jahre
+zwei und drei und \MioUSD{\ZinsverpflichtungVierFuenf} f\"ur die Jahre vier
+und f\"unf, bei planm\"a{\ss}igen Tilgungen von
+\MioUSD{\TilgungJahrEins}, \MioUSD{\TilgungJahrZweiDrei} und
+\MioUSD{\TilgungJahrVierFuenf}.\quelleGB{2025}{46}\quelleMerken{s12gb} Der
+Zinsaufwand sinkt in der Rechnung nicht mit einer vorzeitigen Tilgung. Die
+Rechnung untertreibt die Entschuldung dadurch, statt sie zu
+besch\"onigen.}
+
+\annahme{\textbf{Abschreibungen und Sachinvestitionen.} Beide werden auf die
+Jahresrate des ersten Halbjahres 2026 hochgerechnet:
+\MioUSD{\FlowAbschreibung} Abschreibungen und \MioUSD{\FlowSachinvest}
+Sachinvestitionen.\quelleQM{Form 10-Q Q2 2026}{29}\quelleMerken{s12qmformqq} Die Werte des Jahres 2025 enthalten
+die \"Ubernahme nur f\"unf Monate und w\"aren zu niedrig. Die Abschreibung
+bleibt \"uber den Horizont konstant, obwohl sie mit fortschreitender
+Amortisation der Kundenbeziehungen sinken wird; das mindert die
+ausgewiesene Steuerlast und ist damit die vorsichtigere Annahme.}
+
+\annahme{\textbf{Dividende und Erwerbspreisnachzahlungen.} Die Dividende
+folgt dem Quartalsbeschluss vom 21.\,Januar 2026, also
+\USDje{\FlowDividendeJeAktie} im Jahr auf \num{\HJAktienUmlauf} Millionen
+Aktien und damit \MioUSD{\FlowDividende}; eine weitere Erh\"ohung wird nicht
+unterstellt, weil keine beschlossen ist. Die Erwerbspreisnachzahlungen
+folgen dem ver\"offentlichten Profil von \MioUSD{\EarnoutMaximum}
+Gesamtvolumen.\quelleErneut{s12gb}}
+
+\annahme{\textbf{Keine weiteren Zuk\"aufe.} Dies ist die weitreichendste
+Annahme der gesamten Rechnung und zugleich die unrealistischste: Das
+Unternehmen hat allein 2025 \num{\AkquisitionenAnzahl} Gesellschaften
+erworben, und Zuk\"aufe sind sein Gesch\"aftsmodell. Die Rechnung ist
+deshalb keine Prognose, sondern eine Kapazit\"atsrechnung. Sie beantwortet
+die Frage, wie schnell der Konzern die \"Ubernahme abtragen \emph{k\"onnte},
+wenn er alle freien Mittel daf\"ur einsetzt, und macht damit den Spielraum
+sichtbar, der stattdessen f\"ur weitere Zuk\"aufe zur Verf\"ugung steht.}
+
+\annahme{\textbf{Steuerliche Betrachtung.} Anders als eine reine
+EBITDA-Rechnung ist diese Analyse eine Nachsteuerbetrachtung: Zinsen und
+Abschreibungen werden vom EBITDAC abgezogen und auf das verbleibende
+Ergebnis die Konzernsteuerquote 2025 von \Pct{\FlowSteuerquote} angewendet.
+Die ausgewiesenen internen Zinsf\"u{\ss}e sind deshalb Nachsteuerrenditen
+auf Unternehmensebene; Steuern des Anlegers selbst bleiben unber\"ucksichtigt.}
+
+\annahme{\textbf{Renditehorizont.} Der interne Zinsfu{\ss} wird \"uber
+f\"unf, zehn und f\"unfzehn Jahre ausgewiesen und nie ohne seinen Horizont.
+Er wird durch Bisektion bestimmt, nicht gesch\"atzt.}
+
+\subsection{Entschuldungspfad des Konzerns}
+
+Tabelle~\ref{tab:flowpfad} schreibt den Konzern unter dem mittleren
+Szenario bis 2030 fort. Der nach Zins, Steuer, Sachinvestition, Dividende
+und Erwerbspreisnachzahlung verbleibende Betrag geht dabei vollst\"andig in
+die Schuldentilgung.
+
+\begin{table}[htbp]
+\centering
+\caption{Entschuldungspfad, organisches Wachstum \Pct{\OrganischWachstum}
+je Jahr. Betr\"age in Mio.~USD, Verschuldungsgrad als Vielfaches des
+bereinigten EBITDAC.}
+\label{tab:flowpfad}
+\small
+\begin{tabular}{lrrrrrrrr}
+\toprule
+Jahr & EBITDAC & Zinsen & Steuern & Earn-out & Tilgung & Freier CF & Nettoschuld & Grad\\
+\midrule
+\tabellenkoerper{data/flow_pfad}
+\bottomrule
+\end{tabular}
+\end{table}
+
+\FloatBarrier
+
+Im ersten Jahr bleiben nach allen Auszahlungen \MioUSD{\FlowFreiJahrEins}
+\"ubrig; der Betrag steigt bis 2030 auf ein Mehrfaches, weil die Zinslast
+dem F\"alligkeitsprofil folgend sinkt und keine
+Erwerbspreisnachzahlungen mehr anfallen. Der Verschuldungsgrad f\"allt von
+\Faktor{\FlowGradStart} auf \Faktor{\FlowGradEnde}.
+
+\subsection{Empfindlichkeit gegen\"uber dem organischen Wachstum}
+
+Der Verschuldungsgrad ruht auf einer Wachstumsannahme, und diese Annahme
+ist der strittige Punkt des gesamten Falls.
+Tabelle~\ref{tab:flowszenarien} zeigt ihn deshalb f\"ur alle drei
+Szenarien.
+
+\begin{table}[htbp]
+\centering
+\caption{Nettoverschuldung je Einheit bereinigtes EBITDAC am Jahresende, je
+Szenario. Die Rechnung endet bei null; dar\"uber hinausgehende Mittel
+stehen f\"ur Zuk\"aufe oder R\"uckk\"aufe zur Verf\"ugung.}
+\label{tab:flowszenarien}
+\begin{tabular}{lrrrrrr}
+\toprule
+Szenario & Wachstum in \% & 2026 & 2027 & 2028 & 2029 & 2030\\
+\midrule
+\tabellenkoerper{data/flow_szenarien}
+\bottomrule
+\end{tabular}
+\end{table}
+
+\FloatBarrier
+
+\bk{Die Rangfolge ist \"uber alle drei Szenarien stabil, und das Niveau
+ver\"andert sich weniger, als die Spannweite der Wachstumsraten vermuten
+l\"asst. Selbst im ung\"unstigsten Fall, der das negative organische
+Wachstum des ersten Halbjahres 2026 auf f\"unf Jahre fortschreibt, sinkt der
+Verschuldungsgrad von \Faktor{\FlowGradStart} auf
+\Faktor{\FlowGradSzenarioA}. Der Grund liegt in der Struktur des
+Gesch\"afts: Ein Makler bindet kaum Kapital, seine Sachinvestitionen von
+\MioUSD{\FlowSachinvest} betragen weniger als drei Prozent des EBITDAC, und
+sein Cash-Flow ist deshalb fast vollst\"andig frei verf\"ugbar. Die
+Verschuldung ist damit tragbar; sie ist nicht das Risiko dieses Falls.}
+
+\subsection{Rendite des Anlegers}
+
+Die zweite Rechnung wechselt die Sicht. Ein Anleger kauft die Aktie zum
+Schlusskurs vom 27.\,August 2026 von \USDje{\FlowEinstiegskurs}, erh\"alt
+in jedem Jahr den aussch\"uttbaren Cash-Flow je Aktie und verkauft am Ende
+des Horizonts.
+
+\annahme{\textbf{Abgrenzung gegen den Entschuldungspfad.} In dieser Rechnung
+wird nur die \emph{planm\"a{\ss}ige} Tilgung bedient; der Rest flie{\ss}t
+als Dividende oder Aktienr\"uckkauf an die Eigent\"umer. Der
+Entschuldungspfad des vorigen Abschnitts verwendet dieselben Mittel zur
+vorzeitigen Tilgung. Beide Rechnungen sind deshalb Alternativen und keine
+Erg\"anzungen; dasselbe Geld kann nur einmal ausgegeben werden.}
+
+\annahme{\textbf{Ausstiegsbewertung.} Der Verkaufserl\"os ist das Ergebnis
+je Aktie des letzten Jahres, multipliziert mit dem
+\Faktor{\FlowVielfaches}-fachen. Dieses Vielfache ist nicht gew\"ahlt,
+sondern das heutige: Es ergibt sich aus dem Einstiegskurs von
+\USDje{\FlowEinstiegskurs} geteilt durch das verw\"asserte
+Pro-forma-Ergebnis je Aktie 2025 von \USDje{\ProFormaEPSdil}.\quelleGB{2025}{64}\quelleMerken{s14gb}
+Die Bewertung bleibt im Basisfall also unver\"andert; der Anleger verdient
+nur, was das Unternehmen erwirtschaftet, nicht was der Markt ihm zubilligt.
+Tabelle~\ref{tab:flowmultiple} variiert dieses Vielfache.}
+
+\begin{table}[htbp]
+\centering
+\caption{Zahlungsreihe je Aktie in USD \"uber f\"unf Jahre, mittleres
+Szenario.}
+\label{tab:flowanleger}
+\begin{tabular}{lrl}
+\toprule
+Jahr & Zahlung & Bemerkung\\
+\midrule
+\tabellenkoerper{data/flow_anleger}
+\bottomrule
+\end{tabular}
+\end{table}
+
+\FloatBarrier
+
+\begin{table}[htbp]
+\centering
+\caption{Interner Zinsfu{\ss} in Prozent nach Horizont und
+Wachstumsszenario, Ausstiegsvielfaches unver\"andert bei
+\num{\FlowVielfaches}.}
+\label{tab:flowirr}
+\begin{tabular}{lrrr}
+\toprule
+Horizont & \Pct{\HJOrganisch} (H1 2026) & \Pct{\OrganischWachstum} (2025) & \Pct{\OrganischWachstumVJ} (2024)\\
+\midrule
+\tabellenkoerper{data/flow_irr}
+\bottomrule
+\end{tabular}
+\end{table}
+
+\begin{table}[htbp]
+\centering
+\caption{Interner Zinsfu{\ss} in Prozent nach Horizont und
+Ausstiegsvielfachem, mittleres Wachstumsszenario.}
+\label{tab:flowmultiple}
+\begin{tabular}{lrrr}
+\toprule
+Horizont & \num{\FlowVielfachesUnten}-fach & \num{\FlowVielfaches}-fach & \num{\FlowVielfachesOben}-fach\\
+\midrule
+\tabellenkoerper{data/flow_irr_multiple}
+\bottomrule
+\end{tabular}
+\end{table}
+
+\FloatBarrier
+
+\subsection{Vergleichsma{\ss}stab und Fazit}
+
+Ein interner Zinsfu{\ss} allein tr\"agt kein Urteil; er braucht eine
+Gr\"o{\ss}e, die er schlagen muss. Diese Analyse nimmt daf\"ur die
+Eigenkapitalrendite des Unternehmens selbst: Das Konzernergebnis von
+\MioUSD{\Konzernergebnis} auf das durchschnittliche Eigenkapital des Jahres
+2025 bezogen ergibt \Pct{\EKRenditeDurchschnitt}. Ein Kapitalkostensatz
+nach dem Kapitalmarktmodell wird bewusst nicht gebildet: Weder Beta noch
+Marktrisikopr\"amie stehen in einer der Prim\"arquellen, und ein
+gesch\"atzter Satz w\"are genau die plausibel aussehende Erfindung, die
+diese Analyse vermeidet.
+
+\bk{Gemessen daran ist das Ergebnis unbequem knapp. Im mittleren Szenario
+liegt der interne Zinsfu{\ss} bei \Pct{\FlowIRRBFuenf} \"uber f\"unf,
+\Pct{\FlowIRRBZehn} \"uber zehn und \Pct{\FlowIRRBFuenfzehn} \"uber f\"unfzehn Jahre.
+Der Ma{\ss}stab von \Pct{\EKRenditeDurchschnitt} wird damit auf f\"unf Jahre
+knapp \"ubertroffen und auf zehn und f\"unfzehn Jahre knapp verfehlt. Der
+heutige Kurs preist das Unternehmen also ungef\"ahr so, dass ein Anleger
+genau die Rendite erh\"alt, die das Unternehmen auf sein eigenes Kapital
+erwirtschaftet, und keinen Aufschlag darauf.
+
+Anders als beim Verschuldungsgrad ist die Rangfolge hier nicht stabil,
+sondern kippt an der Wachstumsannahme. Bleibt es beim negativen organischen
+Wachstum des ersten Halbjahres 2026, sinkt der Zinsfu{\ss} auf
+\Pct{\FlowIRRAFuenf} bis \Pct{\FlowIRRAFuenfzehn} und liegt \"uber jeden Horizont
+deutlich unter dem Ma{\ss}stab. Kehrt das Wachstum auf die Rate von 2024
+zur\"uck, steigt er auf \Pct{\FlowIRRCFuenf} bis \Pct{\FlowIRRCFuenfzehn}. Zwischen
+dem schlechtesten und dem besten der drei vom Unternehmen selbst
+berichteten Wachstumsjahre liegen \"uber f\"unf Jahre rund sechzehn
+Prozentpunkte Rendite. Der Fall entscheidet sich damit an einer einzigen
+Gr\"o{\ss}e, und diese Gr\"o{\ss}e ist zuletzt negativ geworden.
+
+Das Ausstiegsvielfache wirkt in dieselbe Richtung, aber schw\"acher und mit
+zunehmendem Horizont abnehmend: \"Uber f\"unf Jahre reicht die Spanne von
+\Pct{\FlowIRRuntenFuenf} bis \Pct{\FlowIRRobenFuenf}, \"uber f\"unfzehn nur noch von
+\Pct{\FlowIRRuntenFuenfzehn} bis \Pct{\FlowIRRobenFuenfzehn}. Je l\"anger die Haltedauer,
+desto weniger h\"angt das Ergebnis davon ab, was der Markt am Ende zahlt,
+und desto mehr davon, was das Unternehmen verdient. Das ist der einzige
+Befund dieses Teils, der in beide Richtungen beruhigt.}

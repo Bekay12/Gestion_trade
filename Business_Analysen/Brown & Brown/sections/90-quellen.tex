@@ -1,0 +1,55 @@
+% check-literals: skip
+% Grund: Diese Datei enthaelt die Aktenzeichen der EDGAR-Einreichungen
+% (z. B. 0001193125-26-046984). Das sind Kennungen der Quelle, keine
+% Zahlenwerte des Dokuments; sie gehoeren deshalb nicht nach
+% data/kennzahlen.tex. Die Ausnahme gilt nur fuer diese Datei.
+\section*{Quellenverzeichnis}
+\addcontentsline{toc}{section}{Quellenverzeichnis}
+
+Die Seitenangaben der Fu{\ss}noten sind die des \emph{gedruckten}
+Dokuments und nicht die des HTML-Blocks der EDGAR-Einreichung. Sie werden
+von \texttt{scripts/edgar\_pages.py} aus dem Seitenfu{\ss} vor jedem
+Seitenumbruch gelesen und von \texttt{scripts/pruefe\_seiten.py} gegen die
+Quelle gepr\"uft: Jede in \texttt{scripts/kennzahlen.py} hinterlegte Zahl
+muss auf der Seite vorkommen, die sie angibt.
+
+\subsection*{Unternehmenseigene Berichte}
+
+\begin{itemize}
+\item \label{quelle:gb2025} Brown \& Brown, Inc.: \emph{Annual Report on
+Form 10-K for the fiscal year ended December 31, 2025}. Eingereicht bei der
+U.\,S.\ Securities and Exchange Commission am 12.\,Februar 2026,
+Aktenzeichen 0001193125-26-046984.
+\item \label{quelle:gb2024} Brown \& Brown, Inc.: \emph{Annual Report on
+Form 10-K for the fiscal year ended December 31, 2024}. Eingereicht am
+13.\,Februar 2025, Aktenzeichen 0000950170-25-019039.
+\item \label{quelle:Form 10-Q Q2 2026} Brown \& Brown, Inc.:
+\emph{Quarterly Report on Form 10-Q for the quarterly period ended June 30,
+2026}. Eingereicht am 27.\,Juli 2026, Aktenzeichen 0001193125-26-318251.
+\item \label{quelle:Proxy Statement 2026} Brown \& Brown, Inc.:
+\emph{Proxy Statement (Form DEF 14A) f\"ur die Hauptversammlung am
+6.\,Mai 2026}. Eingereicht am 24.\,M\"arz 2026, Aktenzeichen
+0001193125-26-122172.
+\end{itemize}
+
+Alle vier Einreichungen sind \"uber das EDGAR-Archiv der U.\,S.\ Securities
+and Exchange Commission unter
+\url{https://www.sec.gov/cgi-bin/browse-edgar?action=getcompany&CIK=0000079282}
+abrufbar (abgerufen am 28.08.2026).
+
+\subsection*{Externe Quellen}
+
+\begin{itemize}
+\item \label{quelle:analysten} Brown \& Brown, Inc.: \emph{Analyst
+Coverage}. \url{https://investor.bbrown.com/stock/analyst-coverage}
+(abgerufen am 28.08.2026).
+\item \label{quelle:dividende} Brown \& Brown, Inc.: \emph{Dividend
+History}. \url{https://investor.bbrown.com/stock/dividends-splits}
+(abgerufen am 28.08.2026).
+\item \label{quelle:kurse} Nasdaq: \emph{Brown \& Brown, Inc.\ Common Stock
+(BRO) Historical Quotes}.
+\url{https://www.nasdaq.com/market-activity/stocks/bro/historical}
+(abgerufen am 28.08.2026). Grundlage der Abbildung~\ref{fig:kursverlauf}
+und der Tabelle~\ref{tab:kursextrema}; Yahoo Finance als zweite Quelle
+antwortete am Abrufdatum mit HTTP~429.
+\end{itemize}

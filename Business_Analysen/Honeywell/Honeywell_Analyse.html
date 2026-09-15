@@ -1,0 +1,165 @@
+<title>Honeywell à 201 dollars</title><style>
+:root{--ground:#F5F7F9;--surface:#fff;--surface-2:#EDF1F5;--ink:#12171E;--muted:#5B6675;
+--rule:#D5DCE4;--blau:#1C4E80;--rot:#A8201A;--rot-flaeche:#FAEFEE;--rot-rand:#D9A9A5;
+--serif:"Source Serif 4",Georgia,serif;--sans:"Inter","Segoe UI",system-ui,sans-serif;
+--mono:"JetBrains Mono",ui-monospace,Consolas,monospace}
+*{box-sizing:border-box}
+body{background:var(--ground);color:var(--ink);font-family:var(--sans);font-size:10.5pt;
+line-height:1.5;margin:0}
+.wrap{max-width:180mm;margin:0 auto;padding:0 6mm 14mm}
+header{padding:10mm 0 5mm;border-bottom:2px solid var(--ink)}
+.eyebrow{font-family:var(--mono);font-size:8pt;letter-spacing:.14em;text-transform:uppercase;
+color:var(--muted);margin:0 0 3mm}
+h1{font-family:var(--serif);font-size:26pt;line-height:1.1;letter-spacing:-.02em;margin:0 0 3mm}
+.frage{font-family:var(--serif);font-size:12pt;line-height:1.45;margin:0 0 4mm;max-width:150mm}
+.meta{display:flex;flex-wrap:wrap;gap:2mm 8mm;font-family:var(--mono);font-size:8pt;color:var(--muted)}
+.meta b{color:var(--ink);font-weight:500}
+.legende{display:grid;grid-template-columns:repeat(3,1fr);gap:1px;background:var(--rule);
+border:1px solid var(--rule);margin:5mm 0 0}
+.legende div{background:var(--surface);padding:3mm}
+.legende dt{font-family:var(--mono);font-size:7.5pt;letter-spacing:.1em;text-transform:uppercase;margin:0 0 1mm}
+.legende dd{margin:0;font-size:8.5pt;color:var(--muted);line-height:1.35}
+.sw{display:inline-block;width:14px;height:3px;vertical-align:middle;margin-right:5px}
+section{padding-top:8mm;break-inside:auto}
+h2{font-family:var(--serif);font-size:16pt;margin:0 0 1mm;break-after:avoid}
+h2 .nr{font-family:var(--mono);font-size:10pt;color:var(--muted);margin-right:3mm}
+h3{font-size:10.5pt;font-weight:600;margin:6mm 0 2mm;break-after:avoid}
+h3 .nr{font-family:var(--mono);color:var(--muted);font-weight:400;margin-right:2mm}
+.strich{height:1px;background:var(--rule);margin:2mm 0 4mm}
+p{margin:0 0 3mm;max-width:155mm}
+.bewertung{color:var(--blau)}
+.bewertung::before{content:"";display:inline-block;width:3px;height:1em;background:var(--blau);
+vertical-align:-.15em;margin-right:3mm}
+.tabelle{border:1px solid var(--rule);background:var(--surface);margin:0 0 4mm;break-inside:avoid}
+table{width:100%;border-collapse:collapse;font-size:8.5pt}
+caption{text-align:left;font-family:var(--mono);font-size:7.5pt;letter-spacing:.09em;
+text-transform:uppercase;color:var(--muted);padding:2.5mm 3mm 0}
+th,td{padding:1.6mm 3mm;text-align:right;border-bottom:1px solid var(--rule);
+font-variant-numeric:tabular-nums;font-family:var(--mono)}
+th:first-child,td:first-child{text-align:left;font-family:var(--sans)}
+thead th{font-size:7.5pt;font-weight:500;letter-spacing:.05em;text-transform:uppercase;
+color:var(--muted);border-bottom:1px solid var(--ink)}
+tbody tr:last-child td{border-bottom:none}
+tr.summe td{font-weight:600;border-top:1px solid var(--ink)}
+tr.hurdle td{color:var(--muted);font-style:italic}
+.quelle{font-family:var(--mono);font-size:7.5pt;color:var(--muted);margin:-2mm 0 4mm}
+.annahme{border-left:3px solid var(--rule);padding:0 0 0 4mm;margin:0 0 3.5mm;break-inside:avoid}
+.annahme b{font-family:var(--mono);font-size:7.5pt;letter-spacing:.07em;text-transform:uppercase;
+display:block;color:var(--muted);margin-bottom:1mm}
+.annahme p{margin:0;font-size:9pt}
+.entfaellt{background:var(--surface-2);border:1px dashed var(--rule);padding:4mm}
+.entfaellt p{margin:0;font-size:9pt;color:var(--muted)}
+#verdikt{background:var(--rot-flaeche);border:1px solid var(--rot-rand);border-left:4px solid var(--rot);
+margin-top:8mm;padding:6mm 5mm;break-before:page}
+#verdikt *{color:var(--rot)}
+#verdikt .tabelle{border-color:var(--rot-rand);background:transparent}
+#verdikt th,#verdikt td{border-bottom-color:var(--rot-rand)}
+#verdikt thead th{border-bottom-color:var(--rot);opacity:.8}
+.spruch{font-family:var(--serif);font-size:14pt;line-height:1.35;font-weight:600;margin:0 0 4mm}
+.zweiseiten{display:grid;grid-template-columns:1fr 1fr;gap:5mm;margin:0 0 3mm}
+.zweiseiten div{border-top:2px solid var(--rot);padding-top:2mm}
+.zweiseiten b{font-family:var(--mono);font-size:7.5pt;letter-spacing:.1em;text-transform:uppercase;display:block;margin-bottom:1.5mm}
+.zweiseiten p{font-size:9pt;margin:0}
+.richtung{margin:0 0 3mm}
+.richtung b{font-family:var(--mono);font-size:8pt;letter-spacing:.08em;text-transform:uppercase;display:block;margin-bottom:1mm}
+ol.lst{margin:0 0 3mm;padding-left:5mm;font-size:9pt}
+ol.lst li{margin-bottom:1.5mm}
+.luecken{background:var(--surface);border:1px solid var(--rule);padding:4mm}
+.luecken ul{margin:0;padding-left:5mm;font-size:9pt}
+.luecken li{margin-bottom:1.5mm}
+footer{margin-top:8mm;padding-top:4mm;border-top:1px solid var(--rule);font-size:8.5pt;color:var(--muted)}
+footer ol{padding-left:5mm}
+@page{size:A4;margin:14mm 10mm}
+@media print{body{background:#fff}}
+</style><div class="wrap">
+<header><p class="eyebrow">Analyse d'entreprise · conglomérat industriel · seul signal d'inflexion retenu</p>
+<h1>Honeywell à 201 dollars</h1>
+<p class="frage">À quel prix une entrée dans Honeywell est-elle défendable, et que vaut un rendement du flux libre de 4,24&nbsp;% pour une société qui emprunte à 3,89&nbsp;% ?</p>
+<div class="meta"><span>Date d'arrêté <b>15.09.2026</b></span><span>Bourse <b>Nasdaq · HON</b></span>
+<span>Sources primaires <b>10-K 2025 · 10-Q S1 2026</b></span><span>Valeurs vérifiées <b>30 sur 30</b></span></div>
+<dl class="legende">
+<div><dt><span class="sw" style="background:var(--ink)"></span>Noir</dt><dd>Chiffres, tableaux, sources. La source primaire en répond.</dd></div>
+<div><dt style="color:var(--blau)"><span class="sw" style="background:var(--blau)"></span>Bleu</dt><dd>Appréciation de l'auteur, après vérification.</dd></div>
+<div><dt style="color:var(--rot)"><span class="sw" style="background:var(--rot)"></span>Rouge</dt><dd>Le verdict, section 7. Recommandation sous hypothèses déclarées, pas un constat.</dd></div>
+</dl></header>
+
+<section><h2><span class="nr">1</span>Description de l'entreprise</h2><div class="strich"></div>
+<h3><span class="nr">1.3</span>Jugement des marchés de capitaux</h3>
+<div class="tabelle"><table><caption>Données de cours</caption><thead><tr><th>Grandeur</th><th>Valeur</th><th>Source</th></tr></thead><tbody><tr><td>Cours au 14.09.2026</td><td>201.38&nbsp;USD</td><td>Yahoo Finance</td></tr><tr><td>Actions en circulation</td><td>635.68&nbsp;millions</td><td>10-K 2025, page de garde</td></tr><tr class="summe"><td>Capitalisation</td><td>128.0&nbsp;Md&nbsp;USD</td><td>produit des deux</td></tr><tr><td>Capitaux propres par action</td><td>23.64&nbsp;USD</td><td>10-K 2025, p.&nbsp;57</td></tr><tr class="summe"><td>Cours / valeur comptable</td><td>8.52×</td><td></td></tr></tbody></table></div>
+<p class="quelle"><b>Un écart à signaler.</b> Yahoo Finance donnait 316,9&nbsp;millions d'actions, soit une capitalisation de 63,8&nbsp;Md&nbsp;USD. La page de garde du 10-K indique 635&nbsp;675&nbsp;701 actions, et le résultat par action dilué de 7,36&nbsp;USD sur 4&nbsp;729&nbsp;M&nbsp;USD confirme environ 642&nbsp;millions. Le chiffre de Yahoo est faux d'un facteur deux ; tous les ratios par action de ce rapport reposent sur celui du dépôt.</p>
+<h3><span class="nr">1.4</span>Couverture et consensus</h3>
+<div class="tabelle"><table><caption>Consensus · source secondaire · 15.09.2026</caption><thead><tr><th>Grandeur</th><th>Valeur</th><th>Contre le cours</th></tr></thead><tbody><tr><td>Analystes recensés</td><td>22</td><td>—</td></tr><tr><td>Recommandations</td><td>14 achat · 8 conservation · 1 vente</td><td>—</td></tr><tr class="summe"><td>Objectif moyen</td><td>263.41&nbsp;USD</td><td>+30,80&nbsp;%</td></tr><tr><td>Objectif le plus haut</td><td>303.00&nbsp;USD</td><td>—</td></tr><tr><td>Objectif le plus bas</td><td>186.00&nbsp;USD</td><td>—</td></tr></tbody></table></div>
+<p class="quelle">Investing.com, page consensus HON, consultée le 15.09.2026. Contrôle de cohérence : 263,41 / 1,3080 = 201,38, soit exactement le cours retenu ici. La donnée est donc à jour, contrairement aux valeurs divergentes de 246,67 et 265 qu'affichent d'autres agrégateurs sans indiquer leur cours de référence.</p>
+<h3><span class="nr">1.5</span>Messages et lacunes</h3>
+<div class="luecken"><ul>
+<li><b>Aucune prévision chiffrée pour 2026 dans les dépôts.</b> Honeywell la publie dans ses communiqués de résultats, que ce rapport n'a pas dépouillés. La comparaison prévision contre réalisé est donc absente, et rien ne la remplace ici.</li>
+<li><b>Pas de noms d'analystes ni de notes individuelles.</b></li>
+<li><b>Série de flux libre sur quatre ans seulement</b>, recoupée entre le 10-K et l'API XBRL. Le squelette en demande sept à dix ; le centile de la section&nbsp;6 porte donc sur une fenêtre courte, et c'est dit là où il est utilisé.</li>
+</ul></div></section>
+
+<section><h2><span class="nr">2</span>Analyse des comptes</h2><div class="strich"></div>
+<p>Millions de dollars, sauf indication contraire.</p>
+<div class="tabelle"><table><caption>Exercices, 10-K 2025</caption><thead><tr><th>Grandeur</th><th>2023</th><th>2024</th><th>2025</th><th>Δ 2025</th></tr></thead><tbody><tr><td>Chiffre d’affaires</td><td>33 009</td><td>34 717</td><td>37 442</td><td>+7,9&nbsp;%</td></tr><tr><td>Résultat net part du groupe</td><td>5 658</td><td>5 705</td><td>4 729</td><td>−17,1&nbsp;%</td></tr><tr><td>dont dépréciation d’écart d’acquisition</td><td>—</td><td>—</td><td>724</td><td>—</td></tr><tr><td>Résultat par action dilué, USD</td><td>8,47</td><td>8,71</td><td>7,36</td><td>−15,5&nbsp;%</td></tr><tr><td>Flux de trésorerie opérationnel</td><td>5 340</td><td>6 097</td><td>6 408</td><td>+5,1&nbsp;%</td></tr><tr><td>Investissements</td><td>741</td><td>871</td><td>986</td><td>+13,2&nbsp;%</td></tr><tr class="summe"><td>Flux de trésorerie libre</td><td>4 599</td><td>5 226</td><td>5 422</td><td>+3,7&nbsp;%</td></tr><tr><td>Dividendes versés</td><td>2 855</td><td>2 902</td><td>2 976</td><td>+2,6&nbsp;%</td></tr><tr><td>Capitaux propres</td><td>—</td><td>19 154</td><td>15 030</td><td>−21,5&nbsp;%</td></tr><tr><td>Dette nette</td><td>—</td><td>—</td><td>22 093</td><td>—</td></tr></tbody></table></div>
+<p class="quelle">10-K 2025, p.&nbsp;55 · 10-K 2025, p.&nbsp;58 · 10-K 2025, p.&nbsp;57. Dette nette = papier commercial 5&nbsp;893 + échéances courantes 1&nbsp;546 + dette long terme 27&nbsp;141 − liquidités 12&nbsp;487.</p>
+<p><b>Le résultat net recule de 17,1&nbsp;% alors que le chiffre d'affaires progresse de 7,9&nbsp;%.</b> L'écart tient pour l'essentiel à une dépréciation d'écart d'acquisition de 724&nbsp;M&nbsp;USD, absente des deux exercices précédents. Le flux de trésorerie libre, lui, ne la subit pas et progresse de 3,7&nbsp;%.</p>
+<p><b>Les capitaux propres perdent 21,5&nbsp;%</b> sur un exercice bénéficiaire. Ce n'est pas une perte : c'est le rachat d'actions et le versement de 2 976&nbsp;M&nbsp;USD de dividendes. La conséquence est arithmétique et elle pèse sur toute la suite : une base de capitaux propres comprimée produit mécaniquement un rendement des capitaux propres élevé et un rapport cours sur valeur comptable de 8.52×.</p>
+<h3>Premier semestre 2026</h3>
+<div class="tabelle"><table><caption>Exercice en cours, 10-Q S1 2026</caption><thead><tr><th>Grandeur</th><th>S1 2025</th><th>S1 2026</th><th>Δ</th></tr></thead><tbody><tr><td>Chiffre d’affaires</td><td>18 247</td><td>18 862</td><td>+3,4&nbsp;%</td></tr><tr><td>Résultat net part du groupe</td><td>3 036</td><td>6 481</td><td>+113,5&nbsp;%</td></tr><tr class="summe"><td>Flux de trésorerie opérationnel</td><td>1 916</td><td>626</td><td>−67,3&nbsp;%</td></tr><tr><td>Capitaux propres</td><td>15 030</td><td>18 857</td><td>+25,5&nbsp;%</td></tr><tr><td>Dette nette</td><td>22 093</td><td>25 237</td><td>+14,2&nbsp;%</td></tr></tbody></table></div>
+<p class="quelle">10-Q S1 2026, p.&nbsp;3 · 10-Q S1 2026, p.&nbsp;6 · 10-Q S1 2026, p.&nbsp;5</p>
+<p class="bewertung">C'est la ligne la plus importante du rapport et elle va dans le mauvais sens. Le résultat net double, mais le flux de trésorerie opérationnel du semestre tombe de 1 916 à 626&nbsp;M&nbsp;USD. Un résultat qui double pendant que l'encaissement est divisé par trois signale que le bénéfice du semestre ne vient pas de l'exploitation courante. La dette nette progresse de 14,2&nbsp;% sur la même période.</p></section>
+
+<section><h2><span class="nr">3</span>Mesures stratégiques</h2><div class="strich"></div>
+<p><i>Cette section rapporte, elle ne juge pas.</i></p>
+<p>Le compte de résultat 2025 porte deux dépréciations : 724&nbsp;M&nbsp;USD sur des écarts d'acquisition et 270&nbsp;M&nbsp;USD sur des actifs destinés à la vente, contre 219&nbsp;M&nbsp;USD l'exercice précédent pour cette seconde ligne. Les charges financières passent de 1 048 à 1 344&nbsp;M&nbsp;USD, soit une hausse de 28,2&nbsp;%, pour une dette brute de 34 580&nbsp;M&nbsp;USD à la clôture.</p>
+<p>Aucune prévision chiffrée pour 2026 ne figure dans le 10-Q ; la section 1.5 le déclare comme lacune.</p></section>
+
+<section><h2><span class="nr">4</span>Lecture du cours</h2><div class="strich"></div>
+<p>Le titre a perdu 22,6&nbsp;% depuis son plus haut à trois ans, atteint le 2&nbsp;mars&nbsp;2026, et se tient 15,7&nbsp;% au-dessus de son plus bas. Sur trois mois il recule de 12,8&nbsp;% quand son indice de référence progresse de 2,5&nbsp;% : la baisse est donc intégralement propre à l'entreprise, pas subie.</p>
+<p class="bewertung">L'indicateur qui explique ce décrochage n'est ni le chiffre d'affaires, qui progresse, ni le résultat net, qui double au semestre. C'est l'encaissement. Un marché qui voit le flux opérationnel semestriel fondre de deux tiers cesse de payer le résultat comptable, et c'est exactement ce que montre la chronologie : le plus haut date de mars 2026, le 10-Q qui publie ces 626&nbsp;M&nbsp;USD a été déposé le 23&nbsp;juillet.</p></section>
+
+<section><h2><span class="nr">5</span>Options d'action</h2><div class="strich"></div>
+<div class="entfaellt"><p><b>Sans objet (n&nbsp;=&nbsp;0).</b> La décision n'est pas de choisir entre des options de l'entreprise mais d'entrer ou non à un cours donné. La numérotation est conservée pour que ce rapport reste comparable ligne à ligne avec les précédents.</p></div></section>
+
+<section><h2><span class="nr">6</span>Analyse de flux</h2><div class="strich"></div>
+<h3><span class="nr">6.0</span>Hypothèses, déclarées avant tout chiffre</h3>
+<div class="annahme"><b>Hypothèse 1 — flux distribuable et non dividende</b><p>La série porte le flux de trésorerie libre publié, soit 5 422&nbsp;M&nbsp;USD en 2025, et non les 2 976&nbsp;M&nbsp;USD de dividendes versés. Ne modéliser que le dividende reviendrait à ignorer les rachats d'actions, qui sont ici le premier emploi de la trésorerie.</p></div>
+<div class="annahme"><b>Hypothèse 2 — aucune croissance</b><p>Chaque scénario maintient son niveau. Le modèle ne prévoit rien : il mesure ce que les flux déjà publiés rapportent au prix demandé. La croissance est rendue en section 7.3 sous forme de taux requis, pas de prévision.</p></div>
+<div class="annahme"><b>Hypothèse 3 — sortie à la valorisation actuelle</b><p>La valeur terminale est le cours du jour, 201.38&nbsp;USD, tenu constant : sortie sans expansion de multiple. La valeur comptable serait ici trompeuse, car 8.52× sépare les deux et cet écart tient aux rachats d'actions, pas à l'exploitation.</p></div>
+<div class="annahme"><b>Hypothèse 4 — deux hurdles, tous deux sourcés</b><p>Le rendement des capitaux propres 2025 de 31,46&nbsp;% et le coût de la dette 2025 de 3,89&nbsp;%, soit 1 344&nbsp;M&nbsp;USD de charges financières sur 34 580&nbsp;M&nbsp;USD de dette brute. Aucun coût moyen pondéré du capital n'est construit : ni bêta, ni taux sans risque, ni prime de marché ne figurent dans les sources primaires. Le premier hurdle est gonflé par la compression des capitaux propres ; il est retenu parce qu'il est sourcé, et encadré par le second qui ne l'est pas moins.</p></div>
+<div class="annahme"><b>Hypothèse 5 — fiscalité de l'actionnaire hors champ</b><p>Le taux dépend du domicile du porteur et ne figure dans aucune source. Les taux de rendement interne sont donc avant impôt au niveau de l'actionnaire.</p></div>
+<h3><span class="nr">6.3</span>Où se situe l'exercice retenu dans sa propre histoire</h3>
+<div class="tabelle"><table><caption>Série de flux libre, 10-K et API XBRL</caption><thead><tr><th>Exercice</th><th>Flux libre (M USD)</th><th>Part du sommet</th></tr></thead><tbody><tr><td>2022</td><td>4 508</td><td>83,1&nbsp;%</td></tr><tr><td>2023</td><td>4 599</td><td>84,8&nbsp;%</td></tr><tr><td>2024</td><td>5 226</td><td>96,4&nbsp;%</td></tr><tr><td>2025</td><td>5 422</td><td>100,0&nbsp;%</td></tr></tbody></table></div>
+<p><b>L'exercice 2025 est le sommet de la fenêtre disponible.</b> Le scénario de base de ce rapport occupe donc le centile le plus élevé des quatre années observables, et non un creux. C'est le contrôle que prescrit la méthode après qu'un modèle de niveau a pris un creux cyclique pour la normale ; ici il conclut l'inverse, et la conséquence est que ce rapport est, si l'on se trompe, trop généreux et non trop sévère.</p>
+<p class="quelle">Fenêtre de quatre ans, plus courte que les sept à dix demandées. Les valeurs 2023 à 2025 sont vérifiées page à page dans le 10-K ; celle de 2022 provient de l'API XBRL et n'a pas de page.</p></section>
+
+<section id="verdikt"><h2><span class="nr">7</span>Verdict</h2><div class="strich"></div>
+<p style="font-size:8.5pt"><b>Tout ce qui suit est en rouge :</b> une recommandation sous les hypothèses de la section 6.0, pas un constat. Aucune grandeur nouvelle n'est introduite.</p>
+<h3><span class="nr">7.1</span>Verdict</h3>
+<p class="spruch">Ne pas acheter à 201.38&nbsp;USD. Le flux de trésorerie libre rapporte 4,24&nbsp;%, soit 35 points de base de plus que ce qu'Honeywell paie à ses propres créanciers. Ce n'est pas une rémunération du risque actions.</p>
+<div class="zweiseiten">
+<div><b>Pour le porteur</b><p>Conserver, sans renforcer. Le flux libre est au plus haut de sa fenêtre et couvre le dividende presque deux fois. Ce qu'il faut surveiller est l'encaissement du second semestre, pas le résultat publié.</p></div>
+<div><b>Pour le non-porteur</b><p>Attendre. Le prix suppose une croissance du flux libre que quatre ans d'historique ne montrent nulle part, et le semestre en cours va dans l'autre sens.</p></div></div>
+<h3><span class="nr">7.2</span>Ce qui fonde ce verdict</h3>
+<div class="richtung"><b>Contre</b><p>Le flux opérationnel du premier semestre 2026 recule de 67,3&nbsp;%, de 1 916 à 626&nbsp;M&nbsp;USD, pendant que la dette nette monte de 14,2&nbsp;%. Le rendement du flux libre de 4,24&nbsp;% dépasse de 0,35 point le coût de la dette du groupe. Le rapport cours sur valeur comptable atteint 8.52×, et les capitaux propres ont reculé de 21,5&nbsp;% en un exercice.</p></div>
+<div class="richtung"><b>Pour</b><p>Le flux libre progresse de 4 599 à 5 422&nbsp;M&nbsp;USD en deux ans et se tient au sommet de sa fenêtre. Le chiffre d'affaires croît de 7,9&nbsp;%. La baisse du résultat net s'explique par une dépréciation sans effet de trésorerie. C'est le seul des trois titres détectés dont l'encaissement ne se dégrade pas.</p></div>
+<div class="richtung"><b>Où ce verdict s'écarte du marché</b><p>Le consensus des 22 analystes recensés est <i>achat</i>, avec un objectif moyen de 263.41&nbsp;USD, soit 28,8&nbsp;% au-dessus du seuil calculé ici au coût de la dette. L'écart ne se joue pas sur les chiffres mais sur la question posée : un objectif à douze mois valorise un multiple de résultat, ce modèle valorise un encaissement sans croissance. Que 14 maisons sur 22 recommandent l'achat est un argument à porter au crédit de la section 7.5, pas à écarter.</p></div>
+<h3><span class="nr">7.3</span>Seuil d'entrée et croissance requise</h3>
+<div class="tabelle"><table><caption>Prix auquel le hurdle est exactement atteint · cours actuel 201.38 USD</caption><thead><tr><th>Hurdle sourcé</th><th>5 ans</th><th>10 ans</th><th>15 ans</th></tr></thead><tbody><tr><td>Rendement des capitaux propres 2025</td><td>71.49&nbsp;USD</td><td>38.41&nbsp;USD</td><td>29.99&nbsp;USD</td></tr><tr><td>Coût de la dette 2025 (1 344 / 34 580)</td><td>204.52&nbsp;USD</td><td>207.11&nbsp;USD</td><td>209.25&nbsp;USD</td></tr></tbody></table></div>
+<div class="tabelle"><table><caption>Croissance annuelle du flux libre que le cours actuel présuppose</caption><thead><tr><th>Hurdle sourcé</th><th>5 ans</th><th>10 ans</th><th>15 ans</th></tr></thead><tbody><tr><td>Rendement des capitaux propres 2025</td><td>91,1&nbsp;%</td><td>49,9&nbsp;%</td><td>38,4&nbsp;%</td></tr><tr><td>Coût de la dette 2025 (1 344 / 34 580)</td><td>-2,9&nbsp;%</td><td>-1,7&nbsp;%</td><td>-1,2&nbsp;%</td></tr></tbody></table></div>
+<p><b>Les deux hurdles encadrent la réponse.</b> Au coût de la dette, le seuil se situe entre 204 et 209&nbsp;USD : le cours de 201.38 est donc à peine en dessous, et la croissance requise est négative, c'est-à-dire que le flux actuel suffit déjà. Au rendement des capitaux propres, le seuil tombe à 38&nbsp;USD sur dix ans et le cours supposerait 49,9&nbsp;% de croissance annuelle. La vérité tient dans cet intervalle, et il dit une chose simple : à ce prix, un actionnaire d'Honeywell est payé comme un créancier d'Honeywell.</p>
+<h3><span class="nr">7.4</span>Ce qui ferait basculer le verdict</h3>
+<ol class="lst">
+<li><b>À l'achat :</b> flux opérationnel du second semestre 2026 supérieur à <b>3 000&nbsp;M&nbsp;USD</b>, ce qui ramènerait l'exercice sur la trajectoire de 2025 et montrerait que le premier semestre était un décalage de besoin en fonds de roulement.</li>
+<li><b>À l'achat :</b> cours sous <b>150&nbsp;USD</b>, seuil d'un actionnaire exigeant 8&nbsp;% — hypothèse de l'auteur, pas sourcée, et signalée comme telle.</li>
+<li><b>À la vente :</b> flux libre d'un exercice complet sous <b>4 500&nbsp;M&nbsp;USD</b>, soit le niveau de 2022.</li>
+<li><b>À la vente :</b> dette nette au-delà de <b>30 000&nbsp;M&nbsp;USD</b> sans progression correspondante de l'encaissement.</li></ol>
+<h3><span class="nr">7.5</span>Ce que ce verdict ne peut pas savoir</h3>
+<p>La question ouverte est de savoir si l'effondrement du flux opérationnel semestriel est saisonnier, lié au besoin en fonds de roulement, ou durable. Le 10-Q ne le dit pas, et un semestre ne tranche pas.</p>
+<ol class="lst">
+<li><b>Le hurdle du rendement des capitaux propres est faussé par le haut.</b> 31,5&nbsp;% n'est pas la rentabilité de l'exploitation : c'est le résultat divisé par des capitaux propres que les rachats d'actions ont comprimés de 21,5&nbsp;% en un an. Un lecteur qui refuse ce hurdle refuse la moitié de mon encadrement.</li>
+<li><b>L'hypothèse 2 exclut la croissance</b> d'une société dont le chiffre d'affaires progresse de 7,9&nbsp;% et dont le flux libre a gagné 18&nbsp;% en deux ans. Le taux requis de la section 7.3 rend cette hypothèse visible, il ne la supprime pas.</li>
+<li><b>Vingt-deux analystes concluent l'inverse</b>, et leur objectif le plus bas, 186&nbsp;USD, reste au-dessus de mon seuil au coût de la dette. Quand une couverture entière se place au-dessus de son propre seuil, l'explication la plus probable est une hypothèse de l'auteur, pas une erreur collective.</li>
+<li><b>La fenêtre de flux libre ne couvre que quatre ans.</b> Le squelette en demande sept à dix, et le centile de la section 6.3 est d'autant plus fragile que la fenêtre est courte.</li></ol></section>
+
+<footer><p><b>Sources :</b> Honeywell International Inc., Form 10-K de l'exercice 2025 déposé le 17.02.2026 ; Form 10-Q du premier semestre 2026 déposé le 23.07.2026 ; Yahoo Finance pour le cours ; Investing.com pour le consensus (source secondaire), consultés le 15.09.2026.</p>
+<p><b>Reproductibilité :</b> <code>daten_us.py</code> contient chaque valeur avec sa source et sa page imprimée, <code>pruefe_us.py</code> vérifie chacune contre le texte de sa page, <code>rapport.py</code> produit toutes les tables de ce document.</p></footer></div>

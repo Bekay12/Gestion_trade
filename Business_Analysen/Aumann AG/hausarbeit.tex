@@ -1,0 +1,30 @@
+\documentclass[a4paper,11pt,DIV=12,parskip=half]{scrartcl}
+\input{preamble}
+\input{data/kennzahlen}
+% Von scripts/cashflow.py erzeugt: die Ergebnisse der Flow-Analyse als Makros,
+% damit die Wertungsabschnitte der Aufgabe 5 dieselben Zahlen fuehren wie die
+% Tabellen der Aufgabe 6.
+\input{data/cf_makros}
+% Eigene Schaetzung des Verfassers zu Teil 5, unabhaengig von den fuer
+% Teil 6 vorgegebenen Betraegen (Aufgabenstellung: "ggf. abweichend
+% von Ihren vorausgegangenen Analysen").
+\input{data/schaetzung_teil5}
+
+\begin{document}
+\input{sections/00-deckblatt}
+\tableofcontents
+\clearpage
+\input{sections/01-unternehmen}
+\input{sections/02-jahresabschluss}
+\input{sections/03-strategie}
+\input{sections/04-aktienkurs}
+\input{sections/05-handlungsoptionen}
+\input{sections/06-cashflow}
+\clearpage
+% Section* loest \sectionmark nicht aus; ohne diese Zeile wuerde die
+% Kopfzeile bis zum Dokumentende "6" zeigen.
+\markright{}
+\input{sections/90-quellen}
+\input{sections/91-ki-nutzung}
+\input{sections/92-erklaerung}
+\end{document}

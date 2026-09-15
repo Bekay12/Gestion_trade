@@ -1,0 +1,57 @@
+\babel@toc {ngerman}{}\relax 
+\contentsline {section}{\numberline {1}Beschreibung des Unternehmens}{3}{section.1}%
+\contentsline {subsection}{\numberline {1.1}Handelnde Personen in f\"uhrender Position}{3}{subsection.1.1}%
+\contentsline {subsection}{\numberline {1.2}Eigent\"umerstruktur}{4}{subsection.1.2}%
+\contentsline {subsection}{\numberline {1.3}Beurteilung durch die Kapitalm\"arkte}{4}{subsection.1.3}%
+\contentsline {subsection}{\numberline {1.4}Analystenabdeckung}{5}{subsection.1.4}%
+\contentsline {subsection}{\numberline {1.5}Botschaften der Analysten}{5}{subsection.1.5}%
+\contentsline {section}{\numberline {2}Auswertung des Jahresabschlusses 2024}{6}{section.2}%
+\contentsline {subsection}{\numberline {2.1}Umsatz und Ver\"anderung zum Vorjahr}{6}{subsection.2.1}%
+\contentsline {subsection}{\numberline {2.2}Auftragseingang und Ver\"anderung zum Vorjahr}{6}{subsection.2.2}%
+\contentsline {subsection}{\numberline {2.3}EBITDA-Marge in Prozent vom Umsatz}{6}{subsection.2.3}%
+\contentsline {subsection}{\numberline {2.4}Operatives EBITDA}{7}{subsection.2.4}%
+\contentsline {subsection}{\numberline {2.5}Nettogewinn und Ver\"anderung zum Vorjahr}{7}{subsection.2.5}%
+\contentsline {subsection}{\numberline {2.6}Dividende und Dividendenrendite}{7}{subsection.2.6}%
+\contentsline {subsection}{\"Uberblick der Kennzahlen 2023 und 2024}{8}{section*.2}%
+\contentsline {subsection}{\numberline {2.7}Entwicklung des Aktienkurses 2022 bis 2025}{8}{subsection.2.7}%
+\contentsline {section}{\numberline {3}Strategische Ma{\ss }nahmen im Gesch\"aftsbericht 2024}{9}{section.3}%
+\contentsline {subsection}{\numberline {3.1}Wachstumssegment E-Mobility}{10}{subsection.3.1}%
+\contentsline {subsection}{\numberline {3.2}Neuausrichtung des Segments Next Automation}{10}{subsection.3.2}%
+\contentsline {subsection}{\numberline {3.3}Batterie- und Brennstoffzellen-Produktionstechnik}{11}{subsection.3.3}%
+\contentsline {subsection}{\numberline {3.4}Internationalisierung und Kapitalallokation}{11}{subsection.3.4}%
+\contentsline {paragraph}{\nonumberline Internationalisierung.}{11}{paragraph*.4}%
+\contentsline {paragraph}{\nonumberline Kapitalallokation.}{11}{paragraph*.6}%
+\contentsline {subsection}{\numberline {3.5}Bisherige Wirkung auf operatives EBITDA und EBIT}{11}{subsection.3.5}%
+\contentsline {subsection}{\numberline {3.6}Ausblick 2025 und dessen Widerspiegelung in den Berichten}{12}{subsection.3.6}%
+\contentsline {section}{\numberline {4}Beurteilung des Verlaufs des Aktienkurses}{12}{section.4}%
+\contentsline {section}{\numberline {5}Beurteilung ausgew\"ahlter Handlungsoptionen}{13}{section.5}%
+\contentsline {subsection}{\numberline {5.1}Diversifikation in Zukunftsbranchen (Option A)}{13}{subsection.5.1}%
+\contentsline {subsubsection}{\numberline {5.1.1}Relevanz der Strategie (Management-Summary)}{13}{subsubsection.5.1.1}%
+\contentsline {subsubsection}{\numberline {5.1.2}Finanzwirtschaftliche Bewertung}{14}{subsubsection.5.1.2}%
+\contentsline {subsubsection}{\numberline {5.1.3}Statement}{14}{subsubsection.5.1.3}%
+\contentsline {subsection}{\numberline {5.2}Ausbau der Produktionstechnik f\"ur Batterie- und Brennstoffzellenfertigung (Option B)}{15}{subsection.5.2}%
+\contentsline {subsubsection}{\numberline {5.2.1}Relevanz der Strategie (Management-Summary)}{15}{subsubsection.5.2.1}%
+\contentsline {subsubsection}{\numberline {5.2.2}Finanzwirtschaftliche Bewertung}{16}{subsubsection.5.2.2}%
+\contentsline {subsubsection}{\numberline {5.2.3}Statement}{16}{subsubsection.5.2.3}%
+\contentsline {subsection}{\numberline {5.3}Anorganisches Wachstum durch gezielte Akquisition (Option C)}{18}{subsection.5.3}%
+\contentsline {subsubsection}{\numberline {5.3.1}Relevanz der Strategie (Management-Summary)}{18}{subsubsection.5.3.1}%
+\contentsline {subsubsection}{\numberline {5.3.2}Finanzwirtschaftliche Bewertung}{18}{subsubsection.5.3.2}%
+\contentsline {subsubsection}{\numberline {5.3.3}Statement}{20}{subsubsection.5.3.3}%
+\contentsline {paragraph}{\nonumberline Verwendung der Nettoliquidit\"at.}{20}{paragraph*.8}%
+\contentsline {subsection}{\numberline {5.4}Zusammenfassende Bewertung der drei Optionen}{21}{subsection.5.4}%
+\contentsline {subsubsection}{\numberline {5.4.1}\"Ubersicht}{21}{subsubsection.5.4.1}%
+\contentsline {subsubsection}{\numberline {5.4.2}Zusammenfassende Empfehlung}{21}{subsubsection.5.4.2}%
+\contentsline {section}{\numberline {6}Grobe Flow-Analyse}{22}{section.6}%
+\contentsline {subsection}{Annahmen der Flow-Analyse}{22}{section*.9}%
+\contentsline {paragraph}{\nonumberline Vorbehalt zur EBITDA-Marge Ende 2028.}{23}{paragraph*.11}%
+\contentsline {subsection}{\numberline {6.1}Cash-Flow-Tabellen der Optionen}{23}{subsection.6.1}%
+\contentsline {subsection}{\numberline {6.2}Ergebnis der einzelnen Flow-Analysen}{25}{subsection.6.2}%
+\contentsline {subsubsection}{\numberline {6.2.1}Option A}{25}{subsubsection.6.2.1}%
+\contentsline {subsubsection}{\numberline {6.2.2}Option B}{25}{subsubsection.6.2.2}%
+\contentsline {subsubsection}{\numberline {6.2.3}Option C}{25}{subsubsection.6.2.3}%
+\contentsline {subsection}{\numberline {6.3}Vergleich der Ergebniswirkung (Ende 2028)}{25}{subsection.6.3}%
+\contentsline {subsubsection}{\numberline {6.3.1}Fazit des Vergleichs}{26}{subsubsection.6.3.1}%
+\contentsline {section}{Quellenverzeichnis}{28}{section*.12}%
+\contentsline {section}{Hinweis zur Nutzung von KI-Werkzeugen}{30}{section*.15}%
+\contentsline {section}{Eidesstattliche Erkl\"arung}{30}{section*.16}%
+\providecommand \tocbasic@end@toc@file {}\tocbasic@end@toc@file 

@@ -59,3 +59,6 @@ stock_analysis.db
 # Google Drive File Stream folder icons
 desktop.ini
 Desktop.ini
+
+# Extracted Alamos financial-statement text files
+Business_Analysen/**/**/**/*.txt

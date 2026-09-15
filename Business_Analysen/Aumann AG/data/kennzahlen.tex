@@ -1,0 +1,204 @@
+% ===================================================================
+% data/kennzahlen.tex
+% EINZIGE Quelle aller Zahlenwerte des Dokuments.
+% Rohwerte im englischen Format (Punkt als Dezimaltrenner) -
+% die Formatierung mit Dezimalkomma erfolgt in preamble.tex.
+% Jedes Makro traegt seine Quelle und Seitenzahl im Kommentar.
+%
+% Alle Betraege in Mio. EUR, sofern nicht anders vermerkt. Die Werte sind
+% in voller im Bericht veroeffentlichter Genauigkeit hinterlegt (Aumann
+% weist in TEUR aus); \MioEUR rundet fuer den Fliesstext auf eine
+% Nachkommastelle, \MioEURexakt gibt den vollen Wert im Rechenweg aus.
+% ===================================================================
+
+% --- Aufgabe 2: Jahresabschluss 2024 -------------------------------
+% Konzernkennzahlen laut Uebersicht "Aumann in figures"
+\newcommand{\UmsatzZFIII}{289.606}            % GB 2024, S. 2 (289.606 TEUR)
+\newcommand{\UmsatzZFIV}{312.346}             % GB 2024, S. 2 (312.346 TEUR)
+\newcommand{\AuftragseingangZFIII}{339.379}   % GB 2024, S. 2 (339.379 TEUR)
+\newcommand{\AuftragseingangZFIV}{200.057}    % GB 2024, S. 2 (200.057 TEUR)
+
+% Aumann weist EBITDA und bereinigtes (adjusted) EBITDA getrennt aus.
+% Als "operatives EBITDA" im Sinne der Aufgabenstellung wird das bereinigte
+% EBITDA gefuehrt; das berichtete EBITDA steht zur Einordnung daneben.
+\newcommand{\EbitdaBerichtetZFIII}{20.647}    % GB 2024, S. 2 (EBITDA)
+\newcommand{\EbitdaBerichtetZFIV}{35.804}     % GB 2024, S. 2 (EBITDA)
+\newcommand{\EbitdaMargeBerichtetZFIII}{7.1}  % GB 2024, S. 2 (EBITDA margin)
+\newcommand{\EbitdaMargeBerichtetZFIV}{11.5}  % GB 2024, S. 2 (EBITDA margin)
+\newcommand{\EbitdaOpZFIII}{21.294}           % GB 2024, S. 2 (Adj. EBITDA)
+\newcommand{\EbitdaOpZFIV}{36.417}            % GB 2024, S. 2 (Adj. EBITDA)
+\newcommand{\EbitdaMargeZFIII}{7.4}           % GB 2024, S. 2 (Adj. EBITDA margin)
+\newcommand{\EbitdaMargeZFIV}{11.7}           % GB 2024, S. 2 (Adj. EBITDA margin)
+\newcommand{\BereinigungsbetragZFIV}{0.613}   % berechnet: EbitdaOpZFIV - EbitdaBerichtetZFIV
+
+\newcommand{\EbitZFIV}{29.454}                % GB 2024, S. 2
+\newcommand{\NettogewinnZFIII}{9.583}         % GB 2024, S. 2 (Consolidated net profit)
+\newcommand{\NettogewinnZFIV}{21.506}         % GB 2024, S. 2 (Consolidated net profit)
+
+\newcommand{\DividendeJeAktieZFIV}{0.22}      % GB 2024, S. 8 (Gewinnverwendungsvorschlag)
+\newcommand{\KursSilvesterZFIV}{10.62}        % GB 2024, S. 13 (XETRA-Schlusskurs 30.12.2024)
+\newcommand{\DividendenrenditeZFIV}{2.07}     % berechnet: Dividende / Schlusskurs
+\newcommand{\NettoliquiditaetZFIV}{138.2}     % GB 2024, S. 5
+
+% --- Basiswerte 2025 (Bezugsbasis fuer Aufgabe 6) ------------------
+\newcommand{\UmsatzZFV}{203.985}              % GB 2025, S. 2
+\newcommand{\AuftragseingangZFV}{147.486}     % GB 2025, S. 2
+\newcommand{\EbitdaBerichtetZFV}{28.215}      % GB 2025, S. 2 (EBITDA)
+\newcommand{\EbitdaOpZFV}{27.278}             % GB 2025, S. 2 (Adj. EBITDA)
+\newcommand{\EbitdaMargeZFV}{13.4}            % GB 2025, S. 2 (Adj. EBITDA margin)
+\newcommand{\NettoliquiditaetZFV}{148.1}      % GB 2025, S. 4
+\newcommand{\KursSilvesterZFV}{12.32}         % GB 2025, S. 13 (XETRA-Schlusskurs 2025)
+
+% --- Stammdaten der Aktie ------------------------------------------
+% Quelle der Web-Angaben: aumann.com/en/investor-relations/shares,
+% abgerufen am 27.07.2026.
+\newcommand{\ISIN}{DE000A2DAM03}              % IR-Webseite "Shares"
+\newcommand{\WKN}{A2DAM0}                     % IR-Webseite "Shares"
+\newcommand{\AktienGesamt}{12917048}          % IR-Webseite "Shares"
+\newcommand{\AktienGesamtAlt}{15250000}       % GB 2025, S. 52 (vor Kapitalherabsetzungen)
+\newcommand{\AktienGesamtMittel}{14345231}    % GB 2025, S. 52 (nach erster Herabsetzung)
+% Die Angaben der IR-Webseite tragen ungleiche Stichtage: der MBB-Anteil ist
+% mit "* as of 31 December 2025" datiert, der Streubesitz traegt kein Datum.
+% Der frueher hier gefuehrte Stand (44,49 % / 45,5 %) stammt aus der Fassung
+% der Seite vor der Kapitalherabsetzung und bezog sich noch auf
+% \AktienGesamtMittel Aktien; Beleg: Internet Archive, Fassung vom 14.09.2025.
+\newcommand{\AnteilMBB}{47.81}                % IR-Webseite "Shares", Stand 31.12.2025 (in %)
+\newcommand{\FreefloatAnteil}{42.9}           % IR-Webseite "Shares", ohne Stichtag (in %)
+\newcommand{\RestanteilUngeklaert}{9.29}      % berechnet: 100 - AnteilMBB - FreefloatAnteil
+\newcommand{\AnteilMBBAlt}{44.49}             % IR-Webseite "Shares", archivierte Fassung 14.09.2025 (in %)
+\newcommand{\FreefloatAnteilAlt}{45.5}        % ebenda (in %)
+
+% Eigene Aktien aus dem Rueckkaufangebot 2026 (Groessenordnung der Differenz)
+\newcommand{\EigeneAktienStueck}{1291200}     % Aumann AG, Meldung nach Paragraf 40 Abs. 1 Satz 2 WpHG vom 16.07.2026
+\newcommand{\EigeneAktienAnteil}{9.996}       % ebenda (in % der Stimmrechte)
+\newcommand{\RueckkaufPreisZFVI}{17.80}       % IR-Webseite "Share buyback" (Angebotspreis 2026, angehoben)
+\newcommand{\IPOKurs}{42.00}                  % IR-Webseite "Shares" (Emissionspreis 2017)
+\newcommand{\MarktkapZFV}{159.138}            % berechnet: AktienGesamt * KursSilvesterZFV
+\newcommand{\MitarbeiterZFIV}{891}            % GB 2025, S. 93
+\newcommand{\MitarbeiterZFV}{773}             % GB 2025, S. 93
+
+% --- Aufgabe 2.7: XETRA-Jahresschlusskurse -------------------------
+% Der Schlusskurs 2022 ist im GB 2023 als Vorjahreswert ausgewiesen.
+% Die Ketten der Vorjahresangaben in GB 2023, 2024 und 2025 sind konsistent.
+% Der Wert 2021 stammt allein aus Yahoo Finance: Der GB 2022 nennt keinen
+% Jahresschlusskurs (geprueft am 29.07.2026). Er ist damit als einziger der
+% fuenf nicht gegen eine Primaerquelle gepruefet; im Dokument ist das benannt.
+\newcommand{\KursSilvesterZFI}{13.68}         % Yahoo Finance (ohne Primaerquellen-Gegenprobe)
+\newcommand{\KursSilvesterZFII}{11.48}        % GB 2023, S. 14 (Vorjahresschlusskurs)
+\newcommand{\KursSilvesterZFIII}{18.58}       % GB 2023, S. 14
+\newcommand{\KursDeltaZFII}{-16.1}            % berechnet: (11.48-13.68)/13.68; erbt den Vorbehalt zu 2021
+\newcommand{\KursDeltaZFIII}{61.8}            % GB 2023, S. 14 (Veraenderung 2023)
+\newcommand{\KursDeltaZFV}{16.0}              % GB 2025, S. 13 (Veraenderung 2025)
+
+% --- Jahreshoechst- und Jahrestiefstkurse (Intraday) ---------------
+% Quelle: Yahoo Finance, Symbol AAG.DE (Handelsplatz XETRA), Monatsbars,
+% abgerufen am 29.07.2026. Herleitung und Vorbehalte: data/aktienkurs.csv,
+% dieselbe Datei speist die Abbildung. Es sind Intraday-Extrema, nicht
+% schlusskursbasierte Extrema.
+% 2021 dient allein als Ausgangswert der Abbildung; seine Extrema liegen vor
+% dem Betrachtungszeitraum und werden daher nicht gefuehrt.
+\newcommand{\KursHochZFII}{17.68}             % 2022
+\newcommand{\KursTiefZFII}{10.10}             % 2022
+\newcommand{\KursHochZFIII}{18.98}            % 2023
+\newcommand{\KursTiefZFIII}{11.28}            % 2023
+\newcommand{\KursHochZFIV}{18.96}             % 2024
+\newcommand{\KursTiefZFIV}{9.42}              % 2024
+\newcommand{\KursHochZFV}{14.66}              % 2025
+\newcommand{\KursTiefZFV}{9.87}               % 2025
+
+% Handelstage der Extrema. Sie stehen in Tabelle tab:kursextrema, weil die
+% Abbildung sie nicht aufloesen kann: Hoch 2023 (28.12.), Schluss 2023
+% (29.12.) und Hoch 2024 (02.01.) liegen fuenf Tage auseinander und fallen
+% auf einer Vierjahresachse zu einer Spitze zusammen.
+\newcommand{\DatumHochZFII}{23.03.2022}
+\newcommand{\DatumTiefZFII}{13.10.2022}
+\newcommand{\DatumHochZFIII}{28.12.2023}
+\newcommand{\DatumTiefZFIII}{05.01.2023}
+\newcommand{\DatumHochZFIV}{02.01.2024}
+\newcommand{\DatumTiefZFIV}{19.11.2024}
+\newcommand{\DatumHochZFV}{12.05.2025}
+\newcommand{\DatumTiefZFV}{04.03.2025}
+\newcommand{\KursSpanneZFIV}{50.3}            % berechnet: 1 - KursTiefZFIV/KursHochZFIV (Verlust vom Hoch zum Tief 2024, in %)
+
+% --- Aufgabe 3: Segmente, Strategie und Prognose -------------------
+\newcommand{\EigenkapitalZFIV}{201.7}         % GB 2024, S. 5
+\newcommand{\AuftragsbestandZFIV}{184.0}      % GB 2024, S. 5
+\newcommand{\AuftragsbestandDeltaZFIV}{-39.3} % GB 2024, S. 5
+\newcommand{\AnteilEMobility}{80}             % GB 2024, S. 10 (Anteil am Geschaeft, in %)
+\newcommand{\StandorteGesamt}{6}              % GB 2024, S. 9 ("six locations")
+\newcommand{\AnteilUSGesellschaft}{100}       % GB 2024, S. 52 (Beteiligungsquote in %)
+
+% Segment E-Mobility
+\newcommand{\UmsatzEMobilityZFIV}{258.530}    % GB 2024, S. 2 ("thereof E-mobility")
+\newcommand{\UmsatzEMobilityDeltaZFIV}{12.8}  % GB 2024, S. 13
+\newcommand{\EbitdaEMobilityZFIII}{17.1}      % GB 2024, S. 13
+\newcommand{\EbitdaEMobilityZFIV}{33.8}       % GB 2024, S. 13
+\newcommand{\EbitdaMargeEMobilityZFIV}{13.1}  % GB 2024, S. 13
+
+% Segment Next Automation (vormals Classic)
+\newcommand{\UmsatzNextAutoZFIII}{60.5}       % GB 2024, S. 13
+\newcommand{\UmsatzNextAutoZFIV}{53.8}        % GB 2024, S. 13
+\newcommand{\UmsatzNextAutoZFV}{40.2}         % GB 2025, S. 13
+\newcommand{\EbitdaNextAutoZFIII}{6.2}        % GB 2024, S. 13
+\newcommand{\EbitdaNextAutoZFIV}{5.8}         % GB 2024, S. 13
+\newcommand{\EbitdaNextAutoZFV}{5.1}          % GB 2025, S. 13
+\newcommand{\EbitdaMargeNextAutoZFIII}{10.2}  % GB 2024, S. 13
+\newcommand{\EbitdaMargeNextAutoZFIV}{10.8}   % GB 2024, S. 13
+\newcommand{\EbitdaMargeNextAutoZFV}{12.8}    % GB 2025, S. 13
+\newcommand{\AuftragseingangNextAutoZFIV}{36.6} % GB 2024, S. 13
+\newcommand{\AuftragseingangNextAutoZFV}{56.5}  % GB 2025, S. 13
+
+% Kapitalallokation
+\newcommand{\RueckkaufAktienMax}{1434523}     % GB 2024, S. 5 (oeffentliches Angebot)
+\newcommand{\RueckkaufPreis}{12.37}           % GB 2024, S. 5 (Angebotspreis je Aktie)
+
+% Prognose 2025 aus dem Geschaeftsbericht 2024
+\newcommand{\PrognoseUmsatzZFVUnten}{210}     % GB 2024, S. 5
+\newcommand{\PrognoseUmsatzZFVOben}{230}      % GB 2024, S. 5
+\newcommand{\PrognoseMargeZFVUnten}{8}        % GB 2024, S. 5
+\newcommand{\PrognoseMargeZFVOben}{10}        % GB 2024, S. 5
+\newcommand{\EbitdaMargeBerichtetZFV}{13.8}   % GB 2025, S. 2 (berichtete EBITDA-Marge)
+\newcommand{\PrognoseAbweichungUmsatz}{-2.9}  % berechnet: (203.985-210)/210
+
+% --- Abgeleitete Veraenderungsraten (in Prozent) -------------------
+% Berechnet aus den exakten Werten oben; entspricht der Spalte
+% "Delta 2024 / 2023" des Geschaeftsberichts.
+\newcommand{\UmsatzDeltaZFIV}{7.9}            % (312.346-289.606)/289.606
+\newcommand{\AuftragseingangDeltaZFIV}{-41.1} % (200.057-339.379)/339.379
+\newcommand{\NettogewinnDeltaZFIV}{124.4}     % (21.506-9.583)/9.583
+\newcommand{\EbitdaOpDeltaZFIV}{71.0}         % GB 2024, S. 2 (Delta-Spalte Adj. EBITDA)
+\newcommand{\KursDeltaZFIV}{-42.9}            % GB 2024, S. 13 (Kursrueckgang 2024)
+\newcommand{\UmsatzDeltaZFV}{-34.7}           % (203.985-312.346)/312.346
+
+% --- Aufgabe 1.5: dokumentierte Analysten-Ratingaktionen -----------
+% Einzelne, datierte Ratingaktionen (nicht der Konsens-Aggregatoren,
+% die am 02.08.2026 keine Daten zeigten - siehe quelle:boerse-express /
+% quelle:boersede-empfehlungen). Sekundaerquellen (Finanzportale, nicht
+% Aumann selbst); Schlagzeilen/Suchtreffer mehrfach uebereinstimmend
+% geprueft, kein Volltext-Fetch moeglich (403), ausser EQUI.TS.
+\newcommand{\KurszielBerenbergVorHochstufung}{18} % vor Aug. 2023, GB/Presse-Schlagzeile
+\newcommand{\KurszielBerenbergHochstufung}{21}    % nach Hochstufung Halten->Kaufen, Aug. 2023
+\newcommand{\KurszielBerenbergAnhebung}{22}       % Anhebung innerhalb Kaufen, Nov. 2023
+\newcommand{\KurszielBerenbergRueckstufung}{17}   % Rueckstufung Kaufen->Halten, Jul. 2024
+
+% Analysten-Konsens (stockanalysis.com, 2 Analysten, Stand 02.08.2026)
+\newcommand{\KurszielKonsensDurchschnitt}{14.85}
+\newcommand{\KurszielKonsensTief}{13.70}
+\newcommand{\KurszielKonsensHoch}{16.00}
+
+% --- Anker fuer die eigene Schaetzung Teil 5 (F&E-Intensitaet) -----
+% Aktivierte Entwicklungskosten und ihr Anteil am Umsatz, wie im
+% Bericht ausgewiesen (nicht aus dem Umsatz zurueckgerechnet, siehe
+% docs/befunde-und-entscheidungen.md zum Umgang mit gedruckten Werten).
+\newcommand{\EntwicklungskostenAktiviertZFIII}{2.7} % GB 2023, S. 14
+\newcommand{\FEQuoteZFIII}{1.5}               % GB 2023, S. 14 (Anteil am Umsatz, in %)
+\newcommand{\EntwicklungskostenAktiviertZFV}{1.9}   % GB 2025, S. 13
+\newcommand{\FEQuoteZFV}{0.8}                 % GB 2025, S. 13 (Anteil am Umsatz, in %)
+
+% --- Aufgabe 6: Parameter der Margen-Sensitivitaet -----------------
+% Die Marge Ende 2028 haengt allein davon ab, welcher Umsatz im Nenner
+% steht. Der Basisfall schreibt den Umsatz 2025 konstant fort - und der
+% war gegenueber 2024 um \UmsatzDeltaZFV Prozent eingebrochen. Die
+% Szenariorechnung steht in data/marge_sensitivitaet.tex.
+\newcommand{\MargenWachstumSzenario}{3}       % Annahme: Umsatzwachstum in % p.a.
+\newcommand{\MargenSzenarioJahre}{3}          % Wachstumsjahre 2026-2028

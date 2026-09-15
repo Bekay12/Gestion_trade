@@ -677,6 +677,11 @@ class MainWindow(QMainWindow, ScreenersMixin, ExportMixin):
             ("_events_48h",             "⏰ Événements 48h (tous)"),
             ("_events_48h_mes_coko",    "⏰ Événements 48h (Mes+Coko)"),
             ("_finviz_gapper",           "🎯 Finviz Gapper (Nano/Small, Gap≥5%)"),
+            # ── Détection de creux : baisse subie contre baisse méritée ──
+            ("_valley",                 "🕳️ Creux (tous signaux)"),
+            ("_valley_divergence",      "🕳️ Creux — divergence marché"),
+            ("_valley_inflexion",       "↗️ Creux — inflexion d'activité"),
+            ("_valley_piege",           "⚠️ Creux — pièges de valeur"),
             # ── Vues store-only sans équivalent Finviz (catalogue local) ──
             ("_store_combined",         "💎 Combined / Profils (catalogue)"),
             ("_store_golden_cross",     "✨ Golden Cross récent (catalogue)"),

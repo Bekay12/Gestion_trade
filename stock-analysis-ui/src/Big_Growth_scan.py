@@ -341,7 +341,13 @@ def c4_nascent_momentum(hist):
     if hist is None or len(hist) < 130:
         return False, None, "Historique insuffisant"
 
-    close = hist["Close"]
+    # DEFAUT CORRIGE, identique a celui de Combined_scan.py : sur les bourses
+    # europeennes la derniere ligne est la seance en cours et porte NaN. Lue
+    # brute, elle rend current, ret_3m, ret_6m et sma50 tous NaN, et le critere
+    # tombe en silence — un cinquieme du score de croissance.
+    close = hist["Close"].dropna()
+    if len(close) < 130:
+        return False, None, "Historique insuffisant"
     current = float(close.iloc[-1])
     p3m = float(close.iloc[-63])
     p6m = float(close.iloc[-126])

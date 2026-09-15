@@ -1,0 +1,15 @@
+# Aumann AG (ISIN DE000A2DAM03), XETRA-Schlusskurse zum jeweiligen Jahresende in EUR
+# Quelle: Aumann AG, Geschaeftsberichte 2023 (S. 13), 2024 (S. 13) und 2025 (S. 13)
+# Der Schlusskurs 2022 ist im GB 2023 als Vorjahresschlusskurs ausgewiesen.
+# Abrufdatum der Berichte: 27.07.2026
+#
+# Hinweis: Eine feinere (monatliche) Reihe war nicht beschaffbar. Yahoo Finance
+# antwortete mit HTTP 429, stooq verlangt eine JavaScript-Verifikation, die
+# Schnittstellen von boerse-frankfurt.de und onvista lieferten kein Ergebnis
+# (geprueft am 27.07.2026). Die Geschaeftsberichte veroeffentlichen weder
+# Hoechst- noch Tiefstkurse; die Quartalsmitteilungen enthalten keine Kursangaben.
+jahr,schluss
+2022,11.48
+2023,18.58
+2024,10.62
+2025,12.32

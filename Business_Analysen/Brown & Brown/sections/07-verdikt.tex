@@ -1,0 +1,125 @@
+\section{Verdikt}
+\label{sec:verdikt}
+
+Dieser Teil zieht die Schlussfolgerung aus den Befunden der
+Teile~\ref{sec:organisch} bis \ref{sec:urteil}. Er f\"uhrt keine neue Zahl
+ein; jede genannte Gr\"o{\ss}e steht bereits oben.
+
+\vd{\textbf{Der rote Text ist eine Empfehlung, kein Beleg.}} Er ist aus den
+vorstehenden Befunden unter den in Teil~\ref{sec:flow} erkl\"arten Annahmen
+abgeleitet. Schwarz bleibt, was belegt ist; blau sind Einsch\"atzungen im
+laufenden Text; rot ist das Votum. Die Entscheidung trifft der Verfasser.
+
+\subsection{Votum}
+
+\vd{\textbf{Nicht kaufen zum aktuellen Kurs von \USDje{\FlowEinstiegskurs}.
+Beobachten und auf einen der beiden Ausl\"oser in Abschnitt~\ref{sec:ausloeser}
+warten.} Kein Verkaufsvotum: Wer die Aktie h\"alt, hat keinen aus dieser
+Analyse ableitbaren Grund zu verkaufen, denn die Verschuldung ist tragbar und
+das Gesch\"aft erwirtschaftet Bargeld. Wer sie nicht h\"alt, hat keinen Grund
+einzusteigen, denn er bezahlt den fairen Wert ohne Sicherheitsabstand.}
+
+\subsection{Begr\"undung aus den Befunden}
+
+\vd{Drei Befunde tragen das Votum, und sie zeigen in verschiedene Richtungen.
+
+\emph{Gegen einen Kauf spricht der Preis.} Der interne Zinsfu{\ss} betr\"agt
+im mittleren Szenario \Pct{\FlowIRRBFuenf} \"uber f\"unf und
+\Pct{\FlowIRRBFuenfzehn} \"uber f\"unfzehn Jahre
+(Tabelle~\ref{tab:flowirr}), der Ma{\ss}stab der eigenen Eigenkapitalrendite
+\Pct{\FlowHuerde}. Auf dem l\"angsten Horizont wird er also knapp verfehlt.
+Ein Kauf zum heutigen Kurs bringt ungef\"ahr das, was das Unternehmen auf sein
+eigenes Kapital verdient, und keinen Aufschlag daf\"ur, das Risiko zu tragen.
+
+\emph{Gegen einen Kauf spricht auch der Zeitpunkt.} Der Fr\"uhindikator, der
+den Kursverlauf der letzten zwei Jahre erkl\"art (Teil~\ref{sec:kurs}), ist
+negativ geworden: \Pct{\HJOrganisch} im ersten Halbjahr 2026 nach
+\Pct{\OrganischWachstumVJ} im Gesch\"aftsjahr 2024. Der berichtete
+Umsatzzuwachs von \Pct{\HJUmsatzDelta} ist ein Konsolidierungseffekt und
+neutralisiert sich ab August 2026 von selbst. Es gibt in den n\"achsten vier
+bis sechs Quartalen keinen belegbaren Ausl\"oser f\"ur eine Neubewertung.
+
+\emph{F\"ur ein Beobachten statt eines Meidens spricht die Bilanz.} Die
+Verschuldung, die den Kurs gedr\"uckt hat, ist nicht das Problem: Der
+Verschuldungsgrad f\"allt in \emph{jedem} der drei gerechneten Szenarien, im
+ung\"unstigsten von \Faktor{\FlowGradStart} auf
+\Faktor{\FlowGradSzenarioA} (Tabelle~\ref{tab:flowszenarien}). Ein Makler
+bindet kaum Kapital: \MioUSD{\FlowSachinvest} Sachinvestitionen gegen
+\MioUSD{\FlowEbitdacEnde} EBITDAC. Das Gesch\"aft ist gesund, der Preis ist es
+nicht.}
+
+\subsection{Einstiegsschwelle}
+
+Tabelle~\ref{tab:schwelle} nennt den Kurs, bei dem der interne Zinsfu{\ss}
+den Ma{\ss}stab von \Pct{\FlowHuerde} genau trifft. Das ist die Zahl, die eine
+Anlageentscheidung braucht: nicht ob, sondern bis zu welchem Preis.
+
+\begin{table}[htbp]
+\centering
+\caption{Einstiegskurs in USD, bei dem der interne Zinsfu{\ss} die H\"urde von
+\Pct{\FlowHuerde} erreicht. Ausstiegsvielfaches unver\"andert bei
+\num{\FlowVielfaches}. Aktueller Kurs: \USDje{\FlowEinstiegskurs}.}
+\label{tab:schwelle}
+\begin{tabular}{lrrrr}
+\toprule
+Szenario & Wachstum in \% & 5 Jahre & 10 Jahre & 15 Jahre\\
+\midrule
+\tabellenkoerper{data/flow_schwelle}
+\bottomrule
+\end{tabular}
+\end{table}
+
+\FloatBarrier
+
+\vd{Die Tabelle beantwortet die Frage sch\"arfer als jedes Urteil. Im
+mittleren Szenario liegt die Schwelle auf f\"unfzehn Jahre bei
+\USDje{\FlowSchwelleBasis}; der heutige Kurs liegt
+\Pct{\FlowAbstandSchwelle} dar\"uber. Das ist kein Bewertungsfehler, das ist
+Abwesenheit von Sicherheitsabstand.
+
+Entscheidend ist die obere Zeile. Schreibt man das zuletzt \emph{gemessene}
+Wachstum fort, das des ersten Halbjahres 2026, liegt die Schwelle bei
+\USDje{\FlowSchwelleUnten}, und der heutige Kurs liegt
+\Pct{\FlowAbstandUnten} dar\"uber. Das Szenario, das die aktuellen Zahlen
+tats\"achlich st\"utzen, ist also dasjenige, unter dem die Aktie deutlich zu
+teuer ist. Genau darin liegt das Problem des Falls: Der Markt preist eine
+Erholung ein, die in den Quartalsberichten noch nicht steht.}
+
+\subsection{Ausl\"oser, die das Votum drehen}
+\label{sec:ausloeser}
+
+\vd{Beide sind kostenlos zu beobachten; einer wird quartalsweise
+ver\"offentlicht, der andere steht jeden Tag im Kurszettel.
+
+\emph{Zum Kauf.} Die organische Wachstumsrate wird \"uber zwei
+aufeinanderfolgende Quartale wieder positiv. Dann tr\"agt das mittlere
+Szenario, und der Kurs ist bis \USDje{\FlowSchwelleBFuenf} auf f\"unf Jahre
+vertretbar. \emph{Oder} der Kurs f\"allt unter \USDje{\FlowSchwelleUnten},
+ohne dass sich fundamental etwas verschlechtert; dann bekommt man selbst das
+untere Szenario zum fairen Preis.
+
+\emph{Zum Meiden.} Die organische Rate bleibt zwei weitere Quartale negativ.
+Dann ist der Einbruch nicht mehr als Integrationsverdauung lesbar, sondern
+als Kundenabgang aus der \"Ubernahme selbst, und es w\"are der teuerste
+denkbare Verlauf: Der \Faktor{\KaufpreisJeUmsatz}-fache Jahresumsatz wurde
+f\"ur genau diese Kunden bezahlt. Ebenfalls zum Meiden: eine
+Wertberichtigung auf den Firmenwert von \MioUSD{\Goodwill}, oder ein erneuter
+gro{\ss}er Zukauf, bevor der Verschuldungsgrad das Vor\"ubernahmeniveau von
+\Faktor{\VerschuldungsgradVJ} wieder erreicht hat.}
+
+\subsection{Was dieses Votum nicht wissen kann}
+
+\vd{Die entscheidende Gr\"o{\ss}e ist nicht berechenbar: Wie wahrscheinlich
+die Erholung des organischen Wachstums ist. Das ist eine Einsch\"atzung
+\"uber Preiszyklen im Versicherungsmarkt und \"uber den Integrationserfolg,
+und keine der ausgewerteten Prim\"arquellen tr\"agt sie.
+Tabelle~\ref{tab:schwelle} sagt, was jede Annahme wert ist; welche zutrifft,
+sagt sie nicht.
+
+Zwei weitere Vorbehalte, die gegen das eigene Votum sprechen. Die Rechnung
+schlie{\ss}t \emph{weitere Zuk\"aufe aus}, obwohl sie das Gesch\"aftsmodell
+sind; funktioniert die Wiederanlage des freien Cash-Flows wie bisher, ist
+\Pct{\FlowIRRBFuenfzehn} eher eine Untergrenze. Und der Kurs ist bereits
+\Pct{\KursAbstandTief} \"uber seinem
+Tief vom \Datum{\KurstagTiefZFVI} gelaufen; ein Teil dessen, worauf dieses
+Votum warten will, hat der Markt vielleicht schon vorweggenommen.}

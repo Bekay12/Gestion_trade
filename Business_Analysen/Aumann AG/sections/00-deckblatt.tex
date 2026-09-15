@@ -1,0 +1,33 @@
+% check-literals: skip
+% Grund: Diese Datei enthaelt die Matrikelnummer des Verfassers, eine
+% legitime, nicht aus data/kennzahlen.tex stammende Zahl.
+\begin{titlepage}
+\centering
+% Elastische Zwischenraeume (\stretch) statt fester cm-Werte: die Summe aus
+% Logo, Ueberschriften und Tabelle passt so immer auf eine Seite, unabhaengig
+% von Logogroesse oder KOMA-Randmassen. Feste cm-Werte hatten hier zuvor den
+% Tabellenblock auf eine zweite, numerierte Seite ueberlaufen lassen.
+\vspace*{\stretch{1}}
+% Das HSKL-Logo traegt den Hochschulnamen bereits selbst (siehe Bilddatei);
+% eine zusaetzliche Textzeile "Hochschule Kaiserslautern" waere redundant.
+\includegraphics[width=4cm]{sections/hskl_logo}\par
+\vspace{1cm}
+{\large Fachbereich Angewandte Ingenieurwissenschaften\par}
+\vspace{\stretch{2}}
+{\Huge\bfseries Hausarbeit\par}
+\vspace{0.6cm}
+{\LARGE Finanzwirtschaft f\"ur Ingenieure\par}
+\vspace{0.4cm}
+{\Large Sommersemester 2026\par}
+\vspace{\stretch{2}}
+{\Large\bfseries Finanzwirtschaftliche Analyse der Aumann AG\par}
+\vspace{\stretch{3}}
+\begin{tabular}{ll}
+Verfasser:      & Yann Bertin Kamdem Bobda\\
+Matrikelnummer: & 885893\\
+Studiengang:    & Master Elektrotechnik und Informationstechnik\\
+Betreuung:      & Prof.\ Dr.\ J\"urgen Bott, Katharina Moor\\
+Abgabedatum:    & 4.~August 2026\\
+\end{tabular}
+\vspace*{\stretch{1}}
+\end{titlepage}

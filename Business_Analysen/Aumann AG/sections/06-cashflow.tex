@@ -1,0 +1,339 @@
+\section{Grobe Flow-Analyse}
+\label{sec:cashflow}
+
+Die Aufgabenstellung gibt f\"ur jede Option die Investitionssumme, die
+Kapitalbindung und den erwarteten EBITDA-Zuwachs vor. Nicht vorgegeben sind
+deren zeitliche Verteilung, die Abgrenzung des ausgewiesenen Cash-Flows, die
+steuerliche Betrachtung und der Horizont der Renditerechnung. Diese Punkte
+sind Annahmen dieser Arbeit und werden vorab offengelegt; alle folgenden
+Tabellen sind aus ihnen berechnet.
+
+\subsection*{Annahmen der Flow-Analyse}
+\addcontentsline{toc}{subsection}{Annahmen der Flow-Analyse}
+
+\annahme{\textbf{Anfangsbestand.} Die Rechnung setzt auf der
+Nettofinanz\-liquidit\"at von \MioEUR{\NettoliquiditaetZFIV} zum
+31.~Dezember 2024 auf, wie in der Aufgabenstellung vorgegeben. Zum
+31.~Dezember 2025 wies die Gesellschaft tats\"achlich
+\MioEUR{\NettoliquiditaetZFV} aus\quelleGB{2025}{4}; der Bestand ist trotz
+Dividende und Aktienr\"uckkauf gestiegen. Die Vorgabe der Aufgabenstellung
+wird gleichwohl beibehalten, damit die Ergebnisse vergleichbar bleiben.}
+
+\annahme{\textbf{Investitionsprofil.} Die Investitionen der Optionen~A und~B
+verteilen sich gleichm\"a{\ss}ig auf die Jahre 2026 bis 2028. Bei Option~C
+wird der Kaufpreis im Vollzugsjahr 2026 f\"allig; nur die
+Integrationsaufwendungen verteilen sich auf 2027 und 2028. Ein Kaufpreis wird
+nicht in Dritteln gezahlt, weshalb hier bewusst von der gleichm\"a{\ss}igen
+Verteilung abgewichen wird.}
+
+\annahme{\textbf{Kapitalbindung.} Der Aufbau der Kapitalbindung erfolgt in dem
+Jahr beziehungsweise den Jahren unmittelbar vor dem jeweiligen
+Ergebnisbeitrag, da das Umlaufverm\"ogen den Umsatz vorfinanziert. Bei
+Option~C f\"allt das Umlaufverm\"ogen des erworbenen Gesch\"afts mit dem
+Vollzug an.}
+
+\annahme{\textbf{Abgrenzung des operativen Cash-Flows.} Ausgewiesen wird der
+\emph{zus\"atzliche} operative Cash-Flow der jeweiligen Option, das hei{\ss}t
+der EBITDA-Zuwachs abz\"uglich des Aufbaus der Kapitalbindung. Der operative
+Cash-Flow des bestehenden Kerngesch\"afts bleibt unber\"ucksichtigt, damit die
+Wirkung der Entscheidung sichtbar bleibt und nicht im Konzern-Cash-Flow
+untergeht. Die ausgewiesene Nettoliquidit\"at ist entsprechend keine Prognose
+des Konzernbestands, sondern der Bestand unter alleiniger Wirkung der Option.}
+
+\annahme{\textbf{Steuern und Abschreibungen.} Die Rechnung ist eine
+Vorsteuerbetrachtung. Der vorgegebene EBITDA-Zuwachs geht ungek\"urzt in den
+operativen Cash-Flow ein; Ertragsteuern und die Abschreibungen auf die
+Investitionssummen bleiben unber\"ucksichtigt, weil die Aufgabenstellung die
+Ergebnissteigerung ausdr\"ucklich als EBITDA-Gr\"o{\ss}e vorgibt und weder
+einen Steuersatz noch eine Nutzungsdauer nennt. Die ausgewiesenen internen
+Zinsf\"u{\ss}e sind deshalb Vorsteuerrenditen und liegen \"uber den
+entsprechenden Nachsteuerwerten. Da alle drei Optionen gleich behandelt
+werden, bleibt die Rangfolge des Vergleichs davon unber\"uhrt; die absoluten
+Renditeangaben sind entsprechend zu lesen.}
+
+\annahme{\textbf{Renditehorizont.} Der interne Zinsfu{\ss} wird \"uber den
+Horizont 2026 bis 2035 ermittelt, also zehn Jahre ab dem ersten
+Investitionsjahr. Zehn Jahre sind ein \"ublicher Konventionswert f\"ur die
+mittelfristige Investitionsrechnung und liegen deutlich \"uber der
+dreij\"ahrigen Investitionsphase aller drei Optionen, sodass sich auch der
+sp\"ate Ergebnisbeitrag von Option~A noch \"uber mehrere Jahre auswirken
+kann. Weil diese Wahl eine Konvention und keine aus den Unternehmensdaten
+abgeleitete Gr\"o{\ss}e ist, wird sie nicht isoliert verwendet: Der
+EBITDA-Zuwachs l\"auft ab seinem Startjahr konstant weiter, die
+Kapitalbindung wird im letzten Jahr des Horizonts freigesetzt, und
+Tabelle~\ref{tab:irr-sens} zeigt denselben Vergleich zus\"atzlich f\"ur
+f\"unf und f\"unfzehn Jahre. Ein interner Zinsfu{\ss} ohne erkl\"arten
+Horizont ist nicht aussagef\"ahig.}
+
+\annahme{\textbf{Verh\"altnis zur eigenen Sch\"atzung aus
+Abschnitt~\ref{sec:optionen}.} Investitionssumme und Kapitalbindung sind
+f\"ur diesen Abschnitt durch die Aufgabenstellung vorgegeben und weichen
+von der eigenen Sch\"atzung aus Abschnitt~\ref{sec:optionen} ab, die auf
+der aktivierten Entwicklungsquote und der Nettofinanzliquidit\"at
+aufbaut: \MioEUR{\InvestitionssummeA} statt \MioEUR{\InvestitionsbedarfEigenA}
+bei Option~A, \MioEUR{\InvestitionssummeB} statt
+\MioEUR{\InvestitionsbedarfEigenB} bei Option~B und
+\MioEUR{\InvestitionssummeC} statt \MioEUR{\InvestitionsbedarfEigenC} bei
+Option~C. Beide Rechnungen bleiben nebeneinander bestehen; die folgenden
+Tabellen folgen durchg\"angig der Vorgabe dieses Abschnitts.}
+
+\paragraph{Vorbehalt zur EBITDA-Marge Ende 2028.}
+Die in Tabelle~\ref{tab:vergleich2028} ausgewiesene EBITDA-Marge bezieht den
+EBITDA-Zuwachs der Option auf das operative EBITDA und den Umsatz des
+Gesch\"aftsjahres 2025, die konstant fortgeschrieben werden. Diese Basis ist
+nicht neutral: Der Umsatz 2025 lag mit \MioEUR{\UmsatzZFV} um
+\PctBetrag{\UmsatzDeltaZFV} unter dem Umsatz 2024 von
+\MioEUR{\UmsatzZFIV}.\quelleGB{2025}{2} Der Nenner ist damit klein, und die
+ausgewiesene Marge f\"allt entsprechend hoch aus. Sie zeigt damit nicht,
+wie profitabel die Option wirklich ist; sie spiegelt zu einem erheblichen
+Teil den Umsatzeinbruch des Basisjahres. Tabelle~\ref{tab:marge-sens} stellt dem
+Basisfall daher zwei gr\"o{\ss}ere Nenner gegen\"uber: ein Umsatzwachstum von
+\Pct{\MargenWachstumSzenario} pro Jahr \"uber die drei Jahre bis 2028 sowie
+eine R\"uckkehr auf das Umsatzniveau des Jahres 2024. Die Rechnung
+unterstellt nicht, dass eines dieser Niveaus erreicht wird; sie zeigt allein,
+wie stark die Kennzahl von ihrem Nenner abh\"angt.
+
+\begin{table}[!htbp]
+\centering
+\caption{Sensitivit\"at der EBITDA-Marge Ende 2028 gegen\"uber der
+angesetzten Umsatzbasis.}
+\label{tab:marge-sens}
+\begin{tabularx}{\linewidth}{@{}Xrrr@{}}
+\toprule
+\textbf{Umsatzbasis 2028} & \textbf{Option A} & \textbf{Option B} & \textbf{Option C}\\
+\midrule
+\tabellenkoerper{data/marge_sensitivitaet}
+\bottomrule
+\end{tabularx}
+\end{table}
+\FloatBarrier
+
+\subsection{Cash-Flow-Tabellen der Optionen}
+\label{subsec:cf-tabellen}
+
+Alle Betr\"age in Mio.\,\euro. Die Spalte \enquote{Operativer CF} weist den
+zus\"atzlichen operativen Cash-Flow der Option aus, die Spalte
+\enquote{Nettoliquidit\"at} den Bestand nach Investition und Kapitalbindung.
+
+\begin{table}[!htbp]
+\centering
+\caption{Option~A: Diversifikation \enquote{Next Automation}.}
+\label{tab:cf-a}
+\small\begin{tabularx}{\linewidth}{@{}lrrrX@{}}
+\toprule
+\textbf{Jahr} & \textbf{Investition} & \textbf{Operativer CF}
+& \textbf{Netto\-liquidit\"at nach Investition} & \textbf{Bemerkung}\\
+\midrule
+\tabellenkoerper{data/cf_a}
+\bottomrule
+\end{tabularx}
+\end{table}
+
+\begin{table}[!htbp]
+\centering
+\caption{Option~B: Batterie- und Brennstoffzellen-Produktionstechnik.}
+\label{tab:cf-b}
+\small\begin{tabularx}{\linewidth}{@{}lrrrX@{}}
+\toprule
+\textbf{Jahr} & \textbf{Investition} & \textbf{Operativer CF}
+& \textbf{Netto\-liquidit\"at nach Investition} & \textbf{Bemerkung}\\
+\midrule
+\tabellenkoerper{data/cf_b}
+\bottomrule
+\end{tabularx}
+\end{table}
+
+\begin{table}[!htbp]
+\centering
+\caption{Option~C: Anorganisches Wachstum durch gezielte Akquisition.}
+\label{tab:cf-c}
+\small\begin{tabularx}{\linewidth}{@{}lrrrX@{}}
+\toprule
+\textbf{Jahr} & \textbf{Investition} & \textbf{Operativer CF}
+& \textbf{Netto\-liquidit\"at nach Investition} & \textbf{Bemerkung}\\
+\midrule
+\tabellenkoerper{data/cf_c}
+\bottomrule
+\end{tabularx}
+\end{table}
+\FloatBarrier
+
+% Auf 6.2 folgt unmittelbar die Unterunterueberschrift 6.2.1; ohne
+% \needspace standen beide Ueberschriften ohne jeden Rumpf am Fuss von
+% Seite 22. Bemessen fuer beide Ueberschriften und die ersten Textzeilen.
+\needspace{8\baselineskip}
+\subsection{Ergebnis der einzelnen Flow-Analysen}
+\label{subsec:cf-ergebnis}
+
+\subsubsection{Option A}
+% FAKTENBASIS 6.2 A
+%  - Kapitalbedarf: 35 Mio. EUR Investition + 15 Mio. EUR Kapitalbindung
+%  - EBITDA-Zuwachs +16 Mio. EUR erst ab 2028 -> spaeteste Ergebniswirkung,
+%    aber groesster absoluter Zuwachs der drei Optionen
+%  - Liquiditaetsverlauf und Endbestand: Tabelle \ref{tab:cf-a}
+%    (126,5 -> 107,3 -> 104,2; kein Jahr mit negativem Bestand)
+%  - Erwartete Rendite: Tabelle \ref{tab:vergleich2028}; auf fuenf Jahre
+%    deutlich niedriger, siehe Tabelle \ref{tab:irr-sens}
+%  - Relation Kapitalbedarf / Liquiditaetswirkung: rund ein Viertel der
+%    Ausgangsliquiditaet \NettoliquiditaetZFIV Mio. EUR wird aufgezehrt
+\bk{Option~A verlangt den zweith\"ochsten Kapitaleinsatz des Vergleichs:
+\MioEUR{\InvestitionssummeA} Investition und \MioEUR{\KapitalbindungssummeA}
+Kapitalbindung, zusammen \MioEUR{\KapitalbedarfA}. Die erwartete Rendite
+liegt bei \Pct{\IrrA} \"uber zehn Jahre, \"uber f\"unf Jahre jedoch nur bei
+\Pct{\IrrFuenfA}; das ist eine Folge davon, dass der Ergebnisbeitrag von
+\MioEUR{\EbitdaZuwachsA} erst \EbitdaStartA\ einsetzt. In Relation dazu ist
+die Liquidit\"atswirkung unauff\"allig: Der Bestand sinkt gleichm\"a{\ss}ig
+auf \MioEUR{\LiquiditaetEndeA} und unterschreitet in keinem Jahr eine
+kritische Schwelle. Der gesamte Mittelabfluss liegt jedoch vor dem ersten
+R\"uckfluss; die Option ist finanzierbar, aber nicht selbsttragend.}
+
+\subsubsection{Option B}
+% FAKTENBASIS 6.2 B
+%  - Kapitalbedarf: 30 Mio. EUR Investition + 15 Mio. EUR Kapitalbindung
+%    -> geringster Kapitalbedarf der drei Optionen
+%  - EBITDA-Zuwachs +14 Mio. EUR bereits ab 2027
+%  - Liquiditaetsverlauf und Endbestand: Tabelle \ref{tab:cf-b}
+%    (120,7 -> 117,2 -> 121,2; Bestand 2028 wieder ueber dem Vorjahr)
+%  - Erwartete Rendite: hoechster IRR aller Horizonte,
+%    Tabellen \ref{tab:vergleich2028} und \ref{tab:irr-sens}
+%  - Relation Kapitalbedarf / Liquiditaetswirkung: der Ergebnisbeitrag
+%    setzt ein, bevor das Investitionsprogramm auslaeuft
+\bk{Option~B hat mit \MioEUR{\KapitalbedarfB} den geringsten Kapitalbedarf
+(\MioEUR{\InvestitionssummeB} Investition und
+\MioEUR{\KapitalbindungssummeB} Kapitalbindung) und zugleich die h\"ochste
+erwartete Rendite: \Pct{\IrrB} \"uber zehn und bereits \Pct{\IrrFuenfB}
+\"uber f\"unf Jahre. Der Grund liegt im fr\"uhen Ergebnisbeitrag ab
+\EbitdaStartB. Entsprechend g\"unstig f\"allt die Liquidit\"atswirkung aus:
+Der Bestand erreicht seinen Tiefpunkt mit \MioEUR{\LiquiditaetTiefB} bereits
+2027 und liegt Ende 2028 mit \MioEUR{\LiquiditaetEndeB} wieder h\"oher. Als
+einzige der drei Optionen tr\"agt sie ihre letzte Investitionsrate aus dem
+eigenen Ergebnisbeitrag. Kapitalbedarf, Rendite und Liquidit\"atswirkung
+weisen damit in dieselbe Richtung.}
+
+\subsubsection{Option C}
+% FAKTENBASIS 6.2 C
+%  - Kapitalbedarf: 60 Mio. EUR Investition + 20 Mio. EUR Kapitalbindung,
+%    davon 65 Mio. EUR bereits 2026 zahlungswirksam
+%  - EBITDA-Zuwachs +10 Mio. EUR ab 2027, geringster absoluter Zuwachs
+%  - Liquiditaetsverlauf und Endbestand: Tabelle \ref{tab:cf-c}
+%    (Tiefpunkt 73,2 in 2026, danach 75,7 und 78,2)
+%  - Erwartete Rendite: niedrigster IRR; ueber fuenf Jahre negativ,
+%    Tabelle \ref{tab:irr-sens}
+%  - Relation Kapitalbedarf / Liquiditaetswirkung: knapp die Haelfte der
+%    Ausgangsliquiditaet \NettoliquiditaetZFIV Mio. EUR ist in einem Jahr
+%    gebunden; Net Debt/EBITDA bleibt negativ, also Nettoguthaben
+%  - Der Ergebnisbeitrag wird gekauft, nicht aufgebaut -> Risiko liegt in
+%    Kaufpreis und Integration, nicht in der Markterschliessung
+\bk{Option~C bindet mit \MioEUR{\KapitalbedarfC} den h\"ochsten Betrag und
+liefert mit \MioEUR{\EbitdaZuwachsC} den geringsten Ergebnisbeitrag. Die
+erwartete Rendite bleibt entsprechend niedrig: \Pct{\IrrC} \"uber zehn Jahre
+und \Pct{\IrrFuenfC} \"uber f\"unf, also negativ. Die Liquidit\"atswirkung
+ist zudem die ung\"unstigste, weil sie sich nicht verteilt:
+\MioEUR{\MittelabflussErstesJahrC} flie{\ss}en allein 2026 ab, der Bestand
+f\"allt auf \MioEUR{\LiquiditaetTiefC} und erreicht Ende 2028 lediglich
+\MioEUR{\LiquiditaetEndeC}. Der Kapitalbedarf steht damit in keinem
+g\"unstigen Verh\"altnis zu Rendite und Liquidit\"atswirkung; die Option
+bleibt tragbar, verbraucht aber den finanziellen Spielraum f\"ur mehrere
+Jahre.}
+
+\subsection{Vergleich der Ergebniswirkung (Ende 2028)}
+\label{subsec:vergleich}
+
+Tabelle~\ref{tab:vergleich2028} stellt die Ergebniswirkung der drei
+Optionen zum Jahresende 2028 gegen\"uber. Da der interne Zinsfu{\ss} ohne
+Angabe des unterstellten Horizonts nicht aussagef\"ahig ist, zeigt
+Tabelle~\ref{tab:irr-sens} denselben Vergleich zus\"atzlich f\"ur drei
+Horizontl\"angen.
+
+\begin{table}[!htbp]
+\centering
+\caption{Vergleich der drei Optionen zum Jahresende 2028. Die EBITDA-Marge
+ist auf die konstant fortgeschriebene Umsatzbasis 2025 bezogen; zum
+Vorbehalt siehe Tabelle~\ref{tab:marge-sens}.}
+\label{tab:vergleich2028}
+\begin{tabularx}{\linewidth}{@{}Xrrr@{}}
+\toprule
+\textbf{Kennzahl} & \textbf{Option A} & \textbf{Option B} & \textbf{Option C}\\
+\midrule
+\tabellenkoerper{data/vergleich2028}
+\bottomrule
+\end{tabularx}
+\end{table}
+
+\begin{table}[!htbp]
+\centering
+\caption{Sensitivit\"at des internen Zinsfu{\ss}es gegen\"uber der
+Horizontl\"ange.}
+\label{tab:irr-sens}
+\begin{tabularx}{\linewidth}{@{}Xrrr@{}}
+\toprule
+\textbf{Horizont} & \textbf{Option A} & \textbf{Option B} & \textbf{Option C}\\
+\midrule
+\tabellenkoerper{data/irr_sensitivitaet}
+\bottomrule
+\end{tabularx}
+\end{table}
+\FloatBarrier
+
+\subsubsection{Fazit des Vergleichs}
+% FAKTENBASIS 6.3
+%  - Kumulierte Investition: A 35, B 30, C 60 Mio. EUR;
+%    Kapitalbindung A 15, B 15, C 20 Mio. EUR
+%  - EBITDA-Zuwachs: A +16 ab 2028, B +14 ab 2027, C +10 ab 2027
+%  - EBITDA-Marge Ende 2028, IRR, Liquiditaetsreserve:
+%    Tabelle \ref{tab:vergleich2028}
+%  - IRR-Sensitivitaet nach Horizontlaenge: Tabelle \ref{tab:irr-sens};
+%    Rangfolge B > A > C in allen drei Horizonten, C auf fuenf Jahre negativ
+%  - Margen-Sensitivitaet: Tabelle \ref{tab:marge-sens}; die Rangfolge
+%    A > B > C bleibt in allen drei Szenarien erhalten, das Niveau nicht
+%  - Net Debt/EBITDA nur fuer Option C relevant, da A und B die
+%    Nettoliquiditaet nicht nennenswert aufzehren; der Wert bleibt negativ
+%  - Umsatzbasis der Margenrechnung: Geschaeftsjahr 2025, konstant
+%    fortgeschrieben; Umsatzrueckgang 2025 \UmsatzDeltaZFV %
+%  - Die drei Optionen sind in der Rechnung unabhaengig; die
+%    Ausgangsliquiditaet \NettoliquiditaetZFIV Mio. EUR traegt A und B
+%    zusammen, nicht alle drei
+\bk{Die Rangfolge der drei Optionen ist \"uber alle betrachteten Kennzahlen
+hinweg stabil, und sie f\"allt nicht zugunsten des gr\"o{\ss}ten
+Kapitaleinsatzes aus. Beim internen Zinsfu{\ss} f\"uhrt Option~B mit
+\Pct{\IrrB} vor Option~A mit \Pct{\IrrA} und Option~C mit \Pct{\IrrC}; diese
+Reihenfolge gilt in allen drei Horizonten der Tabelle~\ref{tab:irr-sens}.
+Bemerkenswert ist der Abstand zwischen den Horizonten: \"Uber f\"unf Jahre
+erreicht Option~A nur \Pct{\IrrFuenfA} und Option~C mit \Pct{\IrrFuenfC}
+einen negativen Wert. Eine Renditeaussage ohne Angabe des Horizonts w\"are
+hier also nicht nur ungenau, sondern irref\"uhrend.
+
+Beim Kapitalbedarf und bei der Liquidit\"at zeigt sich derselbe Befund. Die
+Optionen~A und~B lassen zum Jahresende 2028 Reserven von
+\MioEUR{\LiquiditaetEndeA} beziehungsweise \MioEUR{\LiquiditaetEndeB} und
+zehren die Nettoliquidit\"at damit nicht auf; f\"ur sie ist die Kennzahl Net
+Debt/EBITDA ohne Aussagekraft. Nur bei Option~C ist sie \"uberhaupt
+sinnvoll ausweisbar, und auch dort bleibt sie mit \num{\NetDebtEbitdaC}
+negativ. Es besteht also weiterhin ein Nettoguthaben. Die Belastung der
+Option~C liegt nicht in einer Verschuldung, sondern in der Konzentration des
+Mittelabflusses auf ein einziges Jahr und in dem daraus folgenden Verlust an
+Handlungsf\"ahigkeit.
+
+Bei der EBITDA-Marge Ende 2028 ist Zur\"uckhaltung geboten. Der Basisfall
+weist f\"ur Option~A \Pct{\MargeZweitausendachtundzwanzigA}, f\"ur Option~B
+\Pct{\MargeZweitausendachtundzwanzigB} und f\"ur Option~C
+\Pct{\MargeZweitausendachtundzwanzigC} aus. Diese Werte beruhen auf dem
+konstant fortgeschriebenen Umsatz des Gesch\"aftsjahres 2025, der gegen\"uber
+2024 um \PctBetrag{\UmsatzDeltaZFV} niedriger lag. Sie messen damit zu einem
+erheblichen Teil den Umsatzeinbruch des Basisjahres und nicht, wie
+profitabel die Option wirklich ist. Tabelle~\ref{tab:marge-sens} zeigt, wie stark der
+Effekt ist: Bei einer R\"uckkehr auf das Umsatzniveau 2024 f\"allt die Marge
+jeder Option um mehrere Prozentpunkte. Die Rangfolge zwischen den Optionen
+bleibt in allen Szenarien erhalten, das Niveau nicht: Die Marge taugt hier
+zum Vergleich der Optionen untereinander, nicht als absolute Prognose.
+
+Als Fazit ist Option~B die finanzwirtschaftlich \"uberlegene
+Einzelentscheidung: geringster Einsatz, h\"ochste Rendite, fr\"uhester
+R\"uckfluss. Option~A ist teurer und langsamer, liefert aber den
+gr\"o{\ss}ten absoluten Ergebnisbeitrag und ist die einzige Option, die die
+Abh\"angigkeit vom Investitionszyklus der Automobilindustrie selbst
+verringert; dieser Nutzen erscheint in keiner der Kennzahlen dieser Tabellen.
+Option~C ist unter den gegebenen Annahmen die schw\"achste Verwendung der
+Mittel. Die Ausgangsliquidit\"at von \MioEUR{\NettoliquiditaetZFIV} tr\"agt
+die Optionen~A und~B gemeinsam, nicht aber alle drei; die Entscheidung ist
+daher eine Auswahl und keine Reihung.}

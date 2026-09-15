@@ -1,0 +1,197 @@
+<title>EVN sous sa valeur comptable</title>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=IBM+Plex+Mono:wght@400;500;600&family=IBM+Plex+Sans:wght@400;500;600&family=IBM+Plex+Serif:wght@400;600;700&display=swap">
+<style>
+:root{--ground:#F4F6F8;--surface:#FFFFFF;--surface-2:#EDF1F5;--ink:#12171E;--muted:#5B6675;
+--rule:#D5DCE4;--blau:#1C4E80;--rot:#A8201A;--rot-flaeche:#FAEFEE;--rot-rand:#D9A9A5;
+--serif:"IBM Plex Serif",Georgia,serif;--sans:"IBM Plex Sans","Segoe UI",system-ui,sans-serif;
+--mono:"IBM Plex Mono",ui-monospace,Consolas,monospace}
+@media (prefers-color-scheme:dark){:root:not([data-theme="light"]){
+--ground:#0F131A;--surface:#161C24;--surface-2:#1D242E;--ink:#E7ECF2;--muted:#98A3B2;
+--rule:#2B333E;--blau:#84B4EA;--rot:#FF8175;--rot-flaeche:#251515;--rot-rand:#5E2B27}}
+:root[data-theme="dark"]{--ground:#0F131A;--surface:#161C24;--surface-2:#1D242E;--ink:#E7ECF2;
+--muted:#98A3B2;--rule:#2B333E;--blau:#84B4EA;--rot:#FF8175;--rot-flaeche:#251515;--rot-rand:#5E2B27}
+*{box-sizing:border-box}
+body{background:var(--ground);color:var(--ink);font-family:var(--sans);font-size:16px;line-height:1.62}
+.wrap{max-width:1000px;margin:0 auto;padding:0 24px 96px}
+header{padding:56px 0 26px;border-bottom:2px solid var(--ink)}
+.eyebrow{font-family:var(--mono);font-size:11px;letter-spacing:.14em;text-transform:uppercase;color:var(--muted);margin:0 0 14px}
+h1{font-family:var(--serif);font-weight:700;font-size:clamp(34px,5.2vw,50px);line-height:1.08;
+letter-spacing:-.02em;margin:0 0 14px;text-wrap:balance}
+.frage{font-family:var(--serif);font-size:19px;line-height:1.5;margin:0 0 22px;max-width:62ch}
+.meta{display:flex;flex-wrap:wrap;gap:8px 28px;font-family:var(--mono);font-size:12px;color:var(--muted)}
+.meta b{color:var(--ink);font-weight:500}
+section{padding-top:52px}
+h2{font-family:var(--serif);font-size:27px;font-weight:600;margin:0 0 6px;text-wrap:balance}
+h3{font-size:15px;font-weight:600;margin:30px 0 8px}
+.strich{height:1px;background:var(--rule);margin:14px 0 22px}
+p{margin:0 0 16px;max-width:70ch}
+.bewertung{color:var(--blau)}
+.bewertung::before{content:"";display:inline-block;width:3px;height:1.05em;background:var(--blau);vertical-align:-.17em;margin-right:9px}
+.tabelle{overflow-x:auto;margin:0 0 20px;border:1px solid var(--rule);background:var(--surface)}
+table{width:100%;border-collapse:collapse;font-size:14px}
+caption{text-align:left;font-family:var(--mono);font-size:11px;letter-spacing:.1em;text-transform:uppercase;color:var(--muted);padding:13px 16px 0}
+th,td{padding:9px 16px;text-align:right;border-bottom:1px solid var(--rule);font-variant-numeric:tabular-nums;font-family:var(--mono)}
+th:first-child,td:first-child{text-align:left;font-family:var(--sans)}
+thead th{font-size:11px;font-weight:500;letter-spacing:.06em;text-transform:uppercase;color:var(--muted);border-bottom:1px solid var(--ink)}
+tbody tr:last-child td{border-bottom:none}
+tr.summe td{font-weight:600;border-top:1px solid var(--ink)}
+.quelle{font-family:var(--mono);font-size:11.5px;color:var(--muted);margin:-10px 0 24px}
+.karten{display:grid;grid-template-columns:repeat(auto-fit,minmax(280px,1fr));gap:1px;background:var(--rule);border:1px solid var(--rule);margin:0 0 24px}
+.karte{background:var(--surface);padding:20px}
+.karte h4{font-family:var(--serif);font-size:20px;margin:0 0 2px}
+.karte .tick{font-family:var(--mono);font-size:11px;color:var(--muted);margin:0 0 14px}
+.karte dl{margin:0;display:grid;grid-template-columns:auto 1fr;gap:5px 12px;font-size:13.5px}
+.karte dt{color:var(--muted)}
+.karte dd{margin:0;text-align:right;font-family:var(--mono);font-variant-numeric:tabular-nums}
+.urteil{margin-top:16px;padding-top:13px;border-top:2px solid var(--rot);color:var(--rot);font-size:14px}
+.urteil b{font-family:var(--mono);font-size:11px;letter-spacing:.1em;text-transform:uppercase;display:block;margin-bottom:5px}
+.abstand{background:var(--surface);border:1px solid var(--rule);padding:22px 24px;margin:0 0 10px}
+.abstand h4{font-size:14px;margin:0 0 4px}
+.abstand .sub{font-family:var(--mono);font-size:11.5px;color:var(--muted);margin:0 0 18px}
+.balken{display:grid;grid-template-columns:110px 1fr;gap:10px 14px;align-items:center;font-size:13.5px}
+.balken .n{font-family:var(--mono);font-size:12.5px}
+.bar{position:relative;height:26px;background:var(--surface-2)}
+.bar span{position:absolute;left:0;top:0;bottom:0;background:var(--blau)}
+.bar em{position:absolute;top:50%;transform:translateY(-50%);font-style:normal;font-family:var(--mono);font-size:12px;font-weight:600}
+#verdikt{background:var(--rot-flaeche);border:1px solid var(--rot-rand);border-left:5px solid var(--rot);padding:32px 30px 36px;margin-top:52px}
+#verdikt h2,#verdikt h3,#verdikt p,#verdikt li,#verdikt td,#verdikt th,#verdikt caption{color:var(--rot)}
+#verdikt .tabelle{border-color:var(--rot-rand);background:transparent}
+#verdikt th,#verdikt td{border-bottom-color:var(--rot-rand)}
+#verdikt thead th{border-bottom-color:var(--rot);opacity:.78}
+#verdikt .strich{background:var(--rot-rand)}
+.spruch{font-family:var(--serif);font-size:clamp(19px,2.6vw,24px);line-height:1.35;font-weight:600;margin:0 0 20px;text-wrap:balance}
+ol.lst{padding-left:22px;font-size:14.5px}ol.lst li{margin-bottom:8px}
+.luecken{background:var(--surface);border:1px solid var(--rule);padding:22px 24px}
+.luecken ul{margin:0;padding-left:20px;font-size:14.5px}.luecken li{margin-bottom:6px}
+footer{margin-top:52px;padding-top:24px;border-top:1px solid var(--rule);font-size:13.5px;color:var(--muted)}
+footer code{font-family:var(--mono);font-size:12.5px;color:var(--ink)}
+a{color:var(--blau)}:focus-visible{outline:2px solid var(--blau);outline-offset:2px}
+@media (prefers-reduced-motion:reduce){*{animation:none!important;transition:none!important}}
+
+h2 .nr{font-family:var(--mono);font-size:14px;font-weight:500;color:var(--muted);margin-right:12px;vertical-align:2px}
+h3{font-family:var(--sans);font-size:15px;font-weight:600;margin:34px 0 8px}
+h3 .nr{font-family:var(--mono);color:var(--muted);font-weight:400;margin-right:8px}
+.annahme{border-left:3px solid var(--rule);padding:2px 0 2px 18px;margin:0 0 20px}
+.annahme b{font-family:var(--mono);font-size:11.5px;letter-spacing:.07em;text-transform:uppercase;display:block;color:var(--muted);margin-bottom:4px}
+.annahme p{margin:0;font-size:14.5px}
+.entfaellt{background:var(--surface-2);border:1px dashed var(--rule);padding:20px 22px}
+.entfaellt p{margin:0;font-size:14.5px;color:var(--muted)}
+.legende{display:grid;grid-template-columns:repeat(auto-fit,minmax(210px,1fr));gap:1px;background:var(--rule);border:1px solid var(--rule);margin:28px 0 0}
+.legende div{background:var(--surface);padding:13px 16px}
+.legende dt{font-family:var(--mono);font-size:11px;letter-spacing:.1em;text-transform:uppercase;margin:0 0 5px}
+.legende dd{margin:0;font-size:13px;color:var(--muted);line-height:1.45}
+.sw{display:inline-block;width:26px;height:3px;vertical-align:middle;margin-right:9px}
+.bewertung{color:var(--blau)}
+.bewertung::before{content:"";display:inline-block;width:3px;height:1.05em;background:var(--blau);vertical-align:-.17em;margin-right:9px}
+.strich{height:1px;background:var(--rule);margin:14px 0 22px}
+.zweiseiten{display:grid;grid-template-columns:repeat(auto-fit,minmax(250px,1fr));gap:18px;margin:0 0 6px}
+.zweiseiten div{border-top:2px solid var(--rot);padding-top:12px}
+.zweiseiten b{font-family:var(--mono);font-size:11px;letter-spacing:.1em;text-transform:uppercase;display:block;margin-bottom:6px}
+.zweiseiten p{font-size:14.5px;margin:0}
+.richtung{margin:0 0 18px}
+.richtung b{font-family:var(--mono);font-size:11.5px;letter-spacing:.08em;text-transform:uppercase;display:block;margin-bottom:5px;opacity:.85}
+#verdikt{background:var(--rot-flaeche);border:1px solid var(--rot-rand);border-left:5px solid var(--rot);margin-top:56px;padding:34px 30px 38px}
+#verdikt h2,#verdikt h3,#verdikt p,#verdikt li,#verdikt td,#verdikt th,#verdikt caption{color:var(--rot)}
+#verdikt h2 .nr,#verdikt h3 .nr{color:var(--rot);opacity:.62}
+#verdikt .tabelle{border-color:var(--rot-rand);background:transparent}
+#verdikt th,#verdikt td{border-bottom-color:var(--rot-rand)}
+#verdikt thead th{border-bottom-color:var(--rot);color:var(--rot);opacity:.78}
+#verdikt .strich{background:var(--rot-rand)}
+.spruch{font-family:var(--serif);font-size:clamp(20px,2.7vw,25px);line-height:1.34;font-weight:600;margin:0 0 20px;text-wrap:balance}
+ol.lst{padding-left:22px;font-size:14.5px}ol.lst li{margin-bottom:8px}
+</style><div class="wrap">
+<header><p class="eyebrow">Analyse d'entreprise · réseau régulé · Basse-Autriche, Bulgarie, Macédoine du Nord</p>
+<h1>EVN sous sa valeur comptable</h1>
+<p class="frage">À quel prix une entrée dans EVN est-elle défendable, quand l'action cote 20&nbsp;% sous ses capitaux propres et que les investissements viennent de dépasser 900&nbsp;millions d'euros pour la première fois&nbsp;?</p>
+<div class="meta"><span>Date d'arrêté <b>15.09.2026</b></span><span>Bourse <b>Vienne · EVN.VI</b></span>
+<span>Exercice <b>clos au 30 septembre</b></span><span>Valeurs vérifiées <b>51 sur 51</b></span></div>
+<dl class="legende">
+<div><dt><span class="sw" style="background:var(--ink)"></span>Noir</dt><dd>Chiffres, tableaux, sources. La source primaire en répond.</dd></div>
+<div><dt style="color:var(--blau)"><span class="sw" style="background:var(--blau)"></span>Bleu</dt><dd>Appréciation de l'auteur, après vérification.</dd></div>
+<div><dt style="color:var(--rot)"><span class="sw" style="background:var(--rot)"></span>Rouge</dt><dd>Le verdict, section 7. Recommandation sous hypothèses déclarées.</dd></div>
+</dl></header>
+
+<section><h2><span class="nr">1</span>Description de l'entreprise</h2><div class="strich"></div>
+<p>EVN AG exploite des réseaux de distribution d'électricité et de gaz, produit de l'électricité et distribue de l'eau potable, sur trois marchés : la Basse-Autriche, la Bulgarie et la Macédoine du Nord. L'essentiel du résultat vient d'activités régulées.</p>
+<div class="tabelle"><table><caption>Données de cours et de bilan</caption><thead><tr><th>Grandeur</th><th>Valeur</th><th>Source</th></tr></thead><tbody><tr><td>Cours au 14.09.2026</td><td>28,45&nbsp;€</td><td>Yahoo Finance</td></tr><tr><td>Actions</td><td>178,3&nbsp;millions</td><td>Yahoo Finance</td></tr><tr><td>Capitalisation</td><td>5 073&nbsp;M€</td><td>produit des deux</td></tr><tr><td>Capitaux propres part du groupe</td><td>6 328,3&nbsp;M€</td><td>Rapport financier annuel 2024/25, p.&nbsp;24</td></tr><tr><td>Capitaux propres par action</td><td>35,49&nbsp;€</td><td>quotient</td></tr><tr class="summe"><td>Cours / valeur comptable</td><td>0,80×</td><td></td></tr><tr><td>Bêta</td><td>0,65</td><td>Yahoo Finance</td></tr></tbody></table></div>
+<h3><span class="nr">1.4</span>Couverture et consensus</h3>
+<div class="tabelle"><table><caption>Consensus · source secondaire · 15.09.2026</caption><thead><tr><th>Grandeur</th><th>Valeur</th><th>Contre le cours de la page</th></tr></thead><tbody><tr><td>Analystes recensés</td><td>4</td><td>—</td></tr><tr><td>Consensus</td><td>Buy</td><td>—</td></tr><tr class="summe"><td>Objectif moyen</td><td>33,25&nbsp;€</td><td>+15,65&nbsp;%</td></tr><tr><td>Objectif haut / bas</td><td>36,50 / 29,50&nbsp;€</td><td>—</td></tr></tbody></table></div>
+<p class="quelle">MarketScreener, page consensus EVN, consultée le 15.09.2026. Contrôle de cohérence : 33,25 / 1,1565 = 28,75, soit exactement le cours affiché par cette page. <b>Quatre analystes seulement</b> : la couverture est mince, et un consensus à quatre voix ne pèse pas comme un consensus à vingt-deux.</p>
+<h3><span class="nr">1.5</span>Lacunes</h3>
+<div class="luecken"><ul>
+<li><b>Aucun historique de prévision contre réalisé sur cinq ans.</b> Je n'ai dépouillé que l'exercice en cours ; la fiabilité des prévisions d'EVN sur la durée n'est donc pas établie ici.</li>
+<li><b>Série de flux de trésorerie sur deux exercices seulement</b> dans les documents téléchargés, au lieu des sept à dix que demande la méthode.</li>
+<li><b>Le prix de cession du projet international à STRABAG n'est pas chiffré</b> dans les documents consultés.</li>
+</ul></div></section>
+
+<section><h2><span class="nr">2</span>Analyse des comptes</h2><div class="strich"></div>
+<p>Exercice 2024/25 : 1er octobre 2024 au 30 septembre 2025. Millions d'euros.</p>
+<div class="tabelle"><table><caption>Exercice 2024/25</caption><thead><tr><th>Grandeur</th><th>2023/24</th><th>2024/25</th><th>Δ</th></tr></thead><tbody><tr><td>Chiffre d’affaires</td><td>2 889,2</td><td>3 000,0</td><td>+3,8&nbsp;%</td></tr><tr class="summe"><td>EBITDA</td><td>762,9</td><td>909,1</td><td>+19,2&nbsp;%</td></tr><tr><td>Amortissements</td><td>−360,1</td><td>−360,1</td><td>—</td></tr><tr><td>Dépréciations</td><td>−24,9</td><td>−58,2</td><td>—</td></tr><tr class="summe"><td>Résultat d’exploitation (EBIT)</td><td>404,3</td><td>490,9</td><td>+21,4&nbsp;%</td></tr><tr><td>Résultat financier</td><td>145,6</td><td>83,6</td><td>-42,6&nbsp;%</td></tr><tr><td>Résultat avant impôts</td><td>549,9</td><td>574,4</td><td>+4,5&nbsp;%</td></tr><tr class="summe"><td>Résultat net part du groupe</td><td>471,6</td><td>436,7</td><td>−7,4&nbsp;%</td></tr><tr><td>Flux de trésorerie opérationnel</td><td>1 166,7</td><td>935,2</td><td>-19,8&nbsp;%</td></tr><tr><td>Dette nette</td><td>1 129,3</td><td>1 155,9</td><td>+2,4&nbsp;%</td></tr><tr><td>Capitaux propres part du groupe</td><td>6 414,8</td><td>6 328,3</td><td>-1,3&nbsp;%</td></tr></tbody></table></div>
+<p class="quelle">Rapport financier annuel 2024/25, p.&nbsp;23 · Communiqué de résultats 2024/25, p.&nbsp;2 · Rapport financier annuel 2024/25, p.&nbsp;26</p>
+<p><b>EBITDA en hausse de 19,2&nbsp;%, résultat net en baisse de 7,4&nbsp;%.</b> L'écart tient à deux postes situés sous l'EBITDA. Les dépréciations passent de 24,9 à 58,2&nbsp;M€, liées aux dégâts des crues de 2024 sur les centrales thermiques. Et surtout le résultat financier recule de 145,6 à 83,6&nbsp;M€, parce que le dividende de Verbund AG est tombé de 4,15 à 2,80&nbsp;€ par action.</p>
+<p class="bewertung">Cette structure mérite d'être comprise avant toute conclusion : une part notable du résultat d'EVN ne vient pas de son exploitation mais de sa participation dans Verbund. Un investisseur qui achète EVN achète aussi, indirectement, un dividende hydroélectrique autrichien dont la variation d'une année sur l'autre a suffi à faire reculer le résultat net d'un exercice pourtant meilleur au niveau opérationnel.</p>
+<h3>Neuf premiers mois de 2025/26</h3>
+<div class="tabelle"><table><caption>Neuf mois au 30 juin 2026</caption><thead><tr><th>Grandeur</th><th>9M 2024/25</th><th>9M 2025/26</th><th>Δ</th></tr></thead><tbody><tr><td>Chiffre d’affaires</td><td>2 360,4</td><td>2 433,1</td><td>+3,1&nbsp;%</td></tr><tr><td>EBITDA</td><td>713,6</td><td>748,5</td><td>+4,9&nbsp;%</td></tr><tr class="summe"><td>Résultat d’exploitation (EBIT)</td><td>447,1</td><td>460,4</td><td>+3,0&nbsp;%</td></tr><tr><td>dont 3ᵉ trimestre seul</td><td>111,6</td><td>97,5</td><td>−12,7&nbsp;%</td></tr><tr><td>Résultat avant impôts</td><td>540,5</td><td>576,3</td><td>+6,6&nbsp;%</td></tr><tr class="summe"><td>Résultat net part du groupe</td><td>434,7</td><td>525,1</td><td>+20,8&nbsp;%</td></tr><tr><td>Résultat par action</td><td>2,44&nbsp;€</td><td>2,94&nbsp;€</td><td>+20,8&nbsp;%</td></tr></tbody></table></div>
+<p class="quelle">Lettre aux actionnaires 9 mois 2025/26, p.&nbsp;2</p>
+<p class="bewertung">Le bond de 20,8&nbsp;% du résultat net n'est pas opérationnel, et EVN le dit elle-même : « effets ponctuels positifs non monétaires dans le résultat de l'activité abandonnée, conséquence de la déconsolidation ». L'activité abandonnée apporte 32,5&nbsp;M€, et le résultat financier bénéficie d'un dividende Verbund plus élevé. Au niveau qui compte, l'EBIT ne progresse que de 3,0&nbsp;% sur neuf mois et <b>recule de 12,7&nbsp;% au seul troisième trimestre</b>. C'est exactement le motif qui m'avait alerté chez Honeywell, et il faut le nommer ici aussi.</p></section>
+
+<section><h2><span class="nr">3</span>Mesures stratégiques</h2><div class="strich"></div>
+<p><i>Cette section rapporte, elle ne juge pas.</i></p>
+<p><b>Programme d'investissement.</b> Les investissements ont dépassé 900&nbsp;M€ pour la première fois sur l'exercice 2024/25, dont 89,1&nbsp;% classés conformes à la taxonomie européenne. La stratégie 2030 prévoit environ <b>1&nbsp;milliard d'euros par an jusqu'en 2030</b>, dont quatre cinquièmes en Basse-Autriche : réseaux, production renouvelable, batteries de grande capacité, bornes de recharge, eau potable.</p>
+<p><b>Capacités renouvelables.</b> 980&nbsp;MW installés au 30 septembre 2025. Objectifs 2030 : 770&nbsp;MW d'éolien, 300&nbsp;MWc de photovoltaïque, 300&nbsp;MW de stockage. La production d'électricité de l'exercice s'établit à 2 915&nbsp;GWh, en recul de 12,2&nbsp;% faute de vent et d'eau.</p>
+<p><b>Cession du projet international.</b> Contrat signé avec STRABAG en juin 2025 pour la vente de l'activité de projets internationaux, closing attendu début 2026. Le segment est comptabilisé selon IFRS&nbsp;5 et les comparatifs du compte de résultat ont été retraités.</p>
+<p><b>Prévision pour 2025/26</b>, donnée le 18 décembre 2025 : EBITDA et résultat net « à peu près au niveau de l'exercice précédent », avec un résultat net attendu dans une fourchette de <b>430 à 480&nbsp;M€</b>.</p>
+<p class="quelle">Communiqué de résultats 2024/25, p.&nbsp;3 · Communiqué de résultats 2024/25, p.&nbsp;3</p></section>
+
+<section><h2><span class="nr">4</span>Lecture du cours</h2><div class="strich"></div>
+<p>Le titre a perdu 10,7&nbsp;% depuis son sommet à trois ans et se tient 41,2&nbsp;% au-dessus de son plus bas. Sur trois mois il recule de 2,9&nbsp;% quand son indice de référence perd 0,9&nbsp;%. Le bêta ressort à 0,65, le plus faible de toutes les valeurs examinées dans cette série.</p>
+<p class="bewertung">Il n'y a pas de décrochage à expliquer : EVN ne fait rien de spectaculaire, ni à la hausse ni à la baisse, ce qui est le comportement attendu d'un réseau régulé. L'anomalie n'est pas dans le mouvement, elle est dans le niveau : <b>le marché valorise 178,3 millions d'actions à 5 073&nbsp;M€ alors que les capitaux propres part du groupe s'élèvent à 6 328,3&nbsp;M€</b>. Il manque un cinquième. Pour une société dont l'actif est un réseau régulé dont la base d'actifs porte un rendement fixé par le régulateur, cette décote est le fait marquant du dossier.</p></section>
+
+<section><h2><span class="nr">5</span>Options d'action</h2><div class="strich"></div>
+<div class="entfaellt"><p><b>Sans objet (n&nbsp;=&nbsp;0).</b> La décision porte sur une entrée à un cours donné, non sur un choix entre options de l'entreprise. Numérotation conservée pour rester comparable aux rapports précédents.</p></div></section>
+
+<section><h2><span class="nr">6</span>Analyse de flux</h2><div class="strich"></div>
+<h3><span class="nr">6.0</span>Hypothèses</h3>
+<div class="annahme"><b>Hypothèse 1 — le flux de trésorerie libre n'est pas la bonne mesure ici</b><p>Le flux libre d'EVN est tombé à 26&nbsp;M€ sur le dernier exercice, non parce que l'exploitation faiblit — le flux opérationnel reste à 935,2&nbsp;M€ — mais parce que les investissements ont dépassé 900&nbsp;M€. Pour un réseau régulé en phase d'investissement, cette compression est le fonctionnement normal du modèle. Mon propre détecteur classe d'ailleurs EVN en « dégradation » sur ce critère, et il a tort, de la même façon qu'il a tort sur une banque. La série retenue ici est donc le <b>résultat</b>, pas le flux libre.</p></div>
+<div class="annahme"><b>Hypothèse 2 — deux séries, parce que l'écart entre elles est la question</b><p>Le dividende versé est de 0,90&nbsp;€ par action, le résultat net de 2,45&nbsp;€. La différence de 1,55&nbsp;€ est retenue pour financer le programme d'investissement. Retenir le dividende seul suppose que le bénéfice conservé ne crée aucune valeur ; retenir le résultat entier suppose qu'il en crée autant qu'un euro distribué. La vérité est entre les deux, et les deux sont calculées.</p></div>
+<div class="annahme"><b>Hypothèse 3 — deux conventions de sortie</b><p>A : sortie à la valeur comptable de 35,49&nbsp;€ par action. B : sortie au cours actuel de 28,45&nbsp;€, sans réévaluation. Fait remarquable et inverse des dossiers précédents : <b>ici la convention comptable est la plus généreuse</b>, puisque le titre cote sous ses fonds propres.</p></div>
+<div class="annahme"><b>Hypothèse 4 — exigence</b><p>Le rendement des capitaux propres 2024/25, soit 436,7 / 6 328,3 = <b>6,90&nbsp;%</b>. Sourcé, et modeste — c'est le propre d'un actif régulé. Aucun coût moyen pondéré du capital n'est construit.</p></div>
+<div class="annahme"><b>Hypothèse 5 — avant impôt de l'actionnaire</b><p>La retenue à la source autrichienne et l'imposition du porteur ne sont pas prises en compte : elles dépendent de son domicile et ne figurent dans aucune source.</p></div>
+<h3><span class="nr">6.3</span>Ce que rapporte une entrée au cours actuel</h3>
+<div class="tabelle"><table><caption>Taux de rendement interne à 28,45 € · exigence 6,90&nbsp;%</caption><thead><tr><th>Série · sortie</th><th>5 ans</th><th>10 ans</th><th>15 ans</th></tr></thead><tbody><tr><td>Dividende versé (0,90&nbsp;€) · A — valeur comptable 35,49&nbsp;€</td><td>7,43&nbsp;%</td><td>5,12&nbsp;%</td><td>4,37&nbsp;%</td></tr><tr><td>Dividende versé (0,90&nbsp;€) · B — cours actuel 28,45&nbsp;€</td><td>3,16&nbsp;%</td><td>3,16&nbsp;%</td><td>3,16&nbsp;%</td></tr><tr><td>Résultat net (2,45&nbsp;€) · A — valeur comptable 35,49&nbsp;€</td><td>12,47&nbsp;%</td><td>10,15&nbsp;%</td><td>9,42&nbsp;%</td></tr><tr><td>Résultat net (2,45&nbsp;€) · B — cours actuel 28,45&nbsp;€</td><td>8,61&nbsp;%</td><td>8,61&nbsp;%</td><td>8,61&nbsp;%</td></tr></tbody></table></div>
+<div class="tabelle"><table><caption>Prix auquel l’exigence est exactement atteinte</caption><thead><tr><th>Série · sortie</th><th>5 ans</th><th>10 ans</th><th>15 ans</th></tr></thead><tbody><tr><td>Dividende versé (0,90&nbsp;€) · A — valeur comptable 35,49&nbsp;€</td><td>29,12&nbsp;€</td><td>24,56&nbsp;€</td><td>21,29&nbsp;€</td></tr><tr><td>Dividende versé (0,90&nbsp;€) · B — cours actuel 28,45&nbsp;€</td><td>24,08&nbsp;€</td><td>20,95&nbsp;€</td><td>18,70&nbsp;€</td></tr><tr><td>Résultat net (2,45&nbsp;€) · A — valeur comptable 35,49&nbsp;€</td><td>35,49&nbsp;€</td><td>35,49&nbsp;€</td><td>35,49&nbsp;€</td></tr><tr><td>Résultat net (2,45&nbsp;€) · B — cours actuel 28,45&nbsp;€</td><td>30,45&nbsp;€</td><td>31,88&nbsp;€</td><td>32,90&nbsp;€</td></tr></tbody></table></div>
+<div class="tabelle"><table><caption>Croissance annuelle que le cours actuel présuppose</caption><thead><tr><th>Série · sortie</th><th>5 ans</th><th>10 ans</th><th>15 ans</th></tr></thead><tbody><tr><td>Dividende versé (0,90&nbsp;€) · A — valeur comptable 35,49&nbsp;€</td><td>-6,9&nbsp;%</td><td>9,4&nbsp;%</td><td>8,6&nbsp;%</td></tr><tr><td>Dividende versé (0,90&nbsp;€) · B — cours actuel 28,45&nbsp;€</td><td>28,4&nbsp;%</td><td>15,1&nbsp;%</td><td>10,7&nbsp;%</td></tr><tr><td>Résultat net (2,45&nbsp;€) · A — valeur comptable 35,49&nbsp;€</td><td>-39,3&nbsp;%</td><td>-11,0&nbsp;%</td><td>-5,8&nbsp;%</td></tr><tr><td>Résultat net (2,45&nbsp;€) · B — cours actuel 28,45&nbsp;€</td><td>-7,6&nbsp;%</td><td>-4,5&nbsp;%</td><td>-3,4&nbsp;%</td></tr></tbody></table></div>
+<p><b>Le résultat tient en une ligne.</b> Si l'on retient le résultat net entier et une sortie sans réévaluation, le rendement interne ressort à 8,61&nbsp;% contre une exigence de 6,90&nbsp;%, le seuil d'entrée se situe entre 30,45 et 32,90&nbsp;€ — <b>au-dessus du cours</b> — et la croissance requise est <b>négative</b> : EVN peut décliner de 3 à 8&nbsp;% par an et satisfaire encore son propre rendement des capitaux propres.</p>
+<p>Si l'on ne retient que le dividende versé, tout s'inverse : rendement interne de 3,16&nbsp;%, seuil entre 18,70 et 24,08&nbsp;€, croissance requise de 10,7&nbsp;% à 28,4&nbsp;%.</p></section>
+
+<section id="verdikt"><h2><span class="nr">7</span>Verdict</h2><div class="strich"></div>
+<p style="font-size:14px"><b>Tout ce qui suit est en rouge :</b> recommandation sous les hypothèses de la section 6.0, pas un constat.</p>
+<h3><span class="nr">7.1</span>Verdict</h3>
+<p class="spruch">Achetable à 28,45&nbsp;€, et c'est le premier titre de cette série dont je peux le dire. Le seuil d'entrée se situe autour de 31&nbsp;€ si l'on crédite le bénéfice conservé, soit au-dessus du cours actuel. Horizon dix ans.</p>
+<div class="zweiseiten">
+<div><b>Pour le porteur</b><p>Conserver. Dividende de 0,90&nbsp;€ couvert 2,72 fois, dette nette à 1,27 fois l'EBITDA, ratio de fonds propres de 60,4&nbsp;%. Rien n'oblige à vendre.</p></div>
+<div><b>Pour le non-porteur</b><p>Entrée défendable, à condition d'accepter la thèse centrale : que le milliard d'euros investi chaque année jusqu'en 2030 rejoigne une base d'actifs régulée et y porte un rendement fixé. C'est un pari sur le régulateur, pas sur le marché.</p></div></div>
+<h3><span class="nr">7.2</span>Ce qui fonde ce verdict</h3>
+<div class="richtung"><b>Pour</b><p>Le titre cote 0,80 fois ses fonds propres, soit une décote de 19,8&nbsp;% sur des actifs de réseau régulé. Le PER ressort à 11,6 et le rendement bénéficiaire à 8,6&nbsp;%. La dette nette de 1 155,9&nbsp;M€ ne représente que 1,27 fois l'EBITDA. Après neuf mois, le résultat net de 525,1&nbsp;M€ dépasse déjà le haut de la fourchette annuelle annoncée, 480&nbsp;M€.</p></div>
+<div class="richtung"><b>Contre</b><p>Ce dépassement de prévision est en grande partie non monétaire : 32,5&nbsp;M€ viennent de la déconsolidation et le reste d'un dividende Verbund plus favorable. L'EBIT ne progresse que de 3,0&nbsp;% sur neuf mois et recule de 12,7&nbsp;% au troisième trimestre seul. Le rendement des capitaux propres n'est que de 6,90&nbsp;%, et le flux libre est tombé à 26&nbsp;M€ : tant que le programme d'investissement tourne à un milliard par an, l'actionnaire ne touchera que le dividende.</p></div>
+<div class="richtung"><b>Où ce verdict rejoint le marché</b><p>Le consensus des quatre analystes recensés est <i>achat</i>, objectif moyen 33,25&nbsp;€. C'est, pour une fois, du même ordre que mon seuil d'environ 31&nbsp;€ — l'écart tient dans les arrondis. Après six dossiers où ma méthode concluait systématiquement plus sévèrement que la couverture, cette convergence mérite d'être relevée : elle vient de ce que la décote sur fonds propres est un fait, pas une hypothèse.</p></div>
+<h3><span class="nr">7.3</span>Seuil d'entrée</h3>
+<div class="tabelle"><table><caption>Cours actuel : 28,45 €</caption><thead><tr><th>Série · sortie</th><th>5 ans</th><th>10 ans</th><th>15 ans</th></tr></thead><tbody><tr><td>Dividende versé (0,90&nbsp;€) · A — valeur comptable 35,49&nbsp;€</td><td>29,12&nbsp;€</td><td>24,56&nbsp;€</td><td>21,29&nbsp;€</td></tr><tr><td>Dividende versé (0,90&nbsp;€) · B — cours actuel 28,45&nbsp;€</td><td>24,08&nbsp;€</td><td>20,95&nbsp;€</td><td>18,70&nbsp;€</td></tr><tr><td>Résultat net (2,45&nbsp;€) · A — valeur comptable 35,49&nbsp;€</td><td>35,49&nbsp;€</td><td>35,49&nbsp;€</td><td>35,49&nbsp;€</td></tr><tr><td>Résultat net (2,45&nbsp;€) · B — cours actuel 28,45&nbsp;€</td><td>30,45&nbsp;€</td><td>31,88&nbsp;€</td><td>32,90&nbsp;€</td></tr></tbody></table></div>
+<h3><span class="nr">7.4</span>Ce qui ferait basculer le verdict</h3>
+<ol class="lst">
+<li><b>À la vente :</b> résultat net d'un exercice complet sous <b>400&nbsp;M€</b>, soit en dessous du bas de la fourchette annoncée.</li>
+<li><b>À la vente :</b> dette nette au-delà de <b>2,5 fois l'EBITDA</b>, signe que le programme d'investissement dépasse la capacité de financement.</li>
+<li><b>À la vente :</b> coupe du dividende sous <b>0,90&nbsp;€</b>, qui signalerait que le milliard annuel n'est plus finançable en interne.</li>
+<li><b>À l'achat renforcé :</b> cours sous <b>25&nbsp;€</b>, soit une décote de 30&nbsp;% sur les fonds propres.</li>
+<li><b>À surveiller :</b> le dividende de Verbund AG, qui a fait à lui seul reculer le résultat financier de 62,0&nbsp;M€ en un exercice.</li></ol>
+<h3><span class="nr">7.5</span>Ce que ce verdict ne peut pas savoir</h3>
+<p>La question ouverte est celle du <b>rendement régulé</b> : la valeur d'EVN dépend du taux que les régulateurs autrichien, bulgare et macédonien accorderont sur une base d'actifs en forte croissance. Aucune source consultée ne donne ce taux, et c'est pourtant lui qui décide si le milliard investi chaque année crée ou détruit de la valeur.</p>
+<ol class="lst">
+<li><b>Mon verdict repose sur le crédit accordé au bénéfice conservé.</b> Sur le seul dividende, le seuil tombe à 20,95&nbsp;€ sur dix ans et le titre devient cher. Tout l'écart entre « achetable » et « cher » tient dans cette hypothèse, et elle n'est pas démontrée ici.</li>
+<li><b>La décote sur fonds propres peut être justifiée.</b> Un marché qui valorise un réseau à 0,8 fois ses fonds propres peut anticiper une révision réglementaire défavorable, ou juger que les actifs sont comptabilisés trop haut. Je n'ai aucun élément pour trancher.</li>
+<li><b>Quatre analystes ne font pas un consensus.</b> La convergence relevée en 7.2 s'appuie sur une couverture très mince.</li>
+<li><b>L'exposition à Verbund est un actif que je n'ai pas analysé.</b> Elle influence sensiblement le résultat et sort du périmètre de ce rapport.</li>
+<li><b>Une série de deux exercices</b> ne permet pas de situer l'exercice retenu dans son cycle, comme la méthode l'exige depuis le cas Neste.</li></ol></section>
+
+<footer><p><b>Sources :</b> EVN AG, rapport financier annuel 2024/25 (175 p.) ; communiqué de résultats du 18.12.2025 ; lettre aux actionnaires des neuf premiers mois 2025/26 ; Yahoo Finance pour le cours ; MarketScreener pour le consensus (source secondaire), consultés le 15.09.2026.</p>
+<p><b>Reproductibilité :</b> <code>daten_evn.py</code> contient les 51 valeurs avec leur page imprimée, <code>pruefe_evn.py</code> vérifie chacune contre le texte de sa page, <code>rapport.py</code> produit toutes les tables.</p></footer></div>

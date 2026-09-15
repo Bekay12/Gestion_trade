@@ -1,0 +1,290 @@
+% ==================================================================
+% kennzahlen.tex - ERZEUGT von scripts/kennzahlen.py. Nicht haendisch
+% aendern; jede Aenderung dort vornehmen und das Skript neu laufen
+% lassen. Betraege in Mio. USD, sofern der Kommentar nichts anderes
+% sagt. Die Seitenzahlen sind die des gedruckten Dokuments.
+% ==================================================================
+
+% --- Rohwerte aus den Primaerquellen ------------------------------
+\newcommand{\UmsatzGesamt}{5902}   % 10-K 2025, S. 49
+\newcommand{\UmsatzGesamtVJ}{4805}   % 10-K 2025, S. 49
+\newcommand{\UmsatzGesamtVVJ}{4257}   % 10-K 2025, S. 49
+\newcommand{\ProvisionsErtraege}{5763}   % 10-K 2025, S. 49
+\newcommand{\ProvisionsErtraegeVJ}{4705}   % 10-K 2025, S. 49
+\newcommand{\InvestErtrag}{139}   % 10-K 2025, S. 49
+\newcommand{\InvestErtragVJ}{100}   % 10-K 2025, S. 49
+\newcommand{\Personalaufwand}{2935}   % 10-K 2025, S. 49
+\newcommand{\PersonalaufwandVJ}{2406}   % 10-K 2025, S. 49
+\newcommand{\SonstBetrAufwand}{959}   % 10-K 2025, S. 49
+\newcommand{\SonstBetrAufwandVJ}{710}   % 10-K 2025, S. 49
+\newcommand{\AbschrImmat}{312}   % 10-K 2025, S. 49
+\newcommand{\AbschrImmatVJ}{178}   % 10-K 2025, S. 49
+\newcommand{\AbschrSach}{55}   % 10-K 2025, S. 49
+\newcommand{\AbschrSachVJ}{44}   % 10-K 2025, S. 49
+\newcommand{\Zinsaufwand}{297}   % 10-K 2025, S. 49
+\newcommand{\ZinsaufwandVJ}{193}   % 10-K 2025, S. 49
+\newcommand{\ErgebnisVorSteuern}{1371}   % 10-K 2025, S. 49
+\newcommand{\ErgebnisVorSteuernVJ}{1303}   % 10-K 2025, S. 49
+\newcommand{\Ertragsteuern}{304}   % 10-K 2025, S. 49
+\newcommand{\ErtragsteuernVJ}{301}   % 10-K 2025, S. 49
+\newcommand{\Konzernergebnis}{1054}   % 10-K 2025, S. 49
+\newcommand{\KonzernergebnisVJ}{993}   % 10-K 2025, S. 49
+\newcommand{\KonzernergebnisVVJ}{871}   % 10-K 2025, S. 49
+\newcommand{\EPSbasic}{3.37}   % 10-K 2025, S. 49
+\newcommand{\EPSbasicVJ}{3.48}   % 10-K 2025, S. 49
+\newcommand{\EPSdil}{3.16}   % 10-K 2025, S. 49
+\newcommand{\EPSdilVJ}{3.46}   % 10-K 2025, S. 49
+\newcommand{\Kernprovisionen}{5508}   % 10-K 2025, S. 36
+\newcommand{\KernprovisionenVJ}{4539}   % 10-K 2025, S. 36
+\newcommand{\Gewinnbeteiligung}{255}   % 10-K 2025, S. 36
+\newcommand{\GewinnbeteiligungVJ}{166}   % 10-K 2025, S. 36
+\newcommand{\OrganischWachstum}{2.8}   % 10-K 2025, S. 36 (in Prozent)
+\newcommand{\OrganischWachstumVJ}{10.4}   % 10-K 2025, S. 36 (in Prozent)
+\newcommand{\OrganischNeugeschaeft}{126}   % 10-K 2025, S. 36
+\newcommand{\UmsatzAusZukaeufenMDA}{836}   % 10-K 2025, S. 36
+\newcommand{\WaehrungseffektMDA}{18}   % 10-K 2025, S. 36
+\newcommand{\DesinvestitionMDA}{11}   % 10-K 2025, S. 36
+\newcommand{\EBITDAC}{2060}   % 10-K 2025, S. 39
+\newcommand{\EBITDACVJ}{1720}   % 10-K 2025, S. 40
+\newcommand{\EBITDACber}{2121}   % 10-K 2025, S. 39
+\newcommand{\EBITDACberVJ}{1689}   % 10-K 2025, S. 40
+\newcommand{\AkqIntegrationskosten}{113}   % 10-K 2025, S. 39
+\newcommand{\EscrowBewertung}{-54}   % 10-K 2025, S. 39
+\newcommand{\VeraeusserungsergebnisVJ}{-31}   % 10-K 2025, S. 40
+\newcommand{\RetailUmsatz}{3406}   % 10-K 2025, S. 39
+\newcommand{\RetailUmsatzVJ}{2729}   % 10-K 2025, S. 40
+\newcommand{\RetailEBITDACber}{1022}   % 10-K 2025, S. 39
+\newcommand{\RetailEBITDACberVJ}{818}   % 10-K 2025, S. 40
+\newcommand{\SpezUmsatz}{2409}   % 10-K 2025, S. 39
+\newcommand{\SpezUmsatzVJ}{2016}   % 10-K 2025, S. 40
+\newcommand{\SpezEBITDACber}{1038}   % 10-K 2025, S. 39
+\newcommand{\SpezEBITDACberVJ}{862}   % 10-K 2025, S. 40
+\newcommand{\RetailOrganisch}{2.8}   % 10-K 2025, S. 41 (in Prozent)
+\newcommand{\SpezOrganisch}{2.8}   % 10-K 2025, S. 42 (in Prozent)
+\newcommand{\SpezOrganischVJ}{17.8}   % 10-K 2025, S. 42 (in Prozent)
+\newcommand{\RetailOrganischVJ}{5.8}   % 10-K 2025, S. 41 (in Prozent)
+\newcommand{\Zahlungsmittel}{1079}   % 10-K 2025, S. 51
+\newcommand{\ZahlungsmittelVJ}{675}   % 10-K 2025, S. 51
+\newcommand{\TreuhandMittel}{2471}   % 10-K 2025, S. 51
+\newcommand{\Goodwill}{15087}   % 10-K 2025, S. 51
+\newcommand{\GoodwillVJ}{7970}   % 10-K 2025, S. 51
+\newcommand{\ImmatVermoegen}{4906}   % 10-K 2025, S. 51
+\newcommand{\ImmatVermoegenVJ}{1814}   % 10-K 2025, S. 51
+\newcommand{\Bilanzsumme}{29991}   % 10-K 2025, S. 51
+\newcommand{\BilanzsummeVJ}{17612}   % 10-K 2025, S. 51
+\newcommand{\Eigenkapital}{12573}   % 10-K 2025, S. 51
+\newcommand{\EigenkapitalVJ}{6437}   % 10-K 2025, S. 51
+\newcommand{\AktienUmlauf}{336}   % 10-K 2025, S. 51 (Mio. Stueck)
+\newcommand{\AktienUmlaufVJ}{286}   % 10-K 2025, S. 51 (Mio. Stueck)
+\newcommand{\OperativerCF}{1450}   % 10-K 2025, S. 53
+\newcommand{\OperativerCFVJ}{1174}   % 10-K 2025, S. 53
+\newcommand{\OperativerCFVVJ}{1010}   % 10-K 2025, S. 53
+\newcommand{\Sachinvestitionen}{68}   % 10-K 2025, S. 53
+\newcommand{\SachinvestitionenVJ}{82}   % 10-K 2025, S. 53
+\newcommand{\UnternehmenskaeufeCF}{7854}   % 10-K 2025, S. 53
+\newcommand{\UnternehmenskaeufeCFVJ}{890}   % 10-K 2025, S. 53
+\newcommand{\Dividendenzahlung}{193}   % 10-K 2025, S. 53
+\newcommand{\DividendenzahlungVJ}{154}   % 10-K 2025, S. 53
+\newcommand{\EarnoutZahlung}{143}   % 10-K 2025, S. 53
+\newcommand{\EarnoutZahlungVJ}{117}   % 10-K 2025, S. 53
+\newcommand{\AktienrueckkaufCF}{100}   % 10-K 2025, S. 53
+\newcommand{\Gesamtverschuldung}{7613}   % 10-K 2025, S. 67
+\newcommand{\GesamtverschuldungVJ}{3824}   % 10-K 2025, S. 67
+\newcommand{\Anleihen}{6650}   % 10-K 2025, S. 67
+\newcommand{\AnleihenVJ}{2850}   % 10-K 2025, S. 67
+\newcommand{\Bankkredite}{313}   % 10-K 2025, S. 67
+\newcommand{\TilgungGesamt}{7682}   % 10-K 2025, S. 46
+\newcommand{\TilgungJahrEins}{719}   % 10-K 2025, S. 46
+\newcommand{\TilgungJahrZweiDrei}{813}   % 10-K 2025, S. 46
+\newcommand{\TilgungJahrVierFuenf}{1150}   % 10-K 2025, S. 46
+\newcommand{\TilgungDanach}{5000}   % 10-K 2025, S. 46
+\newcommand{\ZinsverpflichtungGesamt}{4181}   % 10-K 2025, S. 46
+\newcommand{\ZinsverpflichtungJahrEins}{376}   % 10-K 2025, S. 46
+\newcommand{\ZinsverpflichtungZweiDrei}{649}   % 10-K 2025, S. 46
+\newcommand{\ZinsverpflichtungVierFuenf}{561}   % 10-K 2025, S. 46
+\newcommand{\ZinsverpflichtungDanach}{2595}   % 10-K 2025, S. 46
+\newcommand{\EarnoutMaximum}{842}   % 10-K 2025, S. 46
+\newcommand{\EarnoutBilanziert}{541}   % 10-K 2025, S. 46
+\newcommand{\EscrowVerbindlichkeit}{616}   % 10-K 2025, S. 46
+\newcommand{\AccessionKaufpreis}{9608}   % 10-K 2025, S. 63
+\newcommand{\AccessionBarzahlung}{8293}   % 10-K 2025, S. 63
+\newcommand{\AccessionAktien}{613}   % 10-K 2025, S. 63
+\newcommand{\AccessionGoodwill}{6547}   % 10-K 2025, S. 63
+\newcommand{\AccessionImmat}{3221}   % 10-K 2025, S. 63
+\newcommand{\KaeufeKaufpreis}{10112}   % 10-K 2025, S. 63
+\newcommand{\KaeufeGoodwill}{6885}   % 10-K 2025, S. 63
+\newcommand{\UmsatzAusKaeufen}{747}   % 10-K 2025, S. 63
+\newcommand{\ErgebnisAusKaeufen}{77}   % 10-K 2025, S. 63
+\newcommand{\NutzungsdauerKunden}{14}   % 10-K 2025, S. 63 (Jahre)
+\newcommand{\ProFormaUmsatz}{6947}   % 10-K 2025, S. 64
+\newcommand{\ProFormaUmsatzVJ}{6637}   % 10-K 2025, S. 64
+\newcommand{\ProFormaErgebnis}{1220}   % 10-K 2025, S. 64
+\newcommand{\ProFormaErgebnisVJ}{1080}   % 10-K 2025, S. 64
+\newcommand{\ProFormaEPSdil}{3.45}   % 10-K 2025, S. 64
+\newcommand{\ProFormaEPSdilVJ}{3.2}   % 10-K 2025, S. 64
+\newcommand{\AnleihevolumenNeu}{4200}   % 10-K 2025, S. 45
+\newcommand{\KuponMin}{4.6}   % 10-K 2025, S. 45 (in Prozent)
+\newcommand{\KuponMax}{6.25}   % 10-K 2025, S. 45 (in Prozent)
+\newcommand{\AnleiheTranchen}{6}   % 10-K 2025, S. 45
+\newcommand{\RueckkaufAufstockung}{1251}   % 10-K 2025, S. 28
+\newcommand{\KapitalerhoehungStueck}{43137254}   % 10-K 2025, S. 46 (Stueck)
+\newcommand{\KapitalerhoehungKurs}{102.0}   % 10-K 2025, S. 46 (USD je Aktie)
+\newcommand{\KapitalerhoehungNetto}{4315}   % 10-K 2025, S. 46
+\newcommand{\VerkaeuferaktienWert}{1045}   % 10-K 2025, S. 46
+\newcommand{\VerkaeuferaktienKurs}{110.57}   % 10-K 2025, S. 46 (USD je Aktie)
+\newcommand{\RueckkaufRahmen}{1400}   % 10-K 2025, S. 28 (Restrahmen 31.12.2025)
+\newcommand{\RueckkaufStueck}{1255970}   % 10-K 2025, S. 28 (Stueck 2025)
+\newcommand{\RueckkaufKurs}{79.62}   % 10-K 2025, S. 28 (USD je Aktie)
+\newcommand{\Mitarbeiter}{22888}   % 10-K 2025, S. 7
+\newcommand{\MitarbeiterRetail}{14531}   % 10-K 2025, S. 6
+\newcommand{\MitarbeiterSpez}{7905}   % 10-K 2025, S. 7
+\newcommand{\AkquisitionenAnzahl}{43}   % 10-K 2025, S. 8
+\newcommand{\AkquisitionenKoepfe}{5794}   % 10-K 2025, S. 8
+\newcommand{\AktienRegisterStueck}{340420023}   % 10-K 2025, S. 28 (Stand 10.02.2026)
+\newcommand{\AktionaereRegister}{2446}   % 10-K 2025, S. 28
+\newcommand{\HyattBrownStueck}{35997546}   % Proxy Statement 2026, S. 76 (Stueck)
+\newcommand{\HyattBrownAnteil}{10.6}   % Proxy Statement 2026, S. 76 (in Prozent)
+\newcommand{\PowellBrownStueck}{5320524}   % Proxy Statement 2026, S. 76 (Stueck)
+\newcommand{\PowellBrownAnteil}{1.57}   % Proxy Statement 2026, S. 76 (in Prozent)
+\newcommand{\OrganeStueck}{44574701}   % Proxy Statement 2026, S. 76 (Stueck)
+\newcommand{\OrganeAnteil}{13.13}   % Proxy Statement 2026, S. 76 (in Prozent)
+\newcommand{\OrganePersonen}{21}   % Proxy Statement 2026, S. 76
+\newcommand{\VanguardStueck}{37330892}   % Proxy Statement 2026, S. 76 (Stueck)
+\newcommand{\VanguardAnteil}{10.99}   % Proxy Statement 2026, S. 76 (in Prozent)
+\newcommand{\CapitalWorldStueck}{17503659}   % Proxy Statement 2026, S. 76 (Stueck)
+\newcommand{\CapitalWorldAnteil}{5.15}   % Proxy Statement 2026, S. 76 (in Prozent)
+\newcommand{\AnalystenHaeuser}{18}   % Investor-Relations-Seite, Analyst Coverage
+\newcommand{\AufsichtsratMitglieder}{14}   % Proxy Statement 2026, S. 76
+\newcommand{\VorstandsmitgliederAnzahl}{9}   % 10-K 2025, S. 10
+\newcommand{\DividendeJeAktie}{0.62}   % Investor-Relations-Seite, Dividend History
+\newcommand{\DividendeJeAktieVJ}{0.54}   % Investor-Relations-Seite, Dividend History
+\newcommand{\DividendeJeAktieVVJ}{0.48}   % Investor-Relations-Seite, Dividend History
+\newcommand{\DividendeQuartalNeu}{0.165}   % 10-K 2025, S. 44 (Beschluss vom 21.01.2026)
+\newcommand{\HJUmsatz}{3577}   % 10-Q Q2 2026, S. 29
+\newcommand{\HJUmsatzVJ}{2689}   % 10-Q Q2 2026, S. 29
+\newcommand{\HJErgebnis}{714}   % 10-Q Q2 2026, S. 29
+\newcommand{\HJErgebnisVJ}{563}   % 10-Q Q2 2026, S. 29
+\newcommand{\HJEBITDACber}{1329}   % 10-Q Q2 2026, S. 29
+\newcommand{\HJEBITDACberMarge}{37.2}   % 10-Q Q2 2026, S. 29 (in Prozent)
+\newcommand{\HJOrganisch}{-0.3}   % 10-Q Q2 2026, S. 29 (in Prozent)
+\newcommand{\HJOrganischVJ}{5.1}   % 10-Q Q2 2026, S. 29 (in Prozent)
+\newcommand{\QzweiOrganisch}{-0.7}   % 10-Q Q2 2026, S. 29 (in Prozent)
+\newcommand{\QzweiOrganischVJ}{3.6}   % 10-Q Q2 2026, S. 29 (in Prozent)
+\newcommand{\QzweiZinsaufwand}{100}   % 10-Q Q2 2026, S. 29
+\newcommand{\HJAbschrImmat}{226}   % 10-Q Q2 2026, S. 29
+\newcommand{\HJAbschrSach}{35}   % 10-Q Q2 2026, S. 29
+\newcommand{\HJZinsaufwand}{199}   % 10-Q Q2 2026, S. 29
+\newcommand{\HJOperativerCF}{608}   % 10-Q Q2 2026, S. 9
+\newcommand{\HJSachinvestitionen}{38}   % 10-Q Q2 2026, S. 9
+\newcommand{\HJDividendenzahlung}{112}   % 10-Q Q2 2026, S. 9
+\newcommand{\HJRueckkauf}{500}   % 10-Q Q2 2026, S. 9
+\newcommand{\HJEarnoutZahlung}{184}   % 10-Q Q2 2026, S. 9
+\newcommand{\HJZahlungsmittel}{918}   % 10-Q Q2 2026, S. 7
+\newcommand{\HJFKkurz}{413}   % 10-Q Q2 2026, S. 7
+\newcommand{\HJFKlang}{7346}   % 10-Q Q2 2026, S. 7
+\newcommand{\HJEigenkapital}{12608}   % 10-Q Q2 2026, S. 7
+\newcommand{\HJAktienUmlauf}{330}   % 10-Q Q2 2026, S. 7 (Mio. Stueck)
+\newcommand{\HJEigeneAktien}{1348}   % 10-Q Q2 2026, S. 7
+\newcommand{\HJEigeneAktienVJ}{848}   % 10-Q Q2 2026, S. 7
+
+% --- Kursreihe (siehe scripts/fetch_kurs.py) ----------------------
+\newcommand{\KursSchlussZFI}{70.28}   % Nasdaq, Historical Quotes BRO, abgerufen am 28.08.2026
+\newcommand{\KursHochZFI}{70.75}   % Nasdaq, Historical Quotes BRO, abgerufen am 28.08.2026
+\newcommand{\KursTiefZFI}{42.72}   % Nasdaq, Historical Quotes BRO, abgerufen am 28.08.2026
+\newcommand{\KursSchlussZFII}{56.97}   % Nasdaq, Historical Quotes BRO, abgerufen am 28.08.2026
+\newcommand{\KursHochZFII}{74.0}   % Nasdaq, Historical Quotes BRO, abgerufen am 28.08.2026
+\newcommand{\KursTiefZFII}{52.91}   % Nasdaq, Historical Quotes BRO, abgerufen am 28.08.2026
+\newcommand{\KursSchlussZFIII}{71.11}   % Nasdaq, Historical Quotes BRO, abgerufen am 28.08.2026
+\newcommand{\KursHochZFIII}{76.25}   % Nasdaq, Historical Quotes BRO, abgerufen am 28.08.2026
+\newcommand{\KursTiefZFIII}{52.82}   % Nasdaq, Historical Quotes BRO, abgerufen am 28.08.2026
+\newcommand{\KursSchlussZFIV}{102.02}   % Nasdaq, Historical Quotes BRO, abgerufen am 28.08.2026
+\newcommand{\KursHochZFIV}{114.15}   % Nasdaq, Historical Quotes BRO, abgerufen am 28.08.2026
+\newcommand{\KursTiefZFIV}{69.24}   % Nasdaq, Historical Quotes BRO, abgerufen am 28.08.2026
+\newcommand{\KursSchlussZFV}{79.7}   % Nasdaq, Historical Quotes BRO, abgerufen am 28.08.2026
+\newcommand{\KursHochZFV}{125.67}   % Nasdaq, Historical Quotes BRO, abgerufen am 28.08.2026
+\newcommand{\KursTiefZFV}{76.17}   % Nasdaq, Historical Quotes BRO, abgerufen am 28.08.2026
+\newcommand{\KursSchlussZFVI}{71.39}   % Nasdaq, Historical Quotes BRO, abgerufen am 28.08.2026
+\newcommand{\KursHochZFVI}{81.25}   % Nasdaq, Historical Quotes BRO, abgerufen am 28.08.2026
+\newcommand{\KursTiefZFVI}{53.81}   % Nasdaq, Historical Quotes BRO, abgerufen am 28.08.2026
+\newcommand{\KurstagHochZFI}{31.12.2021}   % Nasdaq, Historical Quotes BRO, abgerufen am 28.08.2026
+\newcommand{\KurstagTiefZFI}{1.2.2021}   % Nasdaq, Historical Quotes BRO, abgerufen am 28.08.2026
+\newcommand{\KurstagHochZFII}{31.3.2022}   % Nasdaq, Historical Quotes BRO, abgerufen am 28.08.2026
+\newcommand{\KurstagTiefZFII}{16.6.2022}   % Nasdaq, Historical Quotes BRO, abgerufen am 28.08.2026
+\newcommand{\KurstagHochZFIII}{13.12.2023}   % Nasdaq, Historical Quotes BRO, abgerufen am 28.08.2026
+\newcommand{\KurstagTiefZFIII}{15.3.2023}   % Nasdaq, Historical Quotes BRO, abgerufen am 28.08.2026
+\newcommand{\KurstagHochZFIV}{27.11.2024}   % Nasdaq, Historical Quotes BRO, abgerufen am 28.08.2026
+\newcommand{\KurstagTiefZFIV}{5.1.2024}   % Nasdaq, Historical Quotes BRO, abgerufen am 28.08.2026
+\newcommand{\KurstagHochZFV}{1.4.2025}   % Nasdaq, Historical Quotes BRO, abgerufen am 28.08.2026
+\newcommand{\KurstagTiefZFV}{6.11.2025}   % Nasdaq, Historical Quotes BRO, abgerufen am 28.08.2026
+\newcommand{\KurstagHochZFVI}{8.1.2026}   % Nasdaq, Historical Quotes BRO, abgerufen am 28.08.2026
+\newcommand{\KurstagTiefZFVI}{13.5.2026}   % Nasdaq, Historical Quotes BRO, abgerufen am 28.08.2026
+
+% --- Abgeleitete Groessen: gerechnet, nicht getippt ---------------
+\newcommand{\UmsatzDelta}{22.8304}   % = (UmsatzGesamt/UmsatzGesamtVJ-1)*100; Umsatzwachstum 2025 gegenueber 2024 in Prozent
+\newcommand{\ProvisionsDelta}{22.4867}   % = (ProvisionsErtraege/ProvisionsErtraegeVJ-1)*100; Wachstum der Provisionsertraege in Prozent
+\newcommand{\KernprovisionenDelta}{21.3483}   % = (Kernprovisionen/KernprovisionenVJ-1)*100; Wachstum der Kernprovisionen in Prozent
+\newcommand{\EBITDACMarge}{34.9034}   % = EBITDAC/UmsatzGesamt*100; berichtete EBITDAC-Marge 2025 in Prozent
+\newcommand{\EBITDACMargeVJ}{35.796}   % = EBITDACVJ/UmsatzGesamtVJ*100; berichtete EBITDAC-Marge 2024 in Prozent
+\newcommand{\EBITDACberMarge}{35.937}   % = EBITDACber/UmsatzGesamt*100; bereinigte EBITDAC-Marge 2025 in Prozent
+\newcommand{\EBITDACberMargeVJ}{35.1509}   % = EBITDACberVJ/UmsatzGesamtVJ*100; bereinigte EBITDAC-Marge 2024 in Prozent
+\newcommand{\EBITDACDelta}{19.7674}   % = (EBITDAC/EBITDACVJ-1)*100; Veraenderung des berichteten EBITDAC in Prozent
+\newcommand{\EBITDACberDelta}{25.5773}   % = (EBITDACber/EBITDACberVJ-1)*100; Veraenderung des bereinigten EBITDAC in Prozent
+\newcommand{\BereinigungsSpanne}{61}   % = EBITDACber-EBITDAC; Abstand bereinigtes zu berichtetem EBITDAC 2025
+\newcommand{\BereinigungsSpanneVJ}{-31}   % = EBITDACberVJ-EBITDACVJ; Abstand bereinigtes zu berichtetem EBITDAC 2024
+\newcommand{\ErgebnisDelta}{6.143}   % = (Konzernergebnis/KonzernergebnisVJ-1)*100; Veraenderung des Konzernergebnisses in Prozent
+\newcommand{\EPSdilDelta}{-8.6705}   % = (EPSdil/EPSdilVJ-1)*100; Veraenderung des verwaesserten Ergebnisses je Aktie in Prozent
+\newcommand{\Steuerquote}{22.1736}   % = Ertragsteuern/ErgebnisVorSteuern*100; Konzernsteuerquote 2025 in Prozent
+\newcommand{\Nettoverschuldung}{6534}   % = Gesamtverschuldung-Zahlungsmittel; Nettoverschuldung 31.12.2025; Treuhandmittel bleiben ausser Ansatz
+\newcommand{\NettoverschuldungVJ}{3149}   % = GesamtverschuldungVJ-ZahlungsmittelVJ; Nettoverschuldung 31.12.2024
+\newcommand{\Verschuldungsgrad}{3.0806}   % = (Gesamtverschuldung-Zahlungsmittel)/EBITDACber; Nettoverschuldung je Einheit bereinigtes EBITDAC 2025
+\newcommand{\VerschuldungsgradVJ}{1.8644}   % = (GesamtverschuldungVJ-ZahlungsmittelVJ)/EBITDACberVJ; derselbe Quotient fuer 2024
+\newcommand{\VerschuldungsgradProForma}{2.6172}   % = (Gesamtverschuldung-Zahlungsmittel)/(ProFormaUmsatz*EBITDACberMarge/100); Verschuldungsgrad, gerechnet auf das bereinigte EBITDAC der Pro-forma-Erloese
+\newcommand{\EBITDACProForma}{2496.5413}   % = ProFormaUmsatz*EBITDACberMarge/100; bereinigtes EBITDAC auf Pro-forma-Erloesbasis, Marge 2025 fortgeschrieben
+\newcommand{\HJNettoverschuldung}{6841}   % = HJFKkurz+HJFKlang-HJZahlungsmittel; Nettoverschuldung 30.06.2026
+\newcommand{\FreierCF}{1382}   % = OperativerCF-Sachinvestitionen; freier Cash-Flow 2025 vor Akquisitionen
+\newcommand{\FreierCFVJ}{1092}   % = OperativerCFVJ-SachinvestitionenVJ; freier Cash-Flow 2024
+\newcommand{\FreierCFnachDividende}{1189}   % = OperativerCF-Sachinvestitionen-Dividendenzahlung; freier Cash-Flow 2025 nach Dividende
+\newcommand{\EKRendite}{8.383}   % = Konzernergebnis/Eigenkapital*100; Eigenkapitalrendite auf den Bestand zum 31.12.2025
+\newcommand{\EKRenditeDurchschnitt}{11.0889}   % = Konzernergebnis/((Eigenkapital+EigenkapitalVJ)/2)*100; Eigenkapitalrendite auf das durchschnittliche Eigenkapital 2025
+\newcommand{\EKRenditeVJ}{15.4264}   % = KonzernergebnisVJ/EigenkapitalVJ*100; Eigenkapitalrendite auf den Bestand zum 31.12.2024
+\newcommand{\GoodwillQuote}{50.3051}   % = Goodwill/Bilanzsumme*100; Anteil des Geschaefts- oder Firmenwerts an der Bilanzsumme in Prozent
+\newcommand{\ImmaterielleQuote}{66.6633}   % = (Goodwill+ImmatVermoegen)/Bilanzsumme*100; Anteil Goodwill plus erworbener immaterieller Vermoegenswerte
+\newcommand{\GoodwillEKDeckung}{1.2}   % = Goodwill/Eigenkapital; Goodwill je Einheit Eigenkapital
+\newcommand{\EKQuote}{41.9226}   % = Eigenkapital/Bilanzsumme*100; Eigenkapitalquote 31.12.2025 in Prozent
+\newcommand{\Zinsdeckung}{7.1414}   % = EBITDACber/Zinsaufwand; bereinigtes EBITDAC je Einheit Zinsaufwand 2025
+\newcommand{\ZinsdeckungVJ}{8.7513}   % = EBITDACberVJ/ZinsaufwandVJ; dasselbe fuer 2024
+\newcommand{\HJUmsatzDelta}{33.0234}   % = (HJUmsatz/HJUmsatzVJ-1)*100; Umsatzwachstum erstes Halbjahr 2026 in Prozent
+\newcommand{\AktienZuwachs}{17.4825}   % = (AktienUmlauf/AktienUmlaufVJ-1)*100; Zuwachs der umlaufenden Aktien 2025 in Prozent
+\newcommand{\VerwaesserungStueck}{50}   % = AktienUmlauf-AktienUmlaufVJ; Zuwachs der umlaufenden Aktien in Mio. Stueck
+\newcommand{\KursDeltaZweiZwei}{-18.9385}   % = (KursSchlussZFII/KursSchlussZFI-1)*100; Kursveraenderung 2022 in Prozent
+\newcommand{\KursDeltaZweiDrei}{24.8201}   % = (KursSchlussZFIII/KursSchlussZFII-1)*100; Kursveraenderung 2023 in Prozent
+\newcommand{\KursDeltaZweiVier}{43.4679}   % = (KursSchlussZFIV/KursSchlussZFIII-1)*100; Kursveraenderung 2024 in Prozent
+\newcommand{\KursDeltaZweiFuenf}{-21.8781}   % = (KursSchlussZFV/KursSchlussZFIV-1)*100; Kursveraenderung 2025 in Prozent
+\newcommand{\KursDeltaLaufend}{-10.4266}   % = (KursSchlussZFVI/KursSchlussZFV-1)*100; Kursveraenderung 2026 bis zum Abrufdatum in Prozent
+\newcommand{\KursAbstandHoch}{-43.1925}   % = (KursSchlussZFVI/KursHochZFV-1)*100; Abstand des aktuellen Kurses zum Hoechstkurs 2025 in Prozent
+\newcommand{\KursAbstandTief}{32.6705}   % = (KursSchlussZFVI/KursTiefZFVI-1)*100; Abstand des aktuellen Kurses zum Jahrestief 2026 in Prozent
+\newcommand{\Marktkapitalisierung}{26779.2}   % = KursSchlussZFV*AktienUmlauf; Marktkapitalisierung 31.12.2025; beide Groessen tragen dasselbe Datum
+\newcommand{\MarktkapitalisierungVJ}{29177.72}   % = KursSchlussZFIV*AktienUmlaufVJ; Marktkapitalisierung 31.12.2024
+\newcommand{\KGV}{25.2215}   % = KursSchlussZFV/EPSdil; Kurs-Gewinn-Verhaeltnis 31.12.2025 auf verwaessertem Ergebnis je Aktie
+\newcommand{\KGVVJ}{29.4855}   % = KursSchlussZFIV/EPSdilVJ; dasselbe zum 31.12.2024
+\newcommand{\KursBuchwert}{2.1299}   % = (KursSchlussZFV*AktienUmlauf)/Eigenkapital; Verhaeltnis Marktkapitalisierung zu bilanziellem Eigenkapital 31.12.2025
+\newcommand{\Dividendenrendite}{0.7779}   % = DividendeJeAktie/KursSchlussZFV*100; Dividendenrendite auf den Schlusskurs 31.12.2025 in Prozent
+\newcommand{\DividendenrenditeVJ}{0.5293}   % = DividendeJeAktieVJ/KursSchlussZFIV*100; Dividendenrendite auf den Schlusskurs 31.12.2024 in Prozent
+\newcommand{\DividendeDelta}{14.8148}   % = (DividendeJeAktie/DividendeJeAktieVJ-1)*100; Erhoehung der Dividende je Aktie 2025 in Prozent
+\newcommand{\Ausschuettungsquote}{19.6203}   % = DividendeJeAktie/EPSdil*100; Ausschuettungsquote auf das verwaesserte Ergebnis je Aktie in Prozent
+\newcommand{\ZukaeufeUmsatzJahr}{1792}   % = ProFormaUmsatz-UmsatzGesamt+UmsatzAusKaeufen; rechnerischer Jahresumsatz der 2025 erworbenen Gesellschaften
+\newcommand{\ProFormaMehrumsatz}{1045}   % = ProFormaUmsatz-UmsatzGesamt; Mehrumsatz der Pro-forma-Rechnung gegenueber dem berichteten Umsatz
+\newcommand{\KaufpreisJeUmsatz}{5.6429}   % = KaeufeKaufpreis/(ProFormaUmsatz-UmsatzGesamt+UmsatzAusKaeufen); Kaufpreis aller Zukaeufe 2025 je Einheit ihres Jahresumsatzes
+\newcommand{\EigenkapitalZuwachs}{95.3239}   % = (Eigenkapital/EigenkapitalVJ-1)*100; Zuwachs des bilanziellen Eigenkapitals 2025 in Prozent
+\newcommand{\GoodwillZuwachs}{7117}   % = Goodwill-GoodwillVJ; Zuwachs des Geschaefts- oder Firmenwerts 2025
+\newcommand{\HJEigeneAktienZuwachs}{500}   % = HJEigeneAktien-HJEigeneAktienVJ; Aktienrueckkauf im ersten Halbjahr 2026 zu Anschaffungskosten
+\newcommand{\RetailMarge}{30.0059}   % = RetailEBITDACber/RetailUmsatz*100; bereinigte EBITDAC-Marge des Retail-Segments 2025 in Prozent
+\newcommand{\RetailMargeVJ}{29.9743}   % = RetailEBITDACberVJ/RetailUmsatzVJ*100; dieselbe Marge 2024
+\newcommand{\SpezMarge}{43.0884}   % = SpezEBITDACber/SpezUmsatz*100; bereinigte EBITDAC-Marge der Specialty Distribution 2025 in Prozent
+\newcommand{\SpezMargeVJ}{42.7579}   % = SpezEBITDACberVJ/SpezUmsatzVJ*100; dieselbe Marge 2024
+\newcommand{\OperativerCFDelta}{23.5094}   % = (OperativerCF/OperativerCFVJ-1)*100; Veraenderung des operativen Cash-Flows 2025 in Prozent
+\newcommand{\MargeDeltaBer}{0.7861}   % = EBITDACberMarge-EBITDACberMargeVJ; Veraenderung der bereinigten EBITDAC-Marge in Prozentpunkten
+\newcommand{\MargeDeltaBerichtet}{0.8926}   % = EBITDACMargeVJ-EBITDACMarge; Rueckgang der berichteten EBITDAC-Marge in Prozentpunkten
+
+% --- Selbstauskunft des Dokuments ---------------------------------
+\newcommand{\PruefungAngaben}{176}   % gezaehlt: Rohwerte mit Seitenangabe

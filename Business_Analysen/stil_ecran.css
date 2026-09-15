@@ -1,0 +1,99 @@
+
+:root{--ground:#F4F6F8;--surface:#FFFFFF;--surface-2:#EDF1F5;--ink:#12171E;--muted:#5B6675;
+--rule:#D5DCE4;--blau:#1C4E80;--rot:#A8201A;--rot-flaeche:#FAEFEE;--rot-rand:#D9A9A5;
+--serif:"IBM Plex Serif",Georgia,serif;--sans:"IBM Plex Sans","Segoe UI",system-ui,sans-serif;
+--mono:"IBM Plex Mono",ui-monospace,Consolas,monospace}
+@media (prefers-color-scheme:dark){:root:not([data-theme="light"]){
+--ground:#0F131A;--surface:#161C24;--surface-2:#1D242E;--ink:#E7ECF2;--muted:#98A3B2;
+--rule:#2B333E;--blau:#84B4EA;--rot:#FF8175;--rot-flaeche:#251515;--rot-rand:#5E2B27}}
+:root[data-theme="dark"]{--ground:#0F131A;--surface:#161C24;--surface-2:#1D242E;--ink:#E7ECF2;
+--muted:#98A3B2;--rule:#2B333E;--blau:#84B4EA;--rot:#FF8175;--rot-flaeche:#251515;--rot-rand:#5E2B27}
+*{box-sizing:border-box}
+body{background:var(--ground);color:var(--ink);font-family:var(--sans);font-size:16px;line-height:1.62}
+.wrap{max-width:1000px;margin:0 auto;padding:0 24px 96px}
+header{padding:56px 0 26px;border-bottom:2px solid var(--ink)}
+.eyebrow{font-family:var(--mono);font-size:11px;letter-spacing:.14em;text-transform:uppercase;color:var(--muted);margin:0 0 14px}
+h1{font-family:var(--serif);font-weight:700;font-size:clamp(34px,5.2vw,50px);line-height:1.08;
+letter-spacing:-.02em;margin:0 0 14px;text-wrap:balance}
+.frage{font-family:var(--serif);font-size:19px;line-height:1.5;margin:0 0 22px;max-width:62ch}
+.meta{display:flex;flex-wrap:wrap;gap:8px 28px;font-family:var(--mono);font-size:12px;color:var(--muted)}
+.meta b{color:var(--ink);font-weight:500}
+section{padding-top:52px}
+h2{font-family:var(--serif);font-size:27px;font-weight:600;margin:0 0 6px;text-wrap:balance}
+h3{font-size:15px;font-weight:600;margin:30px 0 8px}
+.strich{height:1px;background:var(--rule);margin:14px 0 22px}
+p{margin:0 0 16px;max-width:70ch}
+.bewertung{color:var(--blau)}
+.bewertung::before{content:"";display:inline-block;width:3px;height:1.05em;background:var(--blau);vertical-align:-.17em;margin-right:9px}
+.tabelle{overflow-x:auto;margin:0 0 20px;border:1px solid var(--rule);background:var(--surface)}
+table{width:100%;border-collapse:collapse;font-size:14px}
+caption{text-align:left;font-family:var(--mono);font-size:11px;letter-spacing:.1em;text-transform:uppercase;color:var(--muted);padding:13px 16px 0}
+th,td{padding:9px 16px;text-align:right;border-bottom:1px solid var(--rule);font-variant-numeric:tabular-nums;font-family:var(--mono)}
+th:first-child,td:first-child{text-align:left;font-family:var(--sans)}
+thead th{font-size:11px;font-weight:500;letter-spacing:.06em;text-transform:uppercase;color:var(--muted);border-bottom:1px solid var(--ink)}
+tbody tr:last-child td{border-bottom:none}
+tr.summe td{font-weight:600;border-top:1px solid var(--ink)}
+.quelle{font-family:var(--mono);font-size:11.5px;color:var(--muted);margin:-10px 0 24px}
+.karten{display:grid;grid-template-columns:repeat(auto-fit,minmax(280px,1fr));gap:1px;background:var(--rule);border:1px solid var(--rule);margin:0 0 24px}
+.karte{background:var(--surface);padding:20px}
+.karte h4{font-family:var(--serif);font-size:20px;margin:0 0 2px}
+.karte .tick{font-family:var(--mono);font-size:11px;color:var(--muted);margin:0 0 14px}
+.karte dl{margin:0;display:grid;grid-template-columns:auto 1fr;gap:5px 12px;font-size:13.5px}
+.karte dt{color:var(--muted)}
+.karte dd{margin:0;text-align:right;font-family:var(--mono);font-variant-numeric:tabular-nums}
+.urteil{margin-top:16px;padding-top:13px;border-top:2px solid var(--rot);color:var(--rot);font-size:14px}
+.urteil b{font-family:var(--mono);font-size:11px;letter-spacing:.1em;text-transform:uppercase;display:block;margin-bottom:5px}
+.abstand{background:var(--surface);border:1px solid var(--rule);padding:22px 24px;margin:0 0 10px}
+.abstand h4{font-size:14px;margin:0 0 4px}
+.abstand .sub{font-family:var(--mono);font-size:11.5px;color:var(--muted);margin:0 0 18px}
+.balken{display:grid;grid-template-columns:110px 1fr;gap:10px 14px;align-items:center;font-size:13.5px}
+.balken .n{font-family:var(--mono);font-size:12.5px}
+.bar{position:relative;height:26px;background:var(--surface-2)}
+.bar span{position:absolute;left:0;top:0;bottom:0;background:var(--blau)}
+.bar em{position:absolute;top:50%;transform:translateY(-50%);font-style:normal;font-family:var(--mono);font-size:12px;font-weight:600}
+#verdikt{background:var(--rot-flaeche);border:1px solid var(--rot-rand);border-left:5px solid var(--rot);padding:32px 30px 36px;margin-top:52px}
+#verdikt h2,#verdikt h3,#verdikt p,#verdikt li,#verdikt td,#verdikt th,#verdikt caption{color:var(--rot)}
+#verdikt .tabelle{border-color:var(--rot-rand);background:transparent}
+#verdikt th,#verdikt td{border-bottom-color:var(--rot-rand)}
+#verdikt thead th{border-bottom-color:var(--rot);opacity:.78}
+#verdikt .strich{background:var(--rot-rand)}
+.spruch{font-family:var(--serif);font-size:clamp(19px,2.6vw,24px);line-height:1.35;font-weight:600;margin:0 0 20px;text-wrap:balance}
+ol.lst{padding-left:22px;font-size:14.5px}ol.lst li{margin-bottom:8px}
+.luecken{background:var(--surface);border:1px solid var(--rule);padding:22px 24px}
+.luecken ul{margin:0;padding-left:20px;font-size:14.5px}.luecken li{margin-bottom:6px}
+footer{margin-top:52px;padding-top:24px;border-top:1px solid var(--rule);font-size:13.5px;color:var(--muted)}
+footer code{font-family:var(--mono);font-size:12.5px;color:var(--ink)}
+a{color:var(--blau)}:focus-visible{outline:2px solid var(--blau);outline-offset:2px}
+@media (prefers-reduced-motion:reduce){*{animation:none!important;transition:none!important}}
+
+h2 .nr{font-family:var(--mono);font-size:14px;font-weight:500;color:var(--muted);margin-right:12px;vertical-align:2px}
+h3{font-family:var(--sans);font-size:15px;font-weight:600;margin:34px 0 8px}
+h3 .nr{font-family:var(--mono);color:var(--muted);font-weight:400;margin-right:8px}
+.annahme{border-left:3px solid var(--rule);padding:2px 0 2px 18px;margin:0 0 20px}
+.annahme b{font-family:var(--mono);font-size:11.5px;letter-spacing:.07em;text-transform:uppercase;display:block;color:var(--muted);margin-bottom:4px}
+.annahme p{margin:0;font-size:14.5px}
+.entfaellt{background:var(--surface-2);border:1px dashed var(--rule);padding:20px 22px}
+.entfaellt p{margin:0;font-size:14.5px;color:var(--muted)}
+.legende{display:grid;grid-template-columns:repeat(auto-fit,minmax(210px,1fr));gap:1px;background:var(--rule);border:1px solid var(--rule);margin:28px 0 0}
+.legende div{background:var(--surface);padding:13px 16px}
+.legende dt{font-family:var(--mono);font-size:11px;letter-spacing:.1em;text-transform:uppercase;margin:0 0 5px}
+.legende dd{margin:0;font-size:13px;color:var(--muted);line-height:1.45}
+.sw{display:inline-block;width:26px;height:3px;vertical-align:middle;margin-right:9px}
+.bewertung{color:var(--blau)}
+.bewertung::before{content:"";display:inline-block;width:3px;height:1.05em;background:var(--blau);vertical-align:-.17em;margin-right:9px}
+.strich{height:1px;background:var(--rule);margin:14px 0 22px}
+.zweiseiten{display:grid;grid-template-columns:repeat(auto-fit,minmax(250px,1fr));gap:18px;margin:0 0 6px}
+.zweiseiten div{border-top:2px solid var(--rot);padding-top:12px}
+.zweiseiten b{font-family:var(--mono);font-size:11px;letter-spacing:.1em;text-transform:uppercase;display:block;margin-bottom:6px}
+.zweiseiten p{font-size:14.5px;margin:0}
+.richtung{margin:0 0 18px}
+.richtung b{font-family:var(--mono);font-size:11.5px;letter-spacing:.08em;text-transform:uppercase;display:block;margin-bottom:5px;opacity:.85}
+#verdikt{background:var(--rot-flaeche);border:1px solid var(--rot-rand);border-left:5px solid var(--rot);margin-top:56px;padding:34px 30px 38px}
+#verdikt h2,#verdikt h3,#verdikt p,#verdikt li,#verdikt td,#verdikt th,#verdikt caption{color:var(--rot)}
+#verdikt h2 .nr,#verdikt h3 .nr{color:var(--rot);opacity:.62}
+#verdikt .tabelle{border-color:var(--rot-rand);background:transparent}
+#verdikt th,#verdikt td{border-bottom-color:var(--rot-rand)}
+#verdikt thead th{border-bottom-color:var(--rot);color:var(--rot);opacity:.78}
+#verdikt .strich{background:var(--rot-rand)}
+.spruch{font-family:var(--serif);font-size:clamp(20px,2.7vw,25px);line-height:1.34;font-weight:600;margin:0 0 20px;text-wrap:balance}
+ol.lst{padding-left:22px;font-size:14.5px}ol.lst li{margin-bottom:8px}

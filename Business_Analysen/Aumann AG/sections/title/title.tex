@@ -1,0 +1,57 @@
+\pagestyle{empty}
+
+%===========Logos============================================
+% HSKL Logo
+\begin{tikzpicture}[remember picture,overlay]
+ \node[anchor=north east,inner xsep=50pt, inner ysep=25pt] at (current page.north east)
+ {\includegraphics[scale=0.2]{hskl_logo}};
+\end{tikzpicture}
+
+% Kurs Logo oder Firmenlogo
+ \begin{tikzpicture}[remember picture,overlay]
+\node[anchor=north west,inner xsep=50pt, inner ysep=25pt] at (current page.north west)
+  {\includegraphics[scale=0.5]{resources/images/Harrandt_logo5.png}};
+ \end{tikzpicture}
+
+%===========Inhalt===========================================
+\vspace{0.5cm}
+
+\begin{center}
+ \large{\Titel}
+\end{center}
+
+\vspace{0.5cm}
+
+\begin{center}
+ \textbf{\Art}
+\end{center}
+
+\vspace{2.5cm}
+
+\begin{center}
+ Hochschule Kaiserslautern
+\end{center}
+
+\vspace{2cm}
+
+\begin{center}
+ von\\
+ \Vorname{} \Nachname
+\end{center}
+
+\vspace{1cm}
+
+\begin{center}
+ \Abgabedatum
+\end{center}
+
+\vspace{2cm}
+
+\begin{tabular}{l@{\hspace{3cm}}l}
+ Bearbeitungszeitraum:            & \Bearbeitungszeitraum        \\
+ Matrikelnummer:		          & \Matrikelnummer\\
+ Firma :				              & \Ausbildungsfirma\\
+ Betreuer bei der Firma:           & \BetreuerFirma                \\
+ Betreuender Professor:           & \BetreuerHSKL                \\
+
+\end{tabular}

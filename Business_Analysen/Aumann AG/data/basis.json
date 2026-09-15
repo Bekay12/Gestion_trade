@@ -1,0 +1,11 @@
+{
+  "umsatz_2024": 312.346,
+  "umsatz_2025": 203.985,
+  "ebitda_op_2025": 27.278,
+  "nettoliquiditaet_2024": 138.2,
+  "nettoliquiditaet_2025": 148.1,
+  "_einheit": "Mio. EUR",
+  "_quelle": "Aumann AG, Geschaeftsbericht 2025, S. 2 (Umsatz, Adj. EBITDA) und S. 4 (Nettoliquiditaet). Umsatz 2024 laut Geschaeftsbericht 2024, S. 2. Nettoliquiditaet 2024 laut Aufgabenstellung, bestaetigt in GB 2024, S. 5.",
+  "_hinweis": "ebitda_op_2025 ist das bereinigte (adjusted) EBITDA; es wird im Dokument durchgaengig als operatives EBITDA gefuehrt.",
+  "_hinweis_marge": "umsatz_2024 dient allein als Vergleichsnenner der Margen-Sensitivitaet; der Umsatz 2025 lag um 34,7 % darunter."
+}

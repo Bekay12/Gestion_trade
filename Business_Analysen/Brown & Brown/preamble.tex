@@ -1,0 +1,307 @@
+% ===================================================================
+% preamble.tex — Praeambel der finanzwirtschaftlichen Analyse Brown & Brown
+% ===================================================================
+\usepackage[T1]{fontenc}
+\usepackage[utf8]{inputenc}
+\usepackage{lmodern}
+\usepackage[ngerman]{babel}
+\usepackage{csquotes}
+% patch ohne "footnote": microtype richtet das Fussnotenzeichen im Rand aus,
+% kann seinen Patch aber nicht anlegen, wenn footmisc (para) den
+% Fussnotenapparat ersetzt - ohne die Einschraenkung meldet jeder Lauf
+% "Unable to apply patch `footnote'". Die uebrigen Patches bleiben aktiv.
+\usepackage[patch={item,toc,eqnum}]{microtype}
+\usepackage{xcolor}
+\usepackage{amsmath}
+% amssymb liefert \blacktriangle und \blacktriangledown - die Symbole, mit
+% denen die Bildunterschrift von fig:kursverlauf die Markenformen benennt.
+% Damit braucht die Abbildung keine Legende, die sonst in die Kurve ragt.
+\usepackage{amssymb}
+\usepackage{booktabs}
+\usepackage{longtable}
+\usepackage{array}
+\usepackage{tabularx}
+\usepackage{siunitx}
+\usepackage{xfp}
+\usepackage{graphicx}
+% pgfplots bindet tikz zwar implizit ein, ein eigener Ladeaufruf macht die
+% Abhaengigkeit robust gegen eine spaetere Entfernung von pgfplots.
+\usepackage{tikz}
+% Haelt Gleitobjekte in ihrem Abschnitt: Ohne \FloatBarrier wandert eine
+% Tabelle, die den gesamten Rumpf einer Unterunterabschnitts bildet, auf die
+% naechste Seite - die Ueberschrift bleibt dann ohne Inhalt zurueck.
+\usepackage{placeins}
+% Haelt eine Ueberschrift mit dem, was ihr folgt, zusammen. LaTeX verhindert
+% von sich aus nur den Umbruch unmittelbar NACH einer Ueberschrift
+% (\@afterheading setzt clubpenalty hoch); eine Ueberschrift plus eine
+% einzelne Zeile am Seitenfuss bleibt erlaubt - und genau das ist zweimal
+% aufgetreten. \needspace{n\baselineskip} vor der Ueberschrift schiebt sie
+% auf die naechste Seite, wenn dort nicht mehr n Zeilen Platz haben.
+\usepackage{needspace}
+\usepackage{pgfplots}
+\usepackage{pgfplotstable}
+\usepackage[hidelinks]{hyperref}
+\usepackage{url}
+
+% --- Satzspiegel: Seitenraender schmaler --------------------------------
+% DIV=12 ergibt bei A4 links und rechts je 74.69pt (26.25mm) Rand. Beide
+% Raender werden um 10% verkuerzt (auf 67.22pt / 23.6mm); die Textbreite
+% waechst dadurch von 448.13pt auf 463.07pt. Die Texthoehe (636.6pt, ein
+% Vielfaches des Zeilenabstands) bleibt unveraendert, damit die
+% Grundlinien und der Fussnotenapparat unangetastet bleiben.
+% \areaset ist der KOMA-eigene Weg; das geometry-Paket wuerde die
+% typearea-Berechnung uebersteuern.
+\areaset[current]{463.07pt}{636.6pt}
+
+% --- Schusterjungen und Hurenkinder verbieten -----------------------
+% LaTeX-Vorgabe ist je 150 und damit so niedrig, dass eine einzelne Zeile
+% eines Absatzes allein am Seitenfuss (Schusterjunge) oder am Seitenkopf
+% (Hurenkind) stehen bleiben darf. Im deutschen Satz gelten beide als
+% Fehler. 10000 verbietet sie vollstaendig; die entstehende Differenz
+% faengt die Seitenhoehe auf, da KOMA hier nicht auf gleiche Satzhoehe
+% zwingt. \displaywidowpenalty deckt denselben Fall vor einer abgesetzten
+% Formel ab - davon gibt es in Teil 2 mehrere.
+\clubpenalty=10000
+\widowpenalty=10000
+\displaywidowpenalty=10000
+
+% --- Fussnotenapparat flach halten ----------------------------------
+% Die Zitierweise setzt jede Quelle in eine Fussnote; untereinander gesetzt
+% belegte der Apparat auf belegdichten Seiten bis zu einem Drittel des
+% Satzspiegels. footmisc mit "para" setzt alle Fussnoten einer Seite in einen
+% durchlaufenden Absatz ueber die volle Breite - dieselbe Ersparnis wie ein
+% zweispaltiger Apparat, ohne dessen Paketkonflikt: das zweispaltige
+% dblfnote (yafoot) laeuft mit pgfplots und hyperref zusammen in eine
+% Endlosschleife der Ausgaberoutine (Seiten werden ohne Ende ausgegeben,
+% "TeX capacity exceeded, input stack size"); reproduziert mit article und
+% scrartcl, unabhaengig von der Ladereihenfolge.
+\usepackage[para]{footmisc}
+
+% --- Kopfzeile: Abschnitt links, Dokumenttitel rechts -----------------
+% \sectionmark wird von jedem \section-Aufruf mit dem Titel als Argument
+% aufgerufen; die Umdefinition setzt Nummer und Titel zusammen, sodass die
+% Kopfzeile links "4 Beurteilung des Verlaufs des Aktienkurses" zeigt.
+% \section* (Quellenverzeichnis usw.) loest \sectionmark nicht aus - die
+% Kopfzeile behaelt dort den letzten nummerierten Abschnitt; deshalb wird
+% sie vor dem Anhang manuell geleert (siehe hausarbeit.tex). \titlepage
+% setzt bereits \thispagestyle{empty}, das Deckblatt bleibt also
+% kopfzeilenfrei. Der rechte Eintrag ist statisch und benennt das Dokument.
+\usepackage[automark]{scrlayer-scrpage}
+\pagestyle{scrheadings}
+\renewcommand{\sectionmark}[1]{\markright{\thesection\quad #1}}
+\clearpairofpagestyles
+% \small: Abschnittstitel plus Dokumenttitel muessen in eine Zeile passen.
+\setkomafont{pagehead}{\normalfont\small}
+\ihead{\rightmark}
+\ohead{Analyse Brown \& Brown, Inc.}
+\KOMAoptions{headsepline=true}
+\cfoot*{\pagemark}
+
+% --- Inhaltsverzeichnis: nur bis subsection (x.x) --------------------
+% scrartcl zaehlt section=1, subsection=2, subsubsection=3. tocdepth=2
+% laesst subsubsections (z. B. 5.1.2) aus dem Verzeichnis, ohne ihre
+% Numerierung im Fliesstext zu aendern - secnumdepth bleibt unangetastet,
+% da die Nummern der Aufgabenstellung (5.1.1-5.1.3 usw.) im Text stehen
+% bleiben muessen.
+\setcounter{tocdepth}{2}
+
+\pgfplotsset{compat=1.18}
+% dateplot stellt "date coordinates in=x" bereit. Ohne die Bibliothek
+% versucht pgfplots, "2020-12-31" als Gleitkommazahl zu lesen und bricht ab.
+\usepgfplotslibrary{dateplot}
+% pgfplots formatiert seine Achsen- und Datenbeschriftungen unabhaengig von
+% siunitx. Ohne diese Zeile stuenden im Diagramm Punkte, im Text Kommata.
+\pgfplotsset{/pgf/number format/use comma, /pgf/number format/1000 sep={}}
+
+% Nach unten weisendes Dreieck als eigene Markenform. Der naheliegende Weg,
+% "mark=triangle*" mit "mark options={rotate=180}" zu drehen, funktioniert
+% innerhalb von scatter/classes NICHT: pgfplots setzt mark options je Klasse
+% neu und verwirft die Drehung stillschweigend - die Tiefstkurse wurden
+% dadurch mit einem nach OBEN weisenden Dreieck gezeichnet. Eine eigene
+% Markenform kann nicht ueberschrieben werden.
+\pgfdeclareplotmark{dreieckab}{%
+  \pgfpathmoveto{\pgfqpoint{-0.6\pgfplotmarksize}{0.5\pgfplotmarksize}}%
+  \pgfpathlineto{\pgfqpoint{0.6\pgfplotmarksize}{0.5\pgfplotmarksize}}%
+  \pgfpathlineto{\pgfqpoint{0pt}{-0.55\pgfplotmarksize}}%
+  \pgfpathclose%
+  \pgfusepathqfillstroke%
+}
+
+% Farben der drei Punktarten in fig:kursverlauf. Gruen fuer das Jahreshoch,
+% Rot fuer das Jahrestief, Blau fuer den Schlusskurs. Die Farbe kommt zur
+% Form hinzu und ersetzt sie nicht: Im Schwarzweissdruck bleiben die drei
+% Arten ueber Kreis, Dreieck-auf und Dreieck-ab unterscheidbar.
+\definecolor{kurshoch}{RGB}{0,120,60}
+\definecolor{kurstief}{RGB}{175,30,35}
+\definecolor{kursschluss}{RGB}{25,55,120}
+
+% Achsenvorlage der Kursabbildung. Sie steht hier und nicht in der
+% Abbildung selbst, weil scripts/check_literals.py in sections/*.tex jede
+% Zahl anschlaegt und die Tickweite von 365 Tagen ein Satzparameter ist,
+% keine Finanzkennzahl. Die Regel bleibt damit unangetastet.
+\pgfplotsset{
+  kursachse/.style={
+    width=0.95\linewidth, height=6.2cm,
+    date coordinates in=x,
+    xticklabel style={rotate=45, anchor=north east, font=\footnotesize},
+    xticklabel=\year, xtick={2021-01-01,2022-01-01,2023-01-01,2024-01-01,2025-01-01,2026-01-01},
+    ylabel={Kurs in USD}, ylabel style={font=\footnotesize},
+    yticklabel style={font=\footnotesize},
+    ymin=40, ymax=135,
+    grid=both, grid style={gray!22, very thin},
+    axis lines=left, enlarge x limits=0.03},
+}
+
+% Zuordnung ueber die Spalte "art" der Datendatei (S/H/T), nicht ueber
+% getrennte Datensaetze - so bleibt die Reihe eine einzige, nach Datum
+% geordnete Linie.
+\pgfplotsset{
+  kurspunkte/.style={
+    scatter, only marks, scatter src=explicit symbolic,
+    scatter/classes={
+      S={mark=*,         mark size=1.9pt, kursschluss},
+      H={mark=triangle*, mark size=2.6pt, kurshoch},
+      T={mark=dreieckab, mark size=2.6pt, kurstief}}},
+}
+
+% --- Zahlenformat: deutsches Dezimalkomma ---------------------------
+\sisetup{
+  output-decimal-marker = {,},
+  group-separator       = {.},
+  group-minimum-digits  = 4,
+  % Ohne diese Zeile gruppiert siunitx auch die NACHKOMMASTELLEN: aus dem
+  % Rohwert 43.4679 wurde im Satz "43,467.9" statt "43,5". Die Rohwerte in
+  % data/kennzahlen.tex tragen volle Genauigkeit, deshalb trat der Fehler
+  % bei jeder ungerundeten Prozentangabe auf.
+  group-digits          = integer,
+  detect-weight         = true,
+  detect-family         = true
+}
+
+% --- Betragsmakros --------------------------------------------------
+% Die Rohwerte stehen in data/kennzahlen.tex im englischen Format und in
+% voller Genauigkeit. Die Formatierung erfolgt ausschliesslich hier.
+%   \MioUSD       - Fliesstext, auf eine Nachkommastelle gerundet
+%   \MioUSDexakt  - Rechenwege und Tabellen, volle veroeffentlichte Genauigkeit
+% Der Konzernabschluss weist in Mio. USD ohne Nachkommastelle aus; die
+% Rundung liegt trotzdem in der Ausgabe und nicht im gespeicherten Wert,
+% damit abgeleitete Groessen (Margen, Veraenderungsraten) aus den exakten
+% Werten hervorgehen und nicht aus vorgerundeten.
+\newcommand{\MioUSD}[1]{\num[round-mode=places,round-precision=0]{#1}\,Mio.\,USD}
+\newcommand{\MioUSDexakt}[1]{\num{#1}\,Mio.\,USD}
+\newcommand{\MrdUSD}[1]{\num[round-mode=places,round-precision=2]{#1}\,Mrd.\,USD}
+% Prozentangaben werden bei der AUSGABE auf eine Nachkommastelle
+% gerundet; die Rohwerte bleiben exakt, damit abgeleitete Groessen
+% nicht aus vorgerundeten Werten hervorgehen.
+\newcommand{\Pct}[1]{\num[round-mode=places,round-precision=1]{#1}\,\%}
+% Betrag einer Veraenderungsrate. Die Rohwerte in data/kennzahlen.tex tragen
+% ihr Vorzeichen. In Wendungen wie "ging um ... zurueck" oder "lag um ...
+% unter" traegt bereits das Verb die Richtung; das Minuszeichen waere dort
+% eine doppelte Verneinung. \PctBetrag gibt denselben Wert ohne Vorzeichen aus.
+\newcommand{\PctBetrag}[1]{\num[round-mode=places,round-precision=1]{\fpeval{abs(#1)}}\,\%}
+\newcommand{\USDje}[1]{\num[round-mode=places,round-precision=2]{#1}\,USD}
+% Faktor mit Malzeichen, z. B. "3,08x" fuer Net Debt/EBITDAC.
+\newcommand{\Faktor}[1]{\num[round-mode=places,round-precision=2]{#1}\,x}
+% TeX ueberliest jedes Leerzeichen NACH einem Kontrollwort. "\KurstagHochZFV
+% und" wurde deshalb als "1.4.2025und" gesetzt. \Datum{} klammert das
+% Datumsmakro ein und macht das Leerzeichen wieder sichtbar.
+\newcommand{\Datum}[1]{#1}
+% Kursangabe ohne Einheit fuer Tabellenspalten, die die Einheit im Kopf
+% tragen. Zwei feste Nachkommastellen, damit 74,00 und 76,25 in derselben
+% Spalte buendig stehen; ohne die feste Stellenzahl druckte siunitx "74,0".
+\newcommand{\Kurswert}[1]{\num[round-mode=places,round-precision=2]{#1}}
+
+% --- Zitierweise: deutsche Fussnotenzitation ------------------------
+% Jeder Beleg ist ein Sprung ins Quellenverzeichnis: Der Kurztitel in der
+% Fussnote ist mit \hyperref auf den zugehoerigen Eintrag verknuepft, ein
+% Klick fuehrt dorthin. Der Verweis steht damit IN der Angabe und nicht als
+% ausgeschriebene Nummer daneben.
+%
+% Die Farbe macht die Verknuepfung sichtbar - ohne sie waere sie zwar
+% anklickbar, aber nicht erkennbar (hyperref laeuft mit "hidelinks", damit
+% ringsum keine farbigen Rahmen entstehen). Fuer einen streng einfarbigen
+% Ausdruck genuegt es, hier "black" einzusetzen; die Verknuepfung bleibt.
+\definecolor{quellenlink}{RGB}{20,60,120}
+\newcommand{\quellensprung}[2]{\hyperref[#1]{\textcolor{quellenlink}{#2}}}
+
+% \quelleGB und \quelleQM leiten den Schluessel aus ihrem ersten Argument ab
+% (quelle:gb2024 bzw. quelle:<Bezeichnung des Zwischenberichts>). Deshalb
+% mussten die Aufrufe im Fliesstext nicht angefasst werden - die Labels im
+% Quellenverzeichnis sind passend dazu gesetzt.
+% \quelleGB{2025}{49} belegt den Jahresbericht (Form 10-K) des
+% Geschaeftsjahres 2025 auf gedruckter Seite 49. Die Seitenzahl ist die des
+% gedruckten Dokuments, nicht die des HTML-Blocks: scripts/edgar_pages.py
+% liest sie aus dem Seitenfuss vor jedem Umbruch der EDGAR-Einreichung.
+\newcommand{\quelleGB}[2]{\footnote{\quellensprung{quelle:gb#1}{Brown \& Brown,
+  Inc., Form 10-K #1}, S.~#2.}}
+% \quelleQM traegt den vollen Titel der Einreichung im ersten Argument und
+% dient zugleich fuer Proxy Statements (Form DEF 14A).
+\newcommand{\quelleQM}[2]{\footnote{\quellensprung{quelle:#1}{Brown \& Brown,
+  Inc., #1}, S.~#2.}}
+% Kurzbeleg wie bei \quelleGB und \quelleQM: Die Fussnote nennt Urheber, Titel
+% und Abrufdatum und verweist mit der Nummer auf das Quellenverzeichnis, wo
+% die vollstaendige Adresse steht. Zuvor druckte jede Fussnote die volle URL -
+% auf belegdichten Seiten fuellte allein der Fussnotenapparat mehrere Zeilen
+% mit Adressen, und der Kurzbeleg der Berichte stand unvermittelt neben einem
+% Volltextlink.
+%
+% Das zweite Argument ist der \label-Schluessel des Eintrags im
+% Quellenverzeichnis (Konvention "quelle:<kurzname>"), NICHT die Adresse: So
+% steht jede URL genau einmal im Dokument - dieselbe Regel, die fuer
+% Zahlenwerte gilt. Der Schluessel dient zugleich
+% scripts/check_footnote_pages.py dazu, zwei verschiedene Webquellen auf
+% derselben Seite auseinanderzuhalten.
+\newcommand{\quelleWeb}[3]{\footnote{\quellensprung{#2}{#1}
+  (abgerufen am #3).}}
+
+% --- Fussnotennummer wiederverwenden (manuell kuratiert) -------------
+% Zitiert ein Absatz dieselbe Quelle+Seite mehrfach auf derselben
+% gedruckten Seite, druckt \quelleGB/\quelleQM/\quelleWeb jedes Mal eine
+% neue Fussnote mit identischem Text - auf einer Seite standen zuvor bis
+% zu sieben gleichlautende Fussnoten "Aumann AG, Geschaeftsbericht 2024,
+% S. 10." untereinander. \quelleMerken speichert die Nummer der gerade
+% gesetzten Fussnote unter einem Schluessel; \quelleErneut verweist mit
+% \footnotemark auf dieselbe Nummer, ohne den Text erneut zu drucken.
+% Die betroffenen Stellen sind mit scripts/check_footnote_pages.py gegen
+% die tatsaechlich gerenderte PDF-Seite verifiziert. Nach jeder Aenderung
+% an Fliesstext erneut pruefen: eine verschobene Seitenumbruchgrenze kann
+% eine Gruppe ungueltig machen oder eine neue entstehen lassen.
+\newcommand{\quelleMerken}[1]{\expandafter\xdef\csname fn@#1\endcsname{\thefootnote}}
+\newcommand{\quelleErneut}[1]{\footnotemark[\csname fn@#1\endcsname]}
+
+% --- Drei Farben, drei Verantwortlichkeiten -------------------------
+% Schwarz  Fakten, Zahlen, Tabellen, Quellen. Belegt.
+% Blau     Einschaetzungen im laufenden Text, die der Verfasser prueft.
+% Rot      das Votum im Verdikt-Teil: eine Empfehlung, keine Feststellung.
+%
+% Die Trennung ist der Kern des Dokuments. Rot ist ausdruecklich KEIN
+% Beleg und keine Zusage: Es ist eine aus den vorstehenden Befunden
+% abgeleitete Empfehlung unter den in Teil 5 erklaerten Annahmen. Die
+% Entscheidung trifft der Verfasser, nicht das Dokument.
+\definecolor{vdrot}{RGB}{155,25,30}
+% \color statt \textcolor, damit mehrere Absaetze im Argument stehen
+% duerfen - dieselbe Falle wie bei \bk.
+\newcommand{\vd}[1]{{\color{vdrot}#1}}
+
+% --- Blaue Zonen: vom Verfasser zu pruefende Wertungsprosa ----------
+% Vor der Abgabe \newcommand{\bk}[1]{#1} setzen, um die Blaufaerbung zu entfernen.
+\definecolor{bkblau}{RGB}{20,60,150}
+% \textcolor ist nicht "long": ein Absatzumbruch im Argument bricht den Lauf
+% mit "Paragraph ended before \@textcolor was complete" ab. Mehrere der
+% blauen Zonen umfassen zwei oder drei Absaetze, deshalb \color in einer
+% Gruppe statt \textcolor.
+\newcommand{\bk}[1]{{\color{bkblau}#1}}
+
+% --- Einlesen generierter Tabellenkoerper ---------------------------
+% \input haengt hinter den Dateiinhalt ein \relax. Innerhalb einer
+% Tabelle beginnt dieses \relax bereits die naechste Zelle, sodass das
+% folgende \bottomrule mit "Misplaced \noalign" scheitert. Deshalb wird
+% hier die TeX-Primitive (\@@input) verwendet, die nichts anhaengt.
+% Argument ohne Endung, z. B. \tabellenkoerper{data/cf_a}.
+\makeatletter
+\newcommand{\tabellenkoerper}[1]{\@@input #1.tex }
+\makeatother
+
+% --- Annahmenkasten -------------------------------------------------
+\newcommand{\annahme}[1]{%
+  \par\medskip\noindent\fbox{\parbox{0.97\linewidth}{\small\textbf{Annahme:} #1}}\par\medskip}

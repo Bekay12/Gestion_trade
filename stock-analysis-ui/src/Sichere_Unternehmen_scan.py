@@ -49,7 +49,76 @@ THROTTLE_DELAY = 0.25
 _skip_lock = threading.Lock()
 _skip_reasons: dict[str, int] = {}
 USE_MARKET_DB = True
-EUR_USD_RATE = 1.08
+EUR_USD_RATE = 1.08   # conserve pour l'option --eur-usd ; voir charger_taux_eur()
+
+# ── Devises ──────────────────────────────────────────────────
+# DEFAUT CORRIGE : seule l'USD etait convertie, toute autre devise etait
+# traitee comme si elle etait deja en euros. Mesure du 14.09.2026 sur 43
+# valeurs europeennes : 13 capitalisations fausses d'un facteur 7 a 11 (SEK,
+# DKK, NOK, CHF) et une d'un facteur 85 (GBp, cotation en pence). Le critere
+# « capitalisation > 10 Mrd € » en dependait directement.
+EUR_RATES: dict[str, float] = {"EUR": 1.0}
+
+# Paires Yahoo : unites de devise par euro.
+_PAIRES_EUR = {"USD": "EURUSD=X", "SEK": "EURSEK=X", "DKK": "EURDKK=X",
+               "NOK": "EURNOK=X", "CHF": "EURCHF=X", "GBP": "EURGBP=X",
+               "PLN": "EURPLN=X", "CZK": "EURCZK=X", "HUF": "EURHUF=X",
+               "JPY": "EURJPY=X", "CAD": "EURCAD=X", "AUD": "EURAUD=X"}
+
+
+def charger_taux_eur(verbose: bool = True) -> dict:
+    """Charge les taux de change en UN seul appel groupe.
+
+    Un appel groupe et non un par devise : la contrainte de budget yfinance du
+    projet vaut aussi ici. Les taux manquants restent absents du dictionnaire,
+    ce qui rend la capitalisation non evaluable plutot que fausse.
+    """
+    global EUR_RATES
+    taux = {"EUR": 1.0}
+    try:
+        data = yf.download(list(_PAIRES_EUR.values()), period="5d",
+                           progress=False, auto_adjust=False, group_by="ticker")
+        for devise, paire in _PAIRES_EUR.items():
+            try:
+                serie = data[paire]["Close"].dropna()
+                if len(serie):
+                    taux[devise] = float(serie.iloc[-1])
+            except Exception:
+                continue
+    except Exception as exc:
+        if verbose:
+            print(f"   ⚠️ Taux de change indisponibles ({exc}) : "
+                  f"les capitalisations hors zone euro ne seront pas evaluees")
+    if "USD" not in taux:
+        # Repli explicite sur la valeur passee en ligne de commande : c'est le
+        # seul role restant de --eur-usd, et il est annonce dans la banniere.
+        taux["USD"] = EUR_USD_RATE
+    if "GBP" in taux:
+        taux["GBP_PENCE"] = taux["GBP"] * 100.0   # GBp est un centieme de livre
+    EUR_RATES = taux
+    if verbose:
+        print(f"   💱 {len(taux)-1} taux de change charges "
+              f"({', '.join(sorted(k for k in taux if k != 'EUR'))})")
+    return taux
+
+
+def _mcap_en_mrd_eur(mc, devise):
+    """Capitalisation en milliards d'euros, ou None si le taux manque.
+
+    None, jamais un repli sur 1.0 : une devise non convertie qui passe pour de
+    l'euro est precisement le defaut corrige ici.
+    """
+    if mc is None:
+        return None
+    cle = (devise or "USD").strip()
+    # GBp / GBX : cotation en pence, cas particulier a traiter avant le .upper()
+    if cle in ("GBp", "GBX", "GBPp"):
+        taux = EUR_RATES.get("GBP_PENCE")
+    else:
+        taux = EUR_RATES.get(cle.upper())
+    if not taux:
+        return None
+    return (float(mc) / taux) / 1e9
 
 # ── Utilitaires ──────────────────────────────────────────────
 def _safe_float(value):
@@ -137,11 +206,9 @@ def _is_rate_limit_error(exc):
 
 # ── 7 CRITÈRES ───────────────────────────────────────────────
 def c1_market_cap(info):
-    mc = _safe_float(info.get("marketCap"))
-    if mc is None: return False, None, "N/A"
-    currency = (info.get("currency") or "USD").upper()
-    mc_eur = mc / EUR_USD_RATE if currency == "USD" else mc
-    mc_b = mc_eur / 1e9
+    mc_b = _mcap_en_mrd_eur(_safe_float(info.get("marketCap")), info.get("currency"))
+    if mc_b is None:
+        return False, None, "N/A"
     return mc_b > 10.0, round(mc_b, 1), f"MCap={round(mc_b,1)}Mrd€"
 
 def c2_debt_to_equity(info):
@@ -372,6 +439,7 @@ if __name__ == "__main__":
     args = parser.parse_args()
 
     EUR_USD_RATE = args.eur_usd
+    charger_taux_eur(verbose=not args.quiet)
     THROTTLE_DELAY = max(0.05, args.throttle)
     USE_MARKET_DB = (not args.no_db) and MARKET_DB_AVAILABLE
 
@@ -386,7 +454,7 @@ if __name__ == "__main__":
         symbols = rng.sample(symbols, min(max(1,args.random), len(symbols)))
         print(f"🎲 Sélection aléatoire: {len(symbols)} symboles")
 
-    print(f"📋 {len(symbols)} symboles | ⏱️ Throttle={THROTTLE_DELAY}s | 💱 EUR/USD={EUR_USD_RATE}")
+    print(f"📋 {len(symbols)} symboles | ⏱️ Throttle={THROTTLE_DELAY}s | 💱 EUR/USD={EUR_RATES.get('USD', float('nan')):.4f} ({len(EUR_RATES)-1} devises)")
 
     df = run_scan(symbols, max_workers=args.workers, min_score=args.min_score,
                   top_n=args.top, verbose=not args.quiet)

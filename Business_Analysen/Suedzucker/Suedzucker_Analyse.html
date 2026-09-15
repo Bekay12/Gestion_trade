@@ -1,0 +1,192 @@
+<title>Südzucker au creux du sucre</title>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=IBM+Plex+Mono:wght@400;500;600&family=IBM+Plex+Sans:wght@400;500;600&family=IBM+Plex+Serif:wght@400;600;700&display=swap">
+<style>
+:root{--ground:#F4F6F8;--surface:#FFFFFF;--surface-2:#EDF1F5;--ink:#12171E;--muted:#5B6675;
+--rule:#D5DCE4;--blau:#1C4E80;--rot:#A8201A;--rot-flaeche:#FAEFEE;--rot-rand:#D9A9A5;
+--serif:"IBM Plex Serif",Georgia,serif;--sans:"IBM Plex Sans","Segoe UI",system-ui,sans-serif;
+--mono:"IBM Plex Mono",ui-monospace,Consolas,monospace}
+@media (prefers-color-scheme:dark){:root:not([data-theme="light"]){
+--ground:#0F131A;--surface:#161C24;--surface-2:#1D242E;--ink:#E7ECF2;--muted:#98A3B2;
+--rule:#2B333E;--blau:#84B4EA;--rot:#FF8175;--rot-flaeche:#251515;--rot-rand:#5E2B27}}
+:root[data-theme="dark"]{--ground:#0F131A;--surface:#161C24;--surface-2:#1D242E;--ink:#E7ECF2;
+--muted:#98A3B2;--rule:#2B333E;--blau:#84B4EA;--rot:#FF8175;--rot-flaeche:#251515;--rot-rand:#5E2B27}
+*{box-sizing:border-box}
+body{background:var(--ground);color:var(--ink);font-family:var(--sans);font-size:16px;line-height:1.62}
+.wrap{max-width:1000px;margin:0 auto;padding:0 24px 96px}
+header{padding:56px 0 26px;border-bottom:2px solid var(--ink)}
+.eyebrow{font-family:var(--mono);font-size:11px;letter-spacing:.14em;text-transform:uppercase;color:var(--muted);margin:0 0 14px}
+h1{font-family:var(--serif);font-weight:700;font-size:clamp(34px,5.2vw,50px);line-height:1.08;
+letter-spacing:-.02em;margin:0 0 14px;text-wrap:balance}
+.frage{font-family:var(--serif);font-size:19px;line-height:1.5;margin:0 0 22px;max-width:62ch}
+.meta{display:flex;flex-wrap:wrap;gap:8px 28px;font-family:var(--mono);font-size:12px;color:var(--muted)}
+.meta b{color:var(--ink);font-weight:500}
+section{padding-top:52px}
+h2{font-family:var(--serif);font-size:27px;font-weight:600;margin:0 0 6px;text-wrap:balance}
+h3{font-size:15px;font-weight:600;margin:30px 0 8px}
+.strich{height:1px;background:var(--rule);margin:14px 0 22px}
+p{margin:0 0 16px;max-width:70ch}
+.bewertung{color:var(--blau)}
+.bewertung::before{content:"";display:inline-block;width:3px;height:1.05em;background:var(--blau);vertical-align:-.17em;margin-right:9px}
+.tabelle{overflow-x:auto;margin:0 0 20px;border:1px solid var(--rule);background:var(--surface)}
+table{width:100%;border-collapse:collapse;font-size:14px}
+caption{text-align:left;font-family:var(--mono);font-size:11px;letter-spacing:.1em;text-transform:uppercase;color:var(--muted);padding:13px 16px 0}
+th,td{padding:9px 16px;text-align:right;border-bottom:1px solid var(--rule);font-variant-numeric:tabular-nums;font-family:var(--mono)}
+th:first-child,td:first-child{text-align:left;font-family:var(--sans)}
+thead th{font-size:11px;font-weight:500;letter-spacing:.06em;text-transform:uppercase;color:var(--muted);border-bottom:1px solid var(--ink)}
+tbody tr:last-child td{border-bottom:none}
+tr.summe td{font-weight:600;border-top:1px solid var(--ink)}
+.quelle{font-family:var(--mono);font-size:11.5px;color:var(--muted);margin:-10px 0 24px}
+.karten{display:grid;grid-template-columns:repeat(auto-fit,minmax(280px,1fr));gap:1px;background:var(--rule);border:1px solid var(--rule);margin:0 0 24px}
+.karte{background:var(--surface);padding:20px}
+.karte h4{font-family:var(--serif);font-size:20px;margin:0 0 2px}
+.karte .tick{font-family:var(--mono);font-size:11px;color:var(--muted);margin:0 0 14px}
+.karte dl{margin:0;display:grid;grid-template-columns:auto 1fr;gap:5px 12px;font-size:13.5px}
+.karte dt{color:var(--muted)}
+.karte dd{margin:0;text-align:right;font-family:var(--mono);font-variant-numeric:tabular-nums}
+.urteil{margin-top:16px;padding-top:13px;border-top:2px solid var(--rot);color:var(--rot);font-size:14px}
+.urteil b{font-family:var(--mono);font-size:11px;letter-spacing:.1em;text-transform:uppercase;display:block;margin-bottom:5px}
+.abstand{background:var(--surface);border:1px solid var(--rule);padding:22px 24px;margin:0 0 10px}
+.abstand h4{font-size:14px;margin:0 0 4px}
+.abstand .sub{font-family:var(--mono);font-size:11.5px;color:var(--muted);margin:0 0 18px}
+.balken{display:grid;grid-template-columns:110px 1fr;gap:10px 14px;align-items:center;font-size:13.5px}
+.balken .n{font-family:var(--mono);font-size:12.5px}
+.bar{position:relative;height:26px;background:var(--surface-2)}
+.bar span{position:absolute;left:0;top:0;bottom:0;background:var(--blau)}
+.bar em{position:absolute;top:50%;transform:translateY(-50%);font-style:normal;font-family:var(--mono);font-size:12px;font-weight:600}
+#verdikt{background:var(--rot-flaeche);border:1px solid var(--rot-rand);border-left:5px solid var(--rot);padding:32px 30px 36px;margin-top:52px}
+#verdikt h2,#verdikt h3,#verdikt p,#verdikt li,#verdikt td,#verdikt th,#verdikt caption{color:var(--rot)}
+#verdikt .tabelle{border-color:var(--rot-rand);background:transparent}
+#verdikt th,#verdikt td{border-bottom-color:var(--rot-rand)}
+#verdikt thead th{border-bottom-color:var(--rot);opacity:.78}
+#verdikt .strich{background:var(--rot-rand)}
+.spruch{font-family:var(--serif);font-size:clamp(19px,2.6vw,24px);line-height:1.35;font-weight:600;margin:0 0 20px;text-wrap:balance}
+ol.lst{padding-left:22px;font-size:14.5px}ol.lst li{margin-bottom:8px}
+.luecken{background:var(--surface);border:1px solid var(--rule);padding:22px 24px}
+.luecken ul{margin:0;padding-left:20px;font-size:14.5px}.luecken li{margin-bottom:6px}
+footer{margin-top:52px;padding-top:24px;border-top:1px solid var(--rule);font-size:13.5px;color:var(--muted)}
+footer code{font-family:var(--mono);font-size:12.5px;color:var(--ink)}
+a{color:var(--blau)}:focus-visible{outline:2px solid var(--blau);outline-offset:2px}
+@media (prefers-reduced-motion:reduce){*{animation:none!important;transition:none!important}}
+
+h2 .nr{font-family:var(--mono);font-size:14px;font-weight:500;color:var(--muted);margin-right:12px;vertical-align:2px}
+h3{font-family:var(--sans);font-size:15px;font-weight:600;margin:34px 0 8px}
+h3 .nr{font-family:var(--mono);color:var(--muted);font-weight:400;margin-right:8px}
+.annahme{border-left:3px solid var(--rule);padding:2px 0 2px 18px;margin:0 0 20px}
+.annahme b{font-family:var(--mono);font-size:11.5px;letter-spacing:.07em;text-transform:uppercase;display:block;color:var(--muted);margin-bottom:4px}
+.annahme p{margin:0;font-size:14.5px}
+.entfaellt{background:var(--surface-2);border:1px dashed var(--rule);padding:20px 22px}
+.entfaellt p{margin:0;font-size:14.5px;color:var(--muted)}
+.legende{display:grid;grid-template-columns:repeat(auto-fit,minmax(210px,1fr));gap:1px;background:var(--rule);border:1px solid var(--rule);margin:28px 0 0}
+.legende div{background:var(--surface);padding:13px 16px}
+.legende dt{font-family:var(--mono);font-size:11px;letter-spacing:.1em;text-transform:uppercase;margin:0 0 5px}
+.legende dd{margin:0;font-size:13px;color:var(--muted);line-height:1.45}
+.sw{display:inline-block;width:26px;height:3px;vertical-align:middle;margin-right:9px}
+.bewertung{color:var(--blau)}
+.bewertung::before{content:"";display:inline-block;width:3px;height:1.05em;background:var(--blau);vertical-align:-.17em;margin-right:9px}
+.strich{height:1px;background:var(--rule);margin:14px 0 22px}
+.zweiseiten{display:grid;grid-template-columns:repeat(auto-fit,minmax(250px,1fr));gap:18px;margin:0 0 6px}
+.zweiseiten div{border-top:2px solid var(--rot);padding-top:12px}
+.zweiseiten b{font-family:var(--mono);font-size:11px;letter-spacing:.1em;text-transform:uppercase;display:block;margin-bottom:6px}
+.zweiseiten p{font-size:14.5px;margin:0}
+.richtung{margin:0 0 18px}
+.richtung b{font-family:var(--mono);font-size:11.5px;letter-spacing:.08em;text-transform:uppercase;display:block;margin-bottom:5px;opacity:.85}
+#verdikt{background:var(--rot-flaeche);border:1px solid var(--rot-rand);border-left:5px solid var(--rot);margin-top:56px;padding:34px 30px 38px}
+#verdikt h2,#verdikt h3,#verdikt p,#verdikt li,#verdikt td,#verdikt th,#verdikt caption{color:var(--rot)}
+#verdikt h2 .nr,#verdikt h3 .nr{color:var(--rot);opacity:.62}
+#verdikt .tabelle{border-color:var(--rot-rand);background:transparent}
+#verdikt th,#verdikt td{border-bottom-color:var(--rot-rand)}
+#verdikt thead th{border-bottom-color:var(--rot);color:var(--rot);opacity:.78}
+#verdikt .strich{background:var(--rot-rand)}
+.spruch{font-family:var(--serif);font-size:clamp(20px,2.7vw,25px);line-height:1.34;font-weight:600;margin:0 0 20px;text-wrap:balance}
+ol.lst{padding-left:22px;font-size:14.5px}ol.lst li{margin-bottom:8px}
+</style><div class="wrap">
+<header><p class="eyebrow">Analyse d'entreprise · sucre, amidon, bioéthanol, fruits · exercice clos fin février</p>
+<h1>Südzucker au creux du sucre</h1>
+<p class="frage">La perte de 378&nbsp;millions d'euros est-elle cyclique ou structurelle&nbsp;? De la réponse dépend tout&nbsp;: au niveau de trésorerie de l'exercice écoulé, le titre vaut 5&nbsp;€&nbsp;; à celui de l'exercice précédent, il en vaut 15.</p>
+<div class="meta"><span>Date d'arrêté <b>15.09.2026</b></span><span>Bourse <b>XETRA · SZU.DE</b></span>
+<span>Valeurs vérifiées <b>65 sur 65</b></span><span>Pagination <b>imprimée = PDF − 2</b></span></div>
+<dl class="legende">
+<div><dt><span class="sw" style="background:var(--ink)"></span>Noir</dt><dd>Chiffres, tableaux, sources.</dd></div>
+<div><dt style="color:var(--blau)"><span class="sw" style="background:var(--blau)"></span>Bleu</dt><dd>Appréciation de l'auteur, après vérification.</dd></div>
+<div><dt style="color:var(--rot)"><span class="sw" style="background:var(--rot)"></span>Rouge</dt><dd>Le verdict, section 7.</dd></div>
+</dl></header>
+
+<section><h2><span class="nr">1</span>Description de l'entreprise</h2><div class="strich"></div>
+<p>Südzucker est le premier sucrier européen, avec quatre autres métiers : produits spéciaux, amidon, bioéthanol et fruits. L'exercice se clôt fin février. 18 188 salariés en équivalent temps plein au 28 février 2026.</p>
+<div class="tabelle"><table><caption>Structure du capital au 28 février 2026</caption><thead><tr><th>Grandeur</th><th>Valeur</th><th>Source</th></tr></thead><tbody><tr><td>Cours au 15.09.2026</td><td>12,58&nbsp;€</td><td>Yahoo Finance</td></tr><tr><td>Actions</td><td>204,2&nbsp;millions</td><td>Marktkapitalisierung 2.068 / Kurs 10,13 zum 28.02.2026, GB S. 4</td></tr><tr><td>Capitalisation</td><td>2 569&nbsp;M€</td><td>produit des deux</td></tr><tr class="summe"><td>Capitaux propres part du groupe</td><td>2 147&nbsp;M€</td><td>Rapport annuel 2025/26, p.&nbsp;35</td></tr><tr><td>Capital hybride</td><td>715&nbsp;M€</td><td>Rapport annuel 2025/26, p.&nbsp;35</td></tr><tr><td>Intérêts minoritaires</td><td>643&nbsp;M€</td><td>Rapport annuel 2025/26, p.&nbsp;35</td></tr><tr><td>Capitaux propres totaux</td><td>3 505&nbsp;M€</td><td>Rapport annuel 2025/26, p.&nbsp;35</td></tr><tr class="summe"><td>Cours / valeur comptable part du groupe</td><td>1,20×</td><td></td></tr></tbody></table></div>
+<p class="bewertung"><b>Un piège à signaler d'emblée.</b> Le tableau de bord du rapport annuel intitule « Shareholders' equity » la somme de 3 505&nbsp;M€. Le bilan montre que cette somme comprend 715&nbsp;M€ de capital hybride et 643&nbsp;M€ de minoritaires. La part réellement attribuable aux actionnaires de Südzucker AG est de 2 147&nbsp;M€. Calculé sur le total, le rapport cours/valeur comptable ressort à 0,73× et le titre paraît décoté ; calculé correctement, il vaut <b>1,20×</b> et la décote disparaît.</p>
+<h3><span class="nr">1.5</span>Lacunes</h3>
+<div class="luecken"><ul>
+<li><b>Fenêtre de quatre exercices seulement.</b> Le tableau de bord du rapport annuel n'en couvre pas davantage, alors que la méthode en demande sept à dix. Pour un cycle sucrier, c'est court.</li>
+<li><b>Aucun consensus d'analystes recherché</b> pour ce dossier.</li>
+<li><b>Le prix du sucre lui-même n'est pas dans ce rapport.</b> C'est pourtant la variable qui décide de tout, et elle est exogène.</li>
+</ul></div></section>
+
+<section><h2><span class="nr">2</span>Analyse des comptes</h2><div class="strich"></div>
+<div class="tabelle"><table><caption>Quatre exercices · rapport annuel 2025/26, page 4</caption><thead><tr><th>Millions d’euros</th><th>2022/23</th><th>2023/24</th><th>2024/25</th><th>2025/26</th></tr></thead><tbody><tr><td>Chiffre d’affaires</td><td>9 498</td><td>10 289</td><td>9 694</td><td>8 352</td></tr><tr class="summe"><td>EBITDA opérationnel</td><td>1 070</td><td>1 318</td><td>723</td><td>535</td></tr><tr><td>Marge d’EBITDA opérationnel</td><td>11,3&nbsp;%</td><td>12,8&nbsp;%</td><td>7,5&nbsp;%</td><td>6,4&nbsp;%</td></tr><tr><td>Résultat opérationnel</td><td>704</td><td>947</td><td>350</td><td>163</td></tr><tr class="summe"><td>Résultat net</td><td>529</td><td>648</td><td>-86</td><td>-378</td></tr><tr><td>Résultat par action, €</td><td>1,93</td><td>2,72</td><td>-0,54</td><td>-1,92</td></tr><tr><td>Flux de trésorerie opérationnel</td><td>244</td><td>1 073</td><td>906</td><td>462</td></tr><tr><td>Investissements corporels</td><td>400</td><td>546</td><td>574</td><td>450</td></tr><tr class="summe"><td>Flux de trésorerie libre</td><td>-156</td><td>527</td><td>332</td><td>12</td></tr><tr><td>Dette financière nette</td><td>1 864</td><td>1 795</td><td>1 654</td><td>1 750</td></tr><tr class="summe"><td>Dette nette / EBITDA opérationnel</td><td>1,7×</td><td>1,4×</td><td>2,3×</td><td>3,3×</td></tr><tr><td>Rendement des capitaux employés</td><td>9,9&nbsp;%</td><td>13,2&nbsp;%</td><td>5,2&nbsp;%</td><td>2,7&nbsp;%</td></tr><tr class="summe"><td>Dividende par action, €</td><td>0,70</td><td>0,90</td><td>0,20</td><td>0,00</td></tr></tbody></table></div>
+<p class="quelle">Rapport annuel 2025/26, p.&nbsp;4</p>
+<p><b>L'effondrement est réel et il porte sur tout.</b> L'EBITDA opérationnel passe de 1 318 à 535&nbsp;M€, soit une division par 2,5 en deux exercices. La marge tombe de 12,8&nbsp;% à 6,4&nbsp;%. Le résultat net enchaîne deux pertes, -86 puis -378&nbsp;M€. Le rendement des capitaux employés descend de 13,2&nbsp;% à 2,7&nbsp;%.</p>
+<p><b>Et le dividende a été supprimé</b>, de 0,90&nbsp;€ à 0,20 puis à zéro. C'est le signal le plus lourd du dossier : un conseil qui coupe entièrement le dividende d'un groupe coopératif ne le fait pas par prudence rhétorique.</p>
+<p class="bewertung">Deux choses résistent pourtant. Le flux de trésorerie opérationnel reste positif à 462&nbsp;M€, ce qui n'est pas le cas des sociétés réellement en perdition — Baidu, à titre de comparaison, est passé en flux opérationnel négatif. Et le ratio de fonds propres tient à 41,7&nbsp;%. Südzucker perd de l'argent, mais elle ne brûle pas de trésorerie d'exploitation.</p>
+<h3>Premier trimestre 2026/27, clos le 31 mai 2026</h3>
+<div class="tabelle"><table><caption>Premier trimestre · rapport trimestriel, page 3</caption><thead><tr><th>Millions d’euros</th><th>T1 2025/26</th><th>T1 2026/27</th><th>Δ</th></tr></thead><tbody><tr><td>Chiffre d’affaires</td><td>2 153</td><td>2 058</td><td>−4,4&nbsp;%</td></tr><tr class="summe"><td>EBITDA opérationnel</td><td>96</td><td>135</td><td>+40,6&nbsp;%</td></tr><tr><td>Marge d’EBITDA opérationnel</td><td>4,5&nbsp;%</td><td>6,6&nbsp;%</td><td>+2,1&nbsp;pt</td></tr><tr><td>Résultat opérationnel</td><td>22</td><td>62</td><td>+182&nbsp;%</td></tr><tr class="summe"><td>Résultat net</td><td>-35</td><td>20</td><td>retour au bénéfice</td></tr><tr><td>Dette financière nette</td><td>1 755</td><td>1 855</td><td>+5,7&nbsp;%</td></tr></tbody></table></div>
+<p class="quelle">Rapport du 1er trimestre 2026/27, p.&nbsp;3</p>
+<p class="bewertung">C'est le fait nouveau du dossier, et il va dans le bon sens : la marge remonte de 4,5&nbsp;% à 6,6&nbsp;%, le résultat opérationnel presque triple, et le résultat net repasse de -35 à <b>+20&nbsp;M€</b>. Le chiffre d'affaires continue de reculer, ce qui est cohérent avec des prix de vente encore bas : ce n'est pas le volume qui redresse la marge, c'est le coût.</p></section>
+
+<section><h2><span class="nr">3</span>Mesures stratégiques et prévision</h2><div class="strich"></div>
+<p><i>Cette section rapporte, elle ne juge pas.</i></p>
+<p>Pour l'exercice 2026/27, Südzucker prévoit un chiffre d'affaires compris entre 8,1 et 8,5&nbsp;milliards d'euros et un <b>EBITDA opérationnel entre 480 et 680&nbsp;M€</b>, contre 535&nbsp;M€ réalisés.</p>
+<p>La fourchette est large : le bas est inférieur de 10&nbsp;% à l'exercice écoulé, le haut supérieur de 27&nbsp;%. Le milieu, 580&nbsp;M€, représente une progression de 8&nbsp;%. Après un trimestre, l'EBITDA opérationnel s'établit à 135&nbsp;M€, soit 28&nbsp;% du bas de la fourchette et 20&nbsp;% du haut.</p>
+<p class="quelle">Rapport du 1er trimestre 2026/27, p.&nbsp;1</p></section>
+
+<section><h2><span class="nr">4</span>Lecture du cours</h2><div class="strich"></div>
+<p>L'action cotait 10,13&nbsp;€ au 28 février 2026, contre 16,06&nbsp;€ deux exercices plus tôt. Elle vaut aujourd'hui 12,58&nbsp;€, en hausse de 24,2&nbsp;% depuis la clôture, et se tient 40&nbsp;% au-dessus de son plus bas à trois ans. Le bêta ressort à 0,20, le plus faible de toutes les valeurs de cette série.</p>
+<p class="bewertung">Le cours ne suit ni le chiffre d'affaires, qui recule encore, ni le résultat net, qui est négatif. Il suit <b>la marge</b>. La remontée de 4,5 à 6,6&nbsp;% au premier trimestre est le seul chiffre publié qui explique un titre en hausse de 24&nbsp;% depuis la clôture d'un exercice en perte. Pour un transformateur de matière première, c'est la lecture attendue : le marché achète l'écart entre le prix de la betterave et celui du sucre, pas le volume.</p></section>
+
+<section><h2><span class="nr">5</span>Options d'action</h2><div class="strich"></div>
+<div class="entfaellt"><p><b>Sans objet (n&nbsp;=&nbsp;0).</b> La décision porte sur une entrée à un cours donné.</p></div></section>
+
+<section><h2><span class="nr">6</span>Analyse de flux</h2><div class="strich"></div>
+<h3><span class="nr">6.0</span>Hypothèses</h3>
+<div class="annahme"><b>Hypothèse 1 — trois niveaux réalisés, aucun niveau inventé</b><p>Les trois scénarios sont les flux de trésorerie libres des trois derniers exercices : 12, 332 et 527&nbsp;M€. Aucun n'est une prévision. L'exercice 2022/23, négatif à -156&nbsp;M€, est écarté parce qu'il précède le pic et gonflerait artificiellement l'amplitude ; ce retrait flatte la fourchette et doit être su.</p></div>
+<div class="annahme"><b>Hypothèse 2 — où se situe l'exercice retenu dans son propre cycle</b><p>C'est le contrôle décisif pour un cyclique, et il est sans appel : l'EBITDA opérationnel de 2025/26, 535&nbsp;M€, est le <b>minimum des quatre exercices connus</b>, soit 41&nbsp;% du sommet. Le scénario de base occupe donc le centile zéro de la fenêtre disponible. Un modèle de niveau qui prendrait cet exercice pour la normale conclurait à la faillite, et il aurait tort de la même façon qu'il aurait eu tort sur Neste en février 2025.</p></div>
+<div class="annahme"><b>Hypothèse 3 — sortie sans réévaluation</b><p>Valeur terminale égale au cours du jour, 12,58&nbsp;€, tenue constante. La valeur comptable part du groupe, 10,51&nbsp;€ par action, serait <i>moins</i> généreuse ici puisqu'elle est inférieure au cours.</p></div>
+<div class="annahme"><b>Hypothèse 4 — exigence à mi-cycle</b><p>Le rendement des capitaux employés de 2,7&nbsp;% de l'exercice écoulé est un chiffre de creux, inutilisable comme exigence. Celui de 2022/23, <b>9,9&nbsp;%</b>, est retenu : c'est un exercice ni au sommet ni au creux, et il est sourcé. Aucun coût moyen pondéré du capital n'est construit.</p></div>
+<div class="annahme"><b>Hypothèse 5 — dividende nul</b><p>Aucun dividende n'est versé au titre de 2025/26. La série porte donc le flux libre, pas une distribution.</p></div>
+<h3><span class="nr">6.3</span>Ce que rapporte une entrée au cours actuel</h3>
+<div class="tabelle"><table><caption>Taux de rendement interne à 12,58 € · exigence 9,9&nbsp;%</caption><thead><tr><th>Scénario · flux par action</th><th>5 ans</th><th>10 ans</th><th>15 ans</th></tr></thead><tbody><tr><td>Creux — exercice 2025/26 · 0,06 €/action</td><td>0,47&nbsp;%</td><td>0,47&nbsp;%</td><td>0,47&nbsp;%</td></tr><tr><td>Médian — exercice 2024/25 · 1,63 €/action</td><td>12,92&nbsp;%</td><td>12,92&nbsp;%</td><td>12,92&nbsp;%</td></tr><tr><td>Haut — exercice 2023/24 · 2,58 €/action</td><td>20,52&nbsp;%</td><td>20,52&nbsp;%</td><td>20,52&nbsp;%</td></tr></tbody></table></div>
+<div class="tabelle"><table><caption>Prix auquel l’exigence est exactement atteinte</caption><thead><tr><th>Scénario</th><th>5 ans</th><th>10 ans</th><th>15 ans</th></tr></thead><tbody><tr><td>Creux — exercice 2025/26</td><td>8,07&nbsp;€</td><td>5,26&nbsp;€</td><td>3,50&nbsp;€</td></tr><tr><td>Médian — exercice 2024/25</td><td>14,03&nbsp;€</td><td>14,93&nbsp;€</td><td>15,49&nbsp;€</td></tr><tr><td>Haut — exercice 2023/24</td><td>17,66&nbsp;€</td><td>20,82&nbsp;€</td><td>22,80&nbsp;€</td></tr></tbody></table></div>
+<div class="tabelle"><table><caption>Croissance annuelle que le cours actuel présuppose</caption><thead><tr><th>Scénario</th><th>5 ans</th><th>10 ans</th><th>15 ans</th></tr></thead><tbody><tr><td>Creux — exercice 2025/26</td><td>133,9&nbsp;%</td><td>59,6&nbsp;%</td><td>39,4&nbsp;%</td></tr><tr><td>Médian — exercice 2024/25</td><td>-9,3&nbsp;%</td><td>-5,7&nbsp;%</td><td>-4,4&nbsp;%</td></tr><tr><td>Haut — exercice 2023/24</td><td>-24,9&nbsp;%</td><td>-16,4&nbsp;%</td><td>-13,0&nbsp;%</td></tr></tbody></table></div>
+<p><b>Tout le dossier tient dans l'écart entre les deux premières lignes.</b> Si Südzucker reste au niveau de trésorerie de l'exercice écoulé, le titre vaut 5,26&nbsp;€ et le cours actuel en suppose 60&nbsp;% de croissance annuelle. S'il retrouve le niveau de l'exercice précédent — pas le sommet, l'exercice <i>précédent</i> — il vaut 14,93&nbsp;€, soit 19&nbsp;% au-dessus du cours, et peut même décliner de 5,7&nbsp;% par an en satisfaisant encore l'exigence.</p></section>
+
+<section id="verdikt"><h2><span class="nr">7</span>Verdict</h2><div class="strich"></div>
+<p style="font-size:14px"><b>Tout ce qui suit est en rouge :</b> recommandation sous les hypothèses de la section 6.0.</p>
+<h3><span class="nr">7.1</span>Verdict</h3>
+<p class="spruch">Achat spéculatif à 12,58&nbsp;€, pour qui accepte de parier sur le retour du cycle sucrier — pas un achat de qualité. Le seuil bascule entre 5 et 15&nbsp;€ selon le seul niveau de marge, et aucune analyse de bilan ne tranche cette question.</p>
+<div class="zweiseiten">
+<div><b>Pour le porteur</b><p>Conserver. Le premier trimestre montre une marge qui remonte et un retour au bénéfice ; vendre maintenant, c'est réaliser la perte au moment précis où l'indicateur se retourne.</p></div>
+<div><b>Pour le non-porteur</b><p>Entrée défendable en petite taille seulement. La thèse est binaire et le dividende est nul : vous ne serez pas payé pour attendre.</p></div></div>
+<h3><span class="nr">7.2</span>Ce qui fonde ce verdict</h3>
+<div class="richtung"><b>Pour</b><p>Le premier trimestre 2026/27 montre un EBITDA opérationnel en hausse de 40,6&nbsp;%, une marge de 4,5&nbsp;% à 6,6&nbsp;% et un retour au bénéfice à +20&nbsp;M€. La prévision de l'entreprise, 480 à 680&nbsp;M€, place son milieu 8&nbsp;% au-dessus de l'exercice écoulé. Le flux de trésorerie opérationnel n'a jamais cessé d'être positif, et le ratio de fonds propres tient à 41,7&nbsp;%. Au niveau de trésorerie de 2024/25, le titre vaut 14,93&nbsp;€.</p></div>
+<div class="richtung"><b>Contre</b><p>Deux exercices de pertes consécutives, -86 puis -378&nbsp;M€. <b>Dividende supprimé</b>, de 0,90 à zéro. Dette nette à 3,3 fois l'EBITDA opérationnel, contre 1,4 fois deux ans plus tôt. Et le titre ne cote pas sous sa valeur comptable : à 1,20× les capitaux propres part du groupe, il est au-dessus. Au niveau de trésorerie actuel, il vaut 5,26&nbsp;€.</p></div>
+<h3><span class="nr">7.3</span>Seuil d'entrée</h3>
+<div class="tabelle"><table><caption>Cours actuel : 12,58 €</caption><thead><tr><th>Scénario</th><th>5 ans</th><th>10 ans</th><th>15 ans</th></tr></thead><tbody><tr><td>Creux — exercice 2025/26</td><td>8,07&nbsp;€</td><td>5,26&nbsp;€</td><td>3,50&nbsp;€</td></tr><tr><td>Médian — exercice 2024/25</td><td>14,03&nbsp;€</td><td>14,93&nbsp;€</td><td>15,49&nbsp;€</td></tr><tr><td>Haut — exercice 2023/24</td><td>17,66&nbsp;€</td><td>20,82&nbsp;€</td><td>22,80&nbsp;€</td></tr></tbody></table></div>
+<p>La fourchette de 5,26 à 20,82&nbsp;€ n'est pas une imprécision : c'est la mesure de l'amplitude cyclique de cette entreprise. Le cours de 12,58&nbsp;€ se situe au premier tiers.</p>
+<h3><span class="nr">7.4</span>Ce qui ferait basculer le verdict</h3>
+<ol class="lst">
+<li><b>À l'achat renforcé :</b> EBITDA opérationnel semestriel supérieur à <b>300&nbsp;M€</b>, qui placerait l'exercice au-dessus du haut de la fourchette annoncée.</li>
+<li><b>À l'achat renforcé :</b> rétablissement d'un dividende, qui signalerait que le conseil tient la reprise pour acquise.</li>
+<li><b>À la vente :</b> marge d'EBITDA opérationnel de nouveau sous <b>5&nbsp;%</b> sur deux trimestres consécutifs.</li>
+<li><b>À la vente :</b> dette nette au-delà de <b>4 fois</b> l'EBITDA opérationnel.</li>
+<li><b>À la vente :</b> troisième exercice de perte, qui ferait passer le dossier du cyclique au structurel.</li></ol>
+<h3><span class="nr">7.5</span>Ce que ce verdict ne peut pas savoir</h3>
+<p>La variable qui décide de tout est <b>le prix européen du sucre</b>, et elle est exogène : elle dépend des récoltes, des importations ukrainiennes, de la politique commerciale et des surfaces plantées. Aucun document de Südzucker ne la prévoit, et je n'ai aucun moyen de le faire.</p>
+<ol class="lst">
+<li><b>La fenêtre ne couvre que quatre exercices.</b> Pour un cycle sucrier qui se compte en cinq à sept ans, c'est insuffisant pour affirmer que 2025/26 est un creux plutôt qu'un nouveau palier.</li>
+<li><b>J'ai écarté l'exercice 2022/23</b>, dont le flux libre était négatif à -156&nbsp;M€. L'inclure élargirait la fourchette vers le bas et rendrait le verdict plus prudent.</li>
+<li><b>Un trimestre ne fait pas un retournement.</b> Le premier trimestre 2026/27 est encourageant, mais il représente 28&nbsp;% du bas de la fourchette annuelle : rien n'est acquis.</li>
+<li><b>Le dividende nul supprime la rémunération de l'attente.</b> Si le cycle met trois ans à revenir, le porteur n'aura rien touché entre-temps, ce qu'aucun taux de rendement interne calculé ici ne reflète.</li>
+<li><b>Je n'ai pas cherché le consensus des analystes</b> sur ce dossier, contrairement aux précédents.</li></ol></section>
+
+<footer><p><b>Sources :</b> Südzucker AG, rapport annuel 2025/26 (278 pages, publié le 20 mai 2026) ; rapport du premier trimestre 2026/27 (20 pages, publié le 20 juillet 2026) ; Yahoo Finance pour le cours, consulté le 15.09.2026.</p>
+<p><b>Reproductibilité :</b> <code>daten_szu.py</code> contient les 65 valeurs avec leur page imprimée, <code>pruefe_szu.py</code> vérifie chacune contre le texte de sa page, <code>rapport.py</code> produit toutes les tables.</p></footer></div>

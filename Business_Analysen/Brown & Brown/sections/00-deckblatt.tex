@@ -1,0 +1,39 @@
+% Titelseite der eigenen Anlageanalyse. Bewusst ohne Hochschulwappen,
+% Matrikelnummer und Studiengangsangabe: Das Dokument ist keine Pruefungs-
+% leistung mehr, sondern eine Entscheidungsgrundlage fuer eigene Anlagen.
+% Der Bearbeitungsstand steht auf der Titelseite, weil eine Analyse mit
+% jedem neuen Quartalsbericht altert.
+\begin{titlepage}
+\centering
+\vspace*{\stretch{2}}
+{\large Anlageanalyse aus Prim\"arquellen\par}
+\vspace{1.2cm}
+{\Huge\bfseries Brown \& Brown, Inc.\par}
+\vspace{0.5cm}
+{\LARGE NYSE: BRO\par}
+\vspace{0.4cm}
+{\Large Gesch\"aftsjahr 2025\par}
+\vspace{\stretch{2}}
+{\large Unternehmen, Jahresabschluss, strategische Ma{\ss}nahmen,\\
+Kursverlauf, Flow-Analyse und Anlageurteil\par}
+\vspace{\stretch{3}}
+\begin{tabular}{ll}
+Verfasser: & Yann Bertin Kamdem Bobda\\
+Stand:     & 28.~August 2026\\
+Quellen:   & Form 10-K 2025, Form 10-Q Q2 2026, Proxy Statement 2026\\
+\end{tabular}
+% \par schliesst den Absatz der Tabelle ab. Ohne ihn setzt LaTeX den
+% folgenden Hinweis in dieselbe Zeile wie die letzte Tabellenzeile, und
+% \vspace wirkt dann als horizontaler statt vertikaler Abstand.
+\par
+\vspace{1.2cm}
+% Feste Breite, damit der Umbruch des Hinweises nicht von der Tabellenbreite
+% abhaengt.
+\begin{minipage}{0.8\linewidth}
+\centering\small
+Alle Zahlenangaben sind gegen die gedruckte Seite ihrer Prim\"arquelle
+gepr\"uft. Blau gesetzte Passagen sind Einsch\"atzungen, rot gesetzte sind
+das Votum in Teil~\ref{sec:verdikt}. Beide sind keine Belege.
+\end{minipage}
+\vspace*{\stretch{2}}
+\end{titlepage}

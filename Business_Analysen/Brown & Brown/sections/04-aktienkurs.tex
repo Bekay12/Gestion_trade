@@ -1,0 +1,105 @@
+\section{Beurteilung des Verlaufs des Aktienkurses}
+\label{sec:kurs}
+
+Grundlage sind die Nasdaq-Schlusskurse aus Abbildung~\ref{fig:kursverlauf}
+und Tabelle~\ref{tab:kursextrema} sowie die Ergebnisse der
+Teile~\ref{sec:organisch} und \ref{sec:accession}.
+
+\begin{figure}[htbp]
+\centering
+\begin{tikzpicture}
+\begin{axis}[kursachse]
+\addplot+[gray!55, thick, mark=none] table[col sep=comma, x=datum,
+  y=kurs] {data/kursverlauf.csv};
+\addplot+[kurspunkte] table[col sep=comma, x=datum,
+  y=kurs, meta=art] {data/kursverlauf.csv};
+\end{axis}
+\end{tikzpicture}
+\caption{Kursverlauf der Brown-\&-Brown-Aktie vom Jahresschluss 2020 bis zum
+27.~August 2026 \"uber achtzehn St\"utzpunkte. Jeder Punkt steht an seinem
+tats\"achlichen Handelstag: {\color{kurshoch}$\blacktriangle$} Jahreshoch,
+{\color{kurstief}$\blacktriangledown$} Jahrestief,
+{\color{kursschluss}$\bullet$} Jahresschluss.}
+\label{fig:kursverlauf}
+\end{figure}
+
+\begin{table}[htbp]
+\centering
+\caption{Jahresschluss-, H\"ochst- und Tiefstkurse in USD. Das Jahr 2026
+reicht bis zum 27.~August.}
+\label{tab:kursextrema}
+\begin{tabular}{lrrrl}
+\toprule
+Jahr & Schluss & H\"ochstkurs & Tiefstkurs & Ver\"anderung\\
+\midrule
+2021 & \Kurswert{\KursSchlussZFI} & \Kurswert{\KursHochZFI} & \Kurswert{\KursTiefZFI} & --\\
+2022 & \Kurswert{\KursSchlussZFII} & \Kurswert{\KursHochZFII} & \Kurswert{\KursTiefZFII} & \Pct{\fpeval{round(\KursDeltaZweiZwei,1)}}\\
+2023 & \Kurswert{\KursSchlussZFIII} & \Kurswert{\KursHochZFIII} & \Kurswert{\KursTiefZFIII} & \Pct{\fpeval{round(\KursDeltaZweiDrei,1)}}\\
+2024 & \Kurswert{\KursSchlussZFIV} & \Kurswert{\KursHochZFIV} & \Kurswert{\KursTiefZFIV} & \Pct{\fpeval{round(\KursDeltaZweiVier,1)}}\\
+2025 & \Kurswert{\KursSchlussZFV} & \Kurswert{\KursHochZFV} & \Kurswert{\KursTiefZFV} & \Pct{\fpeval{round(\KursDeltaZweiFuenf,1)}}\\
+2026 & \Kurswert{\KursSchlussZFVI} & \Kurswert{\KursHochZFVI} & \Kurswert{\KursTiefZFVI} & \Pct{\fpeval{round(\KursDeltaLaufend,1)}}\\
+\bottomrule
+\end{tabular}
+\end{table}
+
+\FloatBarrier
+
+% FAKTENBASIS 4
+%  - Jahresschlusskurse und Extrema: Tabelle \ref{tab:kursextrema}
+%  - Organisches Wachstum: 2024 \OrganischWachstumVJ %, 2025
+%    \OrganischWachstum %, H1 2026 \HJOrganisch % (Abschnitt \ref{sec:organisch})
+%  - Umsatz 2025 +\UmsatzDelta %, bereinigtes EBITDAC +\EBITDACberDelta %,
+%    beide Rekordwerte (Tabelle \ref{tab:kennzahlen})
+%  - Ergebnis je Aktie \EPSdilDelta % - faellt trotz Ergebniswachstum
+%  - Hoechstkurs 2025 \KursHochZFV USD am \Datum{\KurstagHochZFV}, also VOR der
+%    Ankuendigung der Finanzierung im Juni 2025
+%  - Tiefstkurs 2026 \KursTiefZFVI USD am \Datum{\KurstagTiefZFVI}
+%  - Nettoverschuldung \NettoverschuldungVJ -> \Nettoverschuldung Mio. USD,
+%    Verschuldungsgrad \VerschuldungsgradVJ -> \Verschuldungsgrad
+%  - Kaufpreis der Zukaeufe \KaufpreisJeUmsatz-facher Jahresumsatz
+%  - Keine Analystenratings oder Kursziele belegbar (Abschnitt \ref{sec:luecken})
+
+\bk{Der Kursverlauf l\"asst sich aus den vorstehenden Analysen erkl\"aren,
+allerdings nicht anhand der Gewinn- und Verlustrechnung, sondern anhand des
+organischen Wachstums. Es ist f\"ur einen Makler der Fr\"uhindikator der
+k\"unftigen Ertragskraft, w\"ahrend der berichtete Umsatz auch das
+wiedergibt, was zugekauft wurde. Dem Kursanstieg um
+\Pct{\KursDeltaZweiVier} im Jahr 2024 steht ein organisches Wachstum von
+\Pct{\OrganischWachstumVJ} gegen\"uber, die h\"ochste der hier betrachteten
+Raten. Umgekehrt verlor die Aktie 2025 \PctBetrag{\KursDeltaZweiFuenf},
+obwohl Umsatz (\Pct{\UmsatzDelta}) und bereinigtes EBITDAC
+(\Pct{\EBITDACberDelta}) Rekordwerte erreichten. Erkl\"arungskr\"aftig ist
+allein das organische Wachstum, das im selben Jahr von
+\Pct{\OrganischWachstumVJ} auf \Pct{\OrganischWachstum} fiel.
+
+Wie fr\"uh der Markt reagierte, zeigt der unterj\"ahrige Verlauf. Das
+Jahreshoch 2025 von \USDje{\KursHochZFV} lag am \Datum{\KurstagHochZFV} und damit
+vor der Ank\"undigung der \"Ubernahme und ihrer Finanzierung im Juni; das
+Jahrestief von \USDje{\KursTiefZFV} folgte am \Datum{\KurstagTiefZFV}, also nach
+der ersten vollen Berichtsperiode mit Accession. Zwischen beiden Punkten
+liegt der Wechsel der Frage, die der Markt stellt: nicht mehr, wie schnell
+das Unternehmen w\"achst, sondern zu welchem Preis.
+
+Drei Gr\"o{\ss}en beantworten diese Frage ung\"unstig. Die Nettoverschuldung
+stieg von \MioUSD{\NettoverschuldungVJ} auf \MioUSD{\Nettoverschuldung} und
+damit von \Faktor{\VerschuldungsgradVJ} auf \Faktor{\Verschuldungsgrad} des
+bereinigten EBITDAC. Die Zahl der Aktien wuchs um \Pct{\AktienZuwachs}, so
+dass das Ergebnis je Aktie trotz eines um \Pct{\ErgebnisDelta} h\"oheren
+Konzernergebnisses um \PctBetrag{\EPSdilDelta} zur\"uckging. Und der
+Kaufpreis der Zuk\"aufe entspricht dem \Faktor{\KaufpreisJeUmsatz}-fachen
+ihres Jahresumsatzes, w\"ahrend das eigene Unternehmen zum Jahresschluss
+2025 mit dem \Faktor{\fpeval{round(\Marktkapitalisierung/\UmsatzGesamt,2)}}-fachen
+seines Umsatzes bewertet wurde. Wer teurer kauft, als er selbst bewertet
+ist, muss die Differenz durch Wachstum oder Kostensenkung verdienen; genau
+das Wachstum ist im selben Jahr eingebrochen.
+
+Der Verlauf 2026 best\"atigt diese Lesart. Das organische Wachstum wurde im
+ersten Halbjahr mit \Pct{\HJOrganisch} negativ, und der Kurs fiel bis zum
+\Datum{\KurstagTiefZFVI} auf \USDje{\KursTiefZFVI}, den tiefsten Stand seit 2022.
+Der aktuelle Kurs von \USDje{\KursSchlussZFVI} liegt
+\PctBetrag{\KursAbstandHoch} unter dem H\"ochstkurs von April 2025. Nicht
+aus den Ergebnissen erkl\"arbar bleibt, wie weit der Markt die
+Integrationsrisiken bereits eingepreist hat: Ratings und Kursziele der
+achtzehn abdeckenden H\"auser sind nicht ver\"offentlicht
+(Abschnitt~\ref{sec:luecken}), so dass die Erwartung des Marktes nur \"uber
+den Kurs selbst ablesbar ist.}

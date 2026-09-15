@@ -216,6 +216,10 @@ class ScreenersMixin:
         if screener_key == "_finviz_gapper":
             self._show_finviz_gapper_screener()
             return
+        if screener_key.startswith("_valley"):
+            suffixe = screener_key[len("_valley"):].lstrip("_")
+            self._show_valley_screener(signal=suffixe or None)
+            return
 
         QApplication.setOverrideCursor(Qt.WaitCursor)
         try:
@@ -443,6 +447,89 @@ class ScreenersMixin:
             ["Symbole", "Nom", "Pays", "Gap (%)", "Prix ($)", "Cap (M$)", "Volume"],
             rows,
         )
+
+    def _show_valley_screener(self, signal=None):
+        """Détecte les creux exploitables et les distingue des chutes justifiées.
+
+        Deux signaux séparés (voir Valley_scan.py pour la mesure) :
+          🕳️ DIVERGENCE  baisse partagée avec le marché, indicateur avancé intact
+          ↗️ INFLEXION   cours près du plus bas, chiffre d'affaires qui repart
+          ⚠️ PIÈGE       baisse propre à l'entreprise ET activité en recul
+
+        Coût réseau : un appel groupé pour tout l'historique, puis un appel par
+        CANDIDAT seulement. Sur 43 titres le 15.09.2026 : 21 candidats, donc 21
+        appels individuels au lieu de 43.
+        """
+        try:
+            from core.valley_screener import run_valley, univers_par_defaut
+        except Exception as e:
+            QMessageBox.warning(self, "Creux", f"Moteur de détection indisponible : {e}")
+            return
+
+        symboles = univers_par_defaut()
+        if not symboles:
+            QMessageBox.information(
+                self, "Creux",
+                "Aucun univers disponible.\n\nRenseigne la liste d'optimisation "
+                "ou popular_symbols.txt."
+            )
+            return
+
+        progress = QProgressDialog(
+            f"Analyse de {len(symboles)} titres : historique groupé, "
+            "puis fondamentaux des candidats…",
+            "Annuler", 0, len(symboles), self
+        )
+        progress.setWindowTitle("Détection de creux")
+        progress.setWindowModality(Qt.WindowModal)
+        progress.setMinimumDuration(0)
+        progress.setValue(0)
+        QApplication.processEvents()
+
+        annule = {"oui": False}
+
+        def _avancement(i, total, symbole):
+            # Le total change quand on passe de la phase « cours » à la phase
+            # « candidats » : on réaligne la barre plutôt que de la voir sauter.
+            if total and progress.maximum() != total:
+                progress.setMaximum(total)
+            progress.setValue(min(i, total or 0))
+            if symbole:
+                progress.setLabelText(f"Fondamentaux : {symbole} ({i}/{total})")
+            QApplication.processEvents()
+            if progress.wasCanceled():
+                annule["oui"] = True
+
+        try:
+            res = run_valley(signal=signal, universe=symboles, progress=_avancement)
+        except Exception as e:
+            progress.close()
+            import traceback
+            QMessageBox.warning(
+                self, "Creux",
+                f"Erreur pendant la détection :\n{e}\n\n{traceback.format_exc()}"
+            )
+            return
+
+        # NB : ne pas tester progress.wasCanceled() APRÈS close() — close() met
+        # le flag à True. L'annulation est mémorisée dans `annule` pendant la
+        # boucle, comme ailleurs dans ce fichier.
+        progress.close()
+        if annule["oui"]:
+            return
+
+        rows = res.get("rows") or []
+        if not rows:
+            QMessageBox.information(
+                self, "Creux",
+                f"{res.get('title', 'Creux')}\n\n"
+                "Aucun titre ne déclenche de signal.\n\n"
+                "Ce n'est pas nécessairement une panne : quand les indices montent, "
+                "toute baisse est propre à l'entreprise et le signal de divergence "
+                "ne peut pas se déclencher."
+            )
+            return
+        self._present_screener_results(res["title"], res["headers"], rows)
 
     def _show_events_48h_screener(self, list_sources=None):
         """Interroge Yahoo Finance (calendar) sur les symboles des listes demandées et affiche

@@ -1,0 +1,54 @@
+% ===================================================================
+% data/schaetzung_teil5.tex
+% Eigene Schaetzung des Verfassers zu Investitionsbedarf, Kapitalbindung
+% und Liquiditaetsbedarf (jaehrlich) der drei Handlungsoptionen in
+% Abschnitt 5 - UNABHAENGIG von den fuer Abschnitt 6 vorgegebenen
+% Betraegen in data/cf_makros.tex. Die Aufgabenstellung erlaubt und
+% erwartet diese Abweichung ausdruecklich ("ggf. abweichend von Ihren
+% vorausgegangenen Analysen", Aufgabe 6).
+%
+% Methode, Anker und Beleg: docs/prompt-teil5-eigene-schaetzung.md.
+% Von Hand hergeleitet, nicht generiert - anders als data/cf_makros.tex.
+% ===================================================================
+
+% --- Kernrate: aktivierbare Entwicklungskosten ----------------------
+% \FEQuoteZFIII (1,5 %, GB 2023 S. 14, ertragsstarkes Jahr) x
+% \UmsatzZFIV (312,346 Mio., Konzernumsatz 2024) x 3 Jahre = 14,06,
+% gerundet 14,1 Mio. Deckt nur den aktivierungsfaehigen
+% Personalkostenanteil der Entwicklung ab (Aktivierungskriterien nach
+% IAS 38), nicht Vertrieb, Anwendungstechnik oder Zertifizierung eines
+% Markteintritts - daher als Kern behandelt und je Option mit einem
+% Markterschliessungsfaktor skaliert, nicht direkt uebernommen.
+% (0.015 * 312.346 * 3 = 14.05557)
+
+% --- Option A: Diversifikation in drei branchenfremde Zielmaerkte --
+% (Clean Tech, Aerospace, Life Sciences ueber das Segment Next
+% Automation). Faktor 3 auf die Kernrate: kein bestehender
+% Kundenzugang in diesen Branchen, daher voller Vertriebs- und
+% Zertifizierungsaufwand zusaetzlich zur reinen Entwicklung.
+\newcommand{\InvestitionsbedarfEigenA}{42.2}  % 14.05557 * 3
+\newcommand{\KapitalbindungEigenA}{10.6}      % InvestitionsbedarfEigenA * 25 % (Umlaufvermoegen/Projektvolumen bei Auftragsfertigern)
+\newcommand{\LiquiditaetsbedarfEigenA}{14.1}  % InvestitionsbedarfEigenA / 3 Jahre, gleichmaessig verteilt
+
+% --- Option B: Erweiterung entlang der bestehenden Wertschoepfung --
+% (Batterie-/Brennstoffzellenfertigung im bestehenden E-Mobility-
+% Umfeld). Faktor 1,5 auf die Kernrate statt 3: Verfahren, Kunden und
+% Vertrieb sind bereits bekannt, ein Teil der Kompetenz ist mit der
+% Aumann Lauchheim GmbH bereits im Haus.
+\newcommand{\InvestitionsbedarfEigenB}{21.1}  % 14.05557 * 1.5
+\newcommand{\KapitalbindungEigenB}{5.3}       % InvestitionsbedarfEigenB * 25 %
+\newcommand{\LiquiditaetsbedarfEigenB}{7.0}   % InvestitionsbedarfEigenB / 3 Jahre
+
+% --- Option C: Akquisition ------------------------------------------
+% Kein F&E-Anker moeglich: das Zielobjekt ist laut Aufgabenstellung
+% nicht bestimmt, daher keine Entwicklungsquote anwendbar. Stattdessen
+% eine Kapazitaetsgrenze: ein einzelner, weitgehend unumkehrbarer
+% Kapitaleinsatz sollte die Nettofinanzliquiditaet 2024
+% (\NettoliquiditaetZFIV, 138,2 Mio.) nicht zur Haelfte uebersteigen,
+% um Handlungsfaehigkeit fuer das laufende Geschaeft und weitere
+% Gelegenheiten zu erhalten (0.5 * 138.2 = 69.1 Mio. Gesamtobergrenze).
+% Aufgeteilt im selben Verhaeltnis wie bei A und B (Kapitalbindung =
+% 25 % des Investitionsbedarfs, also Investitionsbedarf = Gesamt / 1.25).
+\newcommand{\InvestitionsbedarfEigenC}{55.3}  % 69.1 / 1.25
+\newcommand{\KapitalbindungEigenC}{13.8}      % 69.1 - 55.3 (= InvestitionsbedarfEigenC * 25 %)
+\newcommand{\LiquiditaetsbedarfEigenC}{69.1}  % InvestitionsbedarfEigenC + KapitalbindungEigenC, im Vollzugsjahr faellig, nicht verteilt (Kaufpreis wird nicht in Raten gezahlt)

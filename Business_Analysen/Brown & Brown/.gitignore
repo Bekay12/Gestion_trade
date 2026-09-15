@@ -1,0 +1,6 @@
+out/
+refs/*.htm
+refs/*.txt
+refs/*.json
+*.aux
+*.log

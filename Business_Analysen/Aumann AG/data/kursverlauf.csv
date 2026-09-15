@@ -1,0 +1,48 @@
+# Aumann AG (ISIN DE000A2DAM03), XETRA. Stuetzpunkte der Kursabbildung
+# fig:kursverlauf, streng nach Datum geordnet.
+#
+# AUFBAU: Ausgangspunkt ist der Schlusskurs des letzten Handelstages 2021.
+# Danach folgt je Jahr 2022 bis 2025 das Jahreshoch, das Jahrestief und der
+# Jahresschlusskurs - in der Reihenfolge, in der sie EINGETRETEN sind. In
+# 2023 und 2025 lag das Tief vor dem Hoch; eine feste Abfolge Hoch-Tief
+# wuerde die Linie rueckwaerts laufen lassen.
+#
+# SPALTEN
+#   datum  Handelstag im Format JJJJ-MM-TT
+#   x      Datum als Dezimaljahr (Jahr + Tagesanteil), Koordinate fuer pgfplots
+#   kurs   Kurs in EUR: bei art=S der Schlusskurs, bei art=H der Tageshoechst-,
+#          bei art=T der Tagestiefstkurs
+#   art    S = Jahresschlusskurs, H = Jahreshoch, T = Jahrestief
+#   jahr   Geschaeftsjahr, auf das sich der Punkt bezieht
+#
+# HERKUNFT: Yahoo Finance, Symbol AAG.DE, Tagesbars, abgerufen am 29.07.2026
+#   https://query1.finance.yahoo.com/v8/finance/chart/AAG.DE?interval=1d
+#   ("fullExchangeName": "XETRA", Waehrung EUR).
+#
+# VALIDIERUNG: Die Schlusskurse 2022-2025 stimmen auf den Cent mit den
+# Geschaeftsberichten 2023 (S. 14), 2024 und 2025 (je S. 13) ueberein; die
+# Extrema decken sich mit den unabhaengig ausgewerteten Monatsbars.
+#
+# ZWEI HINWEISE, die im Dokument benannt sind:
+#  1. Der letzte Handelstag ist der 29. oder 30. Dezember, nie der 31.12. -
+#     die Boerse ruht. Die Geschaeftsberichte sprechen deshalb ebenfalls vom
+#     "letzten Handelstag des Jahres".
+#  2. Hoch und Tief sind INTRADAY-Werte. Der Punkt liegt daher ueber bzw.
+#     unter dem Schlusskurs desselben Tages.
+#
+# ZEITZONENFALLE: Tagesbars beginnen 00:00 CET, der Zeitstempel ist Unix-UTC.
+# Ohne Zuschlag von 12 h vor der Umrechnung rutscht jeder Bar auf den Vortag.
+datum,x,kurs,art,jahr
+2021-12-30,2021.99589,13.68,S,2021
+2022-03-23,2022.22329,17.68,H,2022
+2022-10-13,2022.78219,10.10,T,2022
+2022-12-30,2022.99589,11.48,S,2022
+2023-01-05,2023.01233,11.28,T,2023
+2023-12-28,2023.99041,18.98,H,2023
+2023-12-29,2023.99315,18.58,S,2023
+2024-01-02,2024.00410,18.96,H,2024
+2024-11-19,2024.88388,9.42,T,2024
+2024-12-30,2024.99590,10.62,S,2024
+2025-03-04,2025.17123,9.87,T,2025
+2025-05-12,2025.36027,14.66,H,2025
+2025-12-30,2025.99589,12.32,S,2025

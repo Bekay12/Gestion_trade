@@ -1,0 +1,14 @@
+{
+  "permissions": {
+    "allow": [
+      "Bash(pdftotext -layout -f 1 -l 1 \"Docu_Hskl/Hausarbeit SoSe2026 Aumann.pdf\" -)",
+      "Bash(pdftotext \"Docu_Hskl/Hausarbeit SoSe2026 Aumann.pdf\" -)",
+      "Skill(scientific-writing)",
+      "Skill(scientific-writing:*)",
+      "Bash(gh search *)",
+      "Bash(curl -sSL --max-time 30 -o fin.ipynb \"https://raw.githubusercontent.com/anthropics/claude-cookbooks/main/skills/notebooks/02_skills_financial_applications.ipynb\")",
+      "Bash(python3 -c ' *)",
+      "Bash(./scripts/ensure_ollama.sh *)"
+    ]
+  }
+}
