@@ -1,0 +1,3 @@
+Hierher kommt je ein Abschnitt des Berichts (00-deckblatt.tex bis 91-methode.tex).
+Diese Dateien duerfen KEINE Zahl enthalten; jeder Wert kommt als Makro aus
+data/kennzahlen.tex. Erzwungen durch scripts/check_literals.py.

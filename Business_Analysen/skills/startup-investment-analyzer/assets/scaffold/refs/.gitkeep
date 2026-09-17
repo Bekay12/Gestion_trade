@@ -1,0 +1,3 @@
+Hierher kommen die Einreichungen als .htm und, von scripts/edgar_seiten.py erzeugt,
+als seitenweiser .txt. Beides gehoert NICHT ins Repository - die Dateien sind gross
+und jederzeit neu beschaffbar. In .gitignore des Zielprojekts aufnehmen.

@@ -1,0 +1,3 @@
+Erzeugte Zahlenschicht. Nichts hier wird von Hand geschrieben: kennzahlen.tex und
+die Tabellenkoerper entstehen aus scripts/kennzahlen.py und scripts/flow.py.
+Ein erneuter Lauf muss den Inhalt Byte fuer Byte reproduzieren.
