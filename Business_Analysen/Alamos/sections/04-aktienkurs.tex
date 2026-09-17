@@ -1,0 +1,124 @@
+\section{Beurteilung des Verlaufs des Aktienkurses}
+\label{sec:kurs}
+
+Grundlage sind die Nasdaq-Schlusskurse aus Abbildung~\ref{fig:kursverlauf}
+und Tabelle~\ref{tab:kursextrema} sowie die Befunde der
+Abschnitte~\ref{sec:margejeunze} und \ref{sec:reihe}.
+
+\begin{figure}[htbp]
+\centering
+\begin{tikzpicture}
+\begin{axis}[kursachse]
+\addplot+[gray!55, thick, mark=none] table[col sep=comma, x=datum,
+  y=kurs] {data/kursverlauf.csv};
+\addplot+[kurspunkte] table[col sep=comma, x=datum,
+  y=kurs, meta=art] {data/kursverlauf.csv};
+\end{axis}
+\end{tikzpicture}
+\caption{Kursverlauf der Alamos-Gold-Aktie vom Jahresschluss 2020 bis zum
+\KursStand{}. Jeder Punkt steht an seinem tats\"achlichen Handelstag:
+{\color{kurshoch}$\blacktriangle$} Jahreshoch,
+{\color{kurstief}$\blacktriangledown$} Jahrestief,
+{\color{kursschluss}$\bullet$} Jahresschluss.}
+\label{fig:kursverlauf}
+\end{figure}
+
+\begin{table}[htbp]
+\centering
+\caption{Jahresschluss-, H\"ochst- und Tiefstkurse in USD. Das Jahr 2026
+reicht bis zum \KursStand{}.}
+\label{tab:kursextrema}
+\begin{tabular}{lrrr}
+\toprule
+Jahr & Schluss & H\"ochst & Tiefst\\
+\midrule
+\tabellenkoerper{data/kurs_tabelle}
+\bottomrule
+\end{tabular}
+\end{table}
+
+\FloatBarrier
+
+\subsection{Was zu erkl\"aren ist}
+
+Der Kurs stieg vom Jahresschluss 2021 bis zum \KursStand{} um
+\Pct{\KursSeitEinundzwanzig}. Innerhalb des Jahres 2026 erreichte er am
+\EinbruchTagHoch{} mit \USDje{\KursHochXXVI} sein Hoch und am
+\EinbruchTagTief{} mit \USDje{\KursTiefXXVI} sein Tief. Vom Hoch bis zum Tief
+verlor die Aktie \PctBetrag{\EinbruchAktie} ihres Wertes; heute steht sie
+\PctBetrag{\KursAbstandHoch} unter dem Hoch und \Pct{\KursAbstandTief} \"uber
+dem Tief. Gegen\"uber dem Jahresschluss 2025 liegt sie
+\PctBetrag{\KursSeitFuenfundzwanzig} im Minus.
+
+Zu erkl\"aren ist also nicht der Aufstieg, sondern der Einbruch -- und zwar
+in einem Jahr, in dem der Umsatz des ersten Halbjahres um
+\Pct{\HJUmsatzDelta} stieg und der freie Cash-Flow sich mehr als
+verdreifachte (Abschnitt~\ref{sec:strategie}).
+
+\subsection{Was gefallen ist: Fr\"uhindikator oder Bewertung}
+\label{sec:zerlegung}
+
+Ein Bericht, der nach einem solchen Sturz geschrieben wird, muss sagen,
+\emph{was} gefallen ist. Ein R\"uckgang, der sich im Goldpreis und im
+gesamten Sektor wiederfindet, ist ein Bewertungsereignis; ihn als
+betriebliche Verschlechterung in die Szenarien der Flow-Analyse zu nehmen,
+z\"ahlte ihn doppelt.
+
+Tabelle~\ref{tab:zerlegung} stellt die Aktie \"uber denselben Zeitraum und
+dieselben Handelstage dem Goldpreis und dem Minensektor gegen\"uber.
+
+\begin{table}[htbp]
+\centering
+\caption{Zerlegung des Einbruchs 2026. Ma{\ss}st\"abe sind der SPDR Gold
+Shares f\"ur den Goldpreis und der VanEck Gold Miners f\"ur den Sektor,
+gerechnet \"uber dieselben Handelstage vom \EinbruchTagHoch{} bis zum
+\EinbruchTagTief{}. \emph{Sekund\"arquelle} -- Kursreihen tragen keine
+gedruckte Seite.}
+\label{tab:zerlegung}
+\begin{tabular}{lrr}
+\toprule
+Reihe & Hoch bis Tief & Stand heute gegen Hoch\\
+\midrule
+Alamos Gold & \Pct{\EinbruchAktie} & \Pct{\AbstandAktie}\\
+Goldpreis & \Pct{\EinbruchGold} & \Pct{\AbstandGold}\\
+Goldminen (Sektor) & \Pct{\EinbruchSektor} & \Pct{\AbstandSektor}\\
+\bottomrule
+\end{tabular}
+\end{table}
+
+\FloatBarrier
+
+\bk{Die Tabelle trennt zwei Dinge, die sonst ineinanderlaufen.
+
+\emph{Der gr\"o{\ss}ere Teil des Einbruchs war kein Alamos-Ereignis.} Der
+Goldpreis fiel \"uber denselben Zeitraum um \PctBetrag{\EinbruchGold}, der
+Sektor um \PctBetrag{\EinbruchSektor}. Wer einen Goldproduzenten h\"alt,
+h\"alt eine gehebelte Position auf den Goldpreis; dass ein Viertel Preisverzug
+gut ein Drittel Sektorverlust erzeugt, ist die Bauart dieses Gesch\"afts und
+keine Nachricht \"uber das Unternehmen.
+
+\emph{Der kleinere Teil war eines.} Alamos verlor
+\PctBetrag{\EinbruchAktie}, also \Pct{\EinbruchUeberschuss} mehr als sein
+eigener Sektor. Diese Differenz f\"allt zeitlich mit dem zusammen, was das
+Unternehmen selbst berichtet: eine Produktion unter der revidierten Prognose,
+um \Pct{\ProduktionRueckgangRund} unter dem Vorjahr, bei angehobener
+Kostenprognose f\"ur 2026 (Tabelle~\ref{tab:prognose}).
+
+\emph{Und der Abstand ist geblieben.} Seit dem Tief hat der Sektor den
+Gro{\ss}teil seines Verlusts aufgeholt und steht noch
+\PctBetrag{\AbstandSektor} unter dem Hoch; Alamos steht
+\PctBetrag{\AbstandAktie} darunter. Die Aktie hat die Erholung ihres eigenen
+Sektors also \emph{nicht} mitgemacht; der Abstand betr\"agt
+\Pct{\AbstandUeberschuss}. Das ist der Teil des Kursverlaufs, den
+nur betriebliche Gr\"unde erkl\"aren, und es ist der Teil, auf den ein Anleger
+zu achten hat.}
+
+\subsection{Was der Kurs nicht abbildet}
+
+\bk{Der Kurs bildet den Anstieg der Marge je Unze ab, und er tut es mit
+Hebel. Was er nach dem Befund aus Abschnitt~\ref{sec:reihe} \emph{nicht}
+abbildet, ist die Frage, ob dieser Margensprung dauerhaft ist: Er stammt
+\"uberwiegend aus dem Goldpreis, nicht aus sinkenden Kosten, und die Kosten
+liegen im \Pct{\AISCPerzentil}-Perzentil der eigenen Zehnjahresreihe. Genau
+diese Unterscheidung nimmt Teil~\ref{sec:flow} auf, indem er drei vom
+Unternehmen selbst erzielte Goldpreise durchrechnet statt einen.}

@@ -1,0 +1,306 @@
+\section{Grobe Flow-Analyse}
+\label{sec:flow}
+
+Dieser Teil rechnet. Er beantwortet zwei Fragen, und sie schlie{\ss}en
+einander aus: ob das ver\"offentlichte Wachstumsprogramm aus eigener Kraft
+finanzierbar ist (Abschnitt~\ref{sec:kapazitaet}), und was ein Anleger
+verdient, der heute einsteigt (Abschnitt~\ref{sec:anleger}). Dieselben Mittel
+k\"onnen nur einmal verwendet werden. Die erste Rechnung leitet jeden
+\"Uberschuss in die Investition, die zweite an die Eigent\"umer; sie
+nebeneinander zu lesen und beide Ertr\"age zu addieren hie{\ss}e, dasselbe
+Geld zweimal auszugeben.
+
+Eine Entschuldungsrechnung, wie sie bei einem verschuldeten Unternehmen an
+erster Stelle st\"unde, entf\"allt: Alamos h\"alt nach
+Abschnitt~\ref{sec:bilanz} mehr Kasse als Finanzschulden.
+
+\subsection{Annahmen}
+\label{sec:annahmen}
+
+Die Betr\"age dieser Rechnung sind belegt, ihre Mechanik ist es nicht. Jede
+nicht aus den Quellen ableitbare Festlegung steht deshalb hier, vor der
+Rechnung, die sie verbraucht.
+
+\annahme{\textbf{Preisszenarien.} Gerechnet werden drei Goldpreise, und keiner
+davon ist gesch\"atzt: Es sind die drei vom Unternehmen selbst berichteten
+\emph{durchschnittlich erzielten} Preise -- \JeUnze{\GoldpreisVJ} f\"ur 2024,
+\JeUnze{\Goldpreis} f\"ur 2025 und \JeUnze{\HJGoldpreis} f\"ur das erste
+Halbjahr 2026 -- jeweils konstant fortgeschrieben. Damit muss keine
+Preisannahme erfunden werden. Dass der Preis und nicht das Mengenwachstum die
+tragende Gr\"o{\ss}e ist, folgt aus Abschnitt~\ref{sec:margejeunze}.}
+
+\annahme{\textbf{Menge und St\"uckkosten.} Sie folgen dem vom Unternehmen am
+\Datum{4.\,Februar 2026} ver\"offentlichten Ausblick: bis 2027 die Mitte der
+Prognose 2026 mit \TsdUnzen{\FlowMengeSechs} bei AISC von
+\JeUnze{\FlowAiscSechs}, ab 2028 die Mitte des Dreijahresausblicks mit
+\TsdUnzen{\FlowMengeAcht} bei AISC von \JeUnze{\FlowAiscAcht}, das sind
+\Pct{\ProgAchtAISCRueckgang} unter dem Stand von 2025. Verwendet wird die im
+Zwischenbericht zum \Datum{30.\,Juni 2026} \emph{angehobene} Kostenprognose;
+die urspr\"ungliche w\"are die g\"unstigere und damit die unehrlichere Wahl.
+F\"ur 2027 ver\"offentlicht das Unternehmen keine eigene Zahl; das Jahr wird
+auf dem Stand von 2026 gehalten und nicht zwischen 2026 und 2028
+interpoliert, weil eine Interpolation eine erfundene Zwischenstufe w\"are.
+Die Zur\"uckhaltung f\"allt zulasten der Rechnung.}
+
+\annahme{\textbf{Abgrenzung des Cash-Flows.} Die Rechnung setzt auf der
+Kostenkennzahl auf, die das Unternehmen selbst ver\"offentlicht. Die All-in
+Sustaining Costs enthalten das Erhaltungskapital bereits, nicht aber das
+Wachstumskapital und nicht die aktivierte Exploration. Der verteilbare
+Cash-Flow lautet deshalb
+\[
+  \text{Menge} \times (\text{Goldpreis} - \text{AISC})
+  - \text{Wachstumskapital} - \text{Exploration} - \text{Steuer}
+\]
+und nicht \enquote{operativer Cash-Flow abz\"uglich Investitionen}: Die zweite
+Form lie{\ss}e sich nicht nach dem Goldpreis aufl\"osen, und der Goldpreis ist
+die Gr\"o{\ss}e, die dieses Gesch\"aft bewegt. Abschnitt~\ref{sec:eichung}
+h\"alt das Modell gegen das Ist-Jahr 2025.}
+
+\annahme{\textbf{Dauer des Bauprogramms.} Das Wachstumskapital wird mit
+\MioUSDexakt{\FlowWachstumskapital} je Jahr angesetzt, der Mitte der Prognose
+2026, und endet mit dem Jahr \num{\FlowBauende} -- dem Jahr, f\"ur das das
+Unternehmen die erste Produktion von Lynn Lake angek\"undigt hat. Diese
+Annahme entscheidet das Ergebnis mit und wird in
+Tabelle~\ref{tab:flowsensitiv} in beide Richtungen durchgerechnet. Sie mit
+dem Spitzenbetrag dauerhaft fortzuschreiben und zugleich die Produktion auf
+dem Stand von 2026 zu halten w\"are kein vorsichtiger Ansatz, sondern ein
+falscher: Die Rechnung bezahlte dann f\"unfzehn Jahre lang eine Erweiterung
+und erhielte sie nie.}
+
+\annahme{\textbf{Steuern.} Angesetzt wird der im Abschluss genannte
+gesetzliche Satz von \Pct{\Steuersatz}\quelleFS{2025}{34}\quelleMerken{s15fsxcacfxde} auf den Betrag nach
+Abzug von Wachstumskapital und Exploration. Latente Steuern, Verlustvortr\"age
+und L\"anderunterschiede bleiben unber\"ucksichtigt; die Aufgabenstellung
+dieser Analyse ist eine grobe Flow-Rechnung und keine Steuerplanung.}
+
+\annahme{\textbf{Endwert und Horizont.} Der Anleger h\"alt am Ende des
+Horizonts eine Beteiligung, und sie ist etwas wert. Angesetzt wird der
+bilanzielle Buchwert des Eigenkapitals je Aktie von
+\USDje{\FlowEndwert}\quelleFS{2025}{6}\quelleMerken{s15fsxcacfxg} -- belegt, unabh\"angig vom
+Einstiegskurs und f\"ur eine \"uber Buchwert notierende Aktie vorsichtig. Ein
+Bewertungsvielfaches w\"are ein plausibel aussehender Platzhalter und
+unterbliebe damit der Belegpflicht. Was der heutige Kurs statt dessen
+voraussetzt, rechnet Abschnitt~\ref{sec:endwert} aus. Gerechnet wird \"uber
+f\"unf, zehn und f\"unfzehn Jahre; ein interner Zinsfu{\ss} ohne Horizont ist
+eine durch eine unausgesprochene Annahme gew\"ahlte Zahl.}
+
+\annahme{\textbf{Vorsteuerbetrachtung auf Anlegerebene.} Die Rechnung
+ber\"ucksichtigt die Ertragsteuern des Unternehmens, nicht aber die Steuern
+des Anlegers und keine Quellensteuer. Die ausgewiesenen internen
+Zinsf\"u{\ss}e sind deshalb Vorsteuerrenditen aus Sicht des Anlegers. Da alle
+Szenarien gleich behandelt werden, bleibt die Rangfolge unber\"uhrt.}
+
+\subsection{Finanzierungskapazit\"at des Wachstumsprogramms}
+\label{sec:kapazitaet}
+
+Die erste Frage lautet, ob das ver\"offentlichte Bauprogramm aus eigener Kraft
+getragen wird. Anfangsbestand ist die Liquidit\"at zum \Datum{30.\,Juni 2026}
+von \MioUSDexakt{\HJLiquiditaet}; jedes Jahr kommt die Marge nach
+Gleichung~\eqref{eq:marge-je-unze} hinzu, ab gehen Wachstumskapital,
+Exploration, Steuer und die auf den neuen Satz hochgerechnete Dividende.
+
+\begin{table}[htbp]
+\centering
+\caption{Finanzierungskapazit\"at im mittleren Szenario (erzielter Goldpreis
+2025). Betr\"age in Mio.\,USD. \emph{Kapazit\"atsrechnung, keine Vorhersage:}
+Sie sagt, was das Programm an Mitteln verlangt, nicht welcher Goldpreis
+eintritt. Sie endet mit dem Bauprogramm, weil eine Fortschreibung dar\"uber
+hinaus Kasse ohne unterstellte Verwendung auflaufen lie{\ss}e.}
+\label{tab:flowkapazitaet}
+\small
+\begin{tabular}{lrrrrrr}
+\toprule
+Jahr & Marge & Investition & Steuer & Dividende & Ver\"anderung & Bestand\\
+\midrule
+\tabellenkoerper{data/flow_kapazitaet}
+\bottomrule
+\end{tabular}
+\end{table}
+
+\FloatBarrier
+
+Der niedrigste Bestand des Pfades betr\"agt
+\MioUSDexakt{\FlowBestandTief}, der Endbestand
+\MioUSDexakt{\FlowBestandEnde}. F\"allt der erzielte Preis dagegen auf den
+Stand von 2024 zur\"uck, sinkt der Bestand auf
+\MioUSDexakt{\FlowBestandTiefUnten} und wird damit negativ.
+
+\bk{Das Programm ist finanzierbar, aber nicht unter jedem Preis aus eigener
+Kraft. Im mittleren und im oberen Szenario tr\"agt der laufende Cash-Flow es
+vollst\"andig. Im unteren reicht er nicht: Es entst\"unde eine L\"ucke, die
+\"uber die unbeanspruchte Kreditlinie von
+\MioUSDexakt{\FazilitaetUnbeansprucht} zu schlie{\ss}en w\"are -- verf\"ugbar,
+aber eben eine Verschuldung, die das Unternehmen heute nicht hat. Das ist die
+eigentliche Verwundbarkeit dieses Falls, und sie liegt nicht in der Bilanz,
+sondern im Investitionsplan.}
+
+\subsection{Eichung des Modells gegen das Jahr 2025}
+\label{sec:eichung}
+
+Ein Modell, das nicht gegen ein Ist-Jahr gehalten wird, ist eine Behauptung.
+Auf das Gesch\"aftsjahr 2025 angewandt ergibt die Gleichung aus
+Abschnitt~\ref{sec:annahmen}:
+
+\begin{table}[htbp]
+\centering
+\caption{Eichung des Modells am Gesch\"aftsjahr 2025. Betr\"age in Mio.\,USD.}
+\label{tab:floweichung}
+\begin{tabular}{lr}
+\toprule
+Posten & Betrag\\
+\midrule
+Marge je Unze $\times$ verkaufte Unzen & \MioUSDexakt{\FlowEichMarge}\\
+abz\"uglich Wachstumskapital & \MioUSDexakt{\FlowEichWachstum}\\
+abz\"uglich laufende Ertragsteuern & \MioUSDexakt{\SteuerLaufend}\\
+\midrule
+Modellwert & \MioUSDexakt{\FlowEichModell}\\
+Tats\"achlicher freier Cash-Flow & \MioUSDexakt{\FlowEichIst}\\
+\midrule
+Differenz & \MioUSDexakt{\FlowEichDifferenz}\\
+davon benannte Einmalposten & \MioUSDexakt{\FlowEichErklaert}\\
+\midrule
+Ungekl\"arter Rest & \MioUSDexakt{\FlowEichRest}\\
+\bottomrule
+\end{tabular}
+\end{table}
+
+\FloatBarrier
+
+Die benannten Einmalposten sind vier: die Ausbuchung der von Argonaut
+\"ubernommenen Goldtermingesch\"afte mit \MioUSDexakt{\HedgeAusbuchung}, die
+Vorauszahlung auf k\"unftige Goldlieferungen mit
+\MioUSDexakt{\GoldVorauszahlung}, der Aufbau des Umlaufverm\"ogens samt
+gezahlter Steuern mit \MioUSDexakt{\UmlaufvermoegenSteuern} und die
+aktivierten Bauzinsen mit \MioUSDexakt{\ZinsAktiviert}.\quelleFS{2025}{9}\quelleMerken{s16fsxcacfxj}
+Keiner von ihnen steht seinem Wesen nach in einer Kostenkennzahl.
+
+\bk{Der ungekl\"arte Rest von \MioUSDexakt{\FlowEichRest} auf eine Bruttomarge
+von \MioUSDexakt{\FlowEichMarge} ist eine Rundungsdifferenz. Das Modell bildet
+das Ist-Jahr also ab, sobald man die Einmalposten benennt -- und es ist damit
+brauchbar, solange man wei{\ss}, dass es solche Posten nicht vorhersieht.}
+
+\subsection{Die Rechnung des Anlegers}
+\label{sec:anleger}
+
+Die zweite Frage lautet, was ein Anleger verdient, der heute zu
+\USDje{\FlowEinstiegskurs} einsteigt. Die Zahlungsreihe besteht aus dem Kurs
+als Auszahlung, dem verteilbaren Cash-Flow je Aktie in jedem Jahr und dem
+Endwert der Beteiligung im letzten Jahr.
+
+Der Ma{\ss}stab, an dem der interne Zinsfu{\ss} gemessen wird, ist keine
+konstruierte Kapitalkostengr\"o{\ss}e, sondern eine belegte Gr\"o{\ss}e des
+Unternehmens selbst: seine Eigenkapitalrendite auf das durchschnittliche
+Eigenkapital, gerechnet auf das \emph{bereinigte} Ergebnis. Sie betr\"agt
+\Pct{\FlowHuerde}. Auf das berichtete Ergebnis gerechnet w\"aren es
+\Pct{\FlowHuerdeBerichtet}; diese Zahl tr\"agt die Wertaufholung und den
+Ver\"au{\ss}erungsgewinn aus Abschnitt~\ref{sec:abschluss} und taugt nicht als
+Ma{\ss}stab f\"ur eine Daueranlage.
+
+\begin{table}[htbp]
+\centering
+\caption{Interner Zinsfu{\ss} der Anlegerreihe beim heutigen Kurs von
+\USDje{\FlowEinstiegskurs}, in Prozent. Ma{\ss}stab: \Pct{\FlowHuerde}.}
+\label{tab:flowirr}
+\begin{tabular}{lrrrr}
+\toprule
+Szenario & Goldpreis & 5 Jahre & 10 Jahre & 15 Jahre\\
+\midrule
+\tabellenkoerper{data/flow_irr}
+\bottomrule
+\end{tabular}
+\end{table}
+
+\FloatBarrier
+
+\bk{Kein Szenario und kein Horizont erreicht den Ma{\ss}stab. Selbst im
+oberen Szenario -- dem Preis des ersten Halbjahres 2026, also dem h\"ochsten,
+den dieses Unternehmen je erzielt hat, dauerhaft fortgeschrieben -- bleibt der
+interne Zinsfu{\ss} \"uber f\"unfzehn Jahre bei \Pct{\FlowIRRCFuenfzehn} und
+damit deutlich unter \Pct{\FlowHuerde}.}
+
+\subsection{Sensitivit\"aten}
+\label{sec:sensitiv}
+
+Zwei Annahmen entscheiden das Ergebnis st\"arker als die \"ubrigen. Beide
+werden durchgerechnet, statt sie zu behaupten.
+
+\begin{table}[htbp]
+\centering
+\caption{Interner Zinsfu{\ss} im mittleren Szenario bei abweichender Dauer des
+Bauprogramms, in Prozent.}
+\label{tab:flowsensitiv}
+\begin{tabular}{lrrr}
+\toprule
+Wachstumskapital & 5 Jahre & 10 Jahre & 15 Jahre\\
+\midrule
+\tabellenkoerper{data/flow_sensitiv}
+\bottomrule
+\end{tabular}
+\end{table}
+
+\FloatBarrier
+
+Die Spanne zwischen \enquote{gar kein Wachstumskapital} und
+\enquote{dauerhaft fortgef\"uhrt} betr\"agt \"uber zehn Jahre nur wenige
+Prozentpunkte: \Pct{\FlowIRROhneBauZehn} gegen
+\Pct{\FlowIRRDauerbauZehn}. Die Annahme, die am meisten nach Willk\"ur
+aussieht, entscheidet das Ergebnis also gerade nicht.
+
+\subsubsection{Der Endwert, der \"uber das Ergebnis entscheidet}
+\label{sec:endwert}
+
+Anders steht es mit dem Endwert. Tabelle~\ref{tab:flowendwert} kehrt die
+Rechnung um und nennt den Endwert je Aktie, den der \emph{heutige} Kurs
+bereits voraussetzt, damit der interne Zinsfu{\ss} den Ma{\ss}stab trifft.
+
+\begin{table}[htbp]
+\centering
+\caption{Erforderlicher Endwert je Aktie in USD und als Vielfaches des
+Buchwerts von \USDje{\FlowEndwert}, damit der interne Zinsfu{\ss} beim
+heutigen Kurs \Pct{\FlowHuerde} erreicht.}
+\label{tab:flowendwert}
+\small
+\begin{tabular}{lrrrrrr}
+\toprule
+& \multicolumn{2}{c}{5 Jahre} & \multicolumn{2}{c}{10 Jahre}
+& \multicolumn{2}{c}{15 Jahre}\\
+\cmidrule(lr){2-3}\cmidrule(lr){4-5}\cmidrule(lr){6-7}
+Szenario & USD & Vielf. & USD & Vielf. & USD & Vielf.\\
+\midrule
+\tabellenkoerper{data/flow_endwert}
+\bottomrule
+\end{tabular}
+\end{table}
+
+\FloatBarrier
+
+Die Gegenprobe braucht einen Ma{\ss}stab, und sie bekommt einen belegten: Das
+Unternehmen selbst beziffert den Kapitalwert nach Steuern allein des
+Island-Gold-Distrikts auf \MrdUSD{\IGDKapitalwert}, das sind
+\USDje{\FlowIGDJeAktie} je Aktie -- bei einer Preisannahme von
+\JeUnze{\IGDGoldpreis}. Tabelle~\ref{tab:flowendwertvariante} rechnet die
+Einstiegsschwelle deshalb ein zweites Mal, mit diesem Wert als Endwert.
+
+\begin{table}[htbp]
+\centering
+\caption{Einstiegskurs \"uber f\"unfzehn Jahre in USD bei zwei belegten
+Endwerten. Aktueller Kurs: \USDje{\FlowEinstiegskurs}.}
+\label{tab:flowendwertvariante}
+\begin{tabular}{lrr}
+\toprule
+Szenario & Endwert Buchwert & Endwert Kapitalwert Island Gold\\
+\midrule
+\tabellenkoerper{data/flow_endwertvariante}
+\bottomrule
+\end{tabular}
+\end{table}
+
+\FloatBarrier
+
+\bk{Diese Tabelle ist die Belastungsprobe des ganzen Teils. Sie ersetzt die
+vorsichtigste belegbare Annahme durch die g\"unstigste belegbare -- durch eine
+Angabe des Unternehmens \"uber sein bestes Projekt bei einem Goldpreis, der
+\"uber allen drei Szenarien liegt. Selbst dann liegt die Schwelle im oberen
+Szenario bei \USDje{\FlowSchwelleIGDBeste}, und der heutige Kurs liegt
+\Pct{\FlowAbstandIGDBeste} dar\"uber. Das Ergebnis h\"angt also nicht an der
+Endwertannahme.}

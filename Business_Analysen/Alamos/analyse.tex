@@ -1,0 +1,26 @@
+\documentclass[a4paper,11pt,DIV=12,parskip=half]{scrartcl}
+\input{preamble}
+\input{data/kennzahlen}
+% Von scripts/flow.py erzeugt: die Ergebnisse der Flow-Analyse als Makros,
+% damit der Fliesstext des Teils 5 und das Anlageurteil in Teil 6 dieselben
+% Zahlen fuehren wie die Tabellen.
+\input{data/flow_makros}
+
+\begin{document}
+\input{sections/00-deckblatt}
+\tableofcontents
+\clearpage
+\input{sections/01-unternehmen}
+\input{sections/02-jahresabschluss}
+\input{sections/03-strategie}
+\input{sections/04-aktienkurs}
+\input{sections/05-flowanalyse}
+\input{sections/06-anlageurteil}
+\input{sections/07-verdikt}
+\clearpage
+% Section* loest \sectionmark nicht aus; ohne diese Zeile zeigte die
+% Kopfzeile bis zum Dokumentende noch den letzten nummerierten Abschnitt.
+\markright{}
+\input{sections/90-quellen}
+\input{sections/91-methode}
+\end{document}

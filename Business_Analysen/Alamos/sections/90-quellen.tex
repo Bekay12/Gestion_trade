@@ -1,0 +1,71 @@
+% check-literals: skip
+% Grund: Diese Datei enthaelt die Aktenzeichen der EDGAR-Einreichungen
+% (z. B. 0001178819-26-000048) und die Jahreszahlen der Berichtsreihe.
+% Aktenzeichen sind Kennungen der Quelle, keine Zahlenwerte des Dokuments;
+% sie gehoeren deshalb nicht nach data/kennzahlen.tex. Die Ausnahme gilt nur
+% fuer diese Datei.
+\section*{Quellenverzeichnis}
+\addcontentsline{toc}{section}{Quellenverzeichnis}
+
+Alamos Gold Inc.\ ist ein ausl\"andischer Emittent und reicht bei der
+U.\,S.\ Securities and Exchange Commission die Form~40-F ein, nicht die
+Form~10-K. Die inhaltlichen Dokumente sind deren Anh\"ange: EX-99.1 Annual
+Information Form, EX-99.2 Management's Discussion and Analysis, EX-99.3
+Konzernabschluss. Quartalsunterlagen und das Einberufungsschreiben werden als
+Form~6-K eingereicht.
+
+Die Seitenangaben der Fu{\ss}noten sind die des \emph{gedruckten} Dokuments
+und nicht die des HTML-Blocks der Einreichung. Sie werden von
+\texttt{scripts/edgar\_seiten.py} aus dem Seitenfu{\ss} vor jedem
+Seitenumbruch gelesen und von \texttt{scripts/pruefe\_seiten.py} gegen die
+Quelle gepr\"uft: Jede in \texttt{scripts/kennzahlen.py} hinterlegte Zahl
+muss auf der Seite vorkommen, die sie angibt.
+
+\subsection*{Unternehmenseigene Berichte}
+
+\begin{itemize}
+\item \label{quelle:mda2025} Alamos Gold Inc.: \emph{Management's Discussion
+and Analysis for the year ended December 31, 2025}. Anhang EX-99.2 zur
+Form~40-F, eingereicht am 26.~M\"arz 2026, Aktenzeichen
+0001178819-26-000048.
+\item \label{quelle:fs2025} Alamos Gold Inc.: \emph{Annual Consolidated
+Financial Statements for the years ended December 31, 2025 and 2024}. Anhang
+EX-99.3 derselben Einreichung.
+\item \label{quelle:aif2025} Alamos Gold Inc.: \emph{Annual Information Form
+for the year ended December 31, 2025}. Anhang EX-99.1 derselben Einreichung.
+\item \label{quelle:mda2024} Alamos Gold Inc.: \emph{Management's Discussion
+and Analysis for the year ended December 31, 2024}. Anhang EX-99.2 zur
+Form~40-F, eingereicht am 31.~M\"arz 2025, Aktenzeichen
+0001178819-25-000031.
+\item \label{quelle:reihe} Alamos Gold Inc.: \emph{Management's Discussion
+and Analysis} sowie \emph{Annual Consolidated Financial Statements} der
+Gesch\"aftsjahre 2016 bis 2023, jeweils Anh\"ange EX-99.2 und EX-99.3 der
+Form~40-F desselben Jahrgangs. Sie tragen die Zehnjahresreihe in
+Tabelle~\ref{tab:reihe}; die Aktenzeichen stehen im Kopf der jeweiligen
+Datei unter \texttt{refs/}.
+\item \label{quelle:zb} Alamos Gold Inc.:
+\emph{Management's Discussion and Analysis for the three and six months ended
+June 30, 2026}. Anhang EX-99.2 zur Form~6-K, eingereicht am 30.~Juli 2026,
+Aktenzeichen 0001178819-26-000081.
+\item \label{quelle:zba} Alamos Gold
+Inc.: \emph{Condensed Interim Consolidated Financial Statements, June 30,
+2026}. Anhang EX-99.3 derselben Einreichung.
+\item \label{quelle:circ} Alamos Gold Inc.: \emph{2026 Management
+Information Circular}. Anhang EX-99.1 zur Form~6-K, eingereicht am
+22.~April 2026, Aktenzeichen 0001178819-26-000055.
+\end{itemize}
+
+\subsection*{Sekund\"arquellen}
+
+Diese Quellen tragen keine gedruckte Seite und k\"onnen deshalb vom
+Belegpr\"ufer nicht verifiziert werden. Sie sind im Text als
+Sekund\"arquellen gekennzeichnet.
+
+\begin{itemize}
+\item \label{quelle:konsens} Stock Analysis: \emph{Alamos Gold (AGI) Stock
+Forecast \& Analyst Price Targets}, \url{https://stockanalysis.com/stocks/agi/forecast/}.
+\item \label{quelle:nasdaq} Nasdaq: \emph{Historical Quotes} f\"ur AGI, GLD und
+GDX, \url{https://www.nasdaq.com/market-activity/quotes/historical}. Grundlage
+der Abbildung~\ref{fig:kursverlauf} und der Tabellen~\ref{tab:kursextrema}
+und \ref{tab:zerlegung}. Abrufdatum im Kopf der Dateien unter \texttt{data/}.
+\end{itemize}

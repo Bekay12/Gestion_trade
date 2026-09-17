@@ -1,0 +1,193 @@
+\section{Verdikt}
+\label{sec:verdikt}
+
+Dieser Teil zieht die Schlussfolgerung aus den Befunden der
+Teile~\ref{sec:unternehmen} bis \ref{sec:urteil}. Er f\"uhrt keine neue Zahl
+ein; jede genannte Gr\"o{\ss}e steht bereits oben.
+
+\vd{\textbf{Der rote Text ist eine Empfehlung, kein Beleg.}} Er ist aus den
+vorstehenden Befunden unter den in Abschnitt~\ref{sec:annahmen} erkl\"arten
+Annahmen abgeleitet. Schwarz bleibt, was belegt ist; blau sind
+Einsch\"atzungen im laufenden Text; rot ist das Votum. Die Entscheidung trifft
+der Verfasser.
+
+\subsection{Votum}
+
+\vd{\textbf{Nicht kaufen zum aktuellen Kurs von
+\USDje{\FlowEinstiegskurs}. Beobachten und auf einen der Ausl\"oser in
+Abschnitt~\ref{sec:ausloeser} warten.} Kein Verkaufsvotum: Wer die Aktie
+h\"alt, hat aus dieser Analyse keinen zwingenden Grund zu verkaufen, denn die
+Bilanz ist unbelastet, die Reserven wachsen und der Ausbau ist finanziert --
+wohl aber einen Grund, die Position nicht aufzustocken. Wer sie nicht h\"alt,
+hat keinen Grund einzusteigen, denn er bezahlt einen Preis, den keiner der
+gerechneten F\"alle tr\"agt.}
+
+\subsection{Begr\"undung aus den Befunden}
+\label{sec:begruendung}
+
+\vd{Vier Befunde tragen das Votum, und sie zeigen in verschiedene Richtungen.
+
+\emph{Gegen einen Kauf spricht der Preis.} Der interne Zinsfu{\ss} erreicht in
+keinem der drei Szenarien und \"uber keinen der drei Horizonte den
+Ma{\ss}stab von \Pct{\FlowHuerde}; im oberen Szenario bleibt er \"uber
+f\"unfzehn Jahre bei \Pct{\FlowIRRCFuenfzehn}
+(Tabelle~\ref{tab:flowirr}). Das gilt auch dann noch, wenn man den
+vorsichtigen Buchwert durch den vom Unternehmen selbst ver\"offentlichten
+Kapitalwert des Island-Gold-Distrikts ersetzt
+(Tabelle~\ref{tab:flowendwertvariante}).
+
+\emph{Gegen einen Kauf spricht die Lage im Zyklus.} Der freie Cash-Flow des
+Jahres 2025 ist der h\"ochste der Zehnjahresreihe und liegt im
+\Pct{\FCFPerzentil}-Perzentil; der Median derselben Reihe betr\"agt
+\MioUSDexakt{\FCFMedian}. Wer heute kauft, kauft auf dem Niveau des besten
+Jahres, das dieses Unternehmen je hatte, bei den zweith\"ochsten
+St\"uckkosten der Reihe.
+
+\emph{F\"ur ein Beobachten statt eines Meidens spricht die Substanz.} Die
+Reserven sind im \num{\ReservenJahreFolge}.\ Jahr in Folge gestiegen, zuletzt
+um \Pct{\ReservenDelta} auf \MozReserven{\Reserven}; die Nettoliquidit\"at
+betr\"agt \MioUSDexakt{\Nettoliquiditaet}; der ver\"offentlichte Ausbau bringt
+\Pct{\ProgAchtProdDelta} mehr Produktion bei \Pct{\ProgAchtAISCRueckgang}
+niedrigeren St\"uckkosten. Das ist kein Unternehmen, das man meidet, sondern
+eines, dessen Preis man abwartet.
+
+\emph{Und gegen das eigene Votum spricht der Konsens.} Die
+\num{\KonsensZahl} sch\"atzenden H\"auser votieren mit \emph{Strong Buy}; das
+mittlere Kursziel liegt \Pct{\KonsensAbstandKurs} \"uber dem heutigen Kurs,
+und selbst das \emph{niedrigste} Ziel der gesamten Abdeckung liegt noch
+\Pct{\KonsensTiefAbstandKurs} dar\"uber (Tabelle~\ref{tab:konsens}). Wenn eine
+vollst\"andige Abdeckung oberhalb der eigenen Schwelle liegt, ist die
+wahrscheinlichste Erkl\"arung eine eigene Annahme und kein gemeinsamer Irrtum
+von \num{\KonsensZahl} H\"ausern. Der Mechanismus ist benennbar: Ein Kursziel auf
+zw\"olf Monate bewertet den F\"orderer \"uber Gewinnvielfache und einen
+unterstellten Fortf\"uhrungswert; eine Zahlungsreihe mit Ausstieg zum Buchwert
+tut das nicht. Der Unterschied ist der Bewertungsaufschlag, nicht die
+zugrunde liegende Zahl. Die Analysten rechnen zudem mit steigenden
+Goldpreisen; dieses Dokument schreibt erzielte Preise konstant fort. Wer die
+Erwartung steigender Preise teilt, kommt zu ihrem und nicht zu diesem
+Ergebnis.}
+
+\subsection{Einstiegsschwelle}
+\label{sec:schwelle}
+
+Tabelle~\ref{tab:schwelle} nennt den Kurs, bei dem der interne Zinsfu{\ss} den
+Ma{\ss}stab von \Pct{\FlowHuerde} genau trifft. Das ist die Zahl, die eine
+Anlageentscheidung braucht: nicht ob, sondern bis zu welchem Preis.
+
+\begin{table}[htbp]
+\centering
+\caption{Einstiegskurs in USD, bei dem der interne Zinsfu{\ss} die H\"urde von
+\Pct{\FlowHuerde} erreicht. Endwert: Buchwert je Aktie
+\USDje{\FlowEndwert}. Aktueller Kurs: \USDje{\FlowEinstiegskurs}.}
+\label{tab:schwelle}
+\begin{tabular}{lrrrr}
+\toprule
+Szenario & Goldpreis & 5 Jahre & 10 Jahre & 15 Jahre\\
+\midrule
+\tabellenkoerper{data/flow_schwelle}
+\bottomrule
+\end{tabular}
+\end{table}
+
+\FloatBarrier
+
+\vd{Die Schwelle liegt im mittleren Szenario \"uber f\"unfzehn Jahre bei
+\USDje{\FlowSchwelleBasis}; der heutige Kurs liegt \Pct{\FlowAbstandBasis}
+dar\"uber. Im oberen Szenario -- dem h\"ochsten je erzielten Preis, dauerhaft
+fortgeschrieben -- steigt sie auf \USDje{\FlowSchwelleBeste}, und der Abstand
+schrumpft auf \Pct{\FlowAbstandBeste}. Mit dem g\"unstigsten belegbaren
+Endwert liegt sie bei \USDje{\FlowSchwelleIGDBeste}, und der Abstand
+betr\"agt immer noch \Pct{\FlowAbstandIGDBeste}.
+
+Das ist der Kern des Falls: Es gibt keine Kombination aus einem vom
+Unternehmen berichteten Goldpreis, einem belegten Endwert und einem der drei
+Horizonte, bei der der heutige Kurs die eigene H\"urde des Unternehmens
+tr\"agt.}
+
+\subsubsection{Die Wachstumsrate, die der Preis voraussetzt}
+
+Den Cash-Flow konstant zu halten h\"alt die Rechnung ehrlich und l\"asst
+zugleich jedes wachsende Unternehmen teuer aussehen. Statt das durch eine
+Prognose zu heilen, kehrt Tabelle~\ref{tab:wachstum} den Preis in die
+Wachstumsrate um, die er bereits voraussetzt.
+
+\begin{table}[htbp]
+\centering
+\caption{J\"ahrliche Wachstumsrate des verteilbaren Cash-Flows in Prozent, die
+der heutige Kurs von \USDje{\FlowEinstiegskurs} voraussetzt, damit der interne
+Zinsfu{\ss} \Pct{\FlowHuerde} erreicht.}
+\label{tab:wachstum}
+\begin{tabular}{lrrr}
+\toprule
+Szenario & 5 Jahre & 10 Jahre & 15 Jahre\\
+\midrule
+\tabellenkoerper{data/flow_wachstum}
+\bottomrule
+\end{tabular}
+\end{table}
+
+\FloatBarrier
+
+\vd{Damit wird aus einem Urteil eine pr\"ufbare Behauptung. Der heutige Kurs
+enth\"alt im mittleren Szenario \Pct{\FlowWachstumBZehn} Wachstum des
+verteilbaren Cash-Flows \emph{jedes Jahr, zehn Jahre lang} -- zus\"atzlich zu
+dem Ausbau, den die Rechnung bereits enth\"alt. \"Uber f\"unfzehn Jahre sind es
+\Pct{\FlowWachstumBFuenfzehn}. Dieses Unternehmen hat \"uber die letzten zehn
+Jahre einen Median des freien Cash-Flows von \MioUSDexakt{\FCFMedian}
+geliefert (Tabelle~\ref{tab:reihe}). Eine solche Rate ist nicht unm\"oglich --
+sie ist bei einem Goldproduzenten vor allem eine Aussage \"uber den Goldpreis
+-- aber sie steht im Preis, und der K\"aufer bezahlt sie im Voraus.}
+
+\subsection{Ausl\"oser, die das Votum drehen}
+\label{sec:ausloeser}
+
+\vd{Alle sind kostenlos zu beobachten; zwei werden quartalsweise
+ver\"offentlicht, einer steht jeden Tag im Kurszettel.
+
+\emph{Zum Kauf.} Der Kurs f\"allt unter \USDje{\FlowSchwelleBeste}, ohne dass
+sich fundamental etwas verschlechtert; dann tr\"agt das obere Szenario. Oder
+die Produktion erreicht \"uber zwei aufeinanderfolgende Quartale den
+ver\"offentlichten Prognosepfad von \TsdUnzen{\FlowMengeSechs} auf
+Jahresbasis, \emph{und} die AISC fallen wieder in die urspr\"ungliche Spanne
+von \JeUnze{\PrognoseAiscUnten} bis \JeUnze{\PrognoseAiscOben} zur\"uck. Dann
+ist die Kostenanhebung vom Juli 2026 eine Episode gewesen und kein Trend, und
+der Abstand zum Sektor aus Abschnitt~\ref{sec:zerlegung} sollte sich
+schlie{\ss}en.
+
+\emph{Zum Meiden.} Die Fertigstellung der Schachterweiterung verschiebt sich
+\"uber das Jahresende 2026 hinaus, oder der Dreijahresausblick f\"ur 2028 wird
+gesenkt. Beides tr\"afe die Gr\"o{\ss}e, auf der die ganze Rechnung ab 2028
+ruht. Ebenfalls zum Meiden: ein R\"uckgang des erzielten Goldpreises in die
+N\"ahe des Standes von 2024, denn dann tr\"agt der laufende Cash-Flow das
+Bauprogramm nicht mehr (Abschnitt~\ref{sec:kapazitaet}) und die
+unbeanspruchte Kreditlinie wird zur Finanzierungsquelle.}
+
+\subsection{Was dieses Votum nicht wissen kann}
+
+\vd{Die entscheidende Gr\"o{\ss}e ist nicht berechenbar: der k\"unftige
+Goldpreis. Tabelle~\ref{tab:schwelle} sagt, was jede Annahme wert ist; welche
+zutrifft, sagt sie nicht. Dieses Dokument schreibt erzielte Preise konstant
+fort, weil es das Einzige ist, was sich belegen l\"asst -- und genau das ist
+bei einem Rohstoffproduzenten die schw\"achste Stelle der Methode.
+
+Drei weitere Vorbehalte, die gegen das eigene Votum sprechen.
+
+\emph{Der Konsens steht dagegen, und zwar geschlossen.} Kein einziges
+ver\"offentlichtes Kursziel liegt unter dem heutigen Kurs
+(Abschnitt~\ref{sec:begruendung}). Eine vollst\"andige Abdeckung auf der
+Gegenseite ist ein Grund, die eigene Endwertannahme f\"ur zu vorsichtig zu
+halten, und nicht bloss eine Fu{\ss}note.
+
+\emph{Der Ausbau ist gr\"o{\ss}er als das, was die Rechnung erfasst.} Die
+Rechnung nimmt die Produktion des Dreijahresausblicks bis 2028 auf und
+h\"alt sie danach konstant. Sie enth\"alt damit weder Lynn Lake \"uber das
+Jahr 2029 hinaus in voller Gr\"o{\ss}e noch PDA noch weitere Umwandlungen von
+Ressourcen in Reserven -- und die Reserven sind im
+\num{\ReservenJahreFolge}.\ Jahr in Folge gestiegen. Trifft dieses Muster
+weiter zu, ist der ausgewiesene interne Zinsfu{\ss} eher eine Untergrenze.
+
+\emph{Und der Zeitpunkt k\"onnte bereits g\"unstig sein.} Die Aktie steht
+\PctBetrag{\KursAbstandHoch} unter ihrem Hoch vom \EinbruchTagHoch{} und hat
+die Erholung ihres Sektors um \Pct{\AbstandUeberschuss} nicht mitgemacht. Wer
+das Votum ablehnt, kann mit gutem Grund einwenden, dass genau dieser Abstand
+die Gelegenheit ist, auf die es zu warten vorgibt.}

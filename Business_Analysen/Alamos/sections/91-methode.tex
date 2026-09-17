@@ -1,0 +1,79 @@
+\section*{Methode und Grenzen}
+\addcontentsline{toc}{section}{Methode und Grenzen}
+
+\subsection*{Was gepr\"uft ist}
+
+Jede Zahl aus einer Prim\"arquelle steht genau einmal in
+\texttt{scripts/kennzahlen.py}, zusammen mit ihrer gedruckten Seite.
+Abgeleitete Gr\"o{\ss}en werden gerechnet und nicht getippt, damit Text und
+Tabellen einander nicht widersprechen k\"onnen. F\"unf Skripte erzwingen das:
+\texttt{pruefe\_seiten.py} pr\"uft f\"ur jeden Rohwert, dass er auf der
+zitierten Seite tats\"achlich vorkommt; \texttt{reihe.py} pr\"uft die
+Zehnjahresreihe \"uber die Kette, dass die Vorjahresspalte eines Berichts dem
+Berichtsjahr des Vorberichts gleicht; \texttt{check\_literals.py} verbietet
+hartkodierte Zahlen im Flie{\ss}text; die beiden Fu{\ss}notenpr\"ufer halten
+den Belegapparat konsistent.
+
+Die Kettenpr\"ufung hat genau einen Bruch gefunden, und er war ein Befund und
+kein Fehler: die Neuberechnung der St\"uckkosten des Jahres 2024
+(Abschnitt~\ref{sec:margejeunze}). Auch die Seitenzerlegung tr\"agt einen
+eigenen Wachhund: In der Annual Information Form 2017 erf\"ullte eine
+Reservenzahl jedes Muster einer Seitenzahl. Sie wird verworfen, weil sie nicht
+in die Seitenfolge des Dokuments passt -- eine Fu{\ss}zeilenform allein
+gen\"ugt als Nachweis nicht.
+
+\subsection*{Drei Farben, drei Verantwortlichkeiten}
+
+Das Dokument trennt sichtbar, wer f\"ur eine Aussage einsteht.
+\textbf{Schwarz} ist belegt: Zahl, Tabelle, Quelle, Seite. \bk{\textbf{Blau}
+ist eine Einsch\"atzung im laufenden Text, die der Verfasser pr\"uft und
+verantwortet.} \vd{\textbf{Rot} ist das Votum in Teil~\ref{sec:verdikt}: eine
+aus den Befunden abgeleitete Empfehlung unter erkl\"arten Annahmen,
+ausdr\"ucklich kein Beleg und keine Zusage.} Wer nur die schwarzen Stellen
+liest, erh\"alt den gepr\"uften Sachstand ohne jede Wertung.
+
+\subsection*{Prim\"ar und sekund\"ar}
+
+Sechs Werte dieses Dokuments stammen nicht aus einem Prim\"ardokument,
+sondern aus \"offentlich zug\"anglichen Zusammenstellungen: der
+Analystenkonsens und die Kursreihen. Sie stehen in einem eigenen Block der
+Zahlenschicht, werden vom Belegpr\"ufer nicht erfasst und sind in ihren
+Tabellen als Sekund\"arquelle gekennzeichnet. Ratings und Kursziele stehen in
+keinem Bericht eines Emittenten \"uber sich selbst; sie deshalb als
+\enquote{nicht verf\"ugbar} zu f\"uhren w\"are eine unfertige Suche und keine
+benannte L\"ucke gewesen.
+
+\subsection*{Was nicht gepr\"uft ist}
+
+Gepr\"uft ist die \emph{Herkunft} der Zahlen, nicht die Richtigkeit der
+Schl\"usse. Vier Dinge leistet dieses Dokument ausdr\"ucklich nicht:
+
+\begin{enumerate}
+\item \textbf{Es prognostiziert den Goldpreis nicht.} Die Fortschreibung in
+Teil~\ref{sec:flow} ist eine Kapazit\"atsrechnung unter erkl\"arten Annahmen.
+Die entscheidende Gr\"o{\ss}e wird nicht gesch\"atzt, sondern in drei vom
+Unternehmen selbst erzielten Auspr\"agungen durchgerechnet.
+\item \textbf{Es gewichtet die Szenarien nicht.} Welches eintritt, ist eine
+Einsch\"atzung \"uber den Goldmarkt. Die Prim\"arquellen tragen sie nicht, und
+das Dokument nimmt sie nicht vorweg.
+\item \textbf{Es bewertet die Lagerst\"atten nicht eigenst\"andig.} Reserven,
+Gehalte und Kapitalwerte sind Angaben des Unternehmens und seiner
+Sachverst\"andigen. Sie werden zitiert und nicht nachgerechnet; eine
+lagerst\"attenkundliche Pr\"ufung liegt ausserhalb dieses Dokuments.
+\item \textbf{Es ersetzt keine Anlageentscheidung.} Anlagehorizont,
+Risikotragf\"ahigkeit und Portfoliozusammenhang stehen in keiner
+Prim\"arquelle und kommen hier nicht vor. Das Votum in
+Teil~\ref{sec:verdikt} nennt einen Schwellenkurs und beobachtbare Ausl\"oser;
+ob und in welcher Gr\"o{\ss}e gehandelt wird, entscheidet der Verfasser.
+\end{enumerate}
+
+\subsection*{Wann diese Analyse veraltet}
+
+Sie ruht auf dem Jahresbericht 2025 und dem Zwischenbericht zum
+30.\,Juni 2026. Die tragende Gr\"o{\ss}e, der erzielte Goldpreis, \"andert
+sich t\"aglich; die zweite tragende Gr\"o{\ss}e, Produktion und St\"uckkosten
+gegen den ver\"offentlichten Prognosepfad, wird quartalsweise
+ver\"offentlicht. Mit jedem neuen Zwischenbericht ist zuerst
+Abschnitt~\ref{sec:margejeunze} fortzuschreiben, danach der Prognosevergleich
+in Teil~\ref{sec:strategie} und erst dann zu pr\"ufen, ob das Votum noch
+tr\"agt.
