@@ -17,6 +17,7 @@ from pathlib import Path
 from datetime import datetime
 from typing import List, Dict, Union
 from core.indicators import calculate_macd  # migré dans core/
+from core.charts import rsi_zones, RSI_ZONE_COLORS
 from core.cache import _BoundedCache, DERIV_CACHE, TA_CACHE  # noqa: F401  (migré dans core/, ré-exporté : d'autres modules font `from qsi import _BoundedCache`)
 from core.io import save_to_evolutive_csv  # migré dans core/
 import sys
@@ -2496,18 +2497,10 @@ def plot_unified_chart(symbol, prices, volumes, ax, show_xaxis=False, score_over
     ax2.set_ylabel('MACD', color=color, fontsize=10)
     ax2.tick_params(axis='y', labelcolor=color)
 
-    # Tracé RSI en arrière-plan avec axvspan
-    for i in range(1, len(prices)):
-        start = prices.index[i-1]
-        end = prices.index[i]
-        rsi_val = rsi.iloc[i-1]
-        if rsi_val > 70:
-            color = 'lightcoral'
-        elif rsi_val < 30:
-            color = 'lightgreen'
-        else:
-            color = 'lightgray'
-        ax.axvspan(start, end, facecolor=color, alpha=0.1, zorder=-1)
+    # Fond RSI : une bande par série de jours de même zone, pas un axvspan par jour
+    # (sur 30 ans, 7 500 rectangles coûtaient 92 Mo et plus de 2 s par redessin).
+    for start, end, zone in rsi_zones(prices.index, rsi):
+        ax.axvspan(start, end, facecolor=RSI_ZONE_COLORS[zone], alpha=0.1, zorder=-1)
 
     # Ajout des légendes
     lines1, labels1 = ax.get_legend_handles_labels()

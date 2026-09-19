@@ -38,6 +38,7 @@ from ui.workers import (
     _fetch_yf_info_with_timeout, _is_valid_ticker_info, _get_sector_cache_first,
 )
 from ui.mixins.screeners import ScreenersMixin
+from ui.pg_charts import build_symbol_chart, chart_backend
 from ui.mixins.export import ExportMixin
 try:
     from cache_db import ensure_fx_rates_daily_history
@@ -460,9 +461,7 @@ class MainWindow(QMainWindow, ScreenersMixin, ExportMixin):
                     'domaine': row.get('Domaine'),
                     'cap_range': row.get('CapRange'),
                 }
-                fig = self._build_symbol_figure_with_score(sym, prices, volumes, precomp=precomp, events=[])
-                canvas = FigureCanvas(fig)
-                canvas.setMinimumHeight(520)
+                canvas = self._make_symbol_chart_widget(sym, prices, volumes, precomp=precomp, events=[])
                 self.plots_layout.addWidget(canvas)
                 rendered_count += 1
 
@@ -532,9 +531,7 @@ class MainWindow(QMainWindow, ScreenersMixin, ExportMixin):
                             print(f"⚠️ {sym}: Aucun événement généré")
                         else:
                             print(f"✅ {sym}: {len(events)} événement(s) trouvé(s)")
-                        fig = self._build_symbol_figure_with_score(sym, prices, volumes, precomp=precomp, events=events)
-                        canvas = FigureCanvas(fig)
-                        canvas.setMinimumHeight(520)
+                        canvas = self._make_symbol_chart_widget(sym, prices, volumes, precomp=precomp, events=events)
                         self.plots_layout.addWidget(canvas)
                     except Exception:
                         continue
@@ -2317,6 +2314,47 @@ class MainWindow(QMainWindow, ScreenersMixin, ExportMixin):
 
         return default_buy, default_sell
 
+    def _resolve_score_thresholds(self, precomp):
+        """Seuils achat/vente du score : ceux du backtest, sinon les seuils globaux."""
+        buy_thr = precomp.get('seuil_achat')
+        sell_thr = precomp.get('seuil_vente')
+        if buy_thr is not None and sell_thr is not None:
+            try:
+                return float(buy_thr), float(sell_thr)
+            except Exception:
+                pass
+        return self._get_global_thresholds_for_symbol(
+            domaine=precomp.get('domaine', 'Inconnu'),
+            cap_range=precomp.get('cap_range'),
+        )
+
+    def _make_symbol_chart_widget(self, sym, prices, volumes, precomp=None, events=None):
+        """Widget graphique d'un symbole : pyqtgraph si QSI_CHART_BACKEND=pyqtgraph, sinon matplotlib."""
+        precomp = precomp or {}
+        if chart_backend() == 'pyqtgraph':
+            score_dates, score_values = self._compute_score_series(
+                prices,
+                volumes,
+                domaine=precomp.get('domaine', 'Inconnu'),
+                cap_range=precomp.get('cap_range'),
+                symbol=sym,
+            )
+            buy_thr, sell_thr = self._resolve_score_thresholds(precomp)
+            score_val = precomp.get('score')
+            parts = [sym]
+            if precomp.get('signal'):
+                parts.append(f"Signal: {precomp['signal']}")
+            if isinstance(score_val, (int, float)):
+                parts.append(f"Score: {score_val:.2f}")
+            return build_symbol_chart(
+                sym, prices, events=events,
+                score_dates=score_dates, score_values=score_values,
+                buy_thr=buy_thr, sell_thr=sell_thr, title=" | ".join(parts),
+            )
+        canvas = FigureCanvas(self._build_symbol_figure_with_score(sym, prices, volumes, precomp=precomp, events=events))
+        canvas.setMinimumHeight(520)
+        return canvas
+
     def _build_symbol_figure_with_score(self, sym, prices, volumes, precomp=None, events=None):
         """Construit une figure: trace principal + score au fil du temps en dessous."""
         precomp = precomp or {}
@@ -2355,22 +2393,7 @@ class MainWindow(QMainWindow, ScreenersMixin, ExportMixin):
         # Hide x labels on top panel only; keep bottom panel date labels visible.
         ax_main.tick_params(axis='x', which='both', bottom=False, top=False, labelbottom=False)
 
-        buy_thr = precomp.get('seuil_achat')
-        sell_thr = precomp.get('seuil_vente')
-        if buy_thr is None or sell_thr is None:
-            buy_thr, sell_thr = self._get_global_thresholds_for_symbol(
-                domaine=precomp.get('domaine', 'Inconnu'),
-                cap_range=precomp.get('cap_range'),
-            )
-        else:
-            try:
-                buy_thr = float(buy_thr)
-                sell_thr = float(sell_thr)
-            except Exception:
-                buy_thr, sell_thr = self._get_global_thresholds_for_symbol(
-                    domaine=precomp.get('domaine', 'Inconnu'),
-                    cap_range=precomp.get('cap_range'),
-                )
+        buy_thr, sell_thr = self._resolve_score_thresholds(precomp)
 
         for ev in events:
             if ev.get('type') == 'BUY':
