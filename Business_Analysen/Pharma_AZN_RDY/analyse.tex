@@ -1,0 +1,43 @@
+\documentclass[a4paper,11pt,DIV=12,parskip=half]{scrartcl}
+\input{preamble}
+\input{data/kennzahlen}
+% Von scripts/flow.py erzeugt: die Ergebnisse der Flow-Analyse als Makros,
+% damit der Fliesstext und die Tabellen dieselben Zahlen fuehren.
+\input{data/flow_makros}
+% Handelstage der Jahresextrema, erzeugt von scripts/kurse.py
+\input{data/kurs_tage}
+% Zahlen des Methodenabschnitts, erzeugt von scripts/methode.py
+\input{data/methode}
+\begin{document}
+\input{sections/00-deckblatt}
+\tableofcontents
+\clearpage
+\input{sections/10-vorbemerkung}
+
+\renewcommand{\teiltitel}{AstraZeneca PLC}
+\part{AstraZeneca PLC}
+\input{sections/a1-unternehmen}
+\input{sections/a2-jahresabschluss}
+\input{sections/a3-strategie}
+\input{sections/a4-kursverlauf}
+\input{sections/a5-flowanalyse}
+\input{sections/a6-anlageurteil}
+\input{sections/a7-verdikt}
+
+\renewcommand{\teiltitel}{Dr.~Reddy's Laboratories Ltd.}
+\part{Dr.~Reddy's Laboratories Ltd.}
+\input{sections/b1-unternehmen}
+\input{sections/b2-jahresabschluss}
+\input{sections/b3-strategie}
+\input{sections/b4-kursverlauf}
+\input{sections/b5-flowanalyse}
+\input{sections/b6-anlageurteil}
+\input{sections/b7-verdikt}
+
+\clearpage
+% Section* loest \sectionmark nicht aus; ohne diese Zeile zeigte die
+% Kopfzeile bis zum Dokumentende noch den letzten nummerierten Abschnitt.
+\markright{}
+\input{sections/90-quellen}
+\input{sections/91-methode}
+\end{document}

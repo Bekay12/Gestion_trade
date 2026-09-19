@@ -1,0 +1,179 @@
+\section{Grobe Flow-Analyse}
+\label{sec:flow-rdy}
+
+\subsection{Annahmen}
+\label{sec:annahmen-rdy}
+
+\annahme{Zwei Rechnungen, keine Summe.} Wie in Teil~\ref{sec:flow-azn} sind
+die Kapazit\"atsrechnung und die Anlegerrechnung Alternativen. Sie verwenden
+denselben Mittelzufluss und d\"urfen nicht addiert werden.
+
+\annahme{Die Entschuldungsfrage entf\"allt.} Das Unternehmen hat eine
+Nettokasse von \MioINR{\RdyNettokasse} (Abschnitt~\ref{sec:abschluss-rdy}).
+Die Frage \enquote{wie schnell kann es tilgen} ist damit leer, und sie
+trotzdem zu rechnen erg\"abe eine Seite Arithmetik ohne Entscheidung. An ihre
+Stelle tritt die Frage, die dieses Unternehmen tats\"achlich zu beantworten
+hat: Tr\"agt der operative Mittelzufluss das eigene Investitionsprogramm?
+
+\annahme{Freier Mittelzufluss.} Operativer Mittelzufluss abz\"uglich der
+Investitionen in Sachanlagen und immaterielle Verm\"ogenswerte, zuz\"uglich
+der Erl\"ose aus deren Abgang. Eine Leasingtilgung wird nicht gesondert
+abgezogen, weil der Abschluss sie nicht in derselben Gliederung ausweist wie
+der von AstraZeneca; die beiden Reihen sind daher in dieser Hinsicht nicht
+exakt gleich definiert, und das ist der Grund, warum dieses Dokument die
+beiden Titel nicht gegeneinander rechnet.
+
+\annahme{Konstantes Niveau, kein Wachstum.} Wie in Teil~\ref{sec:flow-azn}.
+Was der Kurs an Wachstum voraussetzt, wird umgekehrt ausgerechnet.
+
+\annahme{Drei Niveaus.} Die letzten zw\"olf Monate bis zum 30.~Juni 2026
+(\INRje{\RdyFcfLtm}), der Median der neun Jahre (\INRje{\RdyFcfMedian}) und
+das letzte volle Gesch\"aftsjahr (\INRje{\RdyFcfVoll}).
+
+\annahme{Aktienzahl.} Gerechnet wird durchg\"angig mit
+\Stueck{\RdyAktienAusgegeben} Aktien, der Zahl zum 31.~M\"arz 2026. F\"ur die
+fr\"uhen Jahre der Reihe ist das eine Vereinfachung; die Aktienzahl hat sich
+au{\ss}erhalb des Splits nur wenig ver\"andert, und der Split ist im Abschluss
+selbst r\"uckwirkend ber\"ucksichtigt.
+
+\annahme{W\"ahrung.} Die gesamte Rechnung l\"auft in Rupien. Der Kurs des
+Hinterlegungsscheins wird einmal umgerechnet, zum Referenzkurs der
+Europ\"aischen Zentralbank vom \Datum{\RdyKursTag}
+(\Kurswert{\Wechselkurs}~INR je USD).\quelleWeb{Europ\"aische Zentralbank, Euro-Referenzkurse}{quelle:ezb}{17.09.2026}\quelleMerken{s33webxeuropxxaischexzentralbankxxeuroxreferenzkursexquellexezb}
+Wer in Dollar denkt, tr\"agt zus\"atzlich das W\"ahrungsrisiko der Rupie; es
+ist hier nicht bewertet.
+
+\annahme{Endwert gleich Buchwert je Aktie}, also
+\INRje{\RdyBuchwertJeAktieX}. Zwei weitere Endwertannahmen werden daneben
+gerechnet, aus demselben Grund wie in Teil~\ref{sec:flow-azn}.
+
+\annahme{Steuern und Horizont.} Wie in Abschnitt~\ref{sec:annahmen-azn}:
+nach Konzernsteuern, vor Anlegersteuern, Horizonte von f\"unf, zehn und
+f\"unfzehn Jahren, H\"urde \Pct{\Huerde}. Die indische Quellensteuer auf
+Dividenden an Auslandsanleger ist nicht ber\"ucksichtigt; sie w\"urde die
+Renditen weiter senken.
+
+\subsection{Tr\"agt der Mittelzufluss das Investitionsprogramm?}
+\label{sec:kapazitaet-rdy}
+
+\begin{table}[htbp]
+\centering
+\caption{Finanzierungsrechnung FY2026, Mio.\,INR. Eine Kapazit\"atsrechnung,
+keine Prognose.}
+\label{tab:rdy-kapazitaet}
+\begin{tabular}{lr}
+\toprule
+Position & Betrag\\
+\midrule
+\tabellenkoerper{data/flow_rdy_kapazitaet}
+\bottomrule
+\end{tabular}
+\end{table}
+
+\bk{Die Antwort lautet ja, und sie ist knapper, als die Nettokasse vermuten
+l\"asst. Nach Investitionen und Dividende bleibt ein \"Uberschuss, der etwa
+der H\"ohe der Nettokasse entspricht. Das Unternehmen finanziert sein
+Programm also aus einem Jahresertrag, nicht aus Reserven. Die Kehrseite: Im
+Quartal nach dem Stichtag war der operative Mittelzufluss negativ
+(Abschnitt~\ref{sec:strategie-rdy}). Ein einzelnes Quartal ist keine Reihe;
+zwei aufeinanderfolgende w\"aren eine.}
+
+\FloatBarrier
+
+\subsection{Die Rechnung des Anlegers}
+\label{sec:anleger-rdy}
+
+\begin{table}[htbp]
+\centering
+\caption{Interner Zinsfu{\ss} in Prozent pro Jahr beim heutigen Kurs von
+\INRje{\RdyKursRupien} je Aktie, Endwert gleich Buchwert je Aktie}
+\label{tab:rdy-irr}
+\begin{tabular}{lrrr}
+\toprule
+Niveau des Mittelzuflusses & 5 Jahre & 10 Jahre & 15 Jahre\\
+\midrule
+\tabellenkoerper{data/flow_rdy_irr}
+\bottomrule
+\end{tabular}
+\end{table}
+
+\begin{table}[htbp]
+\centering
+\caption{Einstiegsschwelle in INR je Aktie bei einer H\"urde von
+\Pct{\Huerde}, Endwert gleich Buchwert je Aktie}
+\label{tab:rdy-schwelle}
+\begin{tabular}{lrrrr}
+\toprule
+Niveau & je Aktie & 5 Jahre & 10 Jahre & 15 Jahre\\
+\midrule
+\tabellenkoerper{data/flow_rdy_schwelle}
+\bottomrule
+\end{tabular}
+\end{table}
+
+\begin{table}[htbp]
+\centering
+\caption{Dieselbe Schwelle unter der zweiten Endwertannahme: die Aktie notiert
+am Ende des Horizonts nominal zum heutigen Kurs}
+\label{tab:rdy-schwelle-variante}
+\begin{tabular}{lrrrr}
+\toprule
+Niveau & je Aktie & 5 Jahre & 10 Jahre & 15 Jahre\\
+\midrule
+\tabellenkoerper{data/flow_rdy_schwellevariante}
+\bottomrule
+\end{tabular}
+\end{table}
+
+\FloatBarrier
+
+\begin{table}[htbp]
+\centering
+\caption{Umkehrung eins: der Endwert je Aktie, den der heutige Kurs bereits
+voraussetzt, in INR und als Vielfaches des Buchwerts}
+\label{tab:rdy-endwert}
+\begin{tabular}{lrrr}
+\toprule
+Niveau & 5 Jahre & 10 Jahre & 15 Jahre\\
+\midrule
+\tabellenkoerper{data/flow_rdy_endwert}
+\bottomrule
+\end{tabular}
+\end{table}
+
+\begin{table}[htbp]
+\centering
+\caption{Umkehrung zwei: gefordertes j\"ahrliches Wachstum in Prozent bei
+konstantem Bewertungsvielfachen}
+\label{tab:rdy-vielfach}
+\begin{tabular}{lrrr}
+\toprule
+Niveau & 5 Jahre & 10 Jahre & 15 Jahre\\
+\midrule
+\tabellenkoerper{data/flow_rdy_vielfach}
+\bottomrule
+\end{tabular}
+\end{table}
+
+\FloatBarrier
+
+\subsection{Was die Tabellen zusammen sagen}
+
+\bk{Wie bei AstraZeneca ist die Rangfolge \"uber alle Horizonte stabil und
+wird die H\"urde in keiner Zelle der ersten Tabelle erreicht. Der Unterschied
+liegt in der zweiten Umkehrung, und er ist gro{\ss}.}
+
+\bk{Bei konstantem Bewertungsvielfachen verlangt der heutige Kurs
+\Pct{\RdyWachstumVielfachZehn} Wachstum des freien Mittelzuflusses pro Jahr.
+Ob das viel ist, h\"angt davon ab, welche Vergangenheit man danebenlegt,
+und genau hier liegt der Fall dieses Titels: \Pct{\RdyCagr} pro Jahr von
+FY2018 an gerechnet, \Pct{\RdyCagrSieben} von FY2019 an. Die eine Rate liegt
+\"uber dem Geforderten, die andere ist negativ. Beide stammen aus derselben,
+vollst\"andig belegten Reihe.}
+
+\bk{Das ist kein Mangel der Rechnung, sondern eine Eigenschaft des
+Unternehmens: Ein Gesch\"aft, dessen Mittelzufluss je Aktie in neun Jahren
+zwischen \INRje{\RdyFcfJeAktieXVIII} und dem Vierfachen davon schwankt, hat
+keine Trendrate, an der sich ein Preis messen liesse. Teil
+\ref{sec:verdikt-rdy} zieht daraus die Folgerung, statt sich eine der beiden
+Raten auszusuchen.}

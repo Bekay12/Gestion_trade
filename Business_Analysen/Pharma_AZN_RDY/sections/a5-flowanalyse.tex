@@ -1,0 +1,204 @@
+\section{Grobe Flow-Analyse}
+\label{sec:flow-azn}
+
+\subsection{Annahmen}
+\label{sec:annahmen-azn}
+
+Betr\"age sind gegeben; ihre Mechanik nie. Jede Annahme, die nicht aus den
+Daten folgt, steht deshalb hier, vor der Rechnung, die sie verbraucht.
+
+\annahme{Zwei Rechnungen, keine Summe.} Abschnitt~\ref{sec:kapazitaet-azn}
+fragt, wie schnell das Unternehmen seine Schulden tilgen k\"onnte;
+Abschnitt~\ref{sec:anleger-azn} fragt, was ein Anleger verdient, der heute
+kauft. Beide Rechnungen verwenden \emph{denselben} freien Mittelzufluss und
+sind deshalb Alternativen, keine Summanden. Wer sie addiert, gibt dasselbe
+Geld zweimal aus.
+
+\annahme{Freier Mittelzufluss.} Operativer Mittelzufluss abz\"uglich der
+Investitionen in Sachanlagen und immaterielle Verm\"ogenswerte, zuz\"uglich der
+Erl\"ose aus deren Abgang, abz\"uglich der Leasingtilgung. Nicht abgezogen
+sind die Zahlungen auf bedingte Kaufpreise aus fr\"uheren Zuk\"aufen, die 2025
+\MioUSD{\AznBedingteKaufpreise} betrugen.\quelleGB{2025}{128}\quelleMerken{s16gbxcacfxbci}
+Sie sind wiederkehrend, aber sie sind Kaufpreis und nicht laufender Aufwand;
+wer sie abzieht, bekommt eine um rund ein Siebtel niedrigere Reihe und
+dieselbe Rangfolge.
+
+\annahme{Konstantes Niveau, kein Wachstum.} In der Anlegerrechnung wird der
+freie Mittelzufluss je Aktie \"uber den ganzen Horizont konstant gehalten. Das
+ist keine Prognose, sondern der Verzicht darauf. Was der heutige Kurs an
+Wachstum bereits voraussetzt, wird in Abschnitt~\ref{sec:anleger-azn}
+umgekehrt ausgerechnet und gegen die tats\"achlich erzielten Raten der
+Mehrjahresreihe gestellt.
+
+\annahme{Drei Niveaus statt drei Prognosen.} Gerechnet wird mit drei
+Werten, die alle aus ver\"offentlichten Zahlen stammen: den letzten zw\"olf
+Monaten bis zum 30.~Juni 2026 (\USDje{\AznFcfLtm}), dem Median der sieben
+Jahre (\USDje{\AznFcfMedian}) und dem letzten vollen Gesch\"aftsjahr
+(\USDje{\AznFcfVoll}). Drei Zahlen, die das Unternehmen selbst berichtet hat,
+muss niemand verteidigen; drei selbst gew\"ahlte Wachstumsraten schon.
+
+\annahme{Endwert gleich Buchwert je Aktie.} Am Ende des Horizonts ist der
+Anteil noch etwas wert. Angesetzt wird das bilanzielle Eigenkapital je Aktie,
+\USDje{\AznBuchwertJeAktieX}. Es steht in der Bilanz, es h\"angt nicht vom
+Einstiegspreis ab, und es ist konservativ; f\"ur ein Pharmaunternehmen, dessen
+Verm\"ogen zu gro{\ss}en Teilen nicht bilanziert ist, sehr konservativ. Weil der
+Endwert das Ergebnis beherrscht, wird die Rechnung mit einer zweiten
+Endwertannahme wiederholt und beide werden ausgewiesen.
+
+\annahme{Steuern.} Die Rechnung ist eine Betrachtung auf Unternehmensebene.
+Der freie Mittelzufluss ist nach den gezahlten Ertragsteuern des Konzerns
+(\MioUSD{\AznSteuerZahlung} im Jahr 2025), aber vor der Steuer des Anlegers
+auf Dividende und Kursgewinn. Quellensteuern bleiben unber\"ucksichtigt, weil
+der Bericht die Steuerlage des Lesers nicht kennt. Die ausgewiesenen
+Renditen sind deshalb Vorsteuerrenditen \emph{des Anlegers}, und da beide
+Titel gleich behandelt werden, bleibt die Rangfolge unber\"uhrt.
+
+\annahme{Horizont.} Gerechnet wird \"uber f\"unf, zehn und f\"unfzehn Jahre ab
+2026. Ein interner Zinsfu{\ss} ohne seinen Horizont ist eine Zahl, die eine
+unausgesprochene Annahme trifft.
+
+\annahme{H\"urde.} \Pct{\Huerde} pro Jahr, die Zehnjahresrendite des
+Branchenindex.\quelleWeb{BlackRock, iShares U.S. Pharmaceuticals ETF, Zehnjahresrendite des Benchmark-Index}{quelle:huerde}{17.09.2026}\quelleMerken{s16webxblackrockxxisharesxuxsxxpharmaceuticalsxetfxxzehnjahresrenditexdesxbenchmarkxindexxquellexhuerde}
+Sie ist eine Gesamtrendite einschlie{\ss}lich wiederangelegter
+Aussch\"uttungen und damit strenger als eine reine Kursrendite.
+
+\subsection{Entschuldungskapazit\"at}
+\label{sec:kapazitaet-azn}
+
+Die erste Frage ist eine Kapazit\"atsrechnung und keine Prognose: Wie lange
+br\"auchte das Unternehmen, um seine Nettoverschuldung aus eigener Kraft zu
+tilgen, wenn es die Dividende weiterzahlt und sonst nichts tut?
+
+\begin{table}[htbp]
+\centering
+\caption{Entschuldungskapazit\"at, Mio.\,USD. Eine Kapazit\"atsrechnung, keine
+Prognose: Sie unterstellt, dass jeder freie Dollar nach Dividende in die
+Tilgung geht und keine Zuk\"aufe stattfinden.}
+\label{tab:azn-kapazitaet}
+\begin{tabular}{lr}
+\toprule
+Position & Betrag\\
+\midrule
+\tabellenkoerper{data/flow_azn_kapazitaet}
+\bottomrule
+\end{tabular}
+\end{table}
+
+\bk{Die Antwort lautet: rechnerisch unter sieben Jahre, und das ist die
+uninteressantere H\"alfte des Befunds. Die interessantere ist, dass diese
+Rechnung f\"ur dieses Unternehmen kaum bindet. Bei einer Verschuldung vom
+\Faktor{\AznVerschuldungsgrad}-fachen des EBITDA ist die Bilanz keine
+Beschr\"ankung; die Annahme \enquote{keine Zuk\"aufe} ist zugleich die
+unrealistischste des Berichts, denn das Unternehmen hat 2025 mehrere
+Transaktionen abgeschlossen und im Juli 2026 zwei weitere Lizenzen
+gezeichnet.}
+
+\FloatBarrier
+
+\subsection{Die Rechnung des Anlegers}
+\label{sec:anleger-azn}
+
+Die zweite Frage ist die, die \"uber den Kauf entscheidet. Die Zahlungsreihe
+lautet: Einstiegspreis heute, danach in jedem Jahr der ausschuettungsf\"ahige
+Mittelzufluss je Aktie, und am Ende der Buchwert je Aktie.
+
+\begin{table}[htbp]
+\centering
+\caption{Interner Zinsfu{\ss} in Prozent pro Jahr beim heutigen Kurs von
+\USDje{\AznKurs}, Endwert gleich Buchwert je Aktie}
+\label{tab:azn-irr}
+\begin{tabular}{lrrr}
+\toprule
+Niveau des Mittelzuflusses & 5 Jahre & 10 Jahre & 15 Jahre\\
+\midrule
+\tabellenkoerper{data/flow_azn_irr}
+\bottomrule
+\end{tabular}
+\end{table}
+
+\begin{table}[htbp]
+\centering
+\caption{Einstiegsschwelle in USD: der Preis, bei dem die Rendite die H\"urde
+von \Pct{\Huerde} genau erreicht. Endwert gleich Buchwert je Aktie.}
+\label{tab:azn-schwelle}
+\begin{tabular}{lrrrr}
+\toprule
+Niveau & je Aktie & 5 Jahre & 10 Jahre & 15 Jahre\\
+\midrule
+\tabellenkoerper{data/flow_azn_schwelle}
+\bottomrule
+\end{tabular}
+\end{table}
+
+\begin{table}[htbp]
+\centering
+\caption{Dieselbe Schwelle unter der zweiten Endwertannahme: die Aktie notiert
+am Ende des Horizonts nominal zum heutigen Kurs. Das ist eine Annahme, keine
+Prognose. Sie besagt nur, dass es weder Bewertungsgewinn noch
+Bewertungsverlust gibt.}
+\label{tab:azn-schwelle-variante}
+\begin{tabular}{lrrrr}
+\toprule
+Niveau & je Aktie & 5 Jahre & 10 Jahre & 15 Jahre\\
+\midrule
+\tabellenkoerper{data/flow_azn_schwellevariante}
+\bottomrule
+\end{tabular}
+\end{table}
+
+\FloatBarrier
+
+\begin{table}[htbp]
+\centering
+\caption{Umkehrung eins: der Endwert je Aktie, den der heutige Kurs bereits
+voraussetzt, in USD und als Vielfaches des Buchwerts}
+\label{tab:azn-endwert}
+\begin{tabular}{lrrr}
+\toprule
+Niveau & 5 Jahre & 10 Jahre & 15 Jahre\\
+\midrule
+\tabellenkoerper{data/flow_azn_endwert}
+\bottomrule
+\end{tabular}
+\end{table}
+
+\begin{table}[htbp]
+\centering
+\caption{Umkehrung zwei: das j\"ahrliche Wachstum des Mittelzuflusses in
+Prozent, das der heutige Kurs voraussetzt}
+\label{tab:azn-wachstum}
+\begin{tabular}{lrrr}
+\toprule
+Niveau & 5 Jahre & 10 Jahre & 15 Jahre\\
+\midrule
+\tabellenkoerper{data/flow_azn_wachstum}
+\bottomrule
+\end{tabular}
+\end{table}
+
+\FloatBarrier
+
+\subsection{Was die f\"unf Tabellen zusammen sagen}
+
+\bk{Die Rangfolge ist \"uber alle Horizonte und alle drei Niveaus stabil: Die
+Rendite steigt mit dem Horizont und mit dem Niveau, und sie erreicht die
+H\"urde in keiner einzigen Zelle. Das Niveau der Zahlen h\"angt an der
+Endwertannahme, die Rangfolge nicht, und das ist der Grund, dem Ergebnis zu
+trauen und zugleich seinem Betrag zu misstrauen.}
+
+\bk{Wie stark der Endwert das Ergebnis tr\"agt, zeigt der Vergleich der beiden
+Schwellentabellen. Mit dem Buchwert als Endwert liegt die Zehnjahresschwelle
+bei \USDje{\AznSchwelleZehn}; mit der Annahme, dass die Aktie in zehn Jahren
+noch zum heutigen Kurs notiert, bei \USDje{\AznSchwelleVarZehn}. Beide liegen
+unter dem Kurs von \USDje{\AznKurs}, aber die zweite liegt ihm deutlich
+n\"aher. Ein Leser, dem die erste Zahl unglaubw\"urdig erscheint, hat einen
+Punkt; und die zweite Zahl bleibt trotzdem eine Schwelle unter dem Kurs.}
+
+\bk{Tabelle~\ref{tab:azn-wachstum} ist die Zeile, an der sich das Votum
+pr\"ufen l\"asst. Der heutige Kurs setzt \"uber zehn Jahre
+\Pct{\AznWachstumZehn} Wachstum des freien Mittelzuflusses pro Jahr voraus.
+Das Unternehmen hat zwischen 2019 und 2025 \Pct{\AznCagr} pro Jahr geliefert.
+Die geforderte Rate ist also nicht absurd, sondern rund eineinhalbmal so hoch
+wie die tats\"achlich erreichte, und die tats\"achlich erreichte stammt aus
+einem Zeitraum, der die \"Ubernahme von Alexion und den Aufstieg der Onkologie
+enth\"alt und am h\"ochsten Punkt der Reihe endet.}

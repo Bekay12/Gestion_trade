@@ -1,0 +1,6 @@
+# Die Einreichungen (rund 300 MB) werden mit scripts/hole_quellen.py neu
+# beschafft; das Bauergebnis mit ./build.sh.
+refs/
+out/
+__pycache__/
+*.pyc

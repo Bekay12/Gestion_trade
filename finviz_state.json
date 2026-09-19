@@ -1,18 +1,18 @@
 {
-  "updated": "2026-09-14 19:52:40",
+  "updated": "2026-09-17 19:07:01",
   "tickers": {
     "AEM": "Agnico Eagle Mines Ltd",
     "AGI": "Alamos Gold Inc",
     "AU": "AngloGold Ashanti Plc",
+    "AZN": "Astrazeneca plc",
     "B": "Barrick Mining Corp",
     "FUTU": "Futu Holdings Ltd ADR",
     "GFI": "Gold Fields Ltd ADR",
-    "INTU": "Intuit Inc",
     "KGC": "Kinross Gold Corp",
     "NOW": "ServiceNow Inc",
     "PAAS": "Pan American Silver Corp",
+    "RDY": "Dr. Reddy's Laboratories Ltd ADR",
     "RMD": "Resmed Inc",
-    "ROP": "Roper Technologies Inc",
     "TYL": "Tyler Technologies Inc",
     "ULTA": "Ulta Beauty Inc"
   }

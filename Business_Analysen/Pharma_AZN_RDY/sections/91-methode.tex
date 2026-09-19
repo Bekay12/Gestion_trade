@@ -1,0 +1,90 @@
+% check-literals: skip
+% Grund: Dieser Abschnitt nennt die Zahl der geprueften Werte und der
+% Kettengleichungen. Sie kommen aus den Wachhunden selbst und werden von
+% scripts/methode.py in data/methode.tex geschrieben; die Makros stehen im
+% Text. Die Ausnahme deckt nur die verbleibenden Gliederungszahlen.
+\section*{Methode und Grenzen}
+\addcontentsline{toc}{section}{Methode und Grenzen}
+
+\subsection*{Was gepr\"uft ist}
+
+Jeder Zahlenwert dieses Dokuments steht genau einmal in
+\texttt{scripts/kennzahlen.py}, zusammen mit seiner Quelle und seiner
+gedruckten Seite. Prosa, Tabellen und Abbildungen lesen dieselbe Erkl\"arung;
+Text und Tabelle k\"onnen einander deshalb nicht widersprechen.
+
+Vier Skripte erzwingen das, weil Urteilsverm\"ogen bei dieser Menge versagt
+und ein Skript nicht:
+
+\begin{itemize}
+\item \texttt{pruefe\_seiten.py} sucht jeden Rohwert im Text genau der Seite,
+die sein Beleg nennt. Gepr\"uft werden \MethodeWerte{} Angaben; nicht belegt
+sind \MethodeFehler{}. Die \MethodeExtern{} Sekund\"arwerte tragen keine
+gedruckte Seite und stehen ausserhalb dieser Pr\"ufung.
+\item \texttt{reihe\_azn.py} und \texttt{reihe\_rdy.py} pr\"ufen die
+Mehrjahresreihen \"uber Kreuz: Jeder Bericht druckt drei Jahre, und die
+\"Uberlappung ergibt \MethodeKette{} Gleichungen, die alle aufgehen. Dieser
+Test f\"angt genau den Fehler, den die Seitenpr\"ufung nicht sehen kann: eine
+Spalte zu weit gegriffen, der Wert steht auf der zitierten Seite und geh\"ort
+einem anderen Jahr.
+\item \texttt{check\_literals.py} verbietet jede Zahl im Flie{\ss}text, die
+nicht aus der Zahlenschicht kommt.
+\item \texttt{check\_footnote\_pages.py} und
+\texttt{check\_footnote\_groups.py} halten den Fu{\ss}notenapparat sauber.
+\end{itemize}
+
+\subsection*{Drei Farben, drei Verantwortlichkeiten}
+
+\begin{itemize}
+\item \textbf{Schwarz}: Zahlen, Tabellen, Quellen, Seiten. Daf\"ur steht die
+Prim\"arquelle ein. Wer nur die schwarzen Teile liest, erh\"alt die belegte
+Lage ohne jede Wertung.
+\item \bk{\textbf{Blau}: Einsch\"atzungen im laufenden Text. Daf\"ur steht der
+Verfasser ein.}
+\item \vd{\textbf{Rot}: die Voten in den Teilen \ref{sec:verdikt-azn} und
+\ref{sec:verdikt-rdy}. Eine Empfehlung unter erkl\"arten Annahmen, kein
+Befund.}
+\end{itemize}
+
+\subsection*{Prim\"ar und sekund\"ar}
+
+Kurse, Wechselkurse, der Branchenindex und der Analystenkonsens stehen in
+keinem Gesch\"aftsbericht. Sie fehlen dort nicht, sie geh\"oren dort nicht
+hin. Erhoben sind sie aus benannten Sekund\"arquellen mit Abrufdatum und
+gepr\"uft, soweit sie sich pr\"ufen lassen: Das aus Kursziel und Aufschlag
+zur\"uckgerechnete Bezugsniveau beider Konsenswerte trifft auf den Cent den
+Schlusskurs des \Datum{\AznKursTag}. Die Angaben sind also aktuell und nicht
+stehengeblieben.
+
+\subsection*{Was nicht gepr\"uft ist}
+
+Die Rechnungen in den Teilen \ref{sec:flow-azn} und \ref{sec:flow-rdy} sind
+Modelle. Sie halten den Mittelzufluss konstant und prognostizieren damit
+nichts; was sie leisten, ist die Umkehrung der Frage, welches Wachstum
+welchen Endwert der heutige Preis voraussetzt. Diese Umkehrung ist nachrechenbar,
+ihre Annahmen stehen offen, und das Ergebnis h\"angt an ihnen. Wer die
+Annahmen \"andert, \"andert das Ergebnis; deshalb stehen bei beiden Titeln
+drei Endwertannahmen nebeneinander statt einer.
+
+Nicht gepr\"uft und nicht abgebildet sind: Steuern des Anlegers,
+Quellensteuern, Transaktionskosten, das W\"ahrungsrisiko der Rupie f\"ur
+einen Anleger in Dollar oder Euro, und die Frage, wie diese beiden Titel in
+ein bestehendes Verm\"ogen passen.
+
+\subsection*{Wann diese Analyse veraltet}
+
+Mit dem n\"achsten Zwischenbericht. F\"ur AstraZeneca ist das der Bericht
+zum dritten Quartal 2026, f\"ur Dr.~Reddy's der zum zweiten Quartal des
+Gesch\"aftsjahres 2027. Beide Voten h\"angen an Gr\"o{\ss}en, die dort neu
+stehen werden. Die Kurse, die H\"urde und der Konsens sind Stichtagswerte des
+17.~bzw.\ 18.~September 2026.
+
+\subsection*{Hinweis zur Nutzung von KI-Werkzeugen}
+
+Dieses Dokument ist mit Unterst\"utzung eines Sprachmodells entstanden. Das
+Modell hat die Quellen beschafft und seitenweise zerlegt, die Zahlenschicht
+und die Pr\"ufskripte geschrieben, die Rechnungen gef\"uhrt und die Prosa
+entworfen. Jede Zahl ist maschinell gegen die gedruckte Seite ihrer Quelle
+gepr\"uft; kein Wert ist gesch\"atzt oder erg\"anzt worden. Die blau und rot
+gesetzten Passagen sind Einsch\"atzungen und Voten und als solche vom
+Verfasser zu verantworten, nicht vom Werkzeug.

@@ -1,0 +1,98 @@
+% check-literals: skip
+% Grund: Diese Datei enthaelt die Aktenzeichen der EDGAR-Einreichungen und
+% die Jahreszahlen der Berichtsreihe. Aktenzeichen sind Kennungen der Quelle,
+% keine Zahlenwerte des Dokuments; sie gehoeren nicht nach
+% data/kennzahlen.tex. Die Ausnahme gilt nur fuer diese Datei.
+\section*{Quellenverzeichnis}
+\addcontentsline{toc}{section}{Quellenverzeichnis}
+
+Beide Unternehmen sind ausl\"andische Emittenten in den Vereinigten Staaten
+und reichen Form~20-F ein, nicht Form~10-K; Zwischenberichte erscheinen als
+Form~6-K. Die beiden gehen in der Darbietung auseinander, und das bestimmt,
+welches Dokument hier zitiert wird.
+
+AstraZeneca bindet die Form-20-F-Angaben in seinen Gesch\"aftsbericht ein und
+ver\"offentlicht beides als ein Dokument. Die bei der SEC eingereichte
+HTML-Fassung tr\"agt keine gedruckten Seitenzahlen; zitiert wird deshalb die
+PDF-Fassung von der Unternehmenswebseite, die inhaltsgleich ist und
+paginiert. Die gedruckte Seite und die PDF-Seite gehen dort um zwei
+auseinander; zitiert wird die gedruckte.
+
+Dr.~Reddy's reicht ein eigenst\"andiges Form~20-F ein, dessen HTML-Fassung
+die gedruckten Seitenzahlen in der Fu{\ss}zeile f\"uhrt. Zitiert wird die
+Einreichung selbst.
+
+Die Seitenangaben der Fu{\ss}noten werden von
+\texttt{scripts/seiten\_zerlegen.py} aus der Fu{\ss}zeile gelesen und von
+\texttt{scripts/pruefe\_seiten.py} gegen die Quelle gepr\"uft: Jede in
+\texttt{scripts/kennzahlen.py} hinterlegte Zahl muss im Text der Seite
+vorkommen, die sie angibt.
+
+\subsection*{Unternehmenseigene Berichte}
+
+\begin{itemize}
+\item \label{quelle:gb2025} AstraZeneca PLC: \emph{Annual Report \& Form 20-F
+Information 2025}. Eingereicht am 24.~Februar 2026, Aktenzeichen
+0001104659-26-019130; zitiert nach der paginierten PDF-Fassung,
+\url{https://www.astrazeneca.com/investor-relations/annual-reports.html},
+abgerufen am 17.09.2026.
+\item \label{quelle:gb2024} AstraZeneca PLC: \emph{Annual Report \& Form 20-F
+Information 2024}. Eingereicht am 18.~Februar 2025, Aktenzeichen
+0001104659-25-014750; PDF-Fassung wie oben.
+\item \label{quelle:gb2023} AstraZeneca PLC: \emph{Annual Report \& Form 20-F
+Information 2023}. Eingereicht am 20.~Februar 2024, Aktenzeichen
+0001104659-24-025553; PDF-Fassung wie oben.
+\item \label{quelle:gb2022} AstraZeneca PLC: \emph{Annual Report \& Form 20-F
+Information 2022}. Eingereicht am 21.~Februar 2023, Aktenzeichen
+0001104659-23-023818; PDF-Fassung wie oben.
+\item \label{quelle:gb2021} AstraZeneca PLC: \emph{Annual Report \& Form 20-F
+Information 2021}. Eingereicht am 22.~Februar 2022, Aktenzeichen
+0001104659-22-025720; PDF-Fassung wie oben.
+\item \label{quelle:hj} AstraZeneca PLC: \emph{H1 and Q2 2026 Results}.
+Form~6-K, eingereicht am 27.~Juli 2026, Aktenzeichen 0001104659-26-086846.
+\item \label{quelle:zf2026} Dr.~Reddy's Laboratories Ltd.: \emph{Form 20-F for
+the fiscal year ended March 31, 2026}. Eingereicht am 29.~Mai 2026,
+Aktenzeichen 0001575872-26-000381.
+\item \label{quelle:qb} Dr.~Reddy's Laboratories Ltd.: \emph{Report for the
+quarter ended June 30, 2026}. Form~6-K, eingereicht am 22.~Juli 2026,
+Aktenzeichen 0001575872-26-000522.
+\end{itemize}
+
+Weitere Einreichungen wurden ausgewertet, aber im Text nicht zitiert: die
+Form 20-F von Dr.~Reddy's f\"ur die Gesch\"aftsjahre 2020, 2022, 2023 und
+2025, aus denen die Mehrjahresreihe in Tabelle~\ref{tab:rdy-reihe} stammt und
+deren Werte gegeneinander gepr\"uft sind. Die Gesch\"aftsberichte von
+AstraZeneca f\"ur 2019 und 2020 liegen vor, werden aber nicht als Belegquelle
+verwendet: Ihre Fu{\ss}zeile ist in einer Schrift ohne Unicode-Zuordnung
+gesetzt, aus der sich die gedruckte Seitenzahl nicht zuverl\"assig lesen
+l\"asst.
+
+\subsection*{Sekund\"arquellen}
+
+Sekund\"arquellen tragen keine gedruckte Seite und stehen deshalb
+au{\ss}erhalb der Seitenpr\"ufung. Jede Tabelle, die einen solchen Wert
+f\"uhrt, weist ihn in der Beschriftung als Sekund\"arquelle aus.
+
+\begin{itemize}
+\item \label{quelle:huerde} BlackRock: \emph{iShares U.S. Pharmaceuticals ETF
+(IHE): Average Annual Total Returns}, Benchmark Dow Jones U.S. Select
+Pharmaceuticals Index, Zehnjahresrendite zum 30.~Juni 2026.
+\url{https://www.ishares.com/us/products/239521/ishares-us-pharmaceuticals-etf},
+abgerufen am 17.09.2026.
+\item \label{quelle:ezb} Europ\"aische Zentralbank: \emph{Euro-Referenzkurse
+vom 17.~September 2026}.
+\url{https://www.ecb.europa.eu/stats/eurofxref/eurofxref-daily.xml},
+abgerufen am 17.09.2026. Der verwendete Kurs USD/INR ist ein Kreuzkurs aus
+EUR/USD und EUR/INR.
+\item \label{quelle:konsensazn} stockanalysis.com: \emph{AstraZeneca (AZN)
+Stock Forecast}, Datenbasis S\&P Global.
+\url{https://stockanalysis.com/stocks/azn/forecast/}, abgerufen am 18.09.2026.
+\item \label{quelle:konsensrdy} stockanalysis.com: \emph{Dr. Reddy's
+Laboratories (RDY) Stock Forecast}, Datenbasis S\&P Global.
+\url{https://stockanalysis.com/stocks/rdy/forecast/}, abgerufen am 18.09.2026.
+\item \label{quelle:nasdaq} Nasdaq: \emph{Historical Quotes AZN und RDY}.
+\url{https://api.nasdaq.com/api/quote/AZN/historical},
+\url{https://api.nasdaq.com/api/quote/RDY/historical}, abgerufen am
+18.09.2026. Kursreihen ohne Dividenden, um Split bzw.\ Umstellung der
+Notierung zur\"uckgerechnet.
+\end{itemize}
