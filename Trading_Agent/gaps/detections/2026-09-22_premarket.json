@@ -1,0 +1,73 @@
+{
+ "date": "2026-09-22T07:35:45.620046-04:00",
+ "mode": "premarket",
+ "fenetre_au_scan": "premarket",
+ "min_gap": 5,
+ "verdicts": [
+  {
+   "ticker": "LXEO",
+   "classe": "A_CONFIRMER",
+   "horizon": "indetermine tant que l'ouverture n'a pas eu lieu",
+   "sortie": "requalifier a 10h00 ET (regle des 30 min) avant toute entree",
+   "motifs": [
+    "catalyseur haussier verifie: 8-K 22.09.2026 Item 1.01+8.01 - acquisition Mantle Therapeutics (5,3 M$ cash + 3,0 M$ actions), collaborations strategiques, 22 patients enroles CLARITY-FA, call 8h00 ET",
+    "short interest 29,1 % du float: carburant de squeeze",
+    "gap +4,90 % = 1,20 x ATR, comblement attendu 25 %",
+    "RVOL et VWAP non mesurables avant l'ouverture (pas de volume pre-marche yfinance)"
+   ],
+   "alertes": [],
+   "inconnues": [
+    "VWAP non mesure",
+    "RVOL non mesurable",
+    "tenue a 30 min inconnue"
+   ],
+   "comblement_attendu_pct": 25,
+   "catalyseur_verifie": "8-K 2026-09-22, accession 0001193125-26-397221",
+   "cloture_precedente": 4.08,
+   "pre_marche": 4.28,
+   "gap_pct": 4.9,
+   "short_interest_pct": 29.13,
+   "float_actions": 51225651
+  },
+  {
+   "ticker": "GDC",
+   "classe": "INSUFFISANT",
+   "horizon": "aucun",
+   "sortie": "ne pas entrer",
+   "motifs": [
+    "volume moyen 241,900 < 500,000 (P7 Ch.01: risque pour le trading actif)"
+   ],
+   "alertes": [
+    "montee rapide sans catalyseur identifie (RVOL eleve)",
+    "nano cap (6 M$), facile a manipuler",
+    "low float (4.1 M), mouvements violents"
+   ],
+   "inconnues": [
+    "catalyseur non verifie (EDGAR / news)",
+    "tenue a 30 min inconnue (mesurable seulement apres l'ouverture)"
+   ],
+   "comblement_attendu_pct": null
+  },
+  {
+   "ticker": "VEEA",
+   "classe": "INSUFFISANT",
+   "horizon": "aucun",
+   "sortie": "ne pas entrer",
+   "motifs": [
+    "volume moyen 163,600 < 500,000 (P7 Ch.01: risque pour le trading actif)"
+   ],
+   "alertes": [
+    "montee rapide sans catalyseur identifie (RVOL eleve)",
+    "nano cap (11 M$), facile a manipuler",
+    "low float (1.5 M), mouvements violents",
+    "cours sous le VWAP (-10.6 %), pression vendeuse"
+   ],
+   "inconnues": [
+    "catalyseur non verifie (EDGAR / news)",
+    "tenue a 30 min inconnue (mesurable seulement apres l'ouverture)"
+   ],
+   "comblement_attendu_pct": null
+  }
+ ],
+ "catalyseurs_verifies_le": "2026-09-22T07:45:00-04:00"
+}
