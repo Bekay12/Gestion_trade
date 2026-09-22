@@ -62,3 +62,13 @@ Desktop.ini
 
 # Extracted Alamos financial-statement text files
 Business_Analysen/**/**/**/*.txt
+
+# Magazines sources : 177 Mo de PDF achetes, reconvertis en Markdown par
+# Magasines/pdf_to_markdown.py. Le Markdown et les tableaux de recommandations
+# se versionnent, les PDF non : ils gonflent le depot sans etre reproductibles
+# par le code, et leur contenu utile vit deja dans MARKDOWNS/.
+Magasines/PDFs/
+
+# Pages de texte extraites des PDF : intermediaire regenerable par le pipeline.
+Magasines/pipeline_recos/pages/
+Magasines/__pycache__/
