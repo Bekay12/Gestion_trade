@@ -42,12 +42,76 @@ except Exception:
 
 logging.getLogger("yfinance").setLevel(logging.CRITICAL)
 logging.getLogger("urllib3").setLevel(logging.CRITICAL)
+logger = logging.getLogger(__name__)
 
 _throttle_lock = threading.Lock()
 _last_call_time = 0.0
 THROTTLE_DELAY = 0.25
 _skip_lock = threading.Lock()
 _skip_reasons: dict[str, int] = {}
+
+# Bogue observe le 20.09.2026 sur DTG.DE: "dividendYield" valait 4.37 (deja
+# un pourcentage) alors que "trailingAnnualDividendYield" valait 0.042937852
+# (fraction) pour le MEME dividende reel (~4,3 %) - yfinance ne garantit pas
+# l'echelle du premier champ. Multiplier par 100 sans verification donnait
+# 437 % au lieu de 4,37 %. Meme correctif que Combined_scan.py.
+_SEUIL_FRACTION_PLAUSIBLE = 1.5    # aucun rendement de dividende reel ne depasse 150 %
+_SEUIL_CROISSANCE_EXTREME = 300.0  # % au-dela desquels la valeur est signalee, pas corrigee
+
+
+def _pct_dividend_yield(info):
+    """
+    --------------------------------------------------------------------------
+    Purpose:
+        Rendement du dividende en %, robuste au changement de convention de
+        yfinance sur "dividendYield" (fraction 0-1 vs pourcentage deja mis a
+        l'echelle). Quand "trailingAnnualDividendYield" (toujours documente
+        comme une fraction) est disponible, il sert d'etalon: l'echelle
+        retenue est celle qui s'en rapproche le plus. A defaut, une fraction
+        plausible ne depasse jamais _SEUIL_FRACTION_PLAUSIBLE (150 %).
+
+    Inputs:
+        info (dict): objet yfinance .info
+
+    Outputs:
+        pct (float | None): rendement en pourcentage, ou None si absent
+    --------------------------------------------------------------------------
+    """
+    dy_brut  = _safe_float(info.get("dividendYield"))
+    dy_annee = _safe_float(info.get("trailingAnnualDividendYield"))
+    if dy_brut is not None:
+        if dy_annee is not None and dy_annee > 0:
+            comme_pourcentage = abs(dy_brut - dy_annee * 100)
+            comme_fraction    = abs(dy_brut * 100 - dy_annee * 100)
+            return round(dy_brut if comme_pourcentage <= comme_fraction else dy_brut * 100, 2)
+        return round(dy_brut if abs(dy_brut) > _SEUIL_FRACTION_PLAUSIBLE else dy_brut * 100, 2)
+    if dy_annee is not None:
+        return round(dy_annee * 100, 2)
+    return None
+
+
+def _pct_croissance(fraction, ticker=None, champ=None):
+    """
+    --------------------------------------------------------------------------
+    Purpose:
+        Convertit une fraction de croissance yfinance en pourcentage sans
+        l'alterer - une croissance extreme peut etre reelle (base de
+        comparaison proche de zero) - mais la journalise pour verification
+        au lieu de l'accepter sans regard.
+
+    Inputs:
+        fraction (float): valeur brute du champ yfinance
+        ticker, champ (str): pour le message de journalisation uniquement
+
+    Outputs:
+        pct (float): fraction * 100, journalisee si |pct| > 300 %
+    --------------------------------------------------------------------------
+    """
+    pct = fraction * 100
+    if abs(pct) > _SEUIL_CROISSANCE_EXTREME:
+        logger.warning(f"[SCAN] {ticker or '?'} {champ or 'croissance'}: {pct:.0f}% "
+                       f"- valeur extreme, a verifier avant de la prendre au mot")
+    return pct
 USE_MARKET_DB = True
 EUR_USD_RATE = 1.08   # conserve pour l'option --eur-usd ; voir charger_taux_eur()
 
@@ -222,10 +286,9 @@ def c3_beta(info, hist):
     return 0 < beta < 0.8, round(beta, 2), f"Beta={round(beta,2)}"
 
 def c4_dividend_yield(info):
-    dy = _safe_float(info.get("dividendYield")) or _safe_float(info.get("trailingAnnualDividendYield"))
-    if dy is None: return False, None, "N/A"
-    dy_pct = dy * 100
-    return dy_pct > 0, round(dy_pct, 2), f"Div={round(dy_pct,2)}%"
+    dy_pct = _pct_dividend_yield(info)
+    if dy_pct is None: return False, None, "N/A"
+    return dy_pct > 0, dy_pct, f"Div={dy_pct}%"
 
 def c5_fcf_margin(info):
     fcf = _safe_float(info.get("freeCashflow"))
@@ -240,7 +303,7 @@ def c5_fcf_margin(info):
     margin = (fcf / rev) * 100
     return margin > 5.0, round(margin, 1), f"FCFmarge={round(margin,1)}%"
 
-def c6_fcf_growth_5y(info):
+def c6_fcf_growth_5y(info, ticker=None):
     growth = _safe_float(info.get("earningsQuarterlyGrowth")) or _safe_float(info.get("earningsGrowth"))
     fcf = _safe_float(info.get("freeCashflow"))
     if fcf is None:
@@ -250,22 +313,25 @@ def c6_fcf_growth_5y(info):
             fcf = ocf - abs(capex)
     if fcf is None: return False, None, "N/A"
     if growth is not None:
-        g_pct = growth * 100
+        g_pct = _pct_croissance(growth, ticker, "C6 earningsGrowth")
         return fcf > 0 and g_pct > 0, round(g_pct, 1), f"FCF+EG={round(g_pct,1)}%"
     rev_g = _safe_float(info.get("revenueGrowth"))
     if rev_g is not None:
-        return fcf > 0 and rev_g > 0, round(rev_g*100,1), f"FCF+RG={round(rev_g*100,1)}%"
+        g_pct = _pct_croissance(rev_g, ticker, "C6 revenueGrowth")
+        return fcf > 0 and g_pct > 0, round(g_pct, 1), f"FCF+RG={round(g_pct,1)}%"
     return fcf > 0, None, f"FCF={'pos' if fcf > 0 else 'neg'}"
 
-def c7_revenue_eps_growth_5y(info):
+def c7_revenue_eps_growth_5y(info, ticker=None):
     rev_g = _safe_float(info.get("revenueGrowth"))
     eps_g = _safe_float(info.get("earningsGrowth"))
     if rev_g is None and eps_g is None: return False, None, "N/A"
-    values = [g for g in [rev_g, eps_g] if g is not None]
-    avg_pct = sum(values) / len(values) * 100
-    if rev_g is not None and eps_g is not None:
-        passed = rev_g * 100 > 3.0 and eps_g * 100 > 3.0
-        detail = f"RevG={round(rev_g*100,1)}% EpsG={round(eps_g*100,1)}%"
+    rev_g_pct = _pct_croissance(rev_g, ticker, "C7 revenueGrowth") if rev_g is not None else None
+    eps_g_pct = _pct_croissance(eps_g, ticker, "C7 earningsGrowth") if eps_g is not None else None
+    values = [v for v in [rev_g_pct, eps_g_pct] if v is not None]
+    avg_pct = sum(values) / len(values)
+    if rev_g_pct is not None and eps_g_pct is not None:
+        passed = rev_g_pct > 3.0 and eps_g_pct > 3.0
+        detail = f"RevG={round(rev_g_pct,1)}% EpsG={round(eps_g_pct,1)}%"
     else:
         passed = avg_pct > 3.0
         detail = f"AvgG={round(avg_pct,1)}%"
@@ -302,8 +368,8 @@ def analyze(ticker):
     r3 = c3_beta(info, hist)
     r4 = c4_dividend_yield(info)
     r5 = c5_fcf_margin(info)
-    r6 = c6_fcf_growth_5y(info)
-    r7 = c7_revenue_eps_growth_5y(info)
+    r6 = c6_fcf_growth_5y(info, ticker)
+    r7 = c7_revenue_eps_growth_5y(info, ticker)
     score = sum(1 for r in [r1,r2,r3,r4,r5,r6,r7] if r[0])
 
     price = _safe_float(info.get("currentPrice") or info.get("regularMarketPrice") or info.get("previousClose"))

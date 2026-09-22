@@ -55,9 +55,80 @@ except Exception:
 
 logging.getLogger("yfinance").setLevel(logging.CRITICAL)
 logging.getLogger("urllib3").setLevel(logging.CRITICAL)
+logger = logging.getLogger(__name__)
 
 _throttle_lock  = threading.Lock()
 _last_call_time = 0.0
+
+# Bogue observe le 20.09.2026 sur DTG.DE: "dividendYield" valait 4.37 (deja
+# un pourcentage) alors que "trailingAnnualDividendYield" valait 0.042937852
+# (fraction) pour le MEME dividende reel (~4,3 %) - yfinance ne garantit pas
+# l'echelle du premier champ, elle varie selon le titre et la version de
+# l'API Yahoo. Multiplier "dividendYield" par 100 sans verification donnait
+# 437 % au lieu de 4,37 %.
+_SEUIL_FRACTION_PLAUSIBLE = 1.5   # aucun rendement de dividende reel ne depasse 150 %
+_SEUIL_CROISSANCE_EXTREME = 300.0  # % au-dela desquels la valeur est signalee, pas corrigee
+
+
+def _pct_dividend_yield(info):
+    """
+    --------------------------------------------------------------------------
+    Purpose:
+        Rendement du dividende en %, robuste au changement de convention de
+        yfinance (fraction 0-1 vs pourcentage deja mis a l'echelle) sur le
+        champ "dividendYield". Quand "trailingAnnualDividendYield" (toujours
+        documente comme une fraction) est aussi disponible, il sert d'etalon:
+        l'echelle retenue pour "dividendYield" est celle qui s'en rapproche
+        le plus. A defaut, une fraction de rendement plausible ne depasse
+        jamais _SEUIL_FRACTION_PLAUSIBLE (150 %); au-dessus, le champ est
+        deja en pourcentage.
+
+    Inputs:
+        info (dict): objet yfinance .info
+
+    Outputs:
+        pct (float | None): rendement en pourcentage, ou None si absent
+    --------------------------------------------------------------------------
+    """
+    dy_brut  = _safe_float(info.get("dividendYield"))
+    dy_annee = _safe_float(info.get("trailingAnnualDividendYield"))
+    if dy_brut is not None:
+        if dy_annee is not None and dy_annee > 0:
+            comme_pourcentage = abs(dy_brut - dy_annee * 100)
+            comme_fraction    = abs(dy_brut * 100 - dy_annee * 100)
+            return round(dy_brut if comme_pourcentage <= comme_fraction else dy_brut * 100, 2)
+        return round(dy_brut if abs(dy_brut) > _SEUIL_FRACTION_PLAUSIBLE else dy_brut * 100, 2)
+    if dy_annee is not None:
+        return round(dy_annee * 100, 2)
+    return None
+
+
+def _pct_croissance(fraction, ticker=None, champ=None):
+    """
+    --------------------------------------------------------------------------
+    Purpose:
+        Convertit une fraction de croissance yfinance (earningsGrowth,
+        earningsQuarterlyGrowth, revenueGrowth - documentes comme des
+        fractions, verifie constant sur plusieurs titres) en pourcentage.
+        N'ALTERE PAS la valeur: une croissance extreme peut etre reelle
+        (base de comparaison proche de zero), mais elle est journalisee
+        pour verification plutot qu'acceptee sans regard - le rendement du
+        dividende a montre que la confiance aveugle dans l'echelle d'un
+        champ yfinance produit des chiffres absurdes.
+
+    Inputs:
+        fraction (float): valeur brute du champ yfinance
+        ticker, champ (str): pour le message de journalisation uniquement
+
+    Outputs:
+        pct (float): fraction * 100, journalisee si |pct| > 300 %
+    --------------------------------------------------------------------------
+    """
+    pct = fraction * 100
+    if abs(pct) > _SEUIL_CROISSANCE_EXTREME:
+        logger.warning(f"[SCAN] {ticker or '?'} {champ or 'croissance'}: {pct:.0f}% "
+                       f"- valeur extreme, a verifier avant de la prendre au mot")
+    return pct
 THROTTLE_DELAY  = 0.25
 _skip_lock      = threading.Lock()
 _skip_reasons: dict[str, int] = {}
@@ -278,9 +349,9 @@ def s3_beta(info):
     return 0 < beta < 0.8, round(beta, 2)
 
 def s4_dividend(info):
-    dy = _safe_float(info.get("dividendYield")) or _safe_float(info.get("trailingAnnualDividendYield"))
-    if dy is None: return False, None
-    return dy*100 > 0, round(dy*100, 2)
+    dy_pct = _pct_dividend_yield(info)
+    if dy_pct is None: return False, None
+    return dy_pct > 0, dy_pct
 
 def s5_fcf_margin(info):
     fcf = _safe_float(info.get("freeCashflow"))
@@ -295,7 +366,7 @@ def s5_fcf_margin(info):
     margin = (fcf/rev)*100
     return margin > 5.0, round(margin, 1)
 
-def s6_fcf_growth(info):
+def s6_fcf_growth(info, ticker=None):
     g   = _safe_float(info.get("earningsQuarterlyGrowth")) or _safe_float(info.get("earningsGrowth"))
     fcf = _safe_float(info.get("freeCashflow"))
     if fcf is None:
@@ -305,20 +376,24 @@ def s6_fcf_growth(info):
             fcf = ocf - abs(capex)
     if fcf is None: return False, None
     if g is not None:
-        return fcf > 0 and g*100 > 0, round(g*100, 1)
+        pct = _pct_croissance(g, ticker, "S6 earningsGrowth")
+        return fcf > 0 and pct > 0, round(pct, 1)
     rg = _safe_float(info.get("revenueGrowth"))
     if rg is not None:
-        return fcf > 0 and rg > 0, round(rg*100, 1)
+        pct = _pct_croissance(rg, ticker, "S6 revenueGrowth")
+        return fcf > 0 and pct > 0, round(pct, 1)
     return fcf > 0, None
 
-def s7_rev_eps_growth(info):
+def s7_rev_eps_growth(info, ticker=None):
     rg = _safe_float(info.get("revenueGrowth"))
     eg = _safe_float(info.get("earningsGrowth"))
     if rg is None and eg is None: return False, None
-    vals = [g for g in [rg, eg] if g is not None]
-    avg  = sum(vals)/len(vals)*100
-    if rg is not None and eg is not None:
-        return rg*100 > 3.0 and eg*100 > 3.0, round(avg, 1)
+    rg_pct = _pct_croissance(rg, ticker, "S7 revenueGrowth") if rg is not None else None
+    eg_pct = _pct_croissance(eg, ticker, "S7 earningsGrowth") if eg is not None else None
+    vals = [v for v in [rg_pct, eg_pct] if v is not None]
+    avg  = sum(vals)/len(vals)
+    if rg_pct is not None and eg_pct is not None:
+        return rg_pct > 3.0 and eg_pct > 3.0, round(avg, 1)
     return avg > 3.0, round(avg, 1)
 
 # ═══════════════════════════════════════════════════════════════
@@ -376,8 +451,8 @@ def analyze(ticker):
     rs3 = s3_beta(info)
     rs4 = s4_dividend(info)
     rs5 = s5_fcf_margin(info)
-    rs6 = s6_fcf_growth(info)
-    rs7 = s7_rev_eps_growth(info)
+    rs6 = s6_fcf_growth(info, ticker)
+    rs7 = s7_rev_eps_growth(info, ticker)
     safe_score = sum(1 for r in [rs1,rs2,rs3,rs4,rs5,rs6,rs7] if r[0])
 
     total_score = growth_score + safe_score
