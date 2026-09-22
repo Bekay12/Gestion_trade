@@ -7,12 +7,14 @@ qu'on se rappelle quand elle avait raison. Ce script relit un fichier de
 detection, va chercher ce que le titre a fait depuis, et note chaque verdict
 contre ce que ce verdict PROMETTAIT.
 
-Les quatre verdicts ne se jugent pas sur le meme critere :
+Les verdicts ne se jugent pas sur le meme critere :
 
-    FADE          promet un comblement -> le gap s'est-il comble ?
-    CONTINUATION  promet une tenue     -> le cours a-t-il tenu au-dessus ?
+    FADE          promet un comblement   -> le gap s'est-il comble ?
+    CONTINUATION  promet une tenue       -> le cours a-t-il tenu au-dessus ?
     SQUEEZE       promet plusieurs jours -> ou en est-on a J+3 ?
-    PUMP_RISK     promet une chute     -> le titre est-il retombe ?
+    PUMP_RISK     promet une chute       -> le titre est-il retombe ?
+    A_CONFIRMER   ne promet rien         -> le gap a-t-il tenu, ou l'attente
+                                            a-t-elle evite une entree ?
 
 Un verdict sans donnee de cours n'est pas compte comme juste : il ressort
 "incomplet". La regle du depot vaut ici aussi - une donnee absente ne vaut pas
@@ -42,6 +44,7 @@ PROMESSES = {
     "SQUEEZE":      "le mouvement se poursuit sur plusieurs seances",
     "PUMP_RISK":    "le titre retombe, souvent sous son niveau d'avant-gap",
     "INSUFFISANT":  "aucune promesse : titre ecarte pour liquidite",
+    "A_CONFIRMER":  "rien n'est promis : le verdict attend la regle des 30 min",
 }
 
 
@@ -143,6 +146,19 @@ def noter(verdict: dict, serie: dict | None) -> dict:
                           if poursuivi else
                           f"retombe a {var_totale:+.1f} %, pas un squeeze"),
                 "variation_pct": round(var_totale, 2) if var_totale else None}
+
+    if classe == "A_CONFIRMER":
+        # Ce verdict ne promet pas une direction, il promet qu'une REQUALIFICATION
+        # etait necessaire. On le note donc sur ce que la seance a revele: le gap
+        # a-t-il tenu (auquel cas la requalification etait justifiee) ou s'est-il
+        # comble d'emblee (auquel cas l'attente a evite une entree perdante) ?
+        tenu = cloture_j0 >= ouverture
+        return {"ticker": ticker, "classe": classe,
+                "resultat": "tenu" if tenu else "comble",
+                "motif": (f"gap tenu, cloture {var_j0:+.1f} % : requalification justifiee"
+                          if tenu else
+                          f"gap comble, cloture {var_j0:+.1f} % : l'attente a evite l'entree"),
+                "variation_pct": round(var_j0, 2) if var_j0 is not None else None}
 
     if classe == "PUMP_RISK":
         retombe = dernier < ouverture

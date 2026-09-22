@@ -34,6 +34,7 @@ général :
 | `CONTINUATION` | le gap tient | clôture ≥ ouverture |
 | `SQUEEZE` | le mouvement dure | encore ≥ ouverture après plusieurs séances |
 | `PUMP_RISK` | le titre retombe | clôture < ouverture sur la fenêtre |
+| `A_CONFIRMER` | rien : le verdict attend la règle des 30 min | noté `tenu` ou `comblé`, jamais juste/faux |
 | `INSUFFISANT` | aucune | non jugé (écarté à la détection) |
 
 Un verdict sans cours disponible ressort **incomplet** et n'est compté ni juste
