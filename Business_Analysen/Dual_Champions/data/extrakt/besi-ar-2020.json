@@ -1,0 +1,128 @@
+{
+ "datei": "besi-ar-2020.txt",
+ "arten": {
+  "cf": {
+   "seite": "107",
+   "jahre": [
+    "2020",
+    "2019"
+   ],
+   "posten": {
+    "operativer_cf": [
+     {
+      "etikett": "Net cash provided by operating activities",
+      "werte": [
+       162021.0,
+       120108.0
+      ],
+      "seite": "107"
+     }
+    ],
+    "investitionen": [
+     {
+      "etikett": "Capital expenditures",
+      "werte": [
+       9.0,
+       11.0
+      ],
+      "seite": "107"
+     }
+    ],
+    "leasing": [
+     {
+      "etikett": "Payments on lease liabilities",
+      "werte": [
+       18.0,
+       19.0
+      ],
+      "seite": "107"
+     }
+    ],
+    "dividenden": [
+     {
+      "etikett": "Dividend paid to shareholders",
+      "werte": [
+       -73486.0,
+       -122419.0
+      ],
+      "seite": "107"
+     }
+    ],
+    "rueckkauf": [
+     {
+      "etikett": "Purchase treasury shares",
+      "werte": [
+       -17781.0,
+       -44678.0
+      ],
+      "seite": "107"
+     }
+    ]
+   },
+   "verworfen": [],
+   "tokens": 1208
+  },
+  "guv": {
+   "seite": "105",
+   "jahre": [
+    "2020",
+    "2019"
+   ],
+   "posten": {
+    "umsatz": [
+     {
+      "etikett": "Revenue",
+      "werte": [
+       23.0,
+       24.0
+      ],
+      "seite": "105"
+     }
+    ],
+    "ergebnis": [
+     {
+      "etikett": "Net income",
+      "werte": [
+       132275.0,
+       81320.0
+      ],
+      "seite": "105"
+     }
+    ],
+    "eps_verwaessert": [
+     {
+      "etikett": "Diluted1",
+      "werte": [
+       1.67,
+       1.06
+      ],
+      "seite": "105"
+     }
+    ]
+   },
+   "verworfen": [],
+   "tokens": 1115
+  },
+  "bilanz": {
+   "seite": "104",
+   "jahre": [
+    "2020",
+    "2019"
+   ],
+   "posten": {
+    "eigenkapital": [
+     {
+      "etikett": "Equity attributable to owners of the Company",
+      "werte": [
+       371227.0,
+       298508.0
+      ],
+      "seite": "104"
+     }
+    ]
+   },
+   "verworfen": [],
+   "tokens": 1216
+  }
+ }
+}

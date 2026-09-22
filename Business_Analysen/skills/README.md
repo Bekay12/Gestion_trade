@@ -17,14 +17,14 @@ hier, damit sie **versioniert** sind und mit dem Repository reisen.
 
 ```bash
 rsync -a --delete \
-  --exclude '__pycache__' --exclude '*.pyc' \
+  --exclude '__pycache__' --exclude '*.pyc' --exclude '.gitkeep' \
   ~/.claude/skills/startup-investment-analyzer/ \
   Business_Analysen/skills/startup-investment-analyzer/
 ```
 
 Bei jeder Änderung an der maßgeblichen Fassung mitlaufen lassen, sonst ist die
 Kopie eine Momentaufnahme mit dem Anschein von Aktualität. Stand dieser Kopie:
-**16.09.2026**.
+**19.09.2026**.
 
 ## Was drinsteckt
 

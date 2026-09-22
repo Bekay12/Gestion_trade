@@ -11,12 +11,14 @@ from matplotlib.backends.backend_qt5agg import FigureCanvasQTAgg as FigureCanvas
 from matplotlib.figure import Figure
 from matplotlib import dates as mdates
 import sys
+import time
 import os
 import traceback
 import threading
 import faulthandler
 from datetime import datetime
 import pandas as pd
+import psutil
 
 # Ensure project `src` root is on sys.path
 PROJECT_SRC = os.path.abspath(os.path.join(os.path.dirname(__file__), '..'))
@@ -38,7 +40,7 @@ from ui.workers import (
     _fetch_yf_info_with_timeout, _is_valid_ticker_info, _get_sector_cache_first,
 )
 from ui.mixins.screeners import ScreenersMixin
-from ui.pg_charts import build_symbol_chart, chart_backend
+from ui.pg_charts import build_symbol_chart, chart_backend, set_chart_backend
 from ui.mixins.export import ExportMixin
 try:
     from cache_db import ensure_fx_rates_daily_history
@@ -398,10 +400,16 @@ class MainWindow(QMainWindow, ScreenersMixin, ExportMixin):
             return
 
         try:
+            rss_before = psutil.Process().memory_info().rss
+            t0 = time.perf_counter()
             if mode == 'download':
                 self._render_download_result_visuals(result)
             else:
                 self._render_analysis_result_visuals(result)
+            # Inclut la mise en page et le premier affichage des graphiques visibles.
+            QApplication.processEvents()
+            self._report_chart_render_cost(time.perf_counter() - t0,
+                                           psutil.Process().memory_info().rss - rss_before)
             # Domain charts tab must be recomputed after results visuals update.
             self._charts_dirty = True
             if self.tabs.currentWidget() is self.charts_container:
@@ -809,6 +817,17 @@ class MainWindow(QMainWindow, ScreenersMixin, ExportMixin):
         self.debug_mode_btn.setToolTip("Active les logs détaillés (secteur, seuils, diagnostics)")
         top_controls.addWidget(self.debug_mode_btn)
         
+        # Moteur des graphiques intégrés : bascule en direct pour comparer vitesse et RAM.
+        self.pg_charts_check = QCheckBox("⚡ Graphiques pyqtgraph")
+        self.pg_charts_check.setChecked(chart_backend() == 'pyqtgraph')
+        self.pg_charts_check.setToolTip(
+            "Coché : pyqtgraph (rapide, zoom Ctrl+molette). Décoché : matplotlib.\n"
+            "Les graphiques affichés sont redessinés aussitôt ; temps et RAM dans la barre d'état.\n"
+            "L'export PDF reste en matplotlib."
+        )
+        self.pg_charts_check.toggled.connect(self.toggle_chart_backend)
+        top_controls.addWidget(self.pg_charts_check)
+
         # 💾 Bouton pour sauvegarder les graphiques en PDF
         self.save_pdf_btn = QPushButton("💾 Sauvegarder (PDF)")
         self.save_pdf_btn.setToolTip("Sauvegarder tous les graphiques de l'analyse en PDF")
@@ -2054,6 +2073,29 @@ class MainWindow(QMainWindow, ScreenersMixin, ExportMixin):
             self.offline_mode_btn.setText("🌐 Mode: ONLINE")
             self.offline_mode_btn.setStyleSheet("QPushButton { background-color: #4CAF50; color: white; font-weight: bold; }")
             self.summary_text.append("\n✅ Mode ONLINE activé - Téléchargement si cache obsolète")
+
+    def toggle_chart_backend(self, checked: bool):
+        """Change le moteur des graphiques intégrés et redessine l'analyse affichée."""
+        set_chart_backend('pyqtgraph' if checked else 'matplotlib')
+        result = getattr(self, '_pending_visuals_result', None)
+        if result is None:
+            self._status(f"Moteur de graphiques : {chart_backend()} (appliqué à la prochaine analyse)")
+            return
+        self._schedule_result_visuals_refresh(result, getattr(self, '_pending_visuals_mode', ''))
+
+    def _report_chart_render_cost(self, seconds: float, rss_delta: int):
+        """Affiche le temps de rendu et la variation de RAM des graphiques intégrés."""
+        n = sum(1 for i in range(self.plots_layout.count())
+                if not isinstance(self.plots_layout.itemAt(i).widget(), QLabel))
+        if n == 0:
+            return
+        msg = (f"📈 {n} graphique(s) en {seconds:.2f} s ({seconds / n * 1000:.0f} ms/graph) · "
+               f"RAM {rss_delta / 2**20:+.0f} Mo · moteur {chart_backend()}")
+        self._status(msg, 0)
+        try:
+            self.summary_text.append(msg)
+        except Exception:
+            pass
 
     def toggle_debug_mode(self):
         """Active/désactive les logs debug en boucle."""

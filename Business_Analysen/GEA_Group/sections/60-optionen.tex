@@ -1,0 +1,89 @@
+\section{Handlungsoptionen des Anlegers}
+\label{sec:optionen}
+
+Der Anleger, nicht das Unternehmen, entscheidet hier. Zur Wahl stehen drei Optionen, die
+sich gegenseitig ausschlie{\ss}en:
+
+\begin{description}
+\item[Option A] Kauf zum heutigen Kurs von \je{\OptionAKurs}{EUR}.
+\item[Option B] Kauf erst zum Schwellenkurs von \je{\OptionBKurs}{EUR}, mit dem Risiko,
+  dass dieser Kurs nicht erreicht wird.
+\item[Option C] Verzicht auf GEA, Anlage desselben Betrags in den Weltindex zur H\"urde von
+  \Pz{\Huerde}.
+\end{description}
+
+\optionentabelle
+
+\subsection{Option A: Kauf heute}
+
+\begin{table}[htbp]\centering\small
+\caption{Bewertungsraster Option A.}\label{tab:raster-a}
+\begin{tabularx}{\linewidth}{@{}lX@{}}\toprule
+Faktor & Einsch\"atzung\\\midrule
+Investitionsbedarf & Der volle Kaufpreis von \je{\OptionAKurs}{EUR} je Aktie ist sofort
+f\"allig; Nachschuss entf\"allt.\\
+Kapitalbindung & Vollst\"andig und unbefristet. Der Buchwert je Aktie betr\"agt
+\je{\BuchwertJeAktie}{EUR}, also \KBV{} mal weniger als der Kaufpreis; im Liquidationsfall
+w\"are nur dieser Teil gedeckt.\\
+Liquidit\"atsbedarf (j\"ahrlich) & Keiner. Die Anlage liefert einen Zufluss:
+\je{\Dividende}{EUR} je Aktie f\"ur 2025.\\
+Zeithorizont bis Return & Bei konstantem Zufluss und Buchwert als Endwert erreicht die
+Anlage die H\"urde auf keinem der drei Horizonte (Tabelle~\ref{tab:optionen}).\\
+Risiko & Das Gesch\"aft ist stetig und ohne Nettoschulden; das Risiko liegt nicht im
+Unternehmen, sondern im Preis.\\
+Potenzial & Voll am Wachstum beteiligt. Erreicht GEA die Ziele von Mission 30, w\"achst das
+EBITDA um \MissionImplizit{} p.\,a.\\
+\bottomrule\end{tabularx}\end{table}
+
+\bk{\emph{Dauer der Umsetzung:} sofort. \emph{Rentabilit\"at:} zum heutigen Kurs negativ
+gegen\"uber der H\"urde, \OptionAIrrMed{} auf zehn Jahre im Basisfall.
+\emph{Liquidit\"at:} unproblematisch, die Position bindet kein weiteres Geld und
+aussch\"uttet. \emph{Wirkung auf das Kerngesch\"aft des Anlegers:} Wer GEA kauft, kauft
+einen stetigen Zahler zu einem Preis, der Wachstum voraussetzt.}
+
+\subsection{Option B: Kauf zum Schwellenkurs}
+
+\begin{table}[htbp]\centering\small
+\caption{Bewertungsraster Option B.}\label{tab:raster-b}
+\begin{tabularx}{\linewidth}{@{}lX@{}}\toprule
+Faktor & Einsch\"atzung\\\midrule
+Investitionsbedarf & \je{\OptionBKurs}{EUR} je Aktie, gut ein Viertel des heutigen Kurses.\\
+Kapitalbindung & Bis zum Erreichen des Kurses null, danach wie Option~A.\\
+Liquidit\"atsbedarf (j\"ahrlich) & Keiner; der Betrag bleibt bis dahin anlegbar.\\
+Zeithorizont bis Return & Unbestimmt. Der Kurs lag zuletzt 2018 in dieser
+Gr\"o{\ss}enordnung; der Zeitpunkt ist nicht planbar.\\
+Risiko & Das Risiko der Option ist nicht der Verlust, sondern das Ausbleiben:
+\je{\OptionBKurs}{EUR} setzen einen Kursr\"uckgang voraus, den kein belegter Umstand
+erwarten l\"asst.\\
+Potenzial & Bei Zustandekommen \OptionBIrrMed{} auf zehn Jahre, also \"uber der H\"urde.\\
+\bottomrule\end{tabularx}\end{table}
+
+\bk{\emph{Dauer der Umsetzung:} unbestimmt. \emph{Rentabilit\"at:} die h\"ochste der drei
+Optionen, aber nur unter einer Bedingung, die der Anleger nicht beeinflusst.
+\emph{Liquidit\"at:} das Geld bleibt bis zum Kauf verf\"ugbar und kann zwischenzeitlich
+die H\"urde verdienen. \emph{Wirkung:} Diese Option ist in der Praxis Option~C mit einer
+Kauforder.}
+
+\subsection{Option C: Verzicht und Indexanlage}
+
+\begin{table}[htbp]\centering\small
+\caption{Bewertungsraster Option C.}\label{tab:raster-c}
+\begin{tabularx}{\linewidth}{@{}lX@{}}\toprule
+Faktor & Einsch\"atzung\\\midrule
+Investitionsbedarf & Derselbe Betrag, anderer Gegenstand.\\
+Kapitalbindung & Vollst\"andig, aber \"uber hunderte Titel gestreut.\\
+Liquidit\"atsbedarf (j\"ahrlich) & Keiner.\\
+Zeithorizont bis Return & Die H\"urde ist die Rendite dieser Option; sie wird
+definitionsgem\"a{\ss} auf jedem Horizont erreicht.\\
+Risiko & Marktrisiko ohne Einzeltitelrisiko. Die \Pz{\Huerde} sind eine Vergangenheit,
+keine Zusage.\\
+Potenzial & \OptionCIrr{} p.\,a.\ Kein Titel dieses Berichts \"ubertrifft das zum heutigen
+Kurs.\\
+\bottomrule\end{tabularx}\end{table}
+
+\bk{Option~C ist keine Verlegenheitsl\"osung, sondern die Messlatte. Eine Einzelanlage muss
+sie schlagen, sonst tr\"agt der Anleger Einzeltitelrisiko ohne Gegenleistung. Der Vergleich
+ist allerdings nicht ganz fair zugunsten von C: Die \Pz{\Huerde} sind eine
+Zehnjahresrendite, die stark von einer einzigen Periode getragen ist; \Pz{\HuerdeLang}
+seit Auflage ist der vorsichtigere Ma{\ss}stab, und er hebt den Schwellenkurs von
+Option~B auf \je{\SchwelleMEDZehnLang}{EUR}.}

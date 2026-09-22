@@ -1,0 +1,48 @@
+{
+ "emittent": "fro",
+ "themen": {
+  "eigentuemer": [
+   {
+    "fakt": "Die Direktoren und Führungskräfte besitzen jeweils weniger als 1 % der gewöhnlichen Aktien.",
+    "zitat": "Ola Lorentzon\n21,000\nLess than 1%\nJohn Fredriksen*\n198,000*\nLess than 1%",
+    "zahl": "",
+    "bericht": "fro-20-f-2025.txt",
+    "seite": "61",
+    "belegt": true
+   },
+   {
+    "fakt": "Hemen Holding Ltd. hält mehr als die Hälfte der gewöhnlichen Aktien.",
+    "zitat": "The following table presents certain information as of March 27, 2026, regarding the ownership of our ordinary shares with respect to each shareholder whom we know to beneficially own more than 5% of our outstanding ordinary shares.\nOwner\nNumber of shares\n% (1)\nHemen Holding Ltd. (2)\n79,145,703\n35.6%\n61",
+    "zahl": "",
+    "bericht": "fro-20-f-2025.txt",
+    "seite": "61",
+    "belegt": true
+   },
+   {
+    "fakt": "The user has provided a large block of text that appears to be financial data in an XBRL (eXtensible Business Reporting Language) format.",
+    "zitat": "From90 fro:VesselsAndEquipmentMember fro:PledgedAsCollateralMember 2025-12-31 0000913290 ...",
+    "zahl": "}",
+    "bericht": "fro-20-f-2025.txt",
+    "seite": "?",
+    "belegt": true
+   },
+   {
+    "fakt": "The data contains various financial metrics, dates (mostly from 2024 and 2025), entity identifiers (like '0000913290'), and member tags related to IFRS standards.",
+    "zitat": "ifrs-full:FinancialAssetsAtFairValueThroughProfitOrLossCategoryMember ifrs-full:CarryingAmountMember ...",
+    "zahl": "}",
+    "bericht": "fro-20-f-2025.txt",
+    "seite": "?",
+    "belegt": true
+   },
+   {
+    "fakt": "The data lists numerous company names and entities, likely related parties or subsidiaries.",
+    "zitat": "... fro:SFLMember fro:GoldenOceanMember fro:AltaTradingUKLimitedMember ...",
+    "zahl": "}",
+    "bericht": "fro-20-f-2025.txt",
+    "seite": "?",
+    "belegt": true
+   }
+  ],
+  "wettbewerb": []
+ }
+}

@@ -1,0 +1,92 @@
+{
+ "datei": "tte-20-f-2019.txt",
+ "arten": {
+  "cf": {
+   "seite": "13",
+   "jahre": [
+    "2019",
+    "2018",
+    "2017"
+   ],
+   "posten": {
+    "operativer_cf": [
+     {
+      "etikett": "cash flow from operating activities",
+      "werte": [
+       24685.0,
+       24703.0,
+       22319.0
+      ],
+      "seite": "13"
+     }
+    ]
+   },
+   "verworfen": [],
+   "tokens": 1765
+  },
+  "guv": {
+   "seite": "1",
+   "jahre": [
+    "2019",
+    "2018",
+    "2017",
+    "2016",
+    "2015"
+   ],
+   "posten": {
+    "umsatz": [
+     {
+      "etikett": "Revenues from sales",
+      "werte": [
+       176249.0,
+       184106.0,
+       149099.0,
+       127925.0,
+       143421.0
+      ],
+      "seite": "1"
+     }
+    ],
+    "ergebnis": [
+     {
+      "etikett": "Net income, Group share",
+      "werte": [
+       11267.0,
+       11446.0,
+       8631.0,
+       6196.0,
+       5087.0
+      ],
+      "seite": "1"
+     }
+    ],
+    "eps_verwaessert": [
+     {
+      "etikett": "Fully diluted earnings per share",
+      "werte": [
+       4.17,
+       4.24,
+       3.34,
+       2.51,
+       2.16
+      ],
+      "seite": "1"
+     }
+    ]
+   },
+   "verworfen": [
+    [
+     "eps_verwaessert",
+     "Fully diluted earnings per share\n($)",
+     "Etikett nicht woertlich auf der Seite"
+    ],
+    [
+     "aktien_verwaessert",
+     "Average number outstanding of\ncommon shares\n€\n2.50 par value\n(shares diluted)",
+     "Etikett nicht woertlich auf der Seite"
+    ]
+   ],
+   "tokens": 1543
+  }
+ }
+}

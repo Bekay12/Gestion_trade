@@ -1,0 +1,148 @@
+{
+ "datei": "oxy-10-k-2024.txt",
+ "arten": {
+  "cf": {
+   "seite": "69",
+   "jahre": [
+    "2024",
+    "2023",
+    "2022"
+   ],
+   "posten": {
+    "operativer_cf": [
+     {
+      "etikett": "Net cash provided by operating activities",
+      "werte": [
+       11439.0,
+       12308.0,
+       16810.0
+      ],
+      "seite": "69"
+     }
+    ],
+    "investitionen": [
+     {
+      "etikett": "Capital expenditures",
+      "werte": [
+       -7018.0,
+       -6270.0,
+       -4497.0
+      ],
+      "seite": "69"
+     }
+    ],
+    "dividenden": [
+     {
+      "etikett": "Cash dividends paid on common and preferred stock",
+      "werte": [
+       -1446.0,
+       -1365.0,
+       -1184.0
+      ],
+      "seite": "69"
+     }
+    ],
+    "rueckkauf": [
+     {
+      "etikett": "Purchases of treasury stock",
+      "werte": [
+       -27.0,
+       -1798.0,
+       -3099.0
+      ],
+      "seite": "69"
+     }
+    ]
+   },
+   "verworfen": [],
+   "tokens": 1530
+  },
+  "guv": {
+   "seite": "66",
+   "jahre": [
+    "2024",
+    "2023",
+    "2022"
+   ],
+   "posten": {
+    "umsatz": [
+     {
+      "etikett": "Net sales",
+      "werte": [
+       26725.0,
+       28257.0,
+       36634.0
+      ],
+      "seite": "66"
+     }
+    ],
+    "ergebnis": [
+     {
+      "etikett": "NET INCOME ATTRIBUTABLE TO COMMON STOCKHOLDERS",
+      "werte": [
+       2377.0,
+       3773.0,
+       12504.0
+      ],
+      "seite": "66"
+     }
+    ],
+    "eps_verwaessert": [
+     {
+      "etikett": "Income from continuing operations—diluted",
+      "werte": [
+       2.26,
+       3.9,
+       12.4
+      ],
+      "seite": "66"
+     }
+    ],
+    "vorzugsdividende": [
+     {
+      "etikett": "Less: Preferred stock dividends and redemption premiums",
+      "werte": [
+       -679.0,
+       -923.0,
+       -800.0
+      ],
+      "seite": "66"
+     }
+    ]
+   },
+   "verworfen": [],
+   "tokens": 1217
+  },
+  "bilanz": {
+   "seite": "65",
+   "jahre": [
+    "2024",
+    "2023"
+   ],
+   "posten": {
+    "eigenkapital": [
+     {
+      "etikett": "Total stockholders’ equity",
+      "werte": [
+       34159.0,
+       30250.0
+      ],
+      "seite": "65"
+     }
+    ],
+    "vorzugsaktien": [
+     {
+      "etikett": "Less: Preferred stock dividends and redemption premiums",
+      "werte": [
+       -679.0,
+       -923.0
+      ],
+      "seite": "66"
+     }
+    ]
+   },
+   "verworfen": [],
+   "tokens": 846
+  }
+ }
+}

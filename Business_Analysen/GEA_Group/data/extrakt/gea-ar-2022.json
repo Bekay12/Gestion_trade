@@ -1,0 +1,87 @@
+{
+ "datei": "gea-ar-2022.txt",
+ "arten": {
+  "cf": {
+   "seite": "165",
+   "jahre": [
+    "2022",
+    "2021"
+   ],
+   "posten": {
+    "operativer_cf": [
+     {
+      "etikett": "Cash flow from operating activities",
+      "werte": [
+       471613.0,
+       675869.0
+      ],
+      "seite": "165"
+     }
+    ],
+    "investitionen": [
+     {
+      "etikett": "Payments to acquire property, plant and equipment, and intangible assets",
+      "werte": [
+       203802.0,
+       129854.0
+      ],
+      "seite": "165"
+     }
+    ]
+   },
+   "verworfen": [],
+   "tokens": 1688
+  },
+  "guv": {
+   "seite": "163",
+   "jahre": [
+    "2022",
+    "2021"
+   ],
+   "posten": {
+    "umsatz": [
+     {
+      "etikett": "Revenue",
+      "werte": [
+       7.1,
+       5164714.0
+      ],
+      "seite": "163"
+     }
+    ],
+    "ergebnis": [
+     {
+      "etikett": "Profit for the period",
+      "werte": [
+       401428.0,
+       305172.0
+      ],
+      "seite": "164"
+     }
+    ],
+    "eps_verwaessert": [
+     {
+      "etikett": "Basic and diluted earnings per share",
+      "werte": [
+       2.13,
+       1.66
+      ],
+      "seite": "163"
+     }
+    ],
+    "aktien_verwaessert": [
+     {
+      "etikett": "Weighted average number of ordinary shares used to calculate basic and diluted earnings per share (million)",
+      "werte": [
+       175.9,
+       180.0
+      ],
+      "seite": "163"
+     }
+    ]
+   },
+   "verworfen": [],
+   "tokens": 1249
+  }
+ }
+}

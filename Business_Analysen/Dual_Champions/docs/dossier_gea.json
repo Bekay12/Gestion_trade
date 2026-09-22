@@ -1,0 +1,73 @@
+{
+ "emittent": "gea",
+ "themen": {
+  "eigentuemer": [
+   {
+    "fakt": "Kuwait Investment Office (KIA) ist der kontrollierende Aktionär mit mehr als 10 % der Stimmrechte.",
+    "zitat": "According to the criteria of Deutsche Börse AG, Kuwait Investment Office (KIA) is considered a major shareholder of GEA Group Aktiengesellschaft. On July 7, 2025, KIA reported that it had held more than 10 percent of voting rights since May 21, 2025, corresponding to 17,088,522 shares.",
+    "zahl": ">10 %",
+    "bericht": "gea-ar-2025.txt",
+    "seite": "14",
+    "belegt": true
+   },
+   {
+    "fakt": "Der freie Float beträgt 89,5 Prozent der Aktien.",
+    "zitat": "In line with the Deutsche Börse AG definition, this holding is not attributed to the free float, which amounted to 89.5 percent as of December 31, 2025.",
+    "zahl": "89.5 %",
+    "bericht": "gea-ar-2025.txt",
+    "seite": "14",
+    "belegt": true
+   },
+   {
+    "fakt": "Institutionelle Investoren halten 77,3 Prozent der Aktien.",
+    "zitat": "institutional investors held 77.3 percent of the shares",
+    "zahl": "77.3 %",
+    "bericht": "gea-ar-2025.txt",
+    "seite": "14",
+    "belegt": true
+   }
+  ],
+  "wettbewerb": [
+   {
+    "fakt": "GEA ist eine Marktführerin in den energieintensiven Branchen Lebensmittel, Getränke und Pharma.",
+    "zitat": "Based on its leading market positions as a mechanical and plant engineering company for the energy-intensive food, beverage and pharma industries",
+    "zahl": "",
+    "bericht": "gea-ar-2025.txt",
+    "seite": "24",
+    "belegt": true
+   },
+   {
+    "fakt": "Bis 2030 soll der Umsatzanteil aus nachhaltigen Lösungen auf über 60 % steigen (Stand 2025: 45,7 %).",
+    "zitat": "The share of sales generated thereby is set to increase to more than 60 percent of total sales by 2030 (2025: 45.7 percent)",
+    "zahl": "60",
+    "bericht": "gea-ar-2025.txt",
+    "seite": "24",
+    "belegt": true
+   },
+   {
+    "fakt": "Über 10.000 GEA-Maschinen sind in mehr als 50 Ländern vernetzt.",
+    "zitat": "More than 10,000 installed GEA machines in more than 50 countries are already networked via the GEA Cloud",
+    "zahl": "",
+    "bericht": "gea-ar-2025.txt",
+    "seite": "24",
+    "belegt": true
+   },
+   {
+    "fakt": "Bis 2030 sollen 80 % der installierten Maschinen für digitale Anwendungen geeignet sein.",
+    "zitat": "By 2030, 80 percent of the machines installed at customers and suitable for digital applications are to be networked",
+    "zahl": "",
+    "bericht": "gea-ar-2025.txt",
+    "seite": "24",
+    "belegt": true
+   },
+   {
+    "fakt": "Der Umsatzanteil aus Produkten mit einer Lebensdauer von weniger als fünf Jahren soll bis 2030 auf 30 % steigen (Stand 2025: 19,2 %).",
+    "zitat": "The share of sales of products that are less than five years old is expected to increase to 30 percent by 2030 (2025: 19.2 percent)",
+    "zahl": "",
+    "bericht": "gea-ar-2025.txt",
+    "seite": "24",
+    "belegt": true
+   }
+  ]
+ }
+}

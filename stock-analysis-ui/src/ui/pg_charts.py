@@ -12,6 +12,7 @@ import os
 import numpy as np
 import pandas as pd
 import pyqtgraph as pg
+from PyQt5.QtWidgets import QAbstractScrollArea, QApplication
 import ta
 
 from core.charts import RSI_ZONE_COLORS, rsi_zones
@@ -22,18 +23,58 @@ logger = logging.getLogger(__name__)
 _EPOCH = pd.Timestamp("1970-01-01")
 
 
+# Choix fait dans l'interface (case à cocher) ; None = suivre QSI_CHART_BACKEND.
+_backend_override = None
+
+
+def set_chart_backend(name) -> None:
+    """
+    --------------------------------------------------------------------------
+    Purpose:
+        Impose le moteur de graphiques depuis l'interface, prioritaire sur
+        la variable d'environnement.
+
+    Inputs:
+        name (str | None): "pyqtgraph", "matplotlib", ou None pour revenir
+            à QSI_CHART_BACKEND.
+    --------------------------------------------------------------------------
+    """
+    global _backend_override
+    _backend_override = None if name is None else ("pyqtgraph" if name == "pyqtgraph" else "matplotlib")
+
+
 def chart_backend() -> str:
     """
     --------------------------------------------------------------------------
     Purpose:
-        Nom du moteur de graphiques choisi par l'environnement.
+        Nom du moteur de graphiques : choix de l'interface, sinon l'environnement.
 
     Outputs:
         backend (str): "pyqtgraph" ou "matplotlib" (défaut).
     --------------------------------------------------------------------------
     """
+    if _backend_override is not None:
+        return _backend_override
     value = os.environ.get("QSI_CHART_BACKEND", "matplotlib").strip().lower()
     return "pyqtgraph" if value == "pyqtgraph" else "matplotlib"
+
+
+class _ScrollFriendlyLayoutWidget(pg.GraphicsLayoutWidget):
+    """Molette seule : défilement de la liste de graphiques ; Ctrl+molette : zoom."""
+
+    def wheelEvent(self, event):
+        if event.modifiers() & pg.QtCore.Qt.ControlModifier:
+            super().wheelEvent(event)
+            return
+        # Un événement simplement ignoré ne remonte pas jusqu'à la QScrollArea (vérifié) :
+        # on le remet explicitement à sa barre de défilement verticale.
+        parent = self.parentWidget()
+        while parent is not None and not isinstance(parent, QAbstractScrollArea):
+            parent = parent.parentWidget()
+        if parent is None:
+            event.ignore()
+            return
+        QApplication.sendEvent(parent.verticalScrollBar(), event)
 
 
 def _to_epoch_seconds(dates) -> np.ndarray:
@@ -129,7 +170,8 @@ def build_symbol_chart(sym: str, prices, events=None, score_dates=None, score_va
         prices = prices.squeeze()
     prices = pd.Series(prices).astype("float64")
 
-    widget = pg.GraphicsLayoutWidget()
+    widget = _ScrollFriendlyLayoutWidget()
+    widget.setToolTip("Ctrl+molette : zoom · glisser : déplacer · clic droit : menu (tout afficher, exporter)")
     widget.setBackground("w")
     widget.setMinimumHeight(520)
 

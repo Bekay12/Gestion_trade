@@ -1,0 +1,128 @@
+{
+ "datei": "tnk-20-f-2019.txt",
+ "arten": {
+  "cf": {
+   "seite": "5",
+   "jahre": [
+    "2019",
+    "2018",
+    "2017"
+   ],
+   "posten": {
+    "operativer_cf": [
+     {
+      "etikett": "Net operating cash flow",
+      "werte": [
+       117661.0,
+       -7263.0,
+       80489.0
+      ],
+      "seite": "5"
+     }
+    ],
+    "investitionen": [
+     {
+      "etikett": "Expenditures for vessels and equipment",
+      "werte": [
+       -11628.0,
+       -5827.0,
+       -4732.0
+      ],
+      "seite": "5"
+     }
+    ],
+    "leasing": [
+     {
+      "etikett": "Scheduled repayments of obligations related to finance leases",
+      "werte": [
+       -24221.0,
+       -14958.0,
+       -4090.0
+      ],
+      "seite": "5"
+     }
+    ]
+   },
+   "verworfen": [
+    [
+     "dividenden",
+     "Cash dividends paid",
+     "Zeile traegt nicht 3 Werte"
+    ]
+   ],
+   "tokens": 1459
+  },
+  "guv": {
+   "seite": "3",
+   "jahre": [
+    "2019",
+    "2018",
+    "2017"
+   ],
+   "posten": {
+    "umsatz": [
+     {
+      "etikett": "Total revenues",
+      "werte": [
+       943917.0,
+       776493.0,
+       431178.0
+      ],
+      "seite": "3"
+     }
+    ],
+    "ergebnis": [
+     {
+      "etikett": "Net income (loss)",
+      "werte": [
+       41362.0,
+       -52548.0,
+       -58023.0
+      ],
+      "seite": "3"
+     }
+    ],
+    "eps_verwaessert": [
+     {
+      "etikett": "• Diluted earnings (loss) per share",
+      "werte": [
+       1.23,
+       -1.57,
+       -2.48
+      ],
+      "seite": "3"
+     }
+    ]
+   },
+   "verworfen": [
+    [
+     "eps_verwaessert",
+     "Diluted earnings (loss) per share",
+     "Zeile traegt nicht 3 Werte"
+    ]
+   ],
+   "tokens": 1288
+  },
+  "bilanz": {
+   "seite": "4",
+   "jahre": [
+    "2019",
+    "2018"
+   ],
+   "posten": {
+    "eigenkapital": [
+     {
+      "etikett": "Total equity",
+      "werte": [
+       989920.0,
+       946933.0
+      ],
+      "seite": "4"
+     }
+    ]
+   },
+   "verworfen": [],
+   "tokens": 1556
+  }
+ }
+}

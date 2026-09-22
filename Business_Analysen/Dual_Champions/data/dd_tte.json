@@ -1,0 +1,167 @@
+{
+ "quelle": "https://www.abcbourse.com/marches/transactions_dirigeants/FR0000120271p",
+ "abgerufen": "2026-09-19",
+ "hinweis": "Sekundaerquelle (Aggregator der AMF-Meldungen)",
+ "geschaefte": [
+  {
+   "declaration": "21/05/2026",
+   "operation": "Cession",
+   "instrument": "Action",
+   "montant": "10 064€",
+   "auteur": "Vincent STOQUART, Directeur général Raffinage-Chimie",
+   "date": "2026-05-20",
+   "quantite": "126",
+   "prix": "79,87€"
+  },
+  {
+   "declaration": "21/05/2026",
+   "operation": "Cession",
+   "instrument": "Action",
+   "montant": "54 631€",
+   "auteur": "Vincent STOQUART, Directeur général Raffinage-Chimie",
+   "date": "2026-05-20",
+   "quantite": "684",
+   "prix": "79,87€"
+  },
+  {
+   "declaration": "21/05/2026",
+   "operation": "Cession",
+   "instrument": "Action",
+   "montant": "95 045€",
+   "auteur": "Vincent STOQUART, Directeur général Raffinage-Chimie",
+   "date": "2026-05-20",
+   "quantite": "1 190",
+   "prix": "79,87€"
+  },
+  {
+   "declaration": "05/05/2026",
+   "operation": "Cession",
+   "instrument": "Action",
+   "montant": "192 308€",
+   "auteur": "JEAN-PIERRE SBRAIRE, DIRECTEUR FINANCIER",
+   "date": "2026-05-04",
+   "quantite": "2 425",
+   "prix": "79,30€"
+  },
+  {
+   "declaration": "27/03/2026",
+   "operation": "Cession",
+   "instrument": "Action",
+   "montant": "931 424€",
+   "auteur": "PATRICK POUYANNE, Président-directeur général",
+   "date": "2026-03-26",
+   "quantite": "12 109",
+   "prix": "76,92€"
+  },
+  {
+   "declaration": "27/03/2026",
+   "operation": "Cession",
+   "instrument": "Action",
+   "montant": "1 453 711€",
+   "auteur": "PATRICK POUYANNE, Président-directeur général",
+   "date": "2026-03-26",
+   "quantite": "18 899",
+   "prix": "76,92€"
+  },
+  {
+   "declaration": "25/03/2026",
+   "operation": "Cession",
+   "instrument": "Action",
+   "montant": "7 630€",
+   "auteur": "Véronique Simonis personne liée à Vincent Stoquart, Membre du Comité Exécutif",
+   "date": "2026-03-25",
+   "quantite": "100",
+   "prix": "76,30€"
+  },
+  {
+   "declaration": "24/03/2026",
+   "operation": "Cession",
+   "instrument": "Action",
+   "montant": "85 234€",
+   "auteur": "JEAN-PIERRE SBRAIRE, DIRECTEUR FINANCIER",
+   "date": "2026-03-23",
+   "quantite": "1 119",
+   "prix": "76,17€"
+  },
+  {
+   "declaration": "28/07/2025",
+   "operation": "Acquisition",
+   "instrument": "Action",
+   "montant": "51 194€",
+   "auteur": "DIERK PASKERT, Administrateur indépendant",
+   "date": "2025-07-25",
+   "quantite": "1 000",
+   "prix": "51,19€"
+  },
+  {
+   "declaration": "26/02/2025",
+   "operation": "Acquisition",
+   "instrument": "Action",
+   "montant": "48 676€",
+   "auteur": "Marie-Christine COISNE-ROQUETTE, Administrateur",
+   "date": "2024-09-05",
+   "quantite": "800",
+   "prix": "60,85€"
+  },
+  {
+   "declaration": "10/09/2024",
+   "operation": "Cession",
+   "instrument": "Action",
+   "montant": "120 580€",
+   "auteur": "AURELIEN HAMELLE, Directeur Général Strategy & Sustainability",
+   "date": "2024-09-09",
+   "quantite": "2 000",
+   "prix": "60,29€"
+  },
+  {
+   "declaration": "03/05/2024",
+   "operation": "Cession",
+   "instrument": "Action",
+   "montant": "12 733€",
+   "auteur": "EMMA DE JONGE, Administrateur Représentant les Salariés Actionnaires",
+   "date": "2024-04-30",
+   "quantite": "183",
+   "prix": "69,58€"
+  },
+  {
+   "declaration": "26/03/2024",
+   "operation": "Cession",
+   "instrument": "Action",
+   "montant": "63 160€",
+   "auteur": "JEAN-PIERRE SBRAIRE, DIRECTEUR FINANCIER",
+   "date": "2024-03-25",
+   "quantite": "1 000",
+   "prix": "63,16€"
+  },
+  {
+   "declaration": "11/08/2023",
+   "operation": "Cession",
+   "instrument": "Action",
+   "montant": "174 000€",
+   "auteur": "PAUL PFLIMLIN personne liée à THIERRY PFLIMLIN, DIRECTEUR GENERAL BRANCHE MARKETING/ MEMBRE DU COMEX",
+   "date": "2023-08-10",
+   "quantite": "3 000",
+   "prix": "58,00€"
+  },
+  {
+   "declaration": "04/05/2023",
+   "operation": "Cession",
+   "instrument": "Action",
+   "montant": "168 565€",
+   "auteur": "LOUIS PFLIMLIN personne liée à THIERRY PFLIMLIN, DIRECTEUR GENERAL BRANCHE MARKETING/ MEMBRE DU COMEX",
+   "date": "2023-04-28",
+   "quantite": "3 000",
+   "prix": "56,19€"
+  },
+  {
+   "declaration": "02/05/2023",
+   "operation": "Cession",
+   "instrument": "Action",
+   "montant": "171 420€",
+   "auteur": "JULIA PFLIMLIN personne liée à Thierry PFLIMLIN, Directeur Général Marketing & Services",
+   "date": "2023-04-28",
+   "quantite": "3 000",
+   "prix": "57,14€"
+  }
+ ]
+}

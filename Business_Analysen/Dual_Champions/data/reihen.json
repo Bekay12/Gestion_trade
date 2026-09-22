@@ -1,0 +1,5591 @@
+{
+ "besi": {
+  "operativer_cf": {
+   "2019": {
+    "wert": 120.108,
+    "roh": 120108.0,
+    "bericht": "besi-ar-2020",
+    "seite": "107",
+    "etikett": "Net cash provided by operating activities",
+    "lesungen": 1,
+    "abweichend": [],
+    "summe": false
+   },
+   "2020": {
+    "wert": 162.021,
+    "roh": 162021.0,
+    "bericht": "besi-ar-2021",
+    "seite": "128",
+    "etikett": "Net cash provided by operating activities",
+    "lesungen": 2,
+    "abweichend": [],
+    "summe": false
+   },
+   "2021": {
+    "wert": 277.854,
+    "roh": 277854.0,
+    "bericht": "besi-ar-2021",
+    "seite": "128",
+    "etikett": "Net cash provided by operating activities",
+    "lesungen": 1,
+    "abweichend": [],
+    "summe": false
+   },
+   "2022": {
+    "wert": 271.871,
+    "roh": 271871.0,
+    "bericht": "besi-ar-2023",
+    "seite": "142",
+    "etikett": "Net cash provided by operating activities",
+    "lesungen": 1,
+    "abweichend": [],
+    "summe": false
+   },
+   "2023": {
+    "wert": 208.572,
+    "roh": 208572.0,
+    "bericht": "besi-ar-2023",
+    "seite": "142",
+    "etikett": "Net cash provided by operating activities",
+    "lesungen": 1,
+    "abweichend": [],
+    "summe": false
+   },
+   "2024": {
+    "wert": 201.083,
+    "roh": 201083.0,
+    "bericht": "besi-ar-2025",
+    "seite": "196",
+    "etikett": "Net cash provided by operating activities",
+    "lesungen": 1,
+    "abweichend": [],
+    "summe": false
+   },
+   "2025": {
+    "wert": 178.141,
+    "roh": 178141.0,
+    "bericht": "besi-ar-2025",
+    "seite": "196",
+    "etikett": "Net cash provided by operating activities",
+    "lesungen": 1,
+    "abweichend": [],
+    "summe": false
+   }
+  },
+  "investitionen": {
+   "2019": {
+    "wert": -2.511,
+    "roh": -2511.0,
+    "bericht": "besi-ar-2020",
+    "seite": "107",
+    "etikett": "Capital expenditures",
+    "lesungen": 1,
+    "abweichend": [],
+    "summe": false
+   },
+   "2020": {
+    "wert": -4.242,
+    "roh": -4242.0,
+    "bericht": "besi-ar-2021",
+    "seite": "128",
+    "etikett": "Capital expenditures",
+    "lesungen": 2,
+    "abweichend": [],
+    "summe": false
+   },
+   "2021": {
+    "wert": -5.337,
+    "roh": -5337.0,
+    "bericht": "besi-ar-2021",
+    "seite": "128",
+    "etikett": "Capital expenditures",
+    "lesungen": 1,
+    "abweichend": [],
+    "summe": false
+   },
+   "2022": {
+    "wert": -6.78,
+    "roh": -6780.0,
+    "bericht": "besi-ar-2023",
+    "seite": "142",
+    "etikett": "Capital expenditures",
+    "lesungen": 1,
+    "abweichend": [],
+    "summe": false
+   },
+   "2023": {
+    "wert": -6.899,
+    "roh": -6899.0,
+    "bericht": "besi-ar-2023",
+    "seite": "142",
+    "etikett": "Capital expenditures",
+    "lesungen": 1,
+    "abweichend": [],
+    "summe": false
+   },
+   "2024": {
+    "wert": -12.039,
+    "roh": -12039.0,
+    "bericht": "besi-ar-2025",
+    "seite": "196",
+    "etikett": "Capital expenditures",
+    "lesungen": 1,
+    "abweichend": [],
+    "summe": false
+   },
+   "2025": {
+    "wert": -15.795,
+    "roh": -15795.0,
+    "bericht": "besi-ar-2025",
+    "seite": "196",
+    "etikett": "Capital expenditures",
+    "lesungen": 1,
+    "abweichend": [],
+    "summe": false
+   }
+  },
+  "leasing": {
+   "2019": {
+    "wert": -3.525,
+    "roh": -3525.0,
+    "bericht": "besi-ar-2020",
+    "seite": "107",
+    "etikett": "Payments on lease liabilities",
+    "lesungen": 1,
+    "abweichend": [],
+    "summe": false
+   },
+   "2020": {
+    "wert": -3.7,
+    "roh": -3700.0,
+    "bericht": "besi-ar-2021",
+    "seite": "128",
+    "etikett": "Payments on lease liabilities",
+    "lesungen": 2,
+    "abweichend": [],
+    "summe": false
+   },
+   "2021": {
+    "wert": -3.638,
+    "roh": -3638.0,
+    "bericht": "besi-ar-2021",
+    "seite": "128",
+    "etikett": "Payments on lease liabilities",
+    "lesungen": 1,
+    "abweichend": [],
+    "summe": false
+   },
+   "2022": {
+    "wert": -4.101,
+    "roh": -4101.0,
+    "bericht": "besi-ar-2023",
+    "seite": "142",
+    "etikett": "Payments on lease liabilities",
+    "lesungen": 1,
+    "abweichend": [],
+    "summe": false
+   },
+   "2023": {
+    "wert": -4.307,
+    "roh": -4307.0,
+    "bericht": "besi-ar-2023",
+    "seite": "142",
+    "etikett": "Payments on lease liabilities",
+    "lesungen": 1,
+    "abweichend": [],
+    "summe": false
+   },
+   "2024": {
+    "wert": -4.314,
+    "roh": -4314.0,
+    "bericht": "besi-ar-2025",
+    "seite": "196",
+    "etikett": "Payments on lease liabilities",
+    "lesungen": 1,
+    "abweichend": [],
+    "summe": false
+   },
+   "2025": {
+    "wert": -3.685,
+    "roh": -3685.0,
+    "bericht": "besi-ar-2025",
+    "seite": "196",
+    "etikett": "Payments on lease liabilities",
+    "lesungen": 1,
+    "abweichend": [],
+    "summe": false
+   }
+  },
+  "dividenden": {
+   "2019": {
+    "wert": -122.419,
+    "roh": -122419.0,
+    "bericht": "besi-ar-2020",
+    "seite": "107",
+    "etikett": "Dividend paid to shareholders",
+    "lesungen": 1,
+    "abweichend": [],
+    "summe": false
+   },
+   "2020": {
+    "wert": -73.486,
+    "roh": -73486.0,
+    "bericht": "besi-ar-2021",
+    "seite": "128",
+    "etikett": "Dividend paid to shareholders",
+    "lesungen": 2,
+    "abweichend": [],
+    "summe": false
+   },
+   "2021": {
+    "wert": -129.357,
+    "roh": -129357.0,
+    "bericht": "besi-ar-2021",
+    "seite": "128",
+    "etikett": "Dividend paid to shareholders",
+    "lesungen": 1,
+    "abweichend": [],
+    "summe": false
+   },
+   "2022": {
+    "wert": -269.467,
+    "roh": -269467.0,
+    "bericht": "besi-ar-2023",
+    "seite": "142",
+    "etikett": "Dividend paid to shareholders",
+    "lesungen": 1,
+    "abweichend": [],
+    "summe": false
+   },
+   "2023": {
+    "wert": -222.109,
+    "roh": -222109.0,
+    "bericht": "besi-ar-2023",
+    "seite": "142",
+    "etikett": "Dividend paid to shareholders",
+    "lesungen": 1,
+    "abweichend": [],
+    "summe": false
+   },
+   "2024": {
+    "wert": -171.534,
+    "roh": -171534.0,
+    "bericht": "besi-ar-2025",
+    "seite": "196",
+    "etikett": "Dividend paid to shareholders",
+    "lesungen": 1,
+    "abweichend": [],
+    "summe": false
+   },
+   "2025": {
+    "wert": -172.811,
+    "roh": -172811.0,
+    "bericht": "besi-ar-2025",
+    "seite": "196",
+    "etikett": "Dividend paid to shareholders",
+    "lesungen": 1,
+    "abweichend": [],
+    "summe": false
+   }
+  },
+  "rueckkauf": {
+   "2019": {
+    "wert": -44.678,
+    "roh": -44678.0,
+    "bericht": "besi-ar-2020",
+    "seite": "107",
+    "etikett": "Purchase treasury shares",
+    "lesungen": 1,
+    "abweichend": [],
+    "summe": false
+   },
+   "2020": {
+    "wert": -17.781,
+    "roh": -17781.0,
+    "bericht": "besi-ar-2021",
+    "seite": "128",
+    "etikett": "Purchase treasury shares",
+    "lesungen": 2,
+    "abweichend": [],
+    "summe": false
+   },
+   "2021": {
+    "wert": -50.096,
+    "roh": -50096.0,
+    "bericht": "besi-ar-2021",
+    "seite": "128",
+    "etikett": "Purchase treasury shares",
+    "lesungen": 1,
+    "abweichend": [],
+    "summe": false
+   },
+   "2022": {
+    "wert": -146.781,
+    "roh": -146781.0,
+    "bericht": "besi-ar-2023",
+    "seite": "142",
+    "etikett": "Purchase treasury shares",
+    "lesungen": 1,
+    "abweichend": [],
+    "summe": false
+   },
+   "2023": {
+    "wert": -213.387,
+    "roh": -213387.0,
+    "bericht": "besi-ar-2023",
+    "seite": "142",
+    "etikett": "Purchase treasury shares",
+    "lesungen": 1,
+    "abweichend": [],
+    "summe": false
+   },
+   "2024": {
+    "wert": -79.833,
+    "roh": -79833.0,
+    "bericht": "besi-ar-2025",
+    "seite": "196",
+    "etikett": "Purchase treasury shares",
+    "lesungen": 1,
+    "abweichend": [],
+    "summe": false
+   },
+   "2025": {
+    "wert": -81.967,
+    "roh": -81967.0,
+    "bericht": "besi-ar-2025",
+    "seite": "196",
+    "etikett": "Purchase treasury shares",
+    "lesungen": 1,
+    "abweichend": [],
+    "summe": false
+   }
+  },
+  "umsatz": {
+   "2019": {
+    "wert": 356.195,
+    "roh": 356195.0,
+    "bericht": "besi-ar-2020",
+    "seite": "105",
+    "etikett": "Revenue",
+    "lesungen": 1,
+    "abweichend": [],
+    "summe": false
+   },
+   "2020": {
+    "wert": 433.623,
+    "roh": 433623.0,
+    "bericht": "besi-ar-2021",
+    "seite": "126",
+    "etikett": "Revenue",
+    "lesungen": 2,
+    "abweichend": [],
+    "summe": false
+   },
+   "2021": {
+    "wert": 749.297,
+    "roh": 749297.0,
+    "bericht": "besi-ar-2021",
+    "seite": "126",
+    "etikett": "Revenue",
+    "lesungen": 1,
+    "abweichend": [],
+    "summe": false
+   },
+   "2022": {
+    "wert": 722.87,
+    "roh": 722870.0,
+    "bericht": "besi-ar-2023",
+    "seite": "140",
+    "etikett": "Revenue",
+    "lesungen": 1,
+    "abweichend": [],
+    "summe": false
+   },
+   "2023": {
+    "wert": 578.862,
+    "roh": 578862.0,
+    "bericht": "besi-ar-2023",
+    "seite": "140",
+    "etikett": "Revenue",
+    "lesungen": 1,
+    "abweichend": [],
+    "summe": false
+   },
+   "2024": {
+    "wert": 607.473,
+    "roh": 607473.0,
+    "bericht": "besi-ar-2025",
+    "seite": "194",
+    "etikett": "Revenue",
+    "lesungen": 1,
+    "abweichend": [],
+    "summe": false
+   },
+   "2025": {
+    "wert": 591.331,
+    "roh": 591331.0,
+    "bericht": "besi-ar-2025",
+    "seite": "194",
+    "etikett": "Revenue",
+    "lesungen": 1,
+    "abweichend": [],
+    "summe": false
+   }
+  },
+  "ergebnis": {
+   "2019": {
+    "wert": 81.32,
+    "roh": 81320.0,
+    "bericht": "besi-ar-2020",
+    "seite": "105",
+    "etikett": "Net income",
+    "lesungen": 1,
+    "abweichend": [],
+    "summe": false
+   },
+   "2020": {
+    "wert": 132.275,
+    "roh": 132275.0,
+    "bericht": "besi-ar-2021",
+    "seite": "126",
+    "etikett": "Net income",
+    "lesungen": 2,
+    "abweichend": [],
+    "summe": false
+   },
+   "2021": {
+    "wert": 282.419,
+    "roh": 282419.0,
+    "bericht": "besi-ar-2021",
+    "seite": "126",
+    "etikett": "Net income",
+    "lesungen": 1,
+    "abweichend": [],
+    "summe": false
+   },
+   "2022": {
+    "wert": 240.647,
+    "roh": 240647.0,
+    "bericht": "besi-ar-2023",
+    "seite": "140",
+    "etikett": "Net income",
+    "lesungen": 1,
+    "abweichend": [],
+    "summe": false
+   },
+   "2023": {
+    "wert": 177.084,
+    "roh": 177084.0,
+    "bericht": "besi-ar-2023",
+    "seite": "140",
+    "etikett": "Net income",
+    "lesungen": 1,
+    "abweichend": [],
+    "summe": false
+   },
+   "2024": {
+    "wert": 181.992,
+    "roh": 181992.0,
+    "bericht": "besi-ar-2025",
+    "seite": "194",
+    "etikett": "Net income",
+    "lesungen": 1,
+    "abweichend": [],
+    "summe": false
+   },
+   "2025": {
+    "wert": 131.641,
+    "roh": 131641.0,
+    "bericht": "besi-ar-2025",
+    "seite": "194",
+    "etikett": "Net income",
+    "lesungen": 1,
+    "abweichend": [],
+    "summe": false
+   }
+  },
+  "eps_verwaessert": {
+   "2019": {
+    "wert": 1.06,
+    "roh": 1.06,
+    "bericht": "besi-ar-2020",
+    "seite": "105",
+    "etikett": "Diluted1",
+    "lesungen": 1,
+    "abweichend": [],
+    "summe": false
+   },
+   "2020": {
+    "wert": 1.67,
+    "roh": 1.67,
+    "bericht": "besi-ar-2021",
+    "seite": "126",
+    "etikett": "Diluted1",
+    "lesungen": 2,
+    "abweichend": [],
+    "summe": false
+   },
+   "2021": {
+    "wert": 3.39,
+    "roh": 3.39,
+    "bericht": "besi-ar-2021",
+    "seite": "126",
+    "etikett": "Diluted1",
+    "lesungen": 1,
+    "abweichend": [],
+    "summe": false
+   },
+   "2022": {
+    "wert": 2.9,
+    "roh": 2.9,
+    "bericht": "besi-ar-2023",
+    "seite": "140",
+    "etikett": "Diluted¹",
+    "lesungen": 1,
+    "abweichend": [],
+    "summe": false
+   },
+   "2023": {
+    "wert": 2.23,
+    "roh": 2.23,
+    "bericht": "besi-ar-2023",
+    "seite": "140",
+    "etikett": "Diluted¹",
+    "lesungen": 1,
+    "abweichend": [],
+    "summe": false
+   },
+   "2024": {
+    "wert": 2.3,
+    "roh": 2.3,
+    "bericht": "besi-ar-2025",
+    "seite": "194",
+    "etikett": "Diluted¹",
+    "lesungen": 1,
+    "abweichend": [],
+    "summe": false
+   },
+   "2025": {
+    "wert": 1.66,
+    "roh": 1.66,
+    "bericht": "besi-ar-2025",
+    "seite": "194",
+    "etikett": "Diluted¹",
+    "lesungen": 1,
+    "abweichend": [],
+    "summe": false
+   }
+  },
+  "eigenkapital": {
+   "2019": {
+    "wert": 298.508,
+    "roh": 298508.0,
+    "bericht": "besi-ar-2020",
+    "seite": "104",
+    "etikett": "Equity attributable to owners of the Company",
+    "lesungen": 1,
+    "abweichend": [],
+    "summe": false
+   },
+   "2020": {
+    "wert": 371.227,
+    "roh": 371227.0,
+    "bericht": "besi-ar-2021",
+    "seite": "125",
+    "etikett": "Equity attributable to owners of the Company",
+    "lesungen": 2,
+    "abweichend": [],
+    "summe": false
+   },
+   "2021": {
+    "wert": 619.274,
+    "roh": 619274.0,
+    "bericht": "besi-ar-2021",
+    "seite": "125",
+    "etikett": "Equity attributable to owners of the Company",
+    "lesungen": 1,
+    "abweichend": [],
+    "summe": false
+   },
+   "2022": {
+    "wert": 628.535,
+    "roh": 628535.0,
+    "bericht": "besi-ar-2023",
+    "seite": "139",
+    "etikett": "Equity attributable to owners of the Company",
+    "lesungen": 1,
+    "abweichend": [],
+    "summe": false
+   },
+   "2023": {
+    "wert": 421.413,
+    "roh": 421413.0,
+    "bericht": "besi-ar-2023",
+    "seite": "139",
+    "etikett": "Equity attributable to owners of the Company",
+    "lesungen": 1,
+    "abweichend": [],
+    "summe": false
+   },
+   "2024": {
+    "wert": 501.264,
+    "roh": 501264.0,
+    "bericht": "besi-ar-2025",
+    "seite": "193",
+    "etikett": "Equity attributable to owners of the Company",
+    "lesungen": 1,
+    "abweichend": [],
+    "summe": false
+   },
+   "2025": {
+    "wert": 416.397,
+    "roh": 416397.0,
+    "bericht": "besi-ar-2025",
+    "seite": "193",
+    "etikett": "Equity attributable to owners of the Company",
+    "lesungen": 1,
+    "abweichend": [],
+    "summe": false
+   }
+  }
+ },
+ "fro": {
+  "operativer_cf": {
+   "2014": {
+    "wert": 58.641,
+    "roh": 58641.0,
+    "bericht": "fro-20-f-2016",
+    "seite": "54",
+    "etikett": "Net cash provided by operating activities",
+    "lesungen": 1,
+    "abweichend": [],
+    "summe": false,
+    "xbrl": 58.641
+   },
+   "2015": {
+    "wert": 207.346,
+    "roh": 207346.0,
+    "bericht": "fro-20-f-2016",
+    "seite": "54",
+    "etikett": "Net cash provided by operating activities",
+    "lesungen": 1,
+    "abweichend": [],
+    "summe": false,
+    "xbrl": 207.346
+   },
+   "2016": {
+    "wert": 286.015,
+    "roh": 286015.0,
+    "bericht": "fro-20-f-2016",
+    "seite": "54",
+    "etikett": "Net cash provided by operating activities",
+    "lesungen": 1,
+    "abweichend": [],
+    "summe": false,
+    "xbrl": 286.015
+   },
+   "2017": {
+    "wert": 130.485,
+    "roh": 130485.0,
+    "bericht": "fro-20-f-2019",
+    "seite": "F-8",
+    "etikett": "net cash provided by operating activities",
+    "lesungen": 1,
+    "abweichend": [],
+    "summe": false,
+    "xbrl": 130.485
+   },
+   "2018": {
+    "wert": 46.171,
+    "roh": 46171.0,
+    "bericht": "fro-20-f-2019",
+    "seite": "F-8",
+    "etikett": "net cash provided by operating activities",
+    "lesungen": 1,
+    "abweichend": [],
+    "summe": false,
+    "xbrl": 46.171
+   },
+   "2019": {
+    "wert": 280.187,
+    "roh": 280187.0,
+    "bericht": "fro-20-f-2019",
+    "seite": "F-8",
+    "etikett": "net cash provided by operating activities",
+    "lesungen": 1,
+    "abweichend": [],
+    "summe": false,
+    "xbrl": 280.187
+   },
+   "2021": {
+    "wert": 85.261,
+    "roh": 85261.0,
+    "bericht": "fro-20-f-2022",
+    "seite": "F-8",
+    "etikett": "net cash provided by operating activities",
+    "lesungen": 1,
+    "abweichend": [],
+    "summe": false,
+    "xbrl": 85.261
+   },
+   "2022": {
+    "wert": 385.33,
+    "roh": 385330.0,
+    "bericht": "fro-20-f-2024",
+    "seite": "F-8",
+    "etikett": "net cash provided by operating activities",
+    "lesungen": 2,
+    "abweichend": [],
+    "summe": false,
+    "xbrl": 385.33
+   },
+   "2023": {
+    "wert": 856.181,
+    "roh": 856181.0,
+    "bericht": "fro-20-f-2025",
+    "seite": "F-8",
+    "etikett": "net cash provided by operating activities",
+    "lesungen": 2,
+    "abweichend": [],
+    "summe": false,
+    "xbrl": 856.181
+   },
+   "2024": {
+    "wert": 736.412,
+    "roh": 736412.0,
+    "bericht": "fro-20-f-2025",
+    "seite": "F-8",
+    "etikett": "net cash provided by operating activities",
+    "lesungen": 2,
+    "abweichend": [],
+    "summe": false,
+    "xbrl": 736.412
+   },
+   "2025": {
+    "wert": 682.46,
+    "roh": 682460.0,
+    "bericht": "fro-20-f-2025",
+    "seite": "F-8",
+    "etikett": "net cash provided by operating activities",
+    "lesungen": 1,
+    "abweichend": [],
+    "summe": false,
+    "xbrl": 682.46
+   },
+   "2008": {
+    "wert": 826.803,
+    "bericht": "SEC XBRL companyfacts, abgerufen 19.09.2026",
+    "seite": null,
+    "etikett": "XBRL",
+    "lesungen": 1,
+    "abweichend": []
+   },
+   "2009": {
+    "wert": 321.52,
+    "bericht": "SEC XBRL companyfacts, abgerufen 19.09.2026",
+    "seite": null,
+    "etikett": "XBRL",
+    "lesungen": 1,
+    "abweichend": []
+   },
+   "2010": {
+    "wert": 314.911,
+    "bericht": "SEC XBRL companyfacts, abgerufen 19.09.2026",
+    "seite": null,
+    "etikett": "XBRL",
+    "lesungen": 1,
+    "abweichend": []
+   },
+   "2011": {
+    "wert": 56.853,
+    "bericht": "SEC XBRL companyfacts, abgerufen 19.09.2026",
+    "seite": null,
+    "etikett": "XBRL",
+    "lesungen": 1,
+    "abweichend": []
+   },
+   "2012": {
+    "wert": 68.574,
+    "bericht": "SEC XBRL companyfacts, abgerufen 19.09.2026",
+    "seite": null,
+    "etikett": "XBRL",
+    "lesungen": 1,
+    "abweichend": []
+   },
+   "2013": {
+    "wert": 22.857,
+    "bericht": "SEC XBRL companyfacts, abgerufen 19.09.2026",
+    "seite": null,
+    "etikett": "XBRL",
+    "lesungen": 1,
+    "abweichend": []
+   },
+   "2020": {
+    "wert": 604.058,
+    "bericht": "SEC XBRL companyfacts, abgerufen 19.09.2026",
+    "seite": null,
+    "etikett": "XBRL",
+    "lesungen": 1,
+    "abweichend": []
+   }
+  },
+  "umsatz": {
+   "2014": {
+    "wert": 241.826,
+    "roh": 241826.0,
+    "bericht": "fro-20-f-2016",
+    "seite": "F-3",
+    "etikett": "Total operating revenues",
+    "lesungen": 1,
+    "abweichend": [],
+    "summe": false
+   },
+   "2015": {
+    "wert": 458.934,
+    "roh": 458934.0,
+    "bericht": "fro-20-f-2016",
+    "seite": "F-3",
+    "etikett": "Total operating revenues",
+    "lesungen": 1,
+    "abweichend": [],
+    "summe": false
+   },
+   "2016": {
+    "wert": 754.306,
+    "roh": 754306.0,
+    "bericht": "fro-20-f-2016",
+    "seite": "F-3",
+    "etikett": "Total operating revenues",
+    "lesungen": 1,
+    "abweichend": [],
+    "summe": false
+   },
+   "2017": {
+    "wert": 646.326,
+    "roh": 646326.0,
+    "bericht": "fro-20-f-2019",
+    "seite": "F-4",
+    "etikett": "Total operating revenues",
+    "lesungen": 1,
+    "abweichend": [],
+    "summe": false
+   },
+   "2018": {
+    "wert": 742.266,
+    "roh": 742266.0,
+    "bericht": "fro-20-f-2019",
+    "seite": "F-4",
+    "etikett": "Total operating revenues",
+    "lesungen": 1,
+    "abweichend": [],
+    "summe": false
+   },
+   "2019": {
+    "wert": 957.322,
+    "roh": 957322.0,
+    "bericht": "fro-20-f-2019",
+    "seite": "F-4",
+    "etikett": "Total operating revenues",
+    "lesungen": 1,
+    "abweichend": [],
+    "summe": false
+   },
+   "2022": {
+    "wert": 1430.208,
+    "roh": 1430208.0,
+    "bericht": "fro-20-f-2024",
+    "seite": "F-4",
+    "etikett": "Revenues",
+    "lesungen": 1,
+    "abweichend": [],
+    "summe": false
+   },
+   "2023": {
+    "wert": 1802.184,
+    "roh": 1802184.0,
+    "bericht": "fro-20-f-2025",
+    "seite": "F-4",
+    "etikett": "Revenues",
+    "lesungen": 2,
+    "abweichend": [],
+    "summe": false
+   },
+   "2024": {
+    "wert": 2050.385,
+    "roh": 2050385.0,
+    "bericht": "fro-20-f-2025",
+    "seite": "F-4",
+    "etikett": "Revenues",
+    "lesungen": 2,
+    "abweichend": [],
+    "summe": false
+   },
+   "2025": {
+    "wert": 1965.104,
+    "roh": 1965104.0,
+    "bericht": "fro-20-f-2025",
+    "seite": "F-4",
+    "etikett": "Revenues",
+    "lesungen": 1,
+    "abweichend": [],
+    "summe": false
+   }
+  },
+  "ergebnis": {
+   "2014": {
+    "wert": 149.469,
+    "roh": 149469.0,
+    "bericht": "fro-20-f-2016",
+    "seite": "F-3",
+    "etikett": "Net income attributable to the Company",
+    "lesungen": 1,
+    "abweichend": [],
+    "summe": false,
+    "xbrl": 149.469
+   },
+   "2015": {
+    "wert": 154.624,
+    "roh": 154624.0,
+    "bericht": "fro-20-f-2016",
+    "seite": "F-3",
+    "etikett": "Net income attributable to the Company",
+    "lesungen": 1,
+    "abweichend": [],
+    "summe": false,
+    "xbrl": 154.624
+   },
+   "2016": {
+    "wert": 117.01,
+    "roh": 117010.0,
+    "bericht": "fro-20-f-2016",
+    "seite": "F-3",
+    "etikett": "Net income attributable to the Company",
+    "lesungen": 1,
+    "abweichend": [],
+    "summe": false,
+    "xbrl": 117.01
+   },
+   "2017": {
+    "wert": -264.861,
+    "roh": -264861.0,
+    "bericht": "fro-20-f-2019",
+    "seite": "F-4",
+    "etikett": "Net income (loss) attributable to the Company",
+    "lesungen": 1,
+    "abweichend": [],
+    "summe": false,
+    "xbrl": -264.861
+   },
+   "2018": {
+    "wert": -8.88,
+    "roh": -8880.0,
+    "bericht": "fro-20-f-2019",
+    "seite": "F-4",
+    "etikett": "Net income (loss) attributable to the Company",
+    "lesungen": 1,
+    "abweichend": [],
+    "summe": false,
+    "xbrl": -8.88
+   },
+   "2019": {
+    "wert": 139.972,
+    "roh": 139972.0,
+    "bericht": "fro-20-f-2019",
+    "seite": "F-4",
+    "etikett": "Net income (loss) attributable to the Company",
+    "lesungen": 1,
+    "abweichend": [],
+    "summe": false,
+    "xbrl": 139.972
+   },
+   "2022": {
+    "wert": 475.537,
+    "roh": 475537.0,
+    "bericht": "fro-20-f-2024",
+    "seite": "F-4",
+    "etikett": "Profit for the period",
+    "lesungen": 1,
+    "abweichend": [],
+    "summe": false,
+    "xbrl": 475.537
+   },
+   "2023": {
+    "wert": 656.414,
+    "roh": 656414.0,
+    "bericht": "fro-20-f-2025",
+    "seite": "F-4",
+    "etikett": "Profit for the period",
+    "lesungen": 2,
+    "abweichend": [],
+    "summe": false,
+    "xbrl": 656.414
+   },
+   "2024": {
+    "wert": 495.583,
+    "roh": 495583.0,
+    "bericht": "fro-20-f-2025",
+    "seite": "F-4",
+    "etikett": "Profit for the period",
+    "lesungen": 2,
+    "abweichend": [],
+    "summe": false,
+    "xbrl": 495.583
+   },
+   "2025": {
+    "wert": 379.081,
+    "roh": 379081.0,
+    "bericht": "fro-20-f-2025",
+    "seite": "F-4",
+    "etikett": "Profit for the period",
+    "lesungen": 1,
+    "abweichend": [],
+    "summe": false,
+    "xbrl": 379.081
+   },
+   "2008": {
+    "wert": 698.77,
+    "bericht": "SEC XBRL companyfacts, abgerufen 19.09.2026",
+    "seite": null,
+    "etikett": "XBRL",
+    "lesungen": 1,
+    "abweichend": []
+   },
+   "2009": {
+    "wert": 102.701,
+    "bericht": "SEC XBRL companyfacts, abgerufen 19.09.2026",
+    "seite": null,
+    "etikett": "XBRL",
+    "lesungen": 1,
+    "abweichend": []
+   },
+   "2010": {
+    "wert": 161.407,
+    "bericht": "SEC XBRL companyfacts, abgerufen 19.09.2026",
+    "seite": null,
+    "etikett": "XBRL",
+    "lesungen": 1,
+    "abweichend": []
+   },
+   "2011": {
+    "wert": -529.601,
+    "bericht": "SEC XBRL companyfacts, abgerufen 19.09.2026",
+    "seite": null,
+    "etikett": "XBRL",
+    "lesungen": 1,
+    "abweichend": []
+   },
+   "2012": {
+    "wert": -82.754,
+    "bericht": "SEC XBRL companyfacts, abgerufen 19.09.2026",
+    "seite": null,
+    "etikett": "XBRL",
+    "lesungen": 1,
+    "abweichend": []
+   },
+   "2013": {
+    "wert": 69.499,
+    "bericht": "SEC XBRL companyfacts, abgerufen 19.09.2026",
+    "seite": null,
+    "etikett": "XBRL",
+    "lesungen": 1,
+    "abweichend": []
+   },
+   "2020": {
+    "wert": 412.875,
+    "bericht": "SEC XBRL companyfacts, abgerufen 19.09.2026",
+    "seite": null,
+    "etikett": "XBRL",
+    "lesungen": 1,
+    "abweichend": []
+   },
+   "2021": {
+    "wert": -14.961,
+    "bericht": "SEC XBRL companyfacts, abgerufen 19.09.2026",
+    "seite": null,
+    "etikett": "XBRL",
+    "lesungen": 1,
+    "abweichend": []
+   }
+  },
+  "eps_verwaessert": {
+   "2014": {
+    "wert": 1.1,
+    "roh": 1.1,
+    "bericht": "fro-20-f-2016",
+    "seite": "F-3",
+    "etikett": "Basic and diluted earnings per share attributable to the Company",
+    "lesungen": 1,
+    "abweichend": [],
+    "summe": false
+   },
+   "2015": {
+    "wert": 2.13,
+    "roh": 2.13,
+    "bericht": "fro-20-f-2016",
+    "seite": "F-3",
+    "etikett": "Basic and diluted earnings per share attributable to the Company",
+    "lesungen": 1,
+    "abweichend": [],
+    "summe": false
+   },
+   "2016": {
+    "wert": 0.75,
+    "roh": 0.75,
+    "bericht": "fro-20-f-2016",
+    "seite": "F-3",
+    "etikett": "Basic and diluted earnings per share attributable to the Company",
+    "lesungen": 1,
+    "abweichend": [],
+    "summe": false
+   },
+   "2017": {
+    "wert": -1.56,
+    "roh": -1.56,
+    "bericht": "fro-20-f-2019",
+    "seite": "F-4",
+    "etikett": "Diluted earnings (loss) per share attributable to the Company",
+    "lesungen": 1,
+    "abweichend": [],
+    "summe": false
+   },
+   "2018": {
+    "wert": -0.05,
+    "roh": -0.05,
+    "bericht": "fro-20-f-2019",
+    "seite": "F-4",
+    "etikett": "Diluted earnings (loss) per share attributable to the Company",
+    "lesungen": 1,
+    "abweichend": [],
+    "summe": false
+   },
+   "2019": {
+    "wert": 0.78,
+    "roh": 0.78,
+    "bericht": "fro-20-f-2019",
+    "seite": "F-4",
+    "etikett": "Diluted earnings (loss) per share attributable to the Company",
+    "lesungen": 1,
+    "abweichend": [],
+    "summe": false
+   },
+   "2022": {
+    "wert": 2.22,
+    "roh": 2.22,
+    "bericht": "fro-20-f-2024",
+    "seite": "F-4",
+    "etikett": "Basic and diluted earnings per share",
+    "lesungen": 1,
+    "abweichend": [],
+    "summe": false
+   },
+   "2023": {
+    "wert": 2.95,
+    "roh": 2.95,
+    "bericht": "fro-20-f-2025",
+    "seite": "F-4",
+    "etikett": "Basic and diluted earnings per share",
+    "lesungen": 2,
+    "abweichend": [],
+    "summe": false
+   },
+   "2024": {
+    "wert": 2.23,
+    "roh": 2.23,
+    "bericht": "fro-20-f-2025",
+    "seite": "F-4",
+    "etikett": "Basic and diluted earnings per share",
+    "lesungen": 2,
+    "abweichend": [],
+    "summe": false
+   },
+   "2025": {
+    "wert": 1.7,
+    "roh": 1.7,
+    "bericht": "fro-20-f-2025",
+    "seite": "F-4",
+    "etikett": "Basic and diluted earnings per share",
+    "lesungen": 1,
+    "abweichend": [],
+    "summe": false
+   }
+  },
+  "eigenkapital": {
+   "2012": {
+    "wert": 489.427,
+    "roh": 489427.0,
+    "bericht": "fro-20-f-2016",
+    "seite": "3",
+    "etikett": "Total equity attributable to the Company",
+    "lesungen": 1,
+    "abweichend": [],
+    "summe": false
+   },
+   "2013": {
+    "wert": 1063.157,
+    "roh": 1063157.0,
+    "bericht": "fro-20-f-2016",
+    "seite": "3",
+    "etikett": "Total equity attributable to the Company",
+    "lesungen": 1,
+    "abweichend": [],
+    "summe": false
+   },
+   "2014": {
+    "wert": 1123.58,
+    "roh": 1123580.0,
+    "bericht": "fro-20-f-2016",
+    "seite": "3",
+    "etikett": "Total equity attributable to the Company",
+    "lesungen": 1,
+    "abweichend": [],
+    "summe": false
+   },
+   "2015": {
+    "wert": 1446.282,
+    "roh": 1446282.0,
+    "bericht": "fro-20-f-2019",
+    "seite": "5",
+    "etikett": "Total equity attributable to the Company",
+    "lesungen": 2,
+    "abweichend": [],
+    "summe": false
+   },
+   "2016": {
+    "wert": 1499.601,
+    "roh": 1499601.0,
+    "bericht": "fro-20-f-2019",
+    "seite": "5",
+    "etikett": "Total equity attributable to the Company",
+    "lesungen": 2,
+    "abweichend": [],
+    "summe": false
+   },
+   "2017": {
+    "wert": 1187.308,
+    "roh": 1187308.0,
+    "bericht": "fro-20-f-2019",
+    "seite": "5",
+    "etikett": "Total equity attributable to the Company",
+    "lesungen": 1,
+    "abweichend": [],
+    "summe": false
+   },
+   "2018": {
+    "wert": 1163.8,
+    "roh": 1163800.0,
+    "bericht": "fro-20-f-2019",
+    "seite": "5",
+    "etikett": "Total equity attributable to the Company",
+    "lesungen": 1,
+    "abweichend": [],
+    "summe": false
+   },
+   "2019": {
+    "wert": 1509.976,
+    "roh": 1509976.0,
+    "bericht": "fro-20-f-2019",
+    "seite": "5",
+    "etikett": "Total equity attributable to the Company",
+    "lesungen": 1,
+    "abweichend": [],
+    "summe": false
+   },
+   "2023": {
+    "wert": 2277818.0,
+    "roh": 2277818.0,
+    "bericht": "fro-20-f-2024",
+    "seite": "F-7",
+    "etikett": "Total equity attributable to the shareholders of the Company",
+    "lesungen": 1,
+    "abweichend": [],
+    "summe": false
+   },
+   "2024": {
+    "wert": 2340.653,
+    "roh": 2340653.0,
+    "bericht": "fro-20-f-2025",
+    "seite": "F-6",
+    "etikett": "Total equity attributable to the shareholders of the Company",
+    "lesungen": 2,
+    "abweichend": [
+     [
+      2340653.0,
+      "fro-20-f-2024",
+      "F-7"
+     ]
+    ],
+    "summe": false
+   },
+   "2025": {
+    "wert": 2511.35,
+    "roh": 2511350.0,
+    "bericht": "fro-20-f-2025",
+    "seite": "F-6",
+    "etikett": "Total equity attributable to the shareholders of the Company",
+    "lesungen": 1,
+    "abweichend": [],
+    "summe": false
+   },
+   "2031": {
+    "wert": 1642513.0,
+    "roh": 1642513.0,
+    "bericht": "fro-20-f-2022",
+    "seite": "F-26",
+    "etikett": "Total equity attributable to the shareholders of the Company",
+    "lesungen": 1,
+    "abweichend": [],
+    "summe": false
+   },
+   "2035": {
+    "wert": -10501.0,
+    "roh": -10501.0,
+    "bericht": "fro-20-f-2022",
+    "seite": "F-26",
+    "etikett": "Total equity attributable to the shareholders of the Company",
+    "lesungen": 1,
+    "abweichend": [],
+    "summe": false
+   }
+  },
+  "aktien_ausstehend": {
+   "2012": {
+    "wert": 79.56,
+    "roh": 79560.0,
+    "bericht": "fro-20-f-2016",
+    "seite": "3",
+    "etikett": "Ordinary shares outstanding (000s)",
+    "lesungen": 1,
+    "abweichend": [],
+    "summe": false
+   },
+   "2013": {
+    "wert": 127.041,
+    "roh": 127041.0,
+    "bericht": "fro-20-f-2016",
+    "seite": "3",
+    "etikett": "Ordinary shares outstanding (000s)",
+    "lesungen": 1,
+    "abweichend": [],
+    "summe": false
+   },
+   "2014": {
+    "wert": 116.712,
+    "roh": 116712.0,
+    "bericht": "fro-20-f-2016",
+    "seite": "3",
+    "etikett": "Ordinary shares outstanding (000s)",
+    "lesungen": 1,
+    "abweichend": [],
+    "summe": false
+   },
+   "2015": {
+    "wert": 156.387,
+    "roh": 156387.0,
+    "bericht": "fro-20-f-2019",
+    "seite": "5",
+    "etikett": "Ordinary shares outstanding (000s)",
+    "lesungen": 2,
+    "abweichend": [],
+    "summe": false
+   },
+   "2016": {
+    "wert": 169.809,
+    "roh": 169809.0,
+    "bericht": "fro-20-f-2019",
+    "seite": "5",
+    "etikett": "Ordinary shares outstanding (000s)",
+    "lesungen": 2,
+    "abweichend": [],
+    "summe": false
+   },
+   "2017": {
+    "wert": 169.809,
+    "roh": 169809.0,
+    "bericht": "fro-20-f-2019",
+    "seite": "5",
+    "etikett": "Ordinary shares outstanding (000s)",
+    "lesungen": 1,
+    "abweichend": [],
+    "summe": false
+   },
+   "2018": {
+    "wert": 169.821,
+    "roh": 169821.0,
+    "bericht": "fro-20-f-2019",
+    "seite": "5",
+    "etikett": "Ordinary shares outstanding (000s)",
+    "lesungen": 1,
+    "abweichend": [],
+    "summe": false
+   },
+   "2019": {
+    "wert": 196.894,
+    "roh": 196894.0,
+    "bericht": "fro-20-f-2019",
+    "seite": "5",
+    "etikett": "Ordinary shares outstanding (000s)",
+    "lesungen": 1,
+    "abweichend": [],
+    "summe": false
+   }
+  },
+  "investitionen": {
+   "2017": {
+    "wert": -713.56,
+    "roh": -713560.0,
+    "bericht": "fro-20-f-2019",
+    "seite": "F-8",
+    "etikett": "Additions to newbuildings, vessels and equipment",
+    "lesungen": 1,
+    "abweichend": [],
+    "summe": false
+   },
+   "2018": {
+    "wert": -216.31,
+    "roh": -216310.0,
+    "bericht": "fro-20-f-2019",
+    "seite": "F-8",
+    "etikett": "Additions to newbuildings, vessels and equipment",
+    "lesungen": 1,
+    "abweichend": [],
+    "summe": false
+   },
+   "2019": {
+    "wert": -195.972,
+    "roh": -195972.0,
+    "bericht": "fro-20-f-2019",
+    "seite": "F-8",
+    "etikett": "Additions to newbuildings, vessels and equipment",
+    "lesungen": 1,
+    "abweichend": [],
+    "summe": false
+   },
+   "2021": {
+    "wert": -473.761,
+    "roh": -473761.0,
+    "bericht": "fro-20-f-2022",
+    "seite": "F-8",
+    "etikett": "Additions to newbuildings, vessels and equipment",
+    "lesungen": 1,
+    "abweichend": [],
+    "summe": false,
+    "xbrl": -473.761
+   },
+   "2022": {
+    "wert": -335.815,
+    "roh": -335815.0,
+    "bericht": "fro-20-f-2024",
+    "seite": "F-8",
+    "etikett": "Additions to newbuildings, vessels and equipment",
+    "lesungen": 2,
+    "abweichend": [],
+    "summe": false,
+    "xbrl": -335.815
+   },
+   "2023": {
+    "wert": -1631.423,
+    "roh": -1631423.0,
+    "bericht": "fro-20-f-2025",
+    "seite": "F-8",
+    "etikett": "Additions to newbuildings, vessels and equipment",
+    "lesungen": 2,
+    "abweichend": [],
+    "summe": false,
+    "xbrl": -1631.423
+   },
+   "2024": {
+    "wert": -915.248,
+    "roh": -915248.0,
+    "bericht": "fro-20-f-2025",
+    "seite": "F-8",
+    "etikett": "Additions to newbuildings, vessels and equipment",
+    "lesungen": 2,
+    "abweichend": [],
+    "summe": false,
+    "xbrl": -915.248
+   },
+   "2025": {
+    "wert": -12.531,
+    "roh": -12531.0,
+    "bericht": "fro-20-f-2025",
+    "seite": "F-8",
+    "etikett": "Additions to newbuildings, vessels and equipment",
+    "lesungen": 1,
+    "abweichend": [],
+    "summe": false,
+    "xbrl": -12.531
+   }
+  },
+  "leasing": {
+   "2017": {
+    "wert": -31.854,
+    "roh": -31854.0,
+    "bericht": "fro-20-f-2019",
+    "seite": "F-8",
+    "etikett": "Payment of obligations under finance leases",
+    "lesungen": 1,
+    "abweichend": [],
+    "summe": false
+   },
+   "2018": {
+    "wert": -10.094,
+    "roh": -10094.0,
+    "bericht": "fro-20-f-2019",
+    "seite": "F-8",
+    "etikett": "Payment of obligations under finance leases",
+    "lesungen": 1,
+    "abweichend": [],
+    "summe": false
+   },
+   "2019": {
+    "wert": -15.228,
+    "roh": -15228.0,
+    "bericht": "fro-20-f-2019",
+    "seite": "F-8",
+    "etikett": "Payment of obligations under finance leases",
+    "lesungen": 1,
+    "abweichend": [],
+    "summe": false
+   },
+   "2021": {
+    "wert": -9.284,
+    "roh": -9284.0,
+    "bericht": "fro-20-f-2022",
+    "seite": "F-8",
+    "etikett": "Repayment of obligations under leases",
+    "lesungen": 1,
+    "abweichend": [],
+    "summe": false
+   },
+   "2022": {
+    "wert": -2.123,
+    "roh": -2123.0,
+    "bericht": "fro-20-f-2024",
+    "seite": "F-8",
+    "etikett": "Repayment of obligations under leases",
+    "lesungen": 2,
+    "abweichend": [],
+    "summe": false
+   },
+   "2023": {
+    "wert": -0.862,
+    "roh": -862.0,
+    "bericht": "fro-20-f-2025",
+    "seite": "F-8",
+    "etikett": "Repayment of obligations under leases",
+    "lesungen": 2,
+    "abweichend": [],
+    "summe": false
+   },
+   "2024": {
+    "wert": -0.93,
+    "roh": -930.0,
+    "bericht": "fro-20-f-2025",
+    "seite": "F-8",
+    "etikett": "Repayment of obligations under leases",
+    "lesungen": 2,
+    "abweichend": [],
+    "summe": false
+   },
+   "2025": {
+    "wert": -0.412,
+    "roh": -412.0,
+    "bericht": "fro-20-f-2025",
+    "seite": "F-8",
+    "etikett": "Repayment of obligations under leases",
+    "lesungen": 1,
+    "abweichend": [],
+    "summe": false
+   }
+  },
+  "aktien_verwaessert": {
+   "2017": {
+    "wert": -1.56,
+    "roh": -1.56,
+    "bericht": "fro-20-f-2019",
+    "seite": "F-4",
+    "etikett": "Diluted earnings (loss) per share attributable to the Company",
+    "lesungen": 1,
+    "abweichend": [],
+    "summe": false
+   },
+   "2018": {
+    "wert": -0.05,
+    "roh": -0.05,
+    "bericht": "fro-20-f-2019",
+    "seite": "F-4",
+    "etikett": "Diluted earnings (loss) per share attributable to the Company",
+    "lesungen": 1,
+    "abweichend": [],
+    "summe": false
+   },
+   "2019": {
+    "wert": 0.78,
+    "roh": 0.78,
+    "bericht": "fro-20-f-2019",
+    "seite": "F-4",
+    "etikett": "Diluted earnings (loss) per share attributable to the Company",
+    "lesungen": 1,
+    "abweichend": [],
+    "summe": false
+   },
+   "2022": {
+    "wert": 2.22,
+    "roh": 2.22,
+    "bericht": "fro-20-f-2024",
+    "seite": "F-4",
+    "etikett": "Basic and diluted earnings per share",
+    "lesungen": 1,
+    "abweichend": [],
+    "summe": false
+   },
+   "2023": {
+    "wert": 2.95,
+    "roh": 2.95,
+    "bericht": "fro-20-f-2025",
+    "seite": "F-4",
+    "etikett": "Basic and diluted earnings per share",
+    "lesungen": 2,
+    "abweichend": [],
+    "summe": false
+   },
+   "2024": {
+    "wert": 2.23,
+    "roh": 2.23,
+    "bericht": "fro-20-f-2025",
+    "seite": "F-4",
+    "etikett": "Basic and diluted earnings per share",
+    "lesungen": 2,
+    "abweichend": [],
+    "summe": false
+   },
+   "2025": {
+    "wert": 1.7,
+    "roh": 1.7,
+    "bericht": "fro-20-f-2025",
+    "seite": "F-4",
+    "etikett": "Basic and diluted earnings per share",
+    "lesungen": 1,
+    "abweichend": [],
+    "summe": false
+   }
+  },
+  "rueckkauf": {
+   "2021": {
+    "wert": -0.357,
+    "roh": -357.0,
+    "bericht": "fro-20-f-2022",
+    "seite": "F-8",
+    "etikett": "Purchase of shares",
+    "lesungen": 1,
+    "abweichend": [],
+    "summe": false
+   },
+   "2022": {
+    "wert": 0.0,
+    "roh": 0.0,
+    "bericht": "fro-20-f-2022",
+    "seite": "F-8",
+    "etikett": "Purchase of shares",
+    "lesungen": 1,
+    "abweichend": [],
+    "summe": false
+   }
+  },
+  "dividenden": {
+   "2022": {
+    "wert": -33.393,
+    "roh": -33393.0,
+    "bericht": "fro-20-f-2024",
+    "seite": "F-8",
+    "etikett": "Cash dividends paid",
+    "lesungen": 1,
+    "abweichend": [],
+    "summe": false,
+    "xbrl": -33.393
+   },
+   "2023": {
+    "wert": -638.928,
+    "roh": -638928.0,
+    "bericht": "fro-20-f-2025",
+    "seite": "F-8",
+    "etikett": "Cash dividends paid",
+    "lesungen": 2,
+    "abweichend": [],
+    "summe": false,
+    "xbrl": -638.928
+   },
+   "2024": {
+    "wert": -434.115,
+    "roh": -434115.0,
+    "bericht": "fro-20-f-2025",
+    "seite": "F-8",
+    "etikett": "Cash dividends paid",
+    "lesungen": 2,
+    "abweichend": [],
+    "summe": false,
+    "xbrl": -434.115
+   },
+   "2025": {
+    "wert": -207.039,
+    "roh": -207039.0,
+    "bericht": "fro-20-f-2025",
+    "seite": "F-8",
+    "etikett": "Cash dividends paid",
+    "lesungen": 1,
+    "abweichend": [],
+    "summe": false,
+    "xbrl": -207.039
+   },
+   "2013": {
+    "wert": -1.439,
+    "bericht": "SEC XBRL companyfacts, abgerufen 19.09.2026",
+    "seite": null,
+    "etikett": "XBRL",
+    "lesungen": 1,
+    "abweichend": []
+   },
+   "2014": {
+    "wert": -36.969,
+    "bericht": "SEC XBRL companyfacts, abgerufen 19.09.2026",
+    "seite": null,
+    "etikett": "XBRL",
+    "lesungen": 1,
+    "abweichend": []
+   },
+   "2015": {
+    "wert": -39.228,
+    "bericht": "SEC XBRL companyfacts, abgerufen 19.09.2026",
+    "seite": null,
+    "etikett": "XBRL",
+    "lesungen": 1,
+    "abweichend": []
+   },
+   "2016": {
+    "wert": -164.551,
+    "bericht": "SEC XBRL companyfacts, abgerufen 19.09.2026",
+    "seite": null,
+    "etikett": "XBRL",
+    "lesungen": 1,
+    "abweichend": []
+   },
+   "2017": {
+    "wert": -51.401,
+    "bericht": "SEC XBRL companyfacts, abgerufen 19.09.2026",
+    "seite": null,
+    "etikett": "XBRL",
+    "lesungen": 1,
+    "abweichend": []
+   },
+   "2018": {
+    "wert": -0.386,
+    "bericht": "SEC XBRL companyfacts, abgerufen 19.09.2026",
+    "seite": null,
+    "etikett": "XBRL",
+    "lesungen": 1,
+    "abweichend": []
+   },
+   "2019": {
+    "wert": -19.688,
+    "bericht": "SEC XBRL companyfacts, abgerufen 19.09.2026",
+    "seite": null,
+    "etikett": "XBRL",
+    "lesungen": 1,
+    "abweichend": []
+   },
+   "2020": {
+    "wert": -312.389,
+    "bericht": "SEC XBRL companyfacts, abgerufen 19.09.2026",
+    "seite": null,
+    "etikett": "XBRL",
+    "lesungen": 1,
+    "abweichend": []
+   },
+   "2021": {
+    "wert": -0.0,
+    "bericht": "SEC XBRL companyfacts, abgerufen 19.09.2026",
+    "seite": null,
+    "etikett": "XBRL",
+    "lesungen": 1,
+    "abweichend": []
+   }
+  }
+ },
+ "gea": {
+  "operativer_cf": {
+   "2019": {
+    "wert": 483.229,
+    "roh": 483229.0,
+    "bericht": "gea-ar-2020",
+    "seite": "126",
+    "etikett": "Cash flow from operating activities of continued operations",
+    "lesungen": 1,
+    "abweichend": [],
+    "summe": false
+   },
+   "2020": {
+    "wert": 717.843,
+    "roh": 717843.0,
+    "bericht": "gea-ar-2021",
+    "seite": "148",
+    "etikett": "Cash flow from operating activities of continued operations",
+    "lesungen": 2,
+    "abweichend": [],
+    "summe": false
+   },
+   "2021": {
+    "wert": 675.869,
+    "roh": 675869.0,
+    "bericht": "gea-ar-2021",
+    "seite": "148",
+    "etikett": "Cash flow from operating activities of continued operations",
+    "lesungen": 1,
+    "abweichend": [],
+    "summe": false
+   },
+   "2022": {
+    "wert": 471.613,
+    "roh": 471613.0,
+    "bericht": "gea-ar-2023",
+    "seite": "177",
+    "etikett": "Cash flow from operating activities of continued operations",
+    "lesungen": 1,
+    "abweichend": [],
+    "summe": false
+   },
+   "2023": {
+    "wert": 537.502,
+    "roh": 537502.0,
+    "bericht": "gea-ar-2023",
+    "seite": "177",
+    "etikett": "Cash flow from operating activities of continued operations",
+    "lesungen": 1,
+    "abweichend": [],
+    "summe": false
+   },
+   "2024": {
+    "wert": 710.5,
+    "roh": 710500.0,
+    "bericht": "gea-ar-2025",
+    "seite": "315",
+    "etikett": "Cash flow from operating activities of continued operations",
+    "lesungen": 1,
+    "abweichend": [],
+    "summe": false
+   },
+   "2025": {
+    "wert": 726.657,
+    "roh": 726657.0,
+    "bericht": "gea-ar-2025",
+    "seite": "315",
+    "etikett": "Cash flow from operating activities of continued operations",
+    "lesungen": 1,
+    "abweichend": [],
+    "summe": false
+   }
+  },
+  "investitionen": {
+   "2019": {
+    "wert": -136.962,
+    "roh": -136962.0,
+    "bericht": "gea-ar-2020",
+    "seite": "126",
+    "etikett": "Payments to acquire property, plant and equipment, and intangible assets",
+    "lesungen": 1,
+    "abweichend": [],
+    "summe": false
+   },
+   "2020": {
+    "wert": -97.584,
+    "roh": -97584.0,
+    "bericht": "gea-ar-2021",
+    "seite": "148",
+    "etikett": "Payments to acquire property, plant and equipment, and intangible assets",
+    "lesungen": 2,
+    "abweichend": [],
+    "summe": false
+   },
+   "2021": {
+    "wert": -129.854,
+    "roh": -129854.0,
+    "bericht": "gea-ar-2021",
+    "seite": "148",
+    "etikett": "Payments to acquire property, plant and equipment, and intangible assets",
+    "lesungen": 1,
+    "abweichend": [],
+    "summe": false
+   },
+   "2022": {
+    "wert": -203.802,
+    "roh": -203802.0,
+    "bericht": "gea-ar-2023",
+    "seite": "177",
+    "etikett": "Payments to acquire property, plant and equipment, and intangible assets",
+    "lesungen": 1,
+    "abweichend": [],
+    "summe": false
+   },
+   "2023": {
+    "wert": -228.362,
+    "roh": -228362.0,
+    "bericht": "gea-ar-2023",
+    "seite": "177",
+    "etikett": "Payments to acquire property, plant and equipment, and intangible assets",
+    "lesungen": 1,
+    "abweichend": [],
+    "summe": false
+   },
+   "2024": {
+    "wert": -237.105,
+    "roh": -237105.0,
+    "bericht": "gea-ar-2025",
+    "seite": "315",
+    "etikett": "Payments to acquire property, plant and equipment, and intangible assets",
+    "lesungen": 1,
+    "abweichend": [],
+    "summe": false
+   },
+   "2025": {
+    "wert": -255.292,
+    "roh": -255292.0,
+    "bericht": "gea-ar-2025",
+    "seite": "315",
+    "etikett": "Payments to acquire property, plant and equipment, and intangible assets",
+    "lesungen": 1,
+    "abweichend": [],
+    "summe": false
+   }
+  },
+  "dividenden": {
+   "2019": {
+    "wert": -153.418,
+    "roh": -153418.0,
+    "bericht": "gea-ar-2020",
+    "seite": "127",
+    "etikett": "Dividend payment by GEA Group Aktiengesellschaft",
+    "lesungen": 1,
+    "abweichend": [],
+    "summe": false
+   },
+   "2020": {
+    "wert": -153.418,
+    "roh": -153418.0,
+    "bericht": "gea-ar-2021",
+    "seite": "149",
+    "etikett": "Dividend payment by GEA Group Aktiengesellschaft",
+    "lesungen": 2,
+    "abweichend": [],
+    "summe": false
+   },
+   "2021": {
+    "wert": -153.418,
+    "roh": -153418.0,
+    "bericht": "gea-ar-2021",
+    "seite": "149",
+    "etikett": "Dividend payment by GEA Group Aktiengesellschaft",
+    "lesungen": 1,
+    "abweichend": [],
+    "summe": false
+   },
+   "2022": {
+    "wert": -159.59,
+    "roh": -159590.0,
+    "bericht": "gea-ar-2023",
+    "seite": "178",
+    "etikett": "Dividend payment by GEA Group Aktiengesellschaft",
+    "lesungen": 1,
+    "abweichend": [],
+    "summe": false
+   },
+   "2023": {
+    "wert": -159.59,
+    "roh": -159590.0,
+    "bericht": "gea-ar-2023",
+    "seite": "178",
+    "etikett": "Dividend payment by GEA Group Aktiengesellschaft",
+    "lesungen": 1,
+    "abweichend": [],
+    "summe": false
+   },
+   "2024": {
+    "wert": -168.566,
+    "roh": -168566.0,
+    "bericht": "gea-ar-2025",
+    "seite": "316",
+    "etikett": "Dividend payment by GEA Group Aktiengesellschaft",
+    "lesungen": 1,
+    "abweichend": [],
+    "summe": false
+   },
+   "2025": {
+    "wert": -168.566,
+    "roh": -168566.0,
+    "bericht": "gea-ar-2025",
+    "seite": "316",
+    "etikett": "Dividend payment by GEA Group Aktiengesellschaft",
+    "lesungen": 1,
+    "abweichend": [],
+    "summe": false
+   }
+  },
+  "leasing": {
+   "2019": {
+    "wert": -63.483,
+    "roh": -63483.0,
+    "bericht": "gea-ar-2020",
+    "seite": "126",
+    "etikett": "Payments from lease liabilities",
+    "lesungen": 1,
+    "abweichend": [],
+    "summe": false
+   },
+   "2020": {
+    "wert": -62.362,
+    "roh": -62362.0,
+    "bericht": "gea-ar-2021",
+    "seite": "148",
+    "etikett": "Payments from lease liabilities",
+    "lesungen": 2,
+    "abweichend": [],
+    "summe": false
+   },
+   "2021": {
+    "wert": -61.87,
+    "roh": -61870.0,
+    "bericht": "gea-ar-2021",
+    "seite": "148",
+    "etikett": "Payments from lease liabilities",
+    "lesungen": 1,
+    "abweichend": [],
+    "summe": false
+   },
+   "2022": {
+    "wert": -63.682,
+    "roh": -63682.0,
+    "bericht": "gea-ar-2023",
+    "seite": "177",
+    "etikett": "Payments from lease liabilities",
+    "lesungen": 1,
+    "abweichend": [],
+    "summe": false
+   },
+   "2023": {
+    "wert": -64.033,
+    "roh": -64033.0,
+    "bericht": "gea-ar-2023",
+    "seite": "177",
+    "etikett": "Payments from lease liabilities",
+    "lesungen": 1,
+    "abweichend": [],
+    "summe": false
+   },
+   "2024": {
+    "wert": -68.267,
+    "roh": -68267.0,
+    "bericht": "gea-ar-2025",
+    "seite": "315",
+    "etikett": "Payments from lease liabilities",
+    "lesungen": 1,
+    "abweichend": [],
+    "summe": false
+   },
+   "2025": {
+    "wert": -71.015,
+    "roh": -71015.0,
+    "bericht": "gea-ar-2025",
+    "seite": "315",
+    "etikett": "Payments from lease liabilities",
+    "lesungen": 1,
+    "abweichend": [],
+    "summe": false
+   }
+  },
+  "umsatz": {
+   "2019": {
+    "wert": 4879.702,
+    "roh": 4879702.0,
+    "bericht": "gea-ar-2020",
+    "seite": "124",
+    "etikett": "Revenue",
+    "lesungen": 1,
+    "abweichend": [],
+    "summe": false
+   },
+   "2020": {
+    "wert": 4635.054,
+    "roh": 4635054.0,
+    "bericht": "gea-ar-2021",
+    "seite": "146",
+    "etikett": "Revenue",
+    "lesungen": 2,
+    "abweichend": [],
+    "summe": false
+   },
+   "2021": {
+    "wert": 4702.905,
+    "roh": 4702905.0,
+    "bericht": "gea-ar-2021",
+    "seite": "146",
+    "etikett": "Revenue",
+    "lesungen": 1,
+    "abweichend": [],
+    "summe": false
+   },
+   "2022": {
+    "wert": 5164.714,
+    "roh": 5164714.0,
+    "bericht": "gea-ar-2023",
+    "seite": "175",
+    "etikett": "Revenue",
+    "lesungen": 1,
+    "abweichend": [],
+    "summe": false
+   },
+   "2023": {
+    "wert": 5373.491,
+    "roh": 5373491.0,
+    "bericht": "gea-ar-2023",
+    "seite": "175",
+    "etikett": "Revenue",
+    "lesungen": 1,
+    "abweichend": [],
+    "summe": false
+   },
+   "2024": {
+    "wert": 5422.129,
+    "roh": 5422129.0,
+    "bericht": "gea-ar-2025",
+    "seite": "313",
+    "etikett": "Revenue",
+    "lesungen": 1,
+    "abweichend": [],
+    "summe": false
+   },
+   "2025": {
+    "wert": 5495.356,
+    "roh": 5495356.0,
+    "bericht": "gea-ar-2025",
+    "seite": "313",
+    "etikett": "Revenue",
+    "lesungen": 1,
+    "abweichend": [],
+    "summe": false
+   }
+  },
+  "ergebnis": {
+   "2019": {
+    "wert": -170.671,
+    "roh": -170671.0,
+    "bericht": "gea-ar-2020",
+    "seite": "124",
+    "etikett": "Profit for the period",
+    "lesungen": 1,
+    "abweichend": [],
+    "summe": false
+   },
+   "2020": {
+    "wert": 96.825,
+    "roh": 96825.0,
+    "bericht": "gea-ar-2020",
+    "seite": "124",
+    "etikett": "Profit for the period",
+    "lesungen": 1,
+    "abweichend": [],
+    "summe": false
+   },
+   "2024": {
+    "wert": 385.026,
+    "roh": 385026.0,
+    "bericht": "gea-ar-2025",
+    "seite": "313",
+    "etikett": "Profit for the period",
+    "lesungen": 1,
+    "abweichend": [],
+    "summe": false
+   },
+   "2025": {
+    "wert": 414.013,
+    "roh": 414013.0,
+    "bericht": "gea-ar-2025",
+    "seite": "313",
+    "etikett": "Profit for the period",
+    "lesungen": 1,
+    "abweichend": [],
+    "summe": false
+   }
+  },
+  "eps_verwaessert": {
+   "2019": {
+    "wert": -0.95,
+    "roh": -0.95,
+    "bericht": "gea-ar-2020",
+    "seite": "124",
+    "etikett": "Basic and diluted earnings per share",
+    "lesungen": 1,
+    "abweichend": [],
+    "summe": false
+   },
+   "2020": {
+    "wert": 0.54,
+    "roh": 0.54,
+    "bericht": "gea-ar-2021",
+    "seite": "146",
+    "etikett": "Basic and diluted earnings per share",
+    "lesungen": 2,
+    "abweichend": [],
+    "summe": false
+   },
+   "2021": {
+    "wert": 1.7,
+    "roh": 1.7,
+    "bericht": "gea-ar-2021",
+    "seite": "146",
+    "etikett": "Basic and diluted earnings per share",
+    "lesungen": 1,
+    "abweichend": [],
+    "summe": false
+   },
+   "2022": {
+    "wert": 2.28,
+    "roh": 2.28,
+    "bericht": "gea-ar-2023",
+    "seite": "175",
+    "etikett": "Basic and diluted earnings per share",
+    "lesungen": 1,
+    "abweichend": [],
+    "summe": false
+   },
+   "2023": {
+    "wert": 2.28,
+    "roh": 2.28,
+    "bericht": "gea-ar-2023",
+    "seite": "175",
+    "etikett": "Basic and diluted earnings per share",
+    "lesungen": 1,
+    "abweichend": [],
+    "summe": false
+   },
+   "2024": {
+    "wert": 2.3,
+    "roh": 2.3,
+    "bericht": "gea-ar-2025",
+    "seite": "313",
+    "etikett": "Basic and diluted earnings per share",
+    "lesungen": 1,
+    "abweichend": [],
+    "summe": false
+   },
+   "2025": {
+    "wert": 2.54,
+    "roh": 2.54,
+    "bericht": "gea-ar-2025",
+    "seite": "313",
+    "etikett": "Basic and diluted earnings per share",
+    "lesungen": 1,
+    "abweichend": [],
+    "summe": false
+   }
+  },
+  "aktien_verwaessert": {
+   "2019": {
+    "wert": 180.5,
+    "roh": 180.5,
+    "bericht": "gea-ar-2020",
+    "seite": "124",
+    "etikett": "Weighted average number of ordinary shares used to calculate basic and diluted earnings per share (million)",
+    "lesungen": 1,
+    "abweichend": [],
+    "summe": false
+   },
+   "2020": {
+    "wert": 180.5,
+    "roh": 180.5,
+    "bericht": "gea-ar-2021",
+    "seite": "146",
+    "etikett": "Weighted average number of ordinary shares used to calculate basic and diluted earnings per share (million)",
+    "lesungen": 2,
+    "abweichend": [],
+    "summe": false
+   },
+   "2021": {
+    "wert": 180.0,
+    "roh": 180.0,
+    "bericht": "gea-ar-2021",
+    "seite": "146",
+    "etikett": "Weighted average number of ordinary shares used to calculate basic and diluted earnings per share (million)",
+    "lesungen": 1,
+    "abweichend": [],
+    "summe": false
+   },
+   "2022": {
+    "wert": 175.9,
+    "roh": 175.9,
+    "bericht": "gea-ar-2023",
+    "seite": "175",
+    "etikett": "Weighted average number of ordinary shares used to calculate basic and diluted earnings per share (million)",
+    "lesungen": 1,
+    "abweichend": [],
+    "summe": false
+   },
+   "2023": {
+    "wert": 172.2,
+    "roh": 172.2,
+    "bericht": "gea-ar-2023",
+    "seite": "175",
+    "etikett": "Weighted average number of ordinary shares used to calculate basic and diluted earnings per share (million)",
+    "lesungen": 1,
+    "abweichend": [],
+    "summe": false
+   },
+   "2024": {
+    "wert": 167.6,
+    "roh": 167.6,
+    "bericht": "gea-ar-2025",
+    "seite": "313",
+    "etikett": "Weighted average number of ordinary shares used to calculate basic and diluted earnings per share (in million shares)",
+    "lesungen": 1,
+    "abweichend": [],
+    "summe": false
+   },
+   "2025": {
+    "wert": 163.1,
+    "roh": 163.1,
+    "bericht": "gea-ar-2025",
+    "seite": "313",
+    "etikett": "Weighted average number of ordinary shares used to calculate basic and diluted earnings per share (in million shares)",
+    "lesungen": 1,
+    "abweichend": [],
+    "summe": false
+   }
+  },
+  "aktien_ausstehend": {
+   "2019": {
+    "wert": 180.5,
+    "roh": 180.5,
+    "bericht": "gea-ar-2020",
+    "seite": "124",
+    "etikett": "Weighted average number of ordinary shares used to calculate basic and diluted earnings per share (million)",
+    "lesungen": 1,
+    "abweichend": [],
+    "summe": false
+   },
+   "2020": {
+    "wert": 180.5,
+    "roh": 180.5,
+    "bericht": "gea-ar-2021",
+    "seite": "146",
+    "etikett": "Weighted average number of ordinary shares used to calculate basic and diluted earnings per share (million)",
+    "lesungen": 2,
+    "abweichend": [],
+    "summe": false
+   },
+   "2021": {
+    "wert": 180.0,
+    "roh": 180.0,
+    "bericht": "gea-ar-2021",
+    "seite": "146",
+    "etikett": "Weighted average number of ordinary shares used to calculate basic and diluted earnings per share (million)",
+    "lesungen": 1,
+    "abweichend": [],
+    "summe": false
+   },
+   "2022": {
+    "wert": 175.9,
+    "roh": 175.9,
+    "bericht": "gea-ar-2023",
+    "seite": "175",
+    "etikett": "Weighted average number of ordinary shares used to calculate basic and diluted earnings per share (million)",
+    "lesungen": 1,
+    "abweichend": [],
+    "summe": false
+   },
+   "2023": {
+    "wert": 172.2,
+    "roh": 172.2,
+    "bericht": "gea-ar-2023",
+    "seite": "175",
+    "etikett": "Weighted average number of ordinary shares used to calculate basic and diluted earnings per share (million)",
+    "lesungen": 1,
+    "abweichend": [],
+    "summe": false
+   },
+   "2024": {
+    "wert": 167.6,
+    "roh": 167.6,
+    "bericht": "gea-ar-2025",
+    "seite": "313",
+    "etikett": "Weighted average number of ordinary shares used to calculate basic and diluted earnings per share (in million shares)",
+    "lesungen": 1,
+    "abweichend": [],
+    "summe": false
+   },
+   "2025": {
+    "wert": 163.1,
+    "roh": 163.1,
+    "bericht": "gea-ar-2025",
+    "seite": "313",
+    "etikett": "Weighted average number of ordinary shares used to calculate basic and diluted earnings per share (in million shares)",
+    "lesungen": 1,
+    "abweichend": [],
+    "summe": false
+   }
+  },
+  "rueckkauf": {
+   "2020": {
+    "wert": -93.793,
+    "roh": -93793.0,
+    "bericht": "gea-ar-2021",
+    "seite": "149",
+    "etikett": "Purchase of treasury shares",
+    "lesungen": 1,
+    "abweichend": [],
+    "summe": false
+   },
+   "2021": {
+    "wert": -93.793,
+    "roh": -93793.0,
+    "bericht": "gea-ar-2021",
+    "seite": "149",
+    "etikett": "Purchase of treasury shares",
+    "lesungen": 1,
+    "abweichend": [],
+    "summe": false
+   },
+   "2022": {
+    "wert": -207.265,
+    "roh": -207265.0,
+    "bericht": "gea-ar-2023",
+    "seite": "178",
+    "etikett": "Purchase of treasury shares",
+    "lesungen": 1,
+    "abweichend": [],
+    "summe": false
+   },
+   "2023": {
+    "wert": -207.265,
+    "roh": -207265.0,
+    "bericht": "gea-ar-2023",
+    "seite": "178",
+    "etikett": "Purchase of treasury shares",
+    "lesungen": 1,
+    "abweichend": [],
+    "summe": false
+   },
+   "2024": {
+    "wert": -95.706,
+    "roh": -95706.0,
+    "bericht": "gea-ar-2025",
+    "seite": "316",
+    "etikett": "Purchase/Repurchase of treasury shares",
+    "lesungen": 1,
+    "abweichend": [],
+    "summe": false
+   },
+   "2025": {
+    "wert": -95.706,
+    "roh": -95706.0,
+    "bericht": "gea-ar-2025",
+    "seite": "316",
+    "etikett": "Purchase/Repurchase of treasury shares",
+    "lesungen": 1,
+    "abweichend": [],
+    "summe": false
+   }
+  }
+ },
+ "oxy": {
+  "operativer_cf": {
+   "2014": {
+    "wert": 11068.0,
+    "roh": 11068.0,
+    "bericht": "oxy-10-k-2016",
+    "seite": "45",
+    "etikett": "net cash provided by operating activities",
+    "lesungen": 1,
+    "abweichend": [],
+    "summe": false,
+    "xbrl": 11068.0
+   },
+   "2015": {
+    "wert": 3351.0,
+    "roh": 3351.0,
+    "bericht": "oxy-10-k-2016",
+    "seite": "45",
+    "etikett": "net cash provided by operating activities",
+    "lesungen": 1,
+    "abweichend": [],
+    "summe": false,
+    "xbrl": 3351.0
+   },
+   "2016": {
+    "wert": 3383.0,
+    "roh": 3383.0,
+    "bericht": "oxy-10-k-2016",
+    "seite": "45",
+    "etikett": "net cash provided by operating activities",
+    "lesungen": 1,
+    "abweichend": [],
+    "summe": false,
+    "xbrl": 3384.0
+   },
+   "2017": {
+    "wert": 4861.0,
+    "roh": 4861.0,
+    "bericht": "oxy-10-k-2019",
+    "seite": "63",
+    "etikett": "Net cash provided by operating activities",
+    "lesungen": 1,
+    "abweichend": [],
+    "summe": false,
+    "xbrl": 4861.0
+   },
+   "2018": {
+    "wert": 7669.0,
+    "roh": 7669.0,
+    "bericht": "oxy-10-k-2019",
+    "seite": "63",
+    "etikett": "Net cash provided by operating activities",
+    "lesungen": 1,
+    "abweichend": [],
+    "summe": false,
+    "xbrl": 7669.0
+   },
+   "2019": {
+    "wert": 7375.0,
+    "roh": 7375.0,
+    "bericht": "oxy-10-k-2019",
+    "seite": "63",
+    "etikett": "Net cash provided by operating activities",
+    "lesungen": 1,
+    "abweichend": [],
+    "summe": false,
+    "xbrl": 7375.0
+   },
+   "2020": {
+    "wert": 3955.0,
+    "roh": 3955.0,
+    "bericht": "oxy-10-k-2022",
+    "seite": "67",
+    "etikett": "Net cash provided by operating activities",
+    "lesungen": 1,
+    "abweichend": [],
+    "summe": false,
+    "xbrl": 3955.0
+   },
+   "2021": {
+    "wert": 10434.0,
+    "roh": 10434.0,
+    "bericht": "oxy-10-k-2022",
+    "seite": "67",
+    "etikett": "Net cash provided by operating activities",
+    "lesungen": 1,
+    "abweichend": [],
+    "summe": false,
+    "xbrl": 10434.0
+   },
+   "2022": {
+    "wert": 16810.0,
+    "roh": 16810.0,
+    "bericht": "oxy-10-k-2024",
+    "seite": "69",
+    "etikett": "Net cash provided by operating activities",
+    "lesungen": 2,
+    "abweichend": [],
+    "summe": false,
+    "xbrl": 16810.0
+   },
+   "2023": {
+    "wert": 12308.0,
+    "roh": 12308.0,
+    "bericht": "oxy-10-k-2025",
+    "seite": "63",
+    "etikett": "Net cash provided by operating activities",
+    "lesungen": 2,
+    "abweichend": [],
+    "summe": false,
+    "xbrl": 12308.0
+   },
+   "2024": {
+    "wert": 11439.0,
+    "roh": 11439.0,
+    "bericht": "oxy-10-k-2025",
+    "seite": "63",
+    "etikett": "Net cash provided by operating activities",
+    "lesungen": 2,
+    "abweichend": [],
+    "summe": false,
+    "xbrl": 11439.0
+   },
+   "2025": {
+    "wert": 10532.0,
+    "roh": 10532.0,
+    "bericht": "oxy-10-k-2025",
+    "seite": "63",
+    "etikett": "Net cash provided by operating activities",
+    "lesungen": 1,
+    "abweichend": [],
+    "summe": false,
+    "xbrl": 10532.0
+   },
+   "2007": {
+    "wert": 6798.0,
+    "bericht": "SEC XBRL companyfacts, abgerufen 19.09.2026",
+    "seite": null,
+    "etikett": "XBRL",
+    "lesungen": 1,
+    "abweichend": []
+   },
+   "2008": {
+    "wert": 10654.0,
+    "bericht": "SEC XBRL companyfacts, abgerufen 19.09.2026",
+    "seite": null,
+    "etikett": "XBRL",
+    "lesungen": 1,
+    "abweichend": []
+   },
+   "2009": {
+    "wert": 5946.0,
+    "bericht": "SEC XBRL companyfacts, abgerufen 19.09.2026",
+    "seite": null,
+    "etikett": "XBRL",
+    "lesungen": 1,
+    "abweichend": []
+   },
+   "2010": {
+    "wert": 9566.0,
+    "bericht": "SEC XBRL companyfacts, abgerufen 19.09.2026",
+    "seite": null,
+    "etikett": "XBRL",
+    "lesungen": 1,
+    "abweichend": []
+   },
+   "2011": {
+    "wert": 12281.0,
+    "bericht": "SEC XBRL companyfacts, abgerufen 19.09.2026",
+    "seite": null,
+    "etikett": "XBRL",
+    "lesungen": 1,
+    "abweichend": []
+   },
+   "2012": {
+    "wert": 11299.0,
+    "bericht": "SEC XBRL companyfacts, abgerufen 19.09.2026",
+    "seite": null,
+    "etikett": "XBRL",
+    "lesungen": 1,
+    "abweichend": []
+   },
+   "2013": {
+    "wert": 12778.0,
+    "bericht": "SEC XBRL companyfacts, abgerufen 19.09.2026",
+    "seite": null,
+    "etikett": "XBRL",
+    "lesungen": 1,
+    "abweichend": []
+   }
+  },
+  "investitionen": {
+   "2014": {
+    "wert": -8930.0,
+    "roh": -8930.0,
+    "bericht": "oxy-10-k-2016",
+    "seite": "45",
+    "etikett": "Capital expenditures",
+    "lesungen": 1,
+    "abweichend": [],
+    "summe": false,
+    "xbrl": -8930.0
+   },
+   "2015": {
+    "wert": -5272.0,
+    "roh": -5272.0,
+    "bericht": "oxy-10-k-2016",
+    "seite": "45",
+    "etikett": "Capital expenditures",
+    "lesungen": 1,
+    "abweichend": [],
+    "summe": false,
+    "xbrl": -5272.0
+   },
+   "2016": {
+    "wert": -2717.0,
+    "roh": -2717.0,
+    "bericht": "oxy-10-k-2016",
+    "seite": "45",
+    "etikett": "Capital expenditures",
+    "lesungen": 1,
+    "abweichend": [],
+    "summe": false,
+    "xbrl": -2717.0
+   },
+   "2017": {
+    "wert": -3599.0,
+    "roh": -3599.0,
+    "bericht": "oxy-10-k-2019",
+    "seite": "63",
+    "etikett": "Capital expenditures",
+    "lesungen": 1,
+    "abweichend": [],
+    "summe": false,
+    "xbrl": -3599.0
+   },
+   "2018": {
+    "wert": -4975.0,
+    "roh": -4975.0,
+    "bericht": "oxy-10-k-2019",
+    "seite": "63",
+    "etikett": "Capital expenditures",
+    "lesungen": 1,
+    "abweichend": [],
+    "summe": false,
+    "xbrl": -4975.0
+   },
+   "2019": {
+    "wert": -6355.0,
+    "roh": -6355.0,
+    "bericht": "oxy-10-k-2019",
+    "seite": "63",
+    "etikett": "Capital expenditures",
+    "lesungen": 1,
+    "abweichend": [],
+    "summe": false,
+    "xbrl": -6367.0
+   },
+   "2020": {
+    "wert": -2535.0,
+    "roh": -2535.0,
+    "bericht": "oxy-10-k-2022",
+    "seite": "67",
+    "etikett": "Capital expenditures",
+    "lesungen": 1,
+    "abweichend": [],
+    "summe": false,
+    "xbrl": -2535.0
+   },
+   "2021": {
+    "wert": -2870.0,
+    "roh": -2870.0,
+    "bericht": "oxy-10-k-2022",
+    "seite": "67",
+    "etikett": "Capital expenditures",
+    "lesungen": 1,
+    "abweichend": [],
+    "summe": false,
+    "xbrl": -2870.0
+   },
+   "2022": {
+    "wert": -4497.0,
+    "roh": -4497.0,
+    "bericht": "oxy-10-k-2024",
+    "seite": "69",
+    "etikett": "Capital expenditures",
+    "lesungen": 2,
+    "abweichend": [],
+    "summe": false,
+    "xbrl": -4497.0
+   },
+   "2023": {
+    "wert": -5696.0,
+    "roh": -5696.0,
+    "bericht": "oxy-10-k-2025",
+    "seite": "63",
+    "etikett": "Capital expenditures",
+    "lesungen": 2,
+    "abweichend": [
+     [
+      -6270.0,
+      "oxy-10-k-2024",
+      "69"
+     ]
+    ],
+    "summe": false,
+    "xbrl": -5696.0
+   },
+   "2024": {
+    "wert": -6263.0,
+    "roh": -6263.0,
+    "bericht": "oxy-10-k-2025",
+    "seite": "63",
+    "etikett": "Capital expenditures",
+    "lesungen": 2,
+    "abweichend": [
+     [
+      -7018.0,
+      "oxy-10-k-2024",
+      "69"
+     ]
+    ],
+    "summe": false,
+    "xbrl": -6263.0
+   },
+   "2025": {
+    "wert": -6427.0,
+    "roh": -6427.0,
+    "bericht": "oxy-10-k-2025",
+    "seite": "63",
+    "etikett": "Capital expenditures",
+    "lesungen": 1,
+    "abweichend": [],
+    "summe": false,
+    "xbrl": -6427.0
+   },
+   "2007": {
+    "wert": -3360.0,
+    "bericht": "SEC XBRL companyfacts, abgerufen 19.09.2026",
+    "seite": null,
+    "etikett": "XBRL",
+    "lesungen": 1,
+    "abweichend": []
+   },
+   "2008": {
+    "wert": -4126.0,
+    "bericht": "SEC XBRL companyfacts, abgerufen 19.09.2026",
+    "seite": null,
+    "etikett": "XBRL",
+    "lesungen": 1,
+    "abweichend": []
+   },
+   "2009": {
+    "wert": -3245.0,
+    "bericht": "SEC XBRL companyfacts, abgerufen 19.09.2026",
+    "seite": null,
+    "etikett": "XBRL",
+    "lesungen": 1,
+    "abweichend": []
+   },
+   "2010": {
+    "wert": -3940.0,
+    "bericht": "SEC XBRL companyfacts, abgerufen 19.09.2026",
+    "seite": null,
+    "etikett": "XBRL",
+    "lesungen": 1,
+    "abweichend": []
+   },
+   "2011": {
+    "wert": -7518.0,
+    "bericht": "SEC XBRL companyfacts, abgerufen 19.09.2026",
+    "seite": null,
+    "etikett": "XBRL",
+    "lesungen": 1,
+    "abweichend": []
+   },
+   "2012": {
+    "wert": -7874.0,
+    "bericht": "SEC XBRL companyfacts, abgerufen 19.09.2026",
+    "seite": null,
+    "etikett": "XBRL",
+    "lesungen": 1,
+    "abweichend": []
+   },
+   "2013": {
+    "wert": -7357.0,
+    "bericht": "SEC XBRL companyfacts, abgerufen 19.09.2026",
+    "seite": null,
+    "etikett": "XBRL",
+    "lesungen": 1,
+    "abweichend": []
+   }
+  },
+  "dividenden": {
+   "2014": {
+    "wert": -2210.0,
+    "roh": -2210.0,
+    "bericht": "oxy-10-k-2016",
+    "seite": "45",
+    "etikett": "Cash dividends paid",
+    "lesungen": 1,
+    "abweichend": [],
+    "summe": false
+   },
+   "2015": {
+    "wert": -2264.0,
+    "roh": -2264.0,
+    "bericht": "oxy-10-k-2016",
+    "seite": "45",
+    "etikett": "Cash dividends paid",
+    "lesungen": 1,
+    "abweichend": [],
+    "summe": false
+   },
+   "2016": {
+    "wert": -2309.0,
+    "roh": -2309.0,
+    "bericht": "oxy-10-k-2016",
+    "seite": "45",
+    "etikett": "Cash dividends paid",
+    "lesungen": 1,
+    "abweichend": [],
+    "summe": false
+   },
+   "2017": {
+    "wert": -2346.0,
+    "roh": -2346.0,
+    "bericht": "oxy-10-k-2019",
+    "seite": "63",
+    "etikett": "Cash dividends paid",
+    "lesungen": 1,
+    "abweichend": [],
+    "summe": false
+   },
+   "2018": {
+    "wert": -2374.0,
+    "roh": -2374.0,
+    "bericht": "oxy-10-k-2019",
+    "seite": "63",
+    "etikett": "Cash dividends paid",
+    "lesungen": 1,
+    "abweichend": [],
+    "summe": false
+   },
+   "2019": {
+    "wert": -2624.0,
+    "roh": -2624.0,
+    "bericht": "oxy-10-k-2019",
+    "seite": "63",
+    "etikett": "Cash dividends paid",
+    "lesungen": 1,
+    "abweichend": [],
+    "summe": false
+   },
+   "2020": {
+    "wert": -1845.0,
+    "roh": -1845.0,
+    "bericht": "oxy-10-k-2022",
+    "seite": "67",
+    "etikett": "Cash dividends paid on common and preferred stock",
+    "lesungen": 1,
+    "abweichend": [],
+    "summe": false
+   },
+   "2021": {
+    "wert": -839.0,
+    "roh": -839.0,
+    "bericht": "oxy-10-k-2022",
+    "seite": "67",
+    "etikett": "Cash dividends paid on common and preferred stock",
+    "lesungen": 1,
+    "abweichend": [],
+    "summe": false
+   },
+   "2022": {
+    "wert": -1184.0,
+    "roh": -1184.0,
+    "bericht": "oxy-10-k-2024",
+    "seite": "69",
+    "etikett": "Cash dividends paid on common and preferred stock",
+    "lesungen": 2,
+    "abweichend": [],
+    "summe": false
+   },
+   "2023": {
+    "wert": -1365.0,
+    "roh": -1365.0,
+    "bericht": "oxy-10-k-2025",
+    "seite": "63",
+    "etikett": "Cash dividends paid on common and preferred stock",
+    "lesungen": 2,
+    "abweichend": [],
+    "summe": false
+   },
+   "2024": {
+    "wert": -1446.0,
+    "roh": -1446.0,
+    "bericht": "oxy-10-k-2025",
+    "seite": "63",
+    "etikett": "Cash dividends paid on common and preferred stock",
+    "lesungen": 2,
+    "abweichend": [],
+    "summe": false
+   },
+   "2025": {
+    "wert": -1594.0,
+    "roh": -1594.0,
+    "bericht": "oxy-10-k-2025",
+    "seite": "63",
+    "etikett": "Cash dividends paid on common and preferred stock",
+    "lesungen": 1,
+    "abweichend": [],
+    "summe": false
+   }
+  },
+  "rueckkauf": {
+   "2014": {
+    "wert": -2500.0,
+    "roh": -2500.0,
+    "bericht": "oxy-10-k-2016",
+    "seite": "45",
+    "etikett": "Purchases of treasury stock",
+    "lesungen": 1,
+    "abweichend": [],
+    "summe": false
+   },
+   "2015": {
+    "wert": -593.0,
+    "roh": -593.0,
+    "bericht": "oxy-10-k-2016",
+    "seite": "45",
+    "etikett": "Purchases of treasury stock",
+    "lesungen": 1,
+    "abweichend": [],
+    "summe": false
+   },
+   "2016": {
+    "wert": -22.0,
+    "roh": -22.0,
+    "bericht": "oxy-10-k-2016",
+    "seite": "45",
+    "etikett": "Purchases of treasury stock",
+    "lesungen": 1,
+    "abweichend": [],
+    "summe": false
+   },
+   "2017": {
+    "wert": -25.0,
+    "roh": -25.0,
+    "bericht": "oxy-10-k-2019",
+    "seite": "63",
+    "etikett": "Purchases of treasury stock",
+    "lesungen": 1,
+    "abweichend": [],
+    "summe": false
+   },
+   "2018": {
+    "wert": -1248.0,
+    "roh": -1248.0,
+    "bericht": "oxy-10-k-2019",
+    "seite": "63",
+    "etikett": "Purchases of treasury stock",
+    "lesungen": 1,
+    "abweichend": [],
+    "summe": false
+   },
+   "2019": {
+    "wert": -237.0,
+    "roh": -237.0,
+    "bericht": "oxy-10-k-2019",
+    "seite": "63",
+    "etikett": "Purchases of treasury stock",
+    "lesungen": 1,
+    "abweichend": [],
+    "summe": false
+   },
+   "2020": {
+    "wert": -12.0,
+    "roh": -12.0,
+    "bericht": "oxy-10-k-2022",
+    "seite": "67",
+    "etikett": "Purchases of treasury stock",
+    "lesungen": 1,
+    "abweichend": [],
+    "summe": false
+   },
+   "2021": {
+    "wert": -8.0,
+    "roh": -8.0,
+    "bericht": "oxy-10-k-2022",
+    "seite": "67",
+    "etikett": "Purchases of treasury stock",
+    "lesungen": 1,
+    "abweichend": [],
+    "summe": false
+   },
+   "2022": {
+    "wert": -3099.0,
+    "roh": -3099.0,
+    "bericht": "oxy-10-k-2024",
+    "seite": "69",
+    "etikett": "Purchases of treasury stock",
+    "lesungen": 2,
+    "abweichend": [],
+    "summe": false
+   },
+   "2023": {
+    "wert": -1798.0,
+    "roh": -1798.0,
+    "bericht": "oxy-10-k-2024",
+    "seite": "69",
+    "etikett": "Purchases of treasury stock",
+    "lesungen": 1,
+    "abweichend": [],
+    "summe": false
+   },
+   "2024": {
+    "wert": -27.0,
+    "roh": -27.0,
+    "bericht": "oxy-10-k-2024",
+    "seite": "69",
+    "etikett": "Purchases of treasury stock",
+    "lesungen": 1,
+    "abweichend": [],
+    "summe": false
+   }
+  },
+  "operativer_cf_fortgef": {
+   "2014": {
+    "wert": 8871.0,
+    "roh": 8871.0,
+    "bericht": "oxy-10-k-2016",
+    "seite": "45",
+    "etikett": "Operating cash flow from continuing operations",
+    "lesungen": 1,
+    "abweichend": [],
+    "summe": false
+   },
+   "2015": {
+    "wert": 3254.0,
+    "roh": 3254.0,
+    "bericht": "oxy-10-k-2016",
+    "seite": "45",
+    "etikett": "Operating cash flow from continuing operations",
+    "lesungen": 1,
+    "abweichend": [],
+    "summe": false
+   },
+   "2016": {
+    "wert": 2519.0,
+    "roh": 2519.0,
+    "bericht": "oxy-10-k-2016",
+    "seite": "45",
+    "etikett": "Operating cash flow from continuing operations",
+    "lesungen": 1,
+    "abweichend": [],
+    "summe": false
+   },
+   "2017": {
+    "wert": 4861.0,
+    "roh": 4861.0,
+    "bericht": "oxy-10-k-2019",
+    "seite": "63",
+    "etikett": "Operating cash flow from continuing operations",
+    "lesungen": 1,
+    "abweichend": [],
+    "summe": false
+   },
+   "2018": {
+    "wert": 7669.0,
+    "roh": 7669.0,
+    "bericht": "oxy-10-k-2019",
+    "seite": "63",
+    "etikett": "Operating cash flow from continuing operations",
+    "lesungen": 1,
+    "abweichend": [],
+    "summe": false
+   },
+   "2019": {
+    "wert": 7203.0,
+    "roh": 7203.0,
+    "bericht": "oxy-10-k-2019",
+    "seite": "63",
+    "etikett": "Operating cash flow from continuing operations",
+    "lesungen": 1,
+    "abweichend": [],
+    "summe": false
+   },
+   "2020": {
+    "wert": 3842.0,
+    "roh": 3842.0,
+    "bericht": "oxy-10-k-2022",
+    "seite": "67",
+    "etikett": "Operating cash flow from continuing operations",
+    "lesungen": 1,
+    "abweichend": [],
+    "summe": false
+   },
+   "2021": {
+    "wert": 10253.0,
+    "roh": 10253.0,
+    "bericht": "oxy-10-k-2022",
+    "seite": "67",
+    "etikett": "Operating cash flow from continuing operations",
+    "lesungen": 1,
+    "abweichend": [],
+    "summe": false
+   },
+   "2022": {
+    "wert": 16810.0,
+    "roh": 16810.0,
+    "bericht": "oxy-10-k-2024",
+    "seite": "69",
+    "etikett": "Operating cash flow from continuing operations",
+    "lesungen": 2,
+    "abweichend": [],
+    "summe": false
+   },
+   "2023": {
+    "wert": 10235.0,
+    "roh": 10235.0,
+    "bericht": "oxy-10-k-2025",
+    "seite": "63",
+    "etikett": "Operating cash flow from continuing operations",
+    "lesungen": 2,
+    "abweichend": [
+     [
+      12308.0,
+      "oxy-10-k-2024",
+      "69"
+     ]
+    ],
+    "summe": false
+   },
+   "2024": {
+    "wert": 10519.0,
+    "roh": 10519.0,
+    "bericht": "oxy-10-k-2025",
+    "seite": "63",
+    "etikett": "Operating cash flow from continuing operations",
+    "lesungen": 2,
+    "abweichend": [
+     [
+      11739.0,
+      "oxy-10-k-2024",
+      "69"
+     ]
+    ],
+    "summe": false
+   },
+   "2025": {
+    "wert": 9606.0,
+    "roh": 9606.0,
+    "bericht": "oxy-10-k-2025",
+    "seite": "63",
+    "etikett": "Operating cash flow from continuing operations",
+    "lesungen": 1,
+    "abweichend": [],
+    "summe": false
+   }
+  },
+  "invest_cf_aufgegeben": {
+   "2014": {
+    "wert": -2226.0,
+    "roh": -2226.0,
+    "bericht": "oxy-10-k-2016",
+    "seite": "45",
+    "etikett": "Investing cash flow from discontinued operations",
+    "lesungen": 1,
+    "abweichend": [],
+    "summe": false
+   },
+   "2015": {
+    "wert": 0.0,
+    "roh": 0.0,
+    "bericht": "oxy-10-k-2016",
+    "seite": "45",
+    "etikett": "Investing cash flow from discontinued operations",
+    "lesungen": 1,
+    "abweichend": [],
+    "summe": false
+   },
+   "2016": {
+    "wert": 0.0,
+    "roh": 0.0,
+    "bericht": "oxy-10-k-2016",
+    "seite": "45",
+    "etikett": "Investing cash flow from discontinued operations",
+    "lesungen": 1,
+    "abweichend": [],
+    "summe": false
+   },
+   "2017": {
+    "wert": 0.0,
+    "roh": 0.0,
+    "bericht": "oxy-10-k-2019",
+    "seite": "63",
+    "etikett": "Investing cash flow from discontinued operations",
+    "lesungen": 1,
+    "abweichend": [],
+    "summe": false
+   },
+   "2018": {
+    "wert": 0.0,
+    "roh": 0.0,
+    "bericht": "oxy-10-k-2019",
+    "seite": "63",
+    "etikett": "Investing cash flow from discontinued operations",
+    "lesungen": 1,
+    "abweichend": [],
+    "summe": false
+   },
+   "2019": {
+    "wert": -154.0,
+    "roh": -154.0,
+    "bericht": "oxy-10-k-2019",
+    "seite": "63",
+    "etikett": "Investing cash flow from discontinued operations",
+    "lesungen": 1,
+    "abweichend": [],
+    "summe": false
+   },
+   "2020": {
+    "wert": -41.0,
+    "roh": -41.0,
+    "bericht": "oxy-10-k-2022",
+    "seite": "67",
+    "etikett": "Investing cash flow from discontinued operations",
+    "lesungen": 1,
+    "abweichend": [],
+    "summe": false
+   },
+   "2021": {
+    "wert": -79.0,
+    "roh": -79.0,
+    "bericht": "oxy-10-k-2022",
+    "seite": "67",
+    "etikett": "Investing cash flow from discontinued operations",
+    "lesungen": 1,
+    "abweichend": [],
+    "summe": false
+   },
+   "2022": {
+    "wert": 0.0,
+    "roh": 0.0,
+    "bericht": "oxy-10-k-2022",
+    "seite": "67",
+    "etikett": "Investing cash flow from discontinued operations",
+    "lesungen": 1,
+    "abweichend": [],
+    "summe": false
+   },
+   "2023": {
+    "wert": -517.0,
+    "roh": -517.0,
+    "bericht": "oxy-10-k-2025",
+    "seite": "63",
+    "etikett": "Investing cash flow from discontinued operations",
+    "lesungen": 1,
+    "abweichend": [],
+    "summe": false
+   },
+   "2024": {
+    "wert": -769.0,
+    "roh": -769.0,
+    "bericht": "oxy-10-k-2025",
+    "seite": "63",
+    "etikett": "Investing cash flow from discontinued operations",
+    "lesungen": 1,
+    "abweichend": [],
+    "summe": false
+   },
+   "2025": {
+    "wert": -1116.0,
+    "roh": -1116.0,
+    "bericht": "oxy-10-k-2025",
+    "seite": "63",
+    "etikett": "Investing cash flow from discontinued operations",
+    "lesungen": 1,
+    "abweichend": [],
+    "summe": false
+   }
+  },
+  "eps_verwaessert": {
+   "2014": {
+    "wert": 0.79,
+    "roh": 0.79,
+    "bericht": "oxy-10-k-2016",
+    "seite": "42",
+    "etikett": "DILUTED EARNINGS (LOSS) PER COMMON SHARE",
+    "lesungen": 1,
+    "abweichend": [],
+    "summe": false
+   },
+   "2015": {
+    "wert": -10.23,
+    "roh": -10.23,
+    "bericht": "oxy-10-k-2016",
+    "seite": "42",
+    "etikett": "DILUTED EARNINGS (LOSS) PER COMMON SHARE",
+    "lesungen": 1,
+    "abweichend": [],
+    "summe": false
+   },
+   "2016": {
+    "wert": -0.75,
+    "roh": -0.75,
+    "bericht": "oxy-10-k-2016",
+    "seite": "42",
+    "etikett": "DILUTED EARNINGS (LOSS) PER COMMON SHARE",
+    "lesungen": 1,
+    "abweichend": [],
+    "summe": false
+   },
+   "2017": {
+    "wert": 1.7,
+    "roh": 1.7,
+    "bericht": "oxy-10-k-2019",
+    "seite": "60",
+    "etikett": "Net income (loss) attributable to common stockholders—diluted",
+    "lesungen": 1,
+    "abweichend": [],
+    "summe": false
+   },
+   "2018": {
+    "wert": 5.39,
+    "roh": 5.39,
+    "bericht": "oxy-10-k-2019",
+    "seite": "60",
+    "etikett": "Net income (loss) attributable to common stockholders—diluted",
+    "lesungen": 1,
+    "abweichend": [],
+    "summe": false
+   },
+   "2019": {
+    "wert": -1.22,
+    "roh": -1.22,
+    "bericht": "oxy-10-k-2019",
+    "seite": "60",
+    "etikett": "Net income (loss) attributable to common stockholders—diluted",
+    "lesungen": 1,
+    "abweichend": [],
+    "summe": false
+   },
+   "2020": {
+    "wert": -17.06,
+    "roh": -17.06,
+    "bericht": "oxy-10-k-2022",
+    "seite": "64",
+    "etikett": "Net income (loss) attributable to common stockholders—diluted",
+    "lesungen": 1,
+    "abweichend": [],
+    "summe": false
+   },
+   "2021": {
+    "wert": 1.58,
+    "roh": 1.58,
+    "bericht": "oxy-10-k-2022",
+    "seite": "64",
+    "etikett": "Net income (loss) attributable to common stockholders—diluted",
+    "lesungen": 1,
+    "abweichend": [],
+    "summe": false
+   },
+   "2022": {
+    "wert": 12.4,
+    "roh": 12.4,
+    "bericht": "oxy-10-k-2024",
+    "seite": "66",
+    "etikett": "Income from continuing operations—diluted",
+    "lesungen": 2,
+    "abweichend": [],
+    "summe": false
+   },
+   "2023": {
+    "wert": 3.9,
+    "roh": 3.9,
+    "bericht": "oxy-10-k-2025",
+    "seite": "60",
+    "etikett": "Net income attributable to common stockholders—diluted",
+    "lesungen": 2,
+    "abweichend": [],
+    "summe": false
+   },
+   "2024": {
+    "wert": 2.44,
+    "roh": 2.44,
+    "bericht": "oxy-10-k-2025",
+    "seite": "60",
+    "etikett": "Net income attributable to common stockholders—diluted",
+    "lesungen": 2,
+    "abweichend": [
+     [
+      2.26,
+      "oxy-10-k-2024",
+      "66"
+     ]
+    ],
+    "summe": false
+   },
+   "2025": {
+    "wert": 1.61,
+    "roh": 1.61,
+    "bericht": "oxy-10-k-2025",
+    "seite": "60",
+    "etikett": "Net income attributable to common stockholders—diluted",
+    "lesungen": 1,
+    "abweichend": [],
+    "summe": false
+   }
+  },
+  "umsatz": {
+   "2014": {
+    "wert": 19312.0,
+    "roh": 19312.0,
+    "bericht": "oxy-10-k-2016",
+    "seite": "42",
+    "etikett": "Net sales",
+    "lesungen": 1,
+    "abweichend": [],
+    "summe": false
+   },
+   "2015": {
+    "wert": 12480.0,
+    "roh": 12480.0,
+    "bericht": "oxy-10-k-2016",
+    "seite": "42",
+    "etikett": "Net sales",
+    "lesungen": 1,
+    "abweichend": [],
+    "summe": false
+   },
+   "2016": {
+    "wert": 10090.0,
+    "roh": 10090.0,
+    "bericht": "oxy-10-k-2016",
+    "seite": "42",
+    "etikett": "Net sales",
+    "lesungen": 1,
+    "abweichend": [],
+    "summe": false
+   },
+   "2017": {
+    "wert": 12508.0,
+    "roh": 12508.0,
+    "bericht": "oxy-10-k-2019",
+    "seite": "60",
+    "etikett": "Net sales",
+    "lesungen": 1,
+    "abweichend": [],
+    "summe": false
+   },
+   "2018": {
+    "wert": 17824.0,
+    "roh": 17824.0,
+    "bericht": "oxy-10-k-2019",
+    "seite": "60",
+    "etikett": "Net sales",
+    "lesungen": 1,
+    "abweichend": [],
+    "summe": false
+   },
+   "2019": {
+    "wert": 20393.0,
+    "roh": 20393.0,
+    "bericht": "oxy-10-k-2019",
+    "seite": "60",
+    "etikett": "Net sales",
+    "lesungen": 1,
+    "abweichend": [],
+    "summe": false
+   },
+   "2020": {
+    "wert": 17809.0,
+    "roh": 17809.0,
+    "bericht": "oxy-10-k-2022",
+    "seite": "64",
+    "etikett": "Net sales",
+    "lesungen": 1,
+    "abweichend": [],
+    "summe": false
+   },
+   "2021": {
+    "wert": 25956.0,
+    "roh": 25956.0,
+    "bericht": "oxy-10-k-2022",
+    "seite": "64",
+    "etikett": "Net sales",
+    "lesungen": 1,
+    "abweichend": [],
+    "summe": false
+   },
+   "2022": {
+    "wert": 36634.0,
+    "roh": 36634.0,
+    "bericht": "oxy-10-k-2024",
+    "seite": "66",
+    "etikett": "Net sales",
+    "lesungen": 2,
+    "abweichend": [],
+    "summe": false
+   },
+   "2023": {
+    "wert": 23156.0,
+    "roh": 23156.0,
+    "bericht": "oxy-10-k-2025",
+    "seite": "60",
+    "etikett": "Net sales",
+    "lesungen": 2,
+    "abweichend": [
+     [
+      28257.0,
+      "oxy-10-k-2024",
+      "66"
+     ]
+    ],
+    "summe": false
+   },
+   "2024": {
+    "wert": 22019.0,
+    "roh": 22019.0,
+    "bericht": "oxy-10-k-2025",
+    "seite": "60",
+    "etikett": "Net sales",
+    "lesungen": 2,
+    "abweichend": [
+     [
+      26725.0,
+      "oxy-10-k-2024",
+      "66"
+     ]
+    ],
+    "summe": false
+   },
+   "2025": {
+    "wert": 21593.0,
+    "roh": 21593.0,
+    "bericht": "oxy-10-k-2025",
+    "seite": "60",
+    "etikett": "Net sales",
+    "lesungen": 1,
+    "abweichend": [],
+    "summe": false
+   }
+  },
+  "ergebnis": {
+   "2014": {
+    "wert": 616.0,
+    "roh": 616.0,
+    "bericht": "oxy-10-k-2016",
+    "seite": "42",
+    "etikett": "NET INCOME (LOSS) ATTRIBUTABLE TO COMMON STOCK",
+    "lesungen": 1,
+    "abweichend": [],
+    "summe": false,
+    "xbrl": 616.0
+   },
+   "2015": {
+    "wert": -7829.0,
+    "roh": -7829.0,
+    "bericht": "oxy-10-k-2016",
+    "seite": "42",
+    "etikett": "NET INCOME (LOSS) ATTRIBUTABLE TO COMMON STOCK",
+    "lesungen": 1,
+    "abweichend": [],
+    "summe": false,
+    "xbrl": -7829.0
+   },
+   "2016": {
+    "wert": -574.0,
+    "roh": -574.0,
+    "bericht": "oxy-10-k-2016",
+    "seite": "42",
+    "etikett": "NET INCOME (LOSS) ATTRIBUTABLE TO COMMON STOCK",
+    "lesungen": 1,
+    "abweichend": [],
+    "summe": false,
+    "xbrl": -574.0
+   },
+   "2017": {
+    "wert": 1311.0,
+    "roh": 1311.0,
+    "bericht": "oxy-10-k-2019",
+    "seite": "60",
+    "etikett": "NET INCOME (LOSS) ATTRIBUTABLE TO COMMON STOCKHOLDERS",
+    "lesungen": 1,
+    "abweichend": [],
+    "summe": false,
+    "xbrl": 1305.0
+   },
+   "2018": {
+    "wert": 4131.0,
+    "roh": 4131.0,
+    "bericht": "oxy-10-k-2019",
+    "seite": "60",
+    "etikett": "NET INCOME (LOSS) ATTRIBUTABLE TO COMMON STOCKHOLDERS",
+    "lesungen": 1,
+    "abweichend": [],
+    "summe": false,
+    "xbrl": 4114.0
+   },
+   "2019": {
+    "wert": -985.0,
+    "roh": -985.0,
+    "bericht": "oxy-10-k-2019",
+    "seite": "60",
+    "etikett": "NET INCOME (LOSS) ATTRIBUTABLE TO COMMON STOCKHOLDERS",
+    "lesungen": 1,
+    "abweichend": [],
+    "summe": false,
+    "xbrl": -985.0
+   },
+   "2020": {
+    "wert": -15675.0,
+    "roh": -15675.0,
+    "bericht": "oxy-10-k-2022",
+    "seite": "64",
+    "etikett": "NET INCOME (LOSS) ATTRIBUTABLE TO COMMON STOCKHOLDERS",
+    "lesungen": 1,
+    "abweichend": [],
+    "summe": false,
+    "xbrl": -15675.0
+   },
+   "2021": {
+    "wert": 1522.0,
+    "roh": 1522.0,
+    "bericht": "oxy-10-k-2022",
+    "seite": "64",
+    "etikett": "NET INCOME (LOSS) ATTRIBUTABLE TO COMMON STOCKHOLDERS",
+    "lesungen": 1,
+    "abweichend": [],
+    "summe": false,
+    "xbrl": 1512.0
+   },
+   "2022": {
+    "wert": 12504.0,
+    "roh": 12504.0,
+    "bericht": "oxy-10-k-2024",
+    "seite": "66",
+    "etikett": "NET INCOME ATTRIBUTABLE TO COMMON STOCKHOLDERS",
+    "lesungen": 2,
+    "abweichend": [],
+    "summe": false,
+    "xbrl": 12421.0
+   },
+   "2023": {
+    "wert": 3773.0,
+    "roh": 3773.0,
+    "bericht": "oxy-10-k-2025",
+    "seite": "60",
+    "etikett": "NET INCOME ATTRIBUTABLE TO COMMON STOCKHOLDERS",
+    "lesungen": 2,
+    "abweichend": [],
+    "summe": false,
+    "xbrl": 3750.0
+   },
+   "2024": {
+    "wert": 2377.0,
+    "roh": 2377.0,
+    "bericht": "oxy-10-k-2025",
+    "seite": "60",
+    "etikett": "NET INCOME ATTRIBUTABLE TO COMMON STOCKHOLDERS",
+    "lesungen": 2,
+    "abweichend": [],
+    "summe": false,
+    "xbrl": 2364.0
+   },
+   "2025": {
+    "wert": 1647.0,
+    "roh": 1647.0,
+    "bericht": "oxy-10-k-2025",
+    "seite": "60",
+    "etikett": "NET INCOME ATTRIBUTABLE TO COMMON STOCKHOLDERS",
+    "lesungen": 1,
+    "abweichend": [],
+    "summe": false,
+    "xbrl": 1612.0
+   }
+  },
+  "eigenkapital": {
+   "2015": {
+    "wert": 24350.0,
+    "roh": 24350.0,
+    "bericht": "oxy-10-k-2016",
+    "seite": "41",
+    "etikett": "Total stockholders' equity",
+    "lesungen": 1,
+    "abweichend": [],
+    "summe": false
+   },
+   "2016": {
+    "wert": 21497.0,
+    "roh": 21497.0,
+    "bericht": "oxy-10-k-2016",
+    "seite": "41",
+    "etikett": "Total stockholders' equity",
+    "lesungen": 1,
+    "abweichend": [],
+    "summe": false
+   },
+   "2021": {
+    "wert": 20327.0,
+    "roh": 20327.0,
+    "bericht": "oxy-10-k-2022",
+    "seite": "63",
+    "etikett": "Total stockholders’ equity",
+    "lesungen": 1,
+    "abweichend": [],
+    "summe": false
+   },
+   "2022": {
+    "wert": 30085.0,
+    "roh": 30085.0,
+    "bericht": "oxy-10-k-2022",
+    "seite": "63",
+    "etikett": "Total stockholders’ equity",
+    "lesungen": 1,
+    "abweichend": [],
+    "summe": false
+   },
+   "2023": {
+    "wert": 30250.0,
+    "roh": 30250.0,
+    "bericht": "oxy-10-k-2024",
+    "seite": "65",
+    "etikett": "Total stockholders’ equity",
+    "lesungen": 1,
+    "abweichend": [],
+    "summe": false
+   },
+   "2024": {
+    "wert": 34480.0,
+    "roh": 34480.0,
+    "bericht": "oxy-10-k-2025",
+    "seite": "59",
+    "etikett": "Total equity",
+    "lesungen": 2,
+    "abweichend": [
+     [
+      34159.0,
+      "oxy-10-k-2024",
+      "65"
+     ]
+    ],
+    "summe": false
+   },
+   "2025": {
+    "wert": 36598.0,
+    "roh": 36598.0,
+    "bericht": "oxy-10-k-2025",
+    "seite": "59",
+    "etikett": "Total equity",
+    "lesungen": 1,
+    "abweichend": [],
+    "summe": false
+   }
+  },
+  "vorzugsdividende": {
+   "2020": {
+    "wert": -844.0,
+    "roh": -844.0,
+    "bericht": "oxy-10-k-2022",
+    "seite": "64",
+    "etikett": "Less: Preferred stock dividends",
+    "lesungen": 1,
+    "abweichend": [],
+    "summe": false
+   },
+   "2021": {
+    "wert": -800.0,
+    "roh": -800.0,
+    "bericht": "oxy-10-k-2022",
+    "seite": "64",
+    "etikett": "Less: Preferred stock dividends",
+    "lesungen": 1,
+    "abweichend": [],
+    "summe": false
+   },
+   "2022": {
+    "wert": -800.0,
+    "roh": -800.0,
+    "bericht": "oxy-10-k-2024",
+    "seite": "66",
+    "etikett": "Less: Preferred stock dividends and redemption premiums",
+    "lesungen": 2,
+    "abweichend": [],
+    "summe": false
+   },
+   "2023": {
+    "wert": -923.0,
+    "roh": -923.0,
+    "bericht": "oxy-10-k-2025",
+    "seite": "60",
+    "etikett": "Less: Preferred stock dividends and redemption premiums",
+    "lesungen": 2,
+    "abweichend": [],
+    "summe": false
+   },
+   "2024": {
+    "wert": -679.0,
+    "roh": -679.0,
+    "bericht": "oxy-10-k-2025",
+    "seite": "60",
+    "etikett": "Less: Preferred stock dividends and redemption premiums",
+    "lesungen": 2,
+    "abweichend": [],
+    "summe": false
+   },
+   "2025": {
+    "wert": -679.0,
+    "roh": -679.0,
+    "bericht": "oxy-10-k-2025",
+    "seite": "60",
+    "etikett": "Less: Preferred stock dividends and redemption premiums",
+    "lesungen": 1,
+    "abweichend": [],
+    "summe": false
+   }
+  },
+  "vorzugsaktien": {
+   "2021": {
+    "wert": -844.0,
+    "roh": -844.0,
+    "bericht": "oxy-10-k-2022",
+    "seite": "64",
+    "etikett": "Less: Preferred stock dividends",
+    "lesungen": 1,
+    "abweichend": [],
+    "summe": false
+   },
+   "2022": {
+    "wert": -800.0,
+    "roh": -800.0,
+    "bericht": "oxy-10-k-2022",
+    "seite": "64",
+    "etikett": "Less: Preferred stock dividends",
+    "lesungen": 1,
+    "abweichend": [],
+    "summe": false
+   },
+   "2023": {
+    "wert": -800.0,
+    "roh": -800.0,
+    "bericht": "oxy-10-k-2024",
+    "seite": "66",
+    "etikett": "Less: Preferred stock dividends and redemption premiums",
+    "lesungen": 1,
+    "abweichend": [],
+    "summe": false
+   },
+   "2024": {
+    "wert": -923.0,
+    "roh": -923.0,
+    "bericht": "oxy-10-k-2025",
+    "seite": "60",
+    "etikett": "Less: Preferred stock dividends and redemption premiums",
+    "lesungen": 2,
+    "abweichend": [],
+    "summe": false
+   },
+   "2025": {
+    "wert": -679.0,
+    "roh": -679.0,
+    "bericht": "oxy-10-k-2025",
+    "seite": "60",
+    "etikett": "Less: Preferred stock dividends and redemption premiums",
+    "lesungen": 1,
+    "abweichend": [],
+    "summe": false
+   }
+  }
+ },
+ "tnk": {
+  "operativer_cf": {
+   "2014": {
+    "wert": 20.94,
+    "roh": 20940.0,
+    "bericht": "tnk-20-f-2016",
+    "seite": "F-5",
+    "etikett": "Net operating cash flow",
+    "lesungen": 1,
+    "abweichend": [],
+    "summe": false
+   },
+   "2015": {
+    "wert": 166.789,
+    "roh": 166789.0,
+    "bericht": "tnk-20-f-2016",
+    "seite": "F-5",
+    "etikett": "Net operating cash flow",
+    "lesungen": 1,
+    "abweichend": [],
+    "summe": false,
+    "xbrl": 201.966
+   },
+   "2016": {
+    "wert": 209.976,
+    "roh": 209976.0,
+    "bericht": "tnk-20-f-2016",
+    "seite": "F-5",
+    "etikett": "Net operating cash flow",
+    "lesungen": 1,
+    "abweichend": [],
+    "summe": false,
+    "xbrl": 206.546
+   },
+   "2017": {
+    "wert": 80.489,
+    "roh": 80489.0,
+    "bericht": "tnk-20-f-2019",
+    "seite": "5",
+    "etikett": "Net operating cash flow",
+    "lesungen": 1,
+    "abweichend": [],
+    "summe": false,
+    "xbrl": 80.489
+   },
+   "2018": {
+    "wert": -7.263,
+    "roh": -7263.0,
+    "bericht": "tnk-20-f-2019",
+    "seite": "5",
+    "etikett": "Net operating cash flow",
+    "lesungen": 1,
+    "abweichend": [],
+    "summe": false,
+    "xbrl": -7.263
+   },
+   "2019": {
+    "wert": 117.661,
+    "roh": 117661.0,
+    "bericht": "tnk-20-f-2019",
+    "seite": "5",
+    "etikett": "Net operating cash flow",
+    "lesungen": 1,
+    "abweichend": [],
+    "summe": false,
+    "xbrl": 117.661
+   },
+   "2020": {
+    "wert": 347.943,
+    "roh": 347943.0,
+    "bericht": "tnk-20-f-2022",
+    "seite": "F-5",
+    "etikett": "Net operating cash flow",
+    "lesungen": 1,
+    "abweichend": [],
+    "summe": false,
+    "xbrl": 347.943
+   },
+   "2021": {
+    "wert": -107.312,
+    "roh": -107312.0,
+    "bericht": "tnk-20-f-2022",
+    "seite": "F-5",
+    "etikett": "Net operating cash flow",
+    "lesungen": 1,
+    "abweichend": [],
+    "summe": false,
+    "xbrl": -107.312
+   },
+   "2022": {
+    "wert": 199.689,
+    "roh": 199689.0,
+    "bericht": "tnk-20-f-2024",
+    "seite": "F-6",
+    "etikett": "Net operating cash flow",
+    "lesungen": 2,
+    "abweichend": [
+     [
+      193.265,
+      "tnk-20-f-2022",
+      "F-5"
+     ]
+    ],
+    "summe": false,
+    "xbrl": 199.689
+   },
+   "2023": {
+    "wert": 631.245,
+    "roh": 631245.0,
+    "bericht": "tnk-20-f-2025",
+    "seite": "F-6",
+    "etikett": "Net operating cash flow",
+    "lesungen": 2,
+    "abweichend": [],
+    "summe": false,
+    "xbrl": 631.245
+   },
+   "2024": {
+    "wert": 471.912,
+    "roh": 471912.0,
+    "bericht": "tnk-20-f-2025",
+    "seite": "F-6",
+    "etikett": "Net operating cash flow",
+    "lesungen": 2,
+    "abweichend": [],
+    "summe": false,
+    "xbrl": 471.912
+   },
+   "2025": {
+    "wert": 305.894,
+    "roh": 305894.0,
+    "bericht": "tnk-20-f-2025",
+    "seite": "F-6",
+    "etikett": "Net operating cash flow",
+    "lesungen": 1,
+    "abweichend": [],
+    "summe": false,
+    "xbrl": 305.894
+   }
+  },
+  "dividenden": {
+   "2014": {
+    "wert": -10.165,
+    "roh": -10165.0,
+    "bericht": "tnk-20-f-2016",
+    "seite": "F-5",
+    "etikett": "Cash dividends paid",
+    "lesungen": 1,
+    "abweichend": [],
+    "summe": false
+   },
+   "2015": {
+    "wert": -15.139,
+    "roh": -15139.0,
+    "bericht": "tnk-20-f-2016",
+    "seite": "F-5",
+    "etikett": "Cash dividends paid",
+    "lesungen": 1,
+    "abweichend": [],
+    "summe": false
+   },
+   "2016": {
+    "wert": -46.847,
+    "roh": -46847.0,
+    "bericht": "tnk-20-f-2016",
+    "seite": "F-5",
+    "etikett": "Cash dividends paid",
+    "lesungen": 1,
+    "abweichend": [],
+    "summe": false
+   },
+   "2023": {
+    "wert": -59.518,
+    "roh": -59518.0,
+    "bericht": "tnk-20-f-2025",
+    "seite": "F-6",
+    "etikett": "Cash dividends paid",
+    "lesungen": 1,
+    "abweichend": [],
+    "summe": false
+   },
+   "2024": {
+    "wert": -102.819,
+    "roh": -102819.0,
+    "bericht": "tnk-20-f-2025",
+    "seite": "F-6",
+    "etikett": "Cash dividends paid",
+    "lesungen": 1,
+    "abweichend": [],
+    "summe": false
+   },
+   "2025": {
+    "wert": -68.998,
+    "roh": -68998.0,
+    "bericht": "tnk-20-f-2025",
+    "seite": "F-6",
+    "etikett": "Cash dividends paid",
+    "lesungen": 1,
+    "abweichend": [],
+    "summe": false
+   }
+  },
+  "investitionen": {
+   "2014": {
+    "wert": -2.084,
+    "roh": -2084.0,
+    "bericht": "tnk-20-f-2016",
+    "seite": "F-5",
+    "etikett": "Expenditures for vessels and equipment + Vessel acquisitions",
+    "lesungen": 1,
+    "abweichend": [],
+    "summe": true,
+    "xbrl": -0.0
+   },
+   "2015": {
+    "wert": -848.229,
+    "roh": -848229.0,
+    "bericht": "tnk-20-f-2016",
+    "seite": "F-5",
+    "etikett": "Expenditures for vessels and equipment + Vessel acquisitions",
+    "lesungen": 1,
+    "abweichend": [],
+    "summe": true,
+    "xbrl": -236.229
+   },
+   "2016": {
+    "wert": -9.226,
+    "roh": -9226.0,
+    "bericht": "tnk-20-f-2016",
+    "seite": "F-5",
+    "etikett": "Expenditures for vessels and equipment + Vessel acquisitions",
+    "lesungen": 1,
+    "abweichend": [],
+    "summe": true,
+    "xbrl": -9.226
+   },
+   "2017": {
+    "wert": -4.732,
+    "roh": -4732.0,
+    "bericht": "tnk-20-f-2019",
+    "seite": "5",
+    "etikett": "Expenditures for vessels and equipment",
+    "lesungen": 1,
+    "abweichend": [],
+    "summe": false,
+    "xbrl": -4.732
+   },
+   "2018": {
+    "wert": -5.827,
+    "roh": -5827.0,
+    "bericht": "tnk-20-f-2019",
+    "seite": "5",
+    "etikett": "Expenditures for vessels and equipment",
+    "lesungen": 1,
+    "abweichend": [],
+    "summe": false,
+    "xbrl": -5.827
+   },
+   "2019": {
+    "wert": -11.628,
+    "roh": -11628.0,
+    "bericht": "tnk-20-f-2019",
+    "seite": "5",
+    "etikett": "Expenditures for vessels and equipment",
+    "lesungen": 1,
+    "abweichend": [],
+    "summe": false,
+    "xbrl": -11.628
+   },
+   "2020": {
+    "wert": -16.025,
+    "roh": -16025.0,
+    "bericht": "tnk-20-f-2022",
+    "seite": "F-5",
+    "etikett": "Expenditures for vessels and equipment",
+    "lesungen": 1,
+    "abweichend": [],
+    "summe": false,
+    "xbrl": -16.025
+   },
+   "2021": {
+    "wert": -21.447,
+    "roh": -21447.0,
+    "bericht": "tnk-20-f-2022",
+    "seite": "F-5",
+    "etikett": "Expenditures for vessels and equipment",
+    "lesungen": 1,
+    "abweichend": [],
+    "summe": false,
+    "xbrl": -21.447
+   },
+   "2022": {
+    "wert": -15.43,
+    "roh": -15430.0,
+    "bericht": "tnk-20-f-2024",
+    "seite": "F-6",
+    "etikett": "Expenditures for vessels and equipment",
+    "lesungen": 2,
+    "abweichend": [],
+    "summe": false,
+    "xbrl": -0.0
+   },
+   "2023": {
+    "wert": -10.198,
+    "roh": -10198.0,
+    "bericht": "tnk-20-f-2025",
+    "seite": "F-6",
+    "etikett": "Expenditures for vessels and equipment + Vessel acquisitions",
+    "lesungen": 2,
+    "abweichend": [],
+    "summe": true,
+    "xbrl": -0.0
+   },
+   "2024": {
+    "wert": -75.345,
+    "roh": -75345.0,
+    "bericht": "tnk-20-f-2025",
+    "seite": "F-6",
+    "etikett": "Expenditures for vessels and equipment + Vessel acquisitions",
+    "lesungen": 2,
+    "abweichend": [
+     [
+      -4.841,
+      "tnk-20-f-2024",
+      "F-6"
+     ]
+    ],
+    "summe": true,
+    "xbrl": -70.504
+   },
+   "2025": {
+    "wert": -193.254,
+    "roh": -193254.0,
+    "bericht": "tnk-20-f-2025",
+    "seite": "F-6",
+    "etikett": "Expenditures for vessels and equipment + Vessel acquisitions",
+    "lesungen": 1,
+    "abweichend": [],
+    "summe": true,
+    "xbrl": -190.259
+   }
+  },
+  "umsatz": {
+   "2014": {
+    "wert": 250.002,
+    "roh": 250002.0,
+    "bericht": "tnk-20-f-2016",
+    "seite": "F-3",
+    "etikett": "Total revenues",
+    "lesungen": 1,
+    "abweichend": [],
+    "summe": false
+   },
+   "2015": {
+    "wert": 514.193,
+    "roh": 514193.0,
+    "bericht": "tnk-20-f-2016",
+    "seite": "F-3",
+    "etikett": "Total revenues",
+    "lesungen": 1,
+    "abweichend": [],
+    "summe": false
+   },
+   "2016": {
+    "wert": 526.896,
+    "roh": 526896.0,
+    "bericht": "tnk-20-f-2016",
+    "seite": "F-3",
+    "etikett": "Total revenues",
+    "lesungen": 1,
+    "abweichend": [],
+    "summe": false
+   },
+   "2017": {
+    "wert": 431.178,
+    "roh": 431178.0,
+    "bericht": "tnk-20-f-2019",
+    "seite": "3",
+    "etikett": "Total revenues",
+    "lesungen": 1,
+    "abweichend": [],
+    "summe": false
+   },
+   "2018": {
+    "wert": 776.493,
+    "roh": 776493.0,
+    "bericht": "tnk-20-f-2019",
+    "seite": "3",
+    "etikett": "Total revenues",
+    "lesungen": 1,
+    "abweichend": [],
+    "summe": false
+   },
+   "2019": {
+    "wert": 943.917,
+    "roh": 943917.0,
+    "bericht": "tnk-20-f-2019",
+    "seite": "3",
+    "etikett": "Total revenues",
+    "lesungen": 1,
+    "abweichend": [],
+    "summe": false
+   },
+   "2020": {
+    "wert": 886.434,
+    "roh": 886434.0,
+    "bericht": "tnk-20-f-2022",
+    "seite": "F-3",
+    "etikett": "Total revenues",
+    "lesungen": 1,
+    "abweichend": [],
+    "summe": false
+   },
+   "2021": {
+    "wert": 542.367,
+    "roh": 542367.0,
+    "bericht": "tnk-20-f-2022",
+    "seite": "F-3",
+    "etikett": "Total revenues",
+    "lesungen": 1,
+    "abweichend": [],
+    "summe": false
+   },
+   "2022": {
+    "wert": 1177.956,
+    "roh": 1177956.0,
+    "bericht": "tnk-20-f-2024",
+    "seite": "F-3",
+    "etikett": "Total revenues",
+    "lesungen": 2,
+    "abweichend": [
+     [
+      1063.111,
+      "tnk-20-f-2022",
+      "F-3"
+     ]
+    ],
+    "summe": false
+   },
+   "2023": {
+    "wert": 1473.699,
+    "roh": 1473699.0,
+    "bericht": "tnk-20-f-2025",
+    "seite": "F-3",
+    "etikett": "Total revenues",
+    "lesungen": 2,
+    "abweichend": [],
+    "summe": false
+   },
+   "2024": {
+    "wert": 1229.336,
+    "roh": 1229336.0,
+    "bericht": "tnk-20-f-2025",
+    "seite": "F-3",
+    "etikett": "Total revenues",
+    "lesungen": 2,
+    "abweichend": [],
+    "summe": false
+   },
+   "2025": {
+    "wert": 951.797,
+    "roh": 951797.0,
+    "bericht": "tnk-20-f-2025",
+    "seite": "F-3",
+    "etikett": "Total revenues",
+    "lesungen": 1,
+    "abweichend": [],
+    "summe": false
+   }
+  },
+  "ergebnis": {
+   "2014": {
+    "wert": 60.538,
+    "roh": 60538.0,
+    "bericht": "tnk-20-f-2016",
+    "seite": "F-3",
+    "etikett": "Net income",
+    "lesungen": 1,
+    "abweichend": [],
+    "summe": false,
+    "xbrl": 60.538
+   },
+   "2015": {
+    "wert": 179.635,
+    "roh": 179635.0,
+    "bericht": "tnk-20-f-2016",
+    "seite": "F-3",
+    "etikett": "Net income",
+    "lesungen": 1,
+    "abweichend": [],
+    "summe": false,
+    "xbrl": 183.626
+   },
+   "2016": {
+    "wert": 62.855,
+    "roh": 62855.0,
+    "bericht": "tnk-20-f-2016",
+    "seite": "F-3",
+    "etikett": "Net income",
+    "lesungen": 1,
+    "abweichend": [],
+    "summe": false,
+    "xbrl": 67.823
+   },
+   "2017": {
+    "wert": -52.693,
+    "roh": -52693.0,
+    "bericht": "tnk-20-f-2019",
+    "seite": "3",
+    "etikett": "Net income (loss)",
+    "lesungen": 1,
+    "abweichend": [],
+    "summe": false,
+    "xbrl": -58.023
+   },
+   "2018": {
+    "wert": -43.136,
+    "roh": -43136.0,
+    "bericht": "tnk-20-f-2019",
+    "seite": "3",
+    "etikett": "Net income (loss)",
+    "lesungen": 1,
+    "abweichend": [],
+    "summe": false,
+    "xbrl": -52.548
+   },
+   "2019": {
+    "wert": 61.465,
+    "roh": 61465.0,
+    "bericht": "tnk-20-f-2019",
+    "seite": "3",
+    "etikett": "Net income (loss)",
+    "lesungen": 1,
+    "abweichend": [],
+    "summe": false,
+    "xbrl": 41.362
+   },
+   "2020": {
+    "wert": 94.6,
+    "roh": 94600.0,
+    "bericht": "tnk-20-f-2022",
+    "seite": "F-3",
+    "etikett": "Net income (loss)",
+    "lesungen": 1,
+    "abweichend": [],
+    "summe": false,
+    "xbrl": 87.317
+   },
+   "2021": {
+    "wert": -244.303,
+    "roh": -244303.0,
+    "bericht": "tnk-20-f-2022",
+    "seite": "F-3",
+    "etikett": "Net income (loss)",
+    "lesungen": 1,
+    "abweichend": [],
+    "summe": false,
+    "xbrl": -242.372
+   },
+   "2022": {
+    "wert": 237.663,
+    "roh": 237663.0,
+    "bericht": "tnk-20-f-2024",
+    "seite": "F-3",
+    "etikett": "Net income",
+    "lesungen": 2,
+    "abweichend": [
+     [
+      229.615,
+      "tnk-20-f-2022",
+      "F-3"
+     ]
+    ],
+    "summe": false,
+    "xbrl": 235.427
+   },
+   "2023": {
+    "wert": 532.482,
+    "roh": 532482.0,
+    "bericht": "tnk-20-f-2025",
+    "seite": "F-3",
+    "etikett": "Net income",
+    "lesungen": 2,
+    "abweichend": [],
+    "summe": false,
+    "xbrl": 519.89
+   },
+   "2024": {
+    "wert": 404.072,
+    "roh": 404072.0,
+    "bericht": "tnk-20-f-2025",
+    "seite": "F-3",
+    "etikett": "Net income",
+    "lesungen": 2,
+    "abweichend": [],
+    "summe": false,
+    "xbrl": 403.667
+   },
+   "2025": {
+    "wert": 347.262,
+    "roh": 347262.0,
+    "bericht": "tnk-20-f-2025",
+    "seite": "F-3",
+    "etikett": "Net income",
+    "lesungen": 1,
+    "abweichend": [],
+    "summe": false,
+    "xbrl": 351.186
+   }
+  },
+  "eps_verwaessert": {
+   "2014": {
+    "wert": 0.66,
+    "roh": 0.66,
+    "bericht": "tnk-20-f-2016",
+    "seite": "F-3",
+    "etikett": "• Diluted earnings per share",
+    "lesungen": 1,
+    "abweichend": [],
+    "summe": false
+   },
+   "2015": {
+    "wert": 1.35,
+    "roh": 1.35,
+    "bericht": "tnk-20-f-2016",
+    "seite": "F-3",
+    "etikett": "• Diluted earnings per share",
+    "lesungen": 1,
+    "abweichend": [],
+    "summe": false
+   },
+   "2016": {
+    "wert": 0.4,
+    "roh": 0.4,
+    "bericht": "tnk-20-f-2016",
+    "seite": "F-3",
+    "etikett": "• Diluted earnings per share",
+    "lesungen": 1,
+    "abweichend": [],
+    "summe": false
+   },
+   "2017": {
+    "wert": -2.48,
+    "roh": -2.48,
+    "bericht": "tnk-20-f-2019",
+    "seite": "3",
+    "etikett": "• Diluted earnings (loss) per share",
+    "lesungen": 1,
+    "abweichend": [],
+    "summe": false
+   },
+   "2018": {
+    "wert": -1.57,
+    "roh": -1.57,
+    "bericht": "tnk-20-f-2019",
+    "seite": "3",
+    "etikett": "• Diluted earnings (loss) per share",
+    "lesungen": 1,
+    "abweichend": [],
+    "summe": false
+   },
+   "2019": {
+    "wert": 1.23,
+    "roh": 1.23,
+    "bericht": "tnk-20-f-2019",
+    "seite": "3",
+    "etikett": "• Diluted earnings (loss) per share",
+    "lesungen": 1,
+    "abweichend": [],
+    "summe": false
+   },
+   "2022": {
+    "wert": 6.87,
+    "roh": 6.87,
+    "bericht": "tnk-20-f-2024",
+    "seite": "F-3",
+    "etikett": "• Diluted earnings per share",
+    "lesungen": 1,
+    "abweichend": [],
+    "summe": false
+   },
+   "2023": {
+    "wert": 15.04,
+    "roh": 15.04,
+    "bericht": "tnk-20-f-2025",
+    "seite": "F-3",
+    "etikett": "• Diluted earnings per share",
+    "lesungen": 2,
+    "abweichend": [],
+    "summe": false
+   },
+   "2024": {
+    "wert": 11.63,
+    "roh": 11.63,
+    "bericht": "tnk-20-f-2025",
+    "seite": "F-3",
+    "etikett": "• Diluted earnings per share",
+    "lesungen": 2,
+    "abweichend": [],
+    "summe": false
+   },
+   "2025": {
+    "wert": 10.1,
+    "roh": 10.1,
+    "bericht": "tnk-20-f-2025",
+    "seite": "F-3",
+    "etikett": "• Diluted earnings per share",
+    "lesungen": 1,
+    "abweichend": [],
+    "summe": false
+   }
+  },
+  "eigenkapital": {
+   "2015": {
+    "wert": 877.461,
+    "roh": 877461.0,
+    "bericht": "tnk-20-f-2016",
+    "seite": "F-4",
+    "etikett": "Total equity",
+    "lesungen": 1,
+    "abweichend": [],
+    "summe": false
+   },
+   "2016": {
+    "wert": 920.624,
+    "roh": 920624.0,
+    "bericht": "tnk-20-f-2016",
+    "seite": "F-4",
+    "etikett": "Total equity",
+    "lesungen": 1,
+    "abweichend": [],
+    "summe": false
+   },
+   "2018": {
+    "wert": 946.933,
+    "roh": 946933.0,
+    "bericht": "tnk-20-f-2019",
+    "seite": "4",
+    "etikett": "Total equity",
+    "lesungen": 1,
+    "abweichend": [],
+    "summe": false
+   },
+   "2019": {
+    "wert": 989.92,
+    "roh": 989920.0,
+    "bericht": "tnk-20-f-2019",
+    "seite": "4",
+    "etikett": "Total equity",
+    "lesungen": 1,
+    "abweichend": [],
+    "summe": false
+   },
+   "2021": {
+    "wert": 838.412,
+    "roh": 838412.0,
+    "bericht": "tnk-20-f-2022",
+    "seite": "F-4",
+    "etikett": "Total equity",
+    "lesungen": 1,
+    "abweichend": [],
+    "summe": false
+   },
+   "2022": {
+    "wert": 1070.006,
+    "roh": 1070006.0,
+    "bericht": "tnk-20-f-2022",
+    "seite": "F-4",
+    "etikett": "Total equity",
+    "lesungen": 1,
+    "abweichend": [],
+    "summe": false
+   },
+   "2023": {
+    "wert": 1550.157,
+    "roh": 1550157.0,
+    "bericht": "tnk-20-f-2024",
+    "seite": "F-5",
+    "etikett": "Total equity",
+    "lesungen": 1,
+    "abweichend": [],
+    "summe": false
+   },
+   "2024": {
+    "wert": 1756.55,
+    "roh": 1756550.0,
+    "bericht": "tnk-20-f-2025",
+    "seite": "F-5",
+    "etikett": "Total equity",
+    "lesungen": 2,
+    "abweichend": [],
+    "summe": false
+   },
+   "2025": {
+    "wert": 2043.616,
+    "roh": 2043616.0,
+    "bericht": "tnk-20-f-2025",
+    "seite": "F-5",
+    "etikett": "Total equity",
+    "lesungen": 1,
+    "abweichend": [],
+    "summe": false
+   }
+  },
+  "aktien_ausstehend": {
+   "2015": {
+    "wert": 1.094874,
+    "roh": 1094874.0,
+    "bericht": "tnk-20-f-2016",
+    "seite": "F-4",
+    "etikett": "Common stock and additional paid-in capital (300 million shares authorized, 136.1 million Class A and 23.2 million class B shares issued and outstanding as of December 31, 2016 (2015 - 132.8 million Class A and 23.2 million Class B shares issued and outstanding)",
+    "lesungen": 1,
+    "abweichend": [],
+    "summe": false
+   },
+   "2016": {
+    "wert": 1.103304,
+    "roh": 1103304.0,
+    "bericht": "tnk-20-f-2016",
+    "seite": "F-4",
+    "etikett": "Common stock and additional paid-in capital (300 million shares authorized, 136.1 million Class A and 23.2 million class B shares issued and outstanding as of December 31, 2016 (2015 - 132.8 million Class A and 23.2 million Class B shares issued and outstanding)",
+    "lesungen": 1,
+    "abweichend": [],
+    "summe": false
+   }
+  },
+  "leasing": {
+   "2017": {
+    "wert": -4.09,
+    "roh": -4090.0,
+    "bericht": "tnk-20-f-2019",
+    "seite": "5",
+    "etikett": "Scheduled repayments of obligations related to finance leases",
+    "lesungen": 1,
+    "abweichend": [],
+    "summe": false
+   },
+   "2018": {
+    "wert": -14.958,
+    "roh": -14958.0,
+    "bericht": "tnk-20-f-2019",
+    "seite": "5",
+    "etikett": "Scheduled repayments of obligations related to finance leases",
+    "lesungen": 1,
+    "abweichend": [],
+    "summe": false
+   },
+   "2019": {
+    "wert": -24.221,
+    "roh": -24221.0,
+    "bericht": "tnk-20-f-2019",
+    "seite": "5",
+    "etikett": "Scheduled repayments of obligations related to finance leases",
+    "lesungen": 1,
+    "abweichend": [],
+    "summe": false
+   },
+   "2022": {
+    "wert": -50.636,
+    "roh": -50636.0,
+    "bericht": "tnk-20-f-2024",
+    "seite": "F-6",
+    "etikett": "Scheduled repayments of obligations related to finance leases",
+    "lesungen": 1,
+    "abweichend": [],
+    "summe": false
+   },
+   "2023": {
+    "wert": -34.113,
+    "roh": -34113.0,
+    "bericht": "tnk-20-f-2024",
+    "seite": "F-6",
+    "etikett": "Scheduled repayments of obligations related to finance leases",
+    "lesungen": 1,
+    "abweichend": [],
+    "summe": false
+   },
+   "2024": {
+    "wert": -5.213,
+    "roh": -5213.0,
+    "bericht": "tnk-20-f-2024",
+    "seite": "F-6",
+    "etikett": "Scheduled repayments of obligations related to finance leases",
+    "lesungen": 1,
+    "abweichend": [],
+    "summe": false
+   }
+  },
+  "aktien_verwaessert": {
+   "2022": {
+    "wert": 33.997579,
+    "roh": 33997579.0,
+    "bericht": "tnk-20-f-2024",
+    "seite": "F-3",
+    "etikett": "Weighted-average number of Class A and Class B common shares outstanding",
+    "lesungen": 1,
+    "abweichend": [],
+    "summe": false
+   },
+   "2023": {
+    "wert": 34.159818,
+    "roh": 34159818.0,
+    "bericht": "tnk-20-f-2025",
+    "seite": "F-3",
+    "etikett": "Weighted-average number of Class A and Class B common shares outstanding",
+    "lesungen": 2,
+    "abweichend": [],
+    "summe": false
+   },
+   "2024": {
+    "wert": 34.406223,
+    "roh": 34406223.0,
+    "bericht": "tnk-20-f-2025",
+    "seite": "F-3",
+    "etikett": "Weighted-average number of Class A and Class B common shares outstanding",
+    "lesungen": 2,
+    "abweichend": [],
+    "summe": false
+   },
+   "2025": {
+    "wert": 34.604637,
+    "roh": 34604637.0,
+    "bericht": "tnk-20-f-2025",
+    "seite": "F-3",
+    "etikett": "Weighted-average number of Class A and Class B common shares outstanding",
+    "lesungen": 1,
+    "abweichend": [],
+    "summe": false
+   }
+  }
+ },
+ "tte": {
+  "operativer_cf": {
+   "2020": {
+    "wert": 14803.0,
+    "roh": 14803.0,
+    "bericht": "tte-20-f-2022",
+    "seite": "F-12",
+    "etikett": "CASH FLOW FROM OPERATING ACTIVITIES",
+    "lesungen": 1,
+    "abweichend": [],
+    "summe": false,
+    "xbrl": 14803.0
+   },
+   "2021": {
+    "wert": 30410.0,
+    "roh": 30410.0,
+    "bericht": "tte-20-f-2022",
+    "seite": "F-12",
+    "etikett": "CASH FLOW FROM OPERATING ACTIVITIES",
+    "lesungen": 1,
+    "abweichend": [],
+    "summe": false,
+    "xbrl": 30410.0
+   },
+   "2022": {
+    "wert": 47367.0,
+    "roh": 47367.0,
+    "bericht": "tte-20-f-2024",
+    "seite": "F-12",
+    "etikett": "CASH FLOW FROM OPERATING ACTIVITIES",
+    "lesungen": 2,
+    "abweichend": [],
+    "summe": false,
+    "xbrl": 47367.0
+   },
+   "2023": {
+    "wert": 40679.0,
+    "roh": 40679.0,
+    "bericht": "tte-20-f-2025",
+    "seite": "F-12",
+    "etikett": "CASH FLOW FROM OPERATING ACTIVITIES",
+    "lesungen": 2,
+    "abweichend": [],
+    "summe": false,
+    "xbrl": 40679.0
+   },
+   "2024": {
+    "wert": 30854.0,
+    "roh": 30854.0,
+    "bericht": "tte-20-f-2025",
+    "seite": "F-12",
+    "etikett": "CASH FLOW FROM OPERATING ACTIVITIES",
+    "lesungen": 2,
+    "abweichend": [],
+    "summe": false,
+    "xbrl": 30854.0
+   },
+   "2025": {
+    "wert": 27343.0,
+    "roh": 27343.0,
+    "bericht": "tte-20-f-2025",
+    "seite": "F-12",
+    "etikett": "CASH FLOW FROM OPERATING ACTIVITIES",
+    "lesungen": 1,
+    "abweichend": [],
+    "summe": false,
+    "xbrl": 27343.0
+   },
+   "2015": {
+    "wert": 19946.0,
+    "bericht": "SEC XBRL companyfacts, abgerufen 19.09.2026",
+    "seite": null,
+    "etikett": "XBRL",
+    "lesungen": 1,
+    "abweichend": []
+   },
+   "2016": {
+    "wert": 16521.0,
+    "bericht": "SEC XBRL companyfacts, abgerufen 19.09.2026",
+    "seite": null,
+    "etikett": "XBRL",
+    "lesungen": 1,
+    "abweichend": []
+   },
+   "2017": {
+    "wert": 22319.0,
+    "bericht": "SEC XBRL companyfacts, abgerufen 19.09.2026",
+    "seite": null,
+    "etikett": "XBRL",
+    "lesungen": 1,
+    "abweichend": []
+   },
+   "2018": {
+    "wert": 24703.0,
+    "bericht": "SEC XBRL companyfacts, abgerufen 19.09.2026",
+    "seite": null,
+    "etikett": "XBRL",
+    "lesungen": 1,
+    "abweichend": []
+   },
+   "2019": {
+    "wert": 24685.0,
+    "bericht": "SEC XBRL companyfacts, abgerufen 19.09.2026",
+    "seite": null,
+    "etikett": "XBRL",
+    "lesungen": 1,
+    "abweichend": []
+   }
+  },
+  "dividenden": {
+   "2020": {
+    "wert": -6688.0,
+    "roh": -6688.0,
+    "bericht": "tte-20-f-2022",
+    "seite": "F-12",
+    "etikett": "Dividends paid: ... Parent company shareholders",
+    "lesungen": 1,
+    "abweichend": [],
+    "summe": false,
+    "xbrl": -6688.0
+   },
+   "2021": {
+    "wert": -8228.0,
+    "roh": -8228.0,
+    "bericht": "tte-20-f-2022",
+    "seite": "F-12",
+    "etikett": "Dividends paid: ... Parent company shareholders",
+    "lesungen": 1,
+    "abweichend": [],
+    "summe": false,
+    "xbrl": -8228.0
+   },
+   "2022": {
+    "wert": -9986.0,
+    "roh": -9986.0,
+    "bericht": "tte-20-f-2024",
+    "seite": "F-12",
+    "etikett": "Dividends paid: ... Parent company shareholders",
+    "lesungen": 2,
+    "abweichend": [],
+    "summe": false,
+    "xbrl": -9986.0
+   },
+   "2023": {
+    "wert": -7517.0,
+    "roh": -7517.0,
+    "bericht": "tte-20-f-2025",
+    "seite": "F-12",
+    "etikett": "Dividends paid: ... Parent company shareholders",
+    "lesungen": 2,
+    "abweichend": [],
+    "summe": false,
+    "xbrl": -7517.0
+   },
+   "2024": {
+    "wert": -7717.0,
+    "roh": -7717.0,
+    "bericht": "tte-20-f-2025",
+    "seite": "F-12",
+    "etikett": "Dividends paid: ... Parent company shareholders",
+    "lesungen": 2,
+    "abweichend": [],
+    "summe": false,
+    "xbrl": -7717.0
+   },
+   "2025": {
+    "wert": -8121.0,
+    "roh": -8121.0,
+    "bericht": "tte-20-f-2025",
+    "seite": "F-12",
+    "etikett": "Dividends paid: ... Parent company shareholders",
+    "lesungen": 1,
+    "abweichend": [],
+    "summe": false,
+    "xbrl": -8121.0
+   },
+   "2015": {
+    "wert": -2845.0,
+    "bericht": "SEC XBRL companyfacts, abgerufen 19.09.2026",
+    "seite": null,
+    "etikett": "XBRL",
+    "lesungen": 1,
+    "abweichend": []
+   },
+   "2016": {
+    "wert": -2661.0,
+    "bericht": "SEC XBRL companyfacts, abgerufen 19.09.2026",
+    "seite": null,
+    "etikett": "XBRL",
+    "lesungen": 1,
+    "abweichend": []
+   },
+   "2017": {
+    "wert": -2643.0,
+    "bericht": "SEC XBRL companyfacts, abgerufen 19.09.2026",
+    "seite": null,
+    "etikett": "XBRL",
+    "lesungen": 1,
+    "abweichend": []
+   },
+   "2018": {
+    "wert": -4913.0,
+    "bericht": "SEC XBRL companyfacts, abgerufen 19.09.2026",
+    "seite": null,
+    "etikett": "XBRL",
+    "lesungen": 1,
+    "abweichend": []
+   },
+   "2019": {
+    "wert": -6641.0,
+    "bericht": "SEC XBRL companyfacts, abgerufen 19.09.2026",
+    "seite": null,
+    "etikett": "XBRL",
+    "lesungen": 1,
+    "abweichend": []
+   }
+  },
+  "investitionen": {
+   "2020": {
+    "wert": -10764.0,
+    "roh": -10764.0,
+    "bericht": "tte-20-f-2022",
+    "seite": "F-12",
+    "etikett": "Intangible assets and property, plant and equipment additions",
+    "lesungen": 1,
+    "abweichend": [],
+    "summe": false,
+    "xbrl": -10764.0
+   },
+   "2021": {
+    "wert": -12343.0,
+    "roh": -12343.0,
+    "bericht": "tte-20-f-2022",
+    "seite": "F-12",
+    "etikett": "Intangible assets and property, plant and equipment additions",
+    "lesungen": 1,
+    "abweichend": [],
+    "summe": false,
+    "xbrl": -12343.0
+   },
+   "2022": {
+    "wert": -15690.0,
+    "roh": -15690.0,
+    "bericht": "tte-20-f-2024",
+    "seite": "F-12",
+    "etikett": "Intangible assets and property, plant and equipment additions",
+    "lesungen": 2,
+    "abweichend": [],
+    "summe": false,
+    "xbrl": -15690.0
+   },
+   "2023": {
+    "wert": -17722.0,
+    "roh": -17722.0,
+    "bericht": "tte-20-f-2025",
+    "seite": "F-12",
+    "etikett": "Intangible assets and property, plant and equipment additions",
+    "lesungen": 2,
+    "abweichend": [],
+    "summe": false,
+    "xbrl": -17722.0
+   },
+   "2024": {
+    "wert": -14909.0,
+    "roh": -14909.0,
+    "bericht": "tte-20-f-2025",
+    "seite": "F-12",
+    "etikett": "Intangible assets and property, plant and equipment additions",
+    "lesungen": 2,
+    "abweichend": [],
+    "summe": false
+   },
+   "2025": {
+    "wert": -16953.0,
+    "roh": -16953.0,
+    "bericht": "tte-20-f-2025",
+    "seite": "F-12",
+    "etikett": "Intangible assets and property, plant and equipment additions",
+    "lesungen": 1,
+    "abweichend": [],
+    "summe": false
+   },
+   "2015": {
+    "wert": -25132.0,
+    "bericht": "SEC XBRL companyfacts, abgerufen 19.09.2026",
+    "seite": null,
+    "etikett": "XBRL",
+    "lesungen": 1,
+    "abweichend": []
+   },
+   "2016": {
+    "wert": -18106.0,
+    "bericht": "SEC XBRL companyfacts, abgerufen 19.09.2026",
+    "seite": null,
+    "etikett": "XBRL",
+    "lesungen": 1,
+    "abweichend": []
+   },
+   "2017": {
+    "wert": -13767.0,
+    "bericht": "SEC XBRL companyfacts, abgerufen 19.09.2026",
+    "seite": null,
+    "etikett": "XBRL",
+    "lesungen": 1,
+    "abweichend": []
+   },
+   "2018": {
+    "wert": -17081.0,
+    "bericht": "SEC XBRL companyfacts, abgerufen 19.09.2026",
+    "seite": null,
+    "etikett": "XBRL",
+    "lesungen": 1,
+    "abweichend": []
+   },
+   "2019": {
+    "wert": -12513.0,
+    "bericht": "SEC XBRL companyfacts, abgerufen 19.09.2026",
+    "seite": null,
+    "etikett": "XBRL",
+    "lesungen": 1,
+    "abweichend": []
+   }
+  },
+  "umsatz": {
+   "2020": {
+    "wert": 140685.0,
+    "roh": 140685.0,
+    "bericht": "tte-20-f-2022",
+    "seite": "F-9",
+    "etikett": "Sales",
+    "lesungen": 1,
+    "abweichend": [],
+    "summe": false
+   },
+   "2021": {
+    "wert": 205863.0,
+    "roh": 205863.0,
+    "bericht": "tte-20-f-2022",
+    "seite": "F-9",
+    "etikett": "Sales",
+    "lesungen": 1,
+    "abweichend": [],
+    "summe": false
+   },
+   "2022": {
+    "wert": 280999.0,
+    "roh": 280999.0,
+    "bericht": "tte-20-f-2024",
+    "seite": "F-9",
+    "etikett": "Sales",
+    "lesungen": 2,
+    "abweichend": [],
+    "summe": false
+   },
+   "2023": {
+    "wert": 237128.0,
+    "roh": 237128.0,
+    "bericht": "tte-20-f-2025",
+    "seite": "F-9",
+    "etikett": "Sales",
+    "lesungen": 2,
+    "abweichend": [],
+    "summe": false
+   },
+   "2024": {
+    "wert": 214550.0,
+    "roh": 214550.0,
+    "bericht": "tte-20-f-2025",
+    "seite": "F-9",
+    "etikett": "Sales",
+    "lesungen": 2,
+    "abweichend": [],
+    "summe": false
+   },
+   "2025": {
+    "wert": 201196.0,
+    "roh": 201196.0,
+    "bericht": "tte-20-f-2025",
+    "seite": "F-9",
+    "etikett": "Sales",
+    "lesungen": 1,
+    "abweichend": [],
+    "summe": false
+   }
+  },
+  "ergebnis": {
+   "2020": {
+    "wert": -7336.0,
+    "roh": -7336.0,
+    "bericht": "tte-20-f-2022",
+    "seite": "F-9",
+    "etikett": "CONSOLIDATED NET INCOME",
+    "lesungen": 1,
+    "abweichend": [],
+    "summe": false,
+    "xbrl": -7242.0
+   },
+   "2021": {
+    "wert": 16366.0,
+    "roh": 16366.0,
+    "bericht": "tte-20-f-2022",
+    "seite": "F-9",
+    "etikett": "CONSOLIDATED NET INCOME",
+    "lesungen": 1,
+    "abweichend": [],
+    "summe": false,
+    "xbrl": 16032.0
+   },
+   "2022": {
+    "wert": 21044.0,
+    "roh": 21044.0,
+    "bericht": "tte-20-f-2024",
+    "seite": "F-9",
+    "etikett": "CONSOLIDATED NET INCOME",
+    "lesungen": 2,
+    "abweichend": [],
+    "summe": false,
+    "xbrl": 20526.0
+   },
+   "2023": {
+    "wert": 21510.0,
+    "roh": 21510.0,
+    "bericht": "tte-20-f-2025",
+    "seite": "F-9",
+    "etikett": "CONSOLIDATED NET INCOME",
+    "lesungen": 2,
+    "abweichend": [],
+    "summe": false,
+    "xbrl": 21384.0
+   },
+   "2024": {
+    "wert": 16031.0,
+    "roh": 16031.0,
+    "bericht": "tte-20-f-2025",
+    "seite": "F-9",
+    "etikett": "CONSOLIDATED NET INCOME",
+    "lesungen": 2,
+    "abweichend": [],
+    "summe": false,
+    "xbrl": 15758.0
+   },
+   "2025": {
+    "wert": 13357.0,
+    "roh": 13357.0,
+    "bericht": "tte-20-f-2025",
+    "seite": "F-9",
+    "etikett": "CONSOLIDATED NET INCOME",
+    "lesungen": 1,
+    "abweichend": [],
+    "summe": false,
+    "xbrl": 13127.0
+   }
+  },
+  "eps_verwaessert": {
+   "2020": {
+    "wert": -2.9,
+    "roh": -2.9,
+    "bericht": "tte-20-f-2022",
+    "seite": "F-9",
+    "etikett": "Fully-diluted earnings per share ($)",
+    "lesungen": 1,
+    "abweichend": [],
+    "summe": false
+   },
+   "2021": {
+    "wert": 5.92,
+    "roh": 5.92,
+    "bericht": "tte-20-f-2022",
+    "seite": "F-9",
+    "etikett": "Fully-diluted earnings per share ($)",
+    "lesungen": 1,
+    "abweichend": [],
+    "summe": false
+   },
+   "2022": {
+    "wert": 7.85,
+    "roh": 7.85,
+    "bericht": "tte-20-f-2024",
+    "seite": "F-9",
+    "etikett": "Fully-diluted earnings per share ($)",
+    "lesungen": 2,
+    "abweichend": [],
+    "summe": false
+   },
+   "2023": {
+    "wert": 8.67,
+    "roh": 8.67,
+    "bericht": "tte-20-f-2025",
+    "seite": "F-9",
+    "etikett": "Fully-diluted earnings per share ($)",
+    "lesungen": 2,
+    "abweichend": [],
+    "summe": false
+   },
+   "2024": {
+    "wert": 6.69,
+    "roh": 6.69,
+    "bericht": "tte-20-f-2025",
+    "seite": "F-9",
+    "etikett": "Fully-diluted earnings per share ($)",
+    "lesungen": 2,
+    "abweichend": [],
+    "summe": false
+   },
+   "2025": {
+    "wert": 5.78,
+    "roh": 5.78,
+    "bericht": "tte-20-f-2025",
+    "seite": "F-9",
+    "etikett": "Fully-diluted earnings per share ($)",
+    "lesungen": 1,
+    "abweichend": [],
+    "summe": false
+   }
+  },
+  "aktien_verwaessert": {
+   "2020": {
+    "wert": -2.9,
+    "roh": -2.9,
+    "bericht": "tte-20-f-2022",
+    "seite": "F-9",
+    "etikett": "Fully-diluted earnings per share ($)",
+    "lesungen": 1,
+    "abweichend": [],
+    "summe": false
+   },
+   "2021": {
+    "wert": 5.92,
+    "roh": 5.92,
+    "bericht": "tte-20-f-2022",
+    "seite": "F-9",
+    "etikett": "Fully-diluted earnings per share ($)",
+    "lesungen": 1,
+    "abweichend": [],
+    "summe": false
+   },
+   "2022": {
+    "wert": 7.85,
+    "roh": 7.85,
+    "bericht": "tte-20-f-2024",
+    "seite": "F-9",
+    "etikett": "Fully-diluted earnings per share ($)",
+    "lesungen": 2,
+    "abweichend": [],
+    "summe": false
+   },
+   "2023": {
+    "wert": 8.67,
+    "roh": 8.67,
+    "bericht": "tte-20-f-2024",
+    "seite": "F-9",
+    "etikett": "Fully-diluted earnings per share ($)",
+    "lesungen": 1,
+    "abweichend": [],
+    "summe": false
+   },
+   "2024": {
+    "wert": 6.69,
+    "roh": 6.69,
+    "bericht": "tte-20-f-2024",
+    "seite": "F-9",
+    "etikett": "Fully-diluted earnings per share ($)",
+    "lesungen": 1,
+    "abweichend": [],
+    "summe": false
+   }
+  },
+  "eigenkapital": {
+   "2020": {
+    "wert": 103702.0,
+    "roh": 103702.0,
+    "bericht": "tte-20-f-2022",
+    "seite": "F-11",
+    "etikett": "Total shareholders' equity - TotalEnergies share",
+    "lesungen": 1,
+    "abweichend": [],
+    "summe": false
+   },
+   "2021": {
+    "wert": 111736.0,
+    "roh": 111736.0,
+    "bericht": "tte-20-f-2022",
+    "seite": "F-11",
+    "etikett": "Total shareholders' equity - TotalEnergies share",
+    "lesungen": 1,
+    "abweichend": [],
+    "summe": false
+   },
+   "2022": {
+    "wert": 111724.0,
+    "roh": 111724.0,
+    "bericht": "tte-20-f-2024",
+    "seite": "F-11",
+    "etikett": "Total shareholders' equity - TotalEnergies share",
+    "lesungen": 2,
+    "abweichend": [],
+    "summe": false
+   },
+   "2023": {
+    "wert": 116753.0,
+    "roh": 116753.0,
+    "bericht": "tte-20-f-2025",
+    "seite": "F-11",
+    "etikett": "Total shareholders' equity - TotalEnergies share",
+    "lesungen": 2,
+    "abweichend": [],
+    "summe": false
+   },
+   "2024": {
+    "wert": 117858.0,
+    "roh": 117858.0,
+    "bericht": "tte-20-f-2025",
+    "seite": "F-11",
+    "etikett": "Total shareholders' equity - TotalEnergies share",
+    "lesungen": 2,
+    "abweichend": [],
+    "summe": false
+   },
+   "2025": {
+    "wert": 114883.0,
+    "roh": 114883.0,
+    "bericht": "tte-20-f-2025",
+    "seite": "F-11",
+    "etikett": "Total shareholders' equity - TotalEnergies share",
+    "lesungen": 1,
+    "abweichend": [],
+    "summe": false
+   }
+  },
+  "aktien_ausstehend": {
+   "2020": {
+    "wert": 8.267,
+    "roh": 8267.0,
+    "bericht": "tte-20-f-2022",
+    "seite": "F-11",
+    "etikett": "Common shares",
+    "lesungen": 1,
+    "abweichend": [],
+    "summe": false
+   },
+   "2021": {
+    "wert": 8.224,
+    "roh": 8224.0,
+    "bericht": "tte-20-f-2022",
+    "seite": "F-11",
+    "etikett": "Common shares",
+    "lesungen": 1,
+    "abweichend": [],
+    "summe": false
+   },
+   "2022": {
+    "wert": 8.163,
+    "roh": 8163.0,
+    "bericht": "tte-20-f-2024",
+    "seite": "F-11",
+    "etikett": "Common shares",
+    "lesungen": 2,
+    "abweichend": [],
+    "summe": false
+   },
+   "2023": {
+    "wert": 7.616,
+    "roh": 7616.0,
+    "bericht": "tte-20-f-2025",
+    "seite": "F-11",
+    "etikett": "Common shares",
+    "lesungen": 2,
+    "abweichend": [],
+    "summe": false
+   },
+   "2024": {
+    "wert": 7.577,
+    "roh": 7577.0,
+    "bericht": "tte-20-f-2025",
+    "seite": "F-11",
+    "etikett": "Common shares",
+    "lesungen": 2,
+    "abweichend": [],
+    "summe": false
+   },
+   "2025": {
+    "wert": 7.059,
+    "roh": 7059.0,
+    "bericht": "tte-20-f-2025",
+    "seite": "F-11",
+    "etikett": "Common shares",
+    "lesungen": 1,
+    "abweichend": [],
+    "summe": false
+   }
+  }
+ }
+}

@@ -81,3 +81,19 @@ def test_rsi_zones_matches_per_day_loop():
     assert rebuilt == expected
     assert all(zones[k][2] != zones[k + 1][2] for k in range(len(zones) - 1))
     assert rsi_zones(idx[:1], rsi[:1]) == []
+
+
+def test_ui_override_wins_over_env(monkeypatch):
+    from ui.pg_charts import set_chart_backend
+
+    monkeypatch.setenv("QSI_CHART_BACKEND", "matplotlib")
+    try:
+        set_chart_backend("pyqtgraph")
+        assert chart_backend() == "pyqtgraph"
+        set_chart_backend("matplotlib")
+        assert chart_backend() == "matplotlib"
+        set_chart_backend(None)
+        monkeypatch.setenv("QSI_CHART_BACKEND", "pyqtgraph")
+        assert chart_backend() == "pyqtgraph"
+    finally:
+        set_chart_backend(None)

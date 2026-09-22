@@ -1,0 +1,139 @@
+{
+ "datei": "besi-ar-2025.txt",
+ "arten": {
+  "cf": {
+   "seite": "196",
+   "jahre": [
+    "2025",
+    "2024"
+   ],
+   "posten": {
+    "operativer_cf": [
+     {
+      "etikett": "Net cash provided by operating activities",
+      "werte": [
+       178141.0,
+       201083.0
+      ],
+      "seite": "196"
+     }
+    ],
+    "investitionen": [
+     {
+      "etikett": "Capital expenditures",
+      "werte": [
+       9.0,
+       12.0
+      ],
+      "seite": "196"
+     }
+    ],
+    "dividenden": [
+     {
+      "etikett": "Dividend paid to shareholders",
+      "werte": [
+       -172811.0,
+       -171534.0
+      ],
+      "seite": "196"
+     }
+    ],
+    "rueckkauf": [
+     {
+      "etikett": "Purchase treasury shares",
+      "werte": [
+       -81967.0,
+       -79833.0
+      ],
+      "seite": "196"
+     }
+    ],
+    "leasing": [
+     {
+      "etikett": "Payments on lease liabilities",
+      "werte": [
+       19.0,
+       20.0
+      ],
+      "seite": "196"
+     }
+    ]
+   },
+   "verworfen": [],
+   "tokens": 1248
+  },
+  "guv": {
+   "seite": "194",
+   "jahre": [
+    "2025",
+    "2024"
+   ],
+   "posten": {
+    "umsatz": [
+     {
+      "etikett": "Revenue",
+      "werte": [
+       24.0,
+       25.0
+      ],
+      "seite": "194"
+     }
+    ],
+    "ergebnis": [
+     {
+      "etikett": "Net income",
+      "werte": [
+       131641.0,
+       181992.0
+      ],
+      "seite": "194"
+     }
+    ],
+    "eps_verwaessert": [
+     {
+      "etikett": "Diluted¹",
+      "werte": [
+       1.66,
+       2.3
+      ],
+      "seite": "194"
+     }
+    ]
+   },
+   "verworfen": [
+    [
+     "aktien_verwaessert",
+     "Weighted average number of shares used to compute income per share",
+     "Etikett nicht woertlich auf der Seite"
+    ],
+    [
+     "aktien_verwaessert",
+     "Basic",
+     "Etikett passt nicht zum Posten"
+    ]
+   ],
+   "tokens": 1098
+  },
+  "bilanz": {
+   "seite": "193",
+   "jahre": [
+    "2025",
+    "2024"
+   ],
+   "posten": {
+    "eigenkapital": [
+     {
+      "etikett": "Equity attributable to owners of the Company",
+      "werte": [
+       416397.0,
+       501264.0
+      ],
+      "seite": "193"
+     }
+    ]
+   },
+   "verworfen": [],
+   "tokens": 1262
+  }
+ }
+}

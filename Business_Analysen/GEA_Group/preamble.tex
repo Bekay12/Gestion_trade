@@ -1,0 +1,204 @@
+% ===================================================================
+% preamble.tex - Praeambel des Vollberichts GEA Group
+% Uebernommen aus Business_Analysen/Dual_Champions und auf einen
+% einzelnen Titel zurueckgebaut: keine Teile, keine Paartabellen.
+% ===================================================================
+\usepackage[T1]{fontenc}
+\usepackage[utf8]{inputenc}
+\usepackage{lmodern}
+\usepackage[ngerman]{babel}
+\usepackage{csquotes}
+% patch ohne "footnote": microtype kann seinen Fussnotenpatch nicht anlegen,
+% wenn footmisc (para) den Fussnotenapparat ersetzt.
+\usepackage[patch={item,toc,eqnum}]{microtype}
+\usepackage{xcolor}
+\usepackage{amsmath}
+\usepackage{amssymb}
+\usepackage{booktabs}
+\usepackage{longtable}
+\usepackage{array}
+\usepackage{tabularx}
+\usepackage{siunitx}
+\usepackage{graphicx}
+\usepackage{tikz}
+\usepackage{placeins}
+\usepackage{needspace}
+\usepackage{pgfplots}
+\usepackage[hidelinks]{hyperref}
+\usepackage{url}
+
+\areaset[current]{463.07pt}{636.6pt}
+
+% Schusterjungen und Hurenkinder verbieten (im deutschen Satz Fehler).
+\clubpenalty=10000
+\widowpenalty=10000
+\displaywidowpenalty=10000
+
+% Fussnotenapparat flach halten: alle Fussnoten einer Seite in einem
+% durchlaufenden Absatz. Das zweispaltige dblfnote laeuft mit pgfplots und
+% hyperref in eine Endlosschleife der Ausgaberoutine.
+\usepackage[para]{footmisc}
+
+\usepackage[automark]{scrlayer-scrpage}
+\pagestyle{scrheadings}
+\renewcommand{\sectionmark}[1]{\markright{\thesection\quad #1}}
+\clearpairofpagestyles
+\setkomafont{pagehead}{\normalfont\small}
+\ihead{\rightmark}
+\ohead{GEA Group}
+\KOMAoptions{headsepline=true}
+\cfoot*{\pagemark}
+
+\setcounter{tocdepth}{2}
+
+\pgfplotsset{compat=1.18}
+\usepgfplotslibrary{dateplot}
+\pgfplotsset{/pgf/number format/use comma, /pgf/number format/1000 sep={}}
+
+\definecolor{kursfarbe}{RGB}{25,55,120}
+\definecolor{auftragsfarbe}{RGB}{0,120,60}
+
+% --- Zahlenformat: deutsches Dezimalkomma ---------------------------
+\sisetup{
+  output-decimal-marker = {,},
+  group-separator       = {.},
+  group-minimum-digits  = 4,
+  % Ohne group-digits=integer gruppiert siunitx auch die Nachkommastellen:
+  % aus 43.4679 wurde im Satz "43,467.9".
+  group-digits          = integer,
+  detect-weight         = true,
+  detect-family         = true
+}
+
+% --- Zitierweise ------------------------------------------------------
+% \Q{Schluessel}{Seite}: Fussnote mit Kurztitel (Sprung ins Quellenverzeichnis)
+% und GEDRUCKTER Seite. \QW{Titel}{Schluessel}{Abrufdatum}: Webquelle; die
+% Adresse steht nur im Quellenverzeichnis, damit jede URL genau einmal vorkommt.
+\definecolor{quellenlink}{RGB}{20,60,120}
+\newcommand{\quellensprung}[2]{\hyperref[#1]{\textcolor{quellenlink}{#2}}}
+\newcommand{\kurzGeaGB}{GEA Group, Annual Report 2025}
+\newcommand{\kurzGeaGBvier}{GEA Group, Annual Report 2024}
+\newcommand{\kurzGeaGBdrei}{GEA Group, Annual Report 2023}
+\newcommand{\kurzGeaGBzwei}{GEA Group, Annual Report 2022}
+\newcommand{\kurzGeaGBeins}{GEA Group, Annual Report 2021}
+\newcommand{\kurzGeaGBnull}{GEA Group, Annual Report 2020}
+\newcommand{\kurzGeaHJ}{GEA Group, Half-Year Financial Report 2026}
+\newcommand{\Q}[2]{\footnote{\quellensprung{quelle:#1}{\csname kurz#1\endcsname}, S.~#2.}}
+\newcommand{\QW}[3]{\footnote{\quellensprung{#2}{#1} (abgerufen am #3).}}
+
+% --- Einheiten: Makros aus data/kennzahlen.tex sind bereits deutsch gesetzt
+\newcommand{\Mio}[2]{#1\,Mio.\,#2}
+\newcommand{\je}[2]{#1\,#2}
+\newcommand{\Pz}[1]{#1\,\%}
+
+% --- Drei Farben, drei Verantwortlichkeiten --------------------------
+% Schwarz: belegte Fakten. Blau: Einschaetzung des Verfassers. Rot: Votum.
+\definecolor{vdrot}{RGB}{155,25,30}
+\newcommand{\vd}[1]{{\color{vdrot}#1}}
+\definecolor{bkblau}{RGB}{20,60,150}
+\newcommand{\bk}[1]{{\color{bkblau}#1}}
+
+% --- Generierte Tabellenkoerper ohne angehaengtes \relax --------------
+\makeatletter
+\newcommand{\tabellenkoerper}[1]{\@@input #1.tex }
+\makeatother
+
+\newcommand{\annahme}[1]{%
+  \par\medskip\noindent\fbox{\parbox{0.97\linewidth}{\small\textbf{Annahme:} #1}}\par\medskip}
+
+% =====================================================================
+% Tabellen. Jeder Koerper kommt aus data/ und wird von scripts/rechnung_gea.py
+% erzeugt; im Dokument steht keine Zahl von Hand.
+% =====================================================================
+\newcommand{\ueberblicktabelle}{%
+\begin{table}[htbp]\centering\small
+\caption{Kennzahlen 2025 gegen 2024, wie auf der Kennzahlenseite gedruckt.
+Ver\"anderung in Einheiten der Zeile (Prozentpunkte bei Quoten).}\label{tab:ueberblick}
+\begin{tabular}{@{}lrrr@{}}\toprule
+Kennzahl (Mio.~EUR, wo nicht anders angegeben) & 2025 & 2024 & Ver\"anderung\\\midrule
+\tabellenkoerper{data/ueberblick}
+\bottomrule\end{tabular}\end{table}}
+
+\newcommand{\reihentabelle}{%
+\begin{table}[htbp]\centering\small
+\caption{Mehrjahresreihe 2019--2025 (Mio.~EUR; Marge und ROCE in \%, Ergebnis je Aktie in
+EUR). \enquote{Freier Zufluss} ist die eigene Gr\"o{\ss}e dieses Berichts: operativer
+Mittelzufluss der fortgef\"uhrten T\"atigkeit + Investitionen + Leasingtilgung; sie ist
+nicht der von GEA ausgewiesene freie Cashflow (Methode S.~\pageref{sec:methode}).
+Beleg: Gesch\"aftsbericht und gedruckte Seite der Kapitalflussrechnung.}\label{tab:reihe}
+\begin{tabular}{@{}lrrrrrrrl@{}}\toprule
+Jahr & Auftragseingang & Umsatz & EBITDA vR & Marge & ROCE & Freier Zufluss & EPS verw. & Beleg\\\midrule
+\tabellenkoerper{data/reihe}
+\bottomrule\end{tabular}\end{table}}
+
+\newcommand{\prognosetabelle}{%
+\begin{table}[htbp]\centering\small
+\caption{Prognosetreue 2021--2025. Gelesen ist die Prognose \emph{wie zuerst gegeben},
+nicht die unterj\"ahrig angepasste. Die Spalte \enquote{Ergebnis} stammt aus der eigenen
+Reihe (Tabelle~\ref{tab:reihe}), nicht aus der Ergebnisspalte des Berichts; die Einordnung
+rechnet \texttt{scripts/rechnung\_gea.py}.}\label{tab:prognose}
+\begin{tabular}{@{}llllll@{}}\toprule
+Jahr & Gr\"o{\ss}e & Prognose (zuerst) & Ergebnis & Lage & Seite\\\midrule
+\tabellenkoerper{data/prognose}
+\bottomrule\end{tabular}\end{table}}
+
+\newcommand{\dividendentabelle}{%
+\begin{table}[htbp]\centering\small
+\caption{Dividende je Aktie, aus der Kapitalflussrechnung zur\"uckgerechnet: gezahlte
+Dividende des Jahres geteilt durch die verw\"asserte Aktienzahl desselben Jahres. Die
+Zahlung eines Jahres betrifft das Vorjahresergebnis.}\label{tab:dividende}
+\begin{tabular}{@{}lrrrr@{}}\toprule
+Jahr & Zahlung (Mio.~EUR) & Aktien (Mio.) & Je Aktie (EUR) & Schritt (EUR)\\\midrule
+\tabellenkoerper{data/dividende}
+\bottomrule\end{tabular}\end{table}}
+
+\newcommand{\kurstabelle}{%
+\begin{table}[htbp]\centering\small
+\caption{Auftragseingang gegen Kurs: beide als Ver\"anderung zum Vorjahr.
+Schlusskurse zum Jahresende, Yahoo Finance.}\label{tab:kurs}
+\begin{tabular}{@{}lrrrr@{}}\toprule
+Jahr & Auftragseingang (Mio.~EUR) & Ver\"and. in \% & Kurs Jahresende (EUR) & Ver\"and. in \%\\\midrule
+\tabellenkoerper{data/kurs}
+\bottomrule\end{tabular}\end{table}}
+
+\newcommand{\optionentabelle}{%
+\begin{table}[htbp]\centering\small
+\caption{Interner Zinsfu{\ss} der drei Handlungsoptionen auf zehn Jahre, je Szenario des
+freien Zuflusses. Option~C legt denselben Betrag zur H\"urde an; ihre Zeile ist die
+Messlatte und rechnerisch szenariounabh\"angig.}\label{tab:optionen}
+\begin{tabular}{@{}lrrrr@{}}\toprule
+Option & Einstiegskurs (EUR) & pessimistisch & Basis & optimistisch\\\midrule
+\tabellenkoerper{data/optionen}
+\bottomrule\end{tabular}\end{table}}
+
+\newcommand{\schwellentabelle}{%
+\begin{table}[htbp]\centering\small
+\caption{Schwellenkurs je Aktie (EUR): Kurs, zu dem der interne Zinsfu{\ss} die H\"urde von
+\Pz{\Huerde} erreicht; letzte Spalte bei \Pz{\HuerdeLang}. Zufluss konstant, Endwert =
+Buchwert des Eigenkapitals 2025.}\label{tab:schwelle}
+\begin{tabular}{@{}lrrrrr@{}}\toprule
+Szenario & Zufluss (Mio.~EUR) & 5 Jahre & 10 Jahre & 15 Jahre & 10 J., \Pz{\HuerdeLang}\\\midrule
+\tabellenkoerper{data/schwelle}
+\bottomrule\end{tabular}\end{table}}
+
+\newcommand{\umkehrtabellen}{%
+\begin{table}[htbp]\centering\small
+\caption{Umkehrungen zum heutigen Kurs bei \Pz{\Huerde}: erforderliches Wachstum des freien
+Zuflusses p.\,a.\ (oben) und erforderlicher Endwert als Vielfaches des Buchwerts
+(unten).}\label{tab:umkehr}
+\begin{tabular}{@{}lrrr@{}}\toprule
+Szenario & 5 Jahre & 10 Jahre & 15 Jahre\\\midrule
+\tabellenkoerper{data/wachstum}
+\midrule
+\tabellenkoerper{data/endwert}
+\bottomrule\end{tabular}\end{table}}
+
+\newcommand{\kgvtabelle}{%
+\begin{table}[htbp]\centering\small
+\caption{Kurs-Gewinn-Verh\"altnis zum Jahresende: Schlusskurs (Yahoo Finance) durch
+verw\"assertes Ergebnis je Aktie (Tabelle~\ref{tab:reihe}); nur Jahre mit positivem
+Ergebnis.}\label{tab:kgv}
+\begin{tabular}{@{}lrrr@{}}\toprule
+Jahr & Kurs Jahresende (EUR) & EPS verw. (EUR) & KGV\\\midrule
+\tabellenkoerper{data/kgv}
+\bottomrule\end{tabular}\end{table}}

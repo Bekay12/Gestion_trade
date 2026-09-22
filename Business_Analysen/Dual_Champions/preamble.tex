@@ -1,0 +1,292 @@
+% ===================================================================
+% preamble.tex — Praeambel des vertieften Filters Dual Champions
+% ===================================================================
+\usepackage[T1]{fontenc}
+\usepackage[utf8]{inputenc}
+\usepackage{lmodern}
+\usepackage[ngerman]{babel}
+\usepackage{csquotes}
+% patch ohne "footnote": microtype richtet das Fussnotenzeichen im Rand aus,
+% kann seinen Patch aber nicht anlegen, wenn footmisc (para) den
+% Fussnotenapparat ersetzt - ohne die Einschraenkung meldet jeder Lauf
+% "Unable to apply patch `footnote'". Die uebrigen Patches bleiben aktiv.
+\usepackage[patch={item,toc,eqnum}]{microtype}
+\usepackage{xcolor}
+\usepackage{amsmath}
+% amssymb liefert \blacktriangle und \blacktriangledown - die Symbole, mit
+% denen die Bildunterschrift von fig:kursverlauf die Markenformen benennt.
+% Damit braucht die Abbildung keine Legende, die sonst in die Kurve ragt.
+\usepackage{amssymb}
+\usepackage{booktabs}
+\usepackage{longtable}
+\usepackage{array}
+\usepackage{tabularx}
+\usepackage{siunitx}
+\usepackage{xfp}
+\usepackage{graphicx}
+% pgfplots bindet tikz zwar implizit ein, ein eigener Ladeaufruf macht die
+% Abhaengigkeit robust gegen eine spaetere Entfernung von pgfplots.
+\usepackage{tikz}
+% Haelt Gleitobjekte in ihrem Abschnitt: Ohne \FloatBarrier wandert eine
+% Tabelle, die den gesamten Rumpf einer Unterunterabschnitts bildet, auf die
+% naechste Seite - die Ueberschrift bleibt dann ohne Inhalt zurueck.
+\usepackage{placeins}
+% Haelt eine Ueberschrift mit dem, was ihr folgt, zusammen. LaTeX verhindert
+% von sich aus nur den Umbruch unmittelbar NACH einer Ueberschrift
+% (\@afterheading setzt clubpenalty hoch); eine Ueberschrift plus eine
+% einzelne Zeile am Seitenfuss bleibt erlaubt - und genau das ist zweimal
+% aufgetreten. \needspace{n\baselineskip} vor der Ueberschrift schiebt sie
+% auf die naechste Seite, wenn dort nicht mehr n Zeilen Platz haben.
+\usepackage{needspace}
+\usepackage{pgfplots}
+\usepackage{pgfplotstable}
+\usepackage[hidelinks]{hyperref}
+\usepackage{url}
+
+% --- Satzspiegel: Seitenraender schmaler --------------------------------
+% DIV=12 ergibt bei A4 links und rechts je 74.69pt (26.25mm) Rand. Beide
+% Raender werden um 10% verkuerzt (auf 67.22pt / 23.6mm); die Textbreite
+% waechst dadurch von 448.13pt auf 463.07pt. Die Texthoehe (636.6pt, ein
+% Vielfaches des Zeilenabstands) bleibt unveraendert, damit die
+% Grundlinien und der Fussnotenapparat unangetastet bleiben.
+% \areaset ist der KOMA-eigene Weg; das geometry-Paket wuerde die
+% typearea-Berechnung uebersteuern.
+\areaset[current]{463.07pt}{636.6pt}
+
+% --- Schusterjungen und Hurenkinder verbieten -----------------------
+% LaTeX-Vorgabe ist je 150 und damit so niedrig, dass eine einzelne Zeile
+% eines Absatzes allein am Seitenfuss (Schusterjunge) oder am Seitenkopf
+% (Hurenkind) stehen bleiben darf. Im deutschen Satz gelten beide als
+% Fehler. 10000 verbietet sie vollstaendig; die entstehende Differenz
+% faengt die Seitenhoehe auf, da KOMA hier nicht auf gleiche Satzhoehe
+% zwingt. \displaywidowpenalty deckt denselben Fall vor einer abgesetzten
+% Formel ab - davon gibt es in Teil 2 mehrere.
+\clubpenalty=10000
+\widowpenalty=10000
+\displaywidowpenalty=10000
+
+% --- Fussnotenapparat flach halten ----------------------------------
+% Die Zitierweise setzt jede Quelle in eine Fussnote; untereinander gesetzt
+% belegte der Apparat auf belegdichten Seiten bis zu einem Drittel des
+% Satzspiegels. footmisc mit "para" setzt alle Fussnoten einer Seite in einen
+% durchlaufenden Absatz ueber die volle Breite - dieselbe Ersparnis wie ein
+% zweispaltiger Apparat, ohne dessen Paketkonflikt: das zweispaltige
+% dblfnote (yafoot) laeuft mit pgfplots und hyperref zusammen in eine
+% Endlosschleife der Ausgaberoutine (Seiten werden ohne Ende ausgegeben,
+% "TeX capacity exceeded, input stack size"); reproduziert mit article und
+% scrartcl, unabhaengig von der Ladereihenfolge.
+\usepackage[para]{footmisc}
+
+% --- Kopfzeile: Abschnitt links, Dokumenttitel rechts -----------------
+% \sectionmark wird von jedem \section-Aufruf mit dem Titel als Argument
+% aufgerufen; die Umdefinition setzt Nummer und Titel zusammen, sodass die
+% Kopfzeile links "4 Beurteilung des Verlaufs des Aktienkurses" zeigt.
+% \section* (Quellenverzeichnis usw.) loest \sectionmark nicht aus - die
+% Kopfzeile behaelt dort den letzten nummerierten Abschnitt; deshalb wird
+% sie vor dem Anhang manuell geleert (siehe hausarbeit.tex). \titlepage
+% setzt bereits \thispagestyle{empty}, das Deckblatt bleibt also
+% kopfzeilenfrei. Der rechte Eintrag ist statisch und benennt das Dokument.
+\usepackage[automark]{scrlayer-scrpage}
+\pagestyle{scrheadings}
+\renewcommand{\sectionmark}[1]{\markright{\thesection\quad #1}}
+\clearpairofpagestyles
+% \small: Abschnittstitel plus Dokumenttitel muessen in eine Zeile passen.
+\setkomafont{pagehead}{\normalfont\small}
+\ihead{\rightmark}
+% Der rechte Eintrag nennt den Teil, in dem der Leser steht. Bei einem
+% Dokument mit zwei Titeln ist das keine Verzierung: Zwei gleich gebaute
+% Abschnittsfolgen sind sonst auf der einzelnen Seite nicht zu unterscheiden.
+\newcommand{\teiltitel}{Anlageanalyse}
+\ohead{\teiltitel}
+\KOMAoptions{headsepline=true}
+\cfoot*{\pagemark}
+
+% --- Inhaltsverzeichnis: nur bis subsection (x.x) --------------------
+% scrartcl zaehlt section=1, subsection=2, subsubsection=3. tocdepth=2
+% laesst subsubsections (z. B. 5.1.2) aus dem Verzeichnis, ohne ihre
+% Numerierung im Fliesstext zu aendern - secnumdepth bleibt unangetastet,
+% da die Nummern der Aufgabenstellung (5.1.1-5.1.3 usw.) im Text stehen
+% bleiben muessen.
+\setcounter{tocdepth}{2}
+
+\pgfplotsset{compat=1.18}
+% dateplot stellt "date coordinates in=x" bereit. Ohne die Bibliothek
+% versucht pgfplots, "2020-12-31" als Gleitkommazahl zu lesen und bricht ab.
+\usepgfplotslibrary{dateplot}
+% pgfplots formatiert seine Achsen- und Datenbeschriftungen unabhaengig von
+% siunitx. Ohne diese Zeile stuenden im Diagramm Punkte, im Text Kommata.
+\pgfplotsset{/pgf/number format/use comma, /pgf/number format/1000 sep={}}
+
+% Nach unten weisendes Dreieck als eigene Markenform. Der naheliegende Weg,
+% "mark=triangle*" mit "mark options={rotate=180}" zu drehen, funktioniert
+% innerhalb von scatter/classes NICHT: pgfplots setzt mark options je Klasse
+% neu und verwirft die Drehung stillschweigend - die Tiefstkurse wurden
+% dadurch mit einem nach OBEN weisenden Dreieck gezeichnet. Eine eigene
+% Markenform kann nicht ueberschrieben werden.
+\pgfdeclareplotmark{dreieckab}{%
+  \pgfpathmoveto{\pgfqpoint{-0.6\pgfplotmarksize}{0.5\pgfplotmarksize}}%
+  \pgfpathlineto{\pgfqpoint{0.6\pgfplotmarksize}{0.5\pgfplotmarksize}}%
+  \pgfpathlineto{\pgfqpoint{0pt}{-0.55\pgfplotmarksize}}%
+  \pgfpathclose%
+  \pgfusepathqfillstroke%
+}
+
+% Farben der drei Punktarten in fig:kursverlauf. Gruen fuer das Jahreshoch,
+% Rot fuer das Jahrestief, Blau fuer den Schlusskurs. Die Farbe kommt zur
+% Form hinzu und ersetzt sie nicht: Im Schwarzweissdruck bleiben die drei
+% Arten ueber Kreis, Dreieck-auf und Dreieck-ab unterscheidbar.
+\definecolor{kurshoch}{RGB}{0,120,60}
+\definecolor{kurstief}{RGB}{175,30,35}
+\definecolor{kursschluss}{RGB}{25,55,120}
+
+% Achsenvorlage der Kursabbildung. Sie steht hier und nicht in der
+% Abbildung selbst, weil scripts/check_literals.py in sections/*.tex jede
+% Zahl anschlaegt und die Tickweite von 365 Tagen ein Satzparameter ist,
+% keine Finanzkennzahl. Die Regel bleibt damit unangetastet.
+\pgfplotsset{
+  kursachse/.style={
+    width=0.95\linewidth, height=6.2cm,
+    date coordinates in=x,
+    xticklabel style={rotate=45, anchor=north east, font=\footnotesize},
+    xticklabel=\year,
+    xtick={2017-01-01,2018-01-01,2019-01-01,2020-01-01,2021-01-01,
+           2022-01-01,2023-01-01,2024-01-01,2025-01-01,2026-01-01},
+    ylabel={Kurs in USD}, ylabel style={font=\footnotesize},
+    yticklabel style={font=\footnotesize},
+    ymin=0,
+    grid=both, grid style={gray!22, very thin},
+    axis lines=left, enlarge x limits=0.03},
+  % Zwei Titel, zwei Groessenordnungen: 166 USD gegen 12 USD. Eine
+  % gemeinsame Achse waere unlesbar, und eine gemeinsame Abbildung waere
+  % ein Vergleich, den dieser Bericht ausdruecklich nicht anstellt.
+  kursachseazn/.style={kursachse, ymax=230},
+  kursachserdy/.style={kursachse, ymax=18},
+}
+
+% Zuordnung ueber die Spalte "art" der Datendatei (S/H/T), nicht ueber
+% getrennte Datensaetze - so bleibt die Reihe eine einzige, nach Datum
+% geordnete Linie.
+\pgfplotsset{
+  kurspunkte/.style={
+    scatter, only marks, scatter src=explicit symbolic,
+    scatter/classes={
+      S={mark=*,         mark size=1.9pt, kursschluss},
+      H={mark=triangle*, mark size=2.6pt, kurshoch},
+      T={mark=dreieckab, mark size=2.6pt, kurstief}}},
+}
+
+% --- Zahlenformat: deutsches Dezimalkomma ---------------------------
+\sisetup{
+  output-decimal-marker = {,},
+  group-separator       = {.},
+  group-minimum-digits  = 4,
+  % Ohne diese Zeile gruppiert siunitx auch die NACHKOMMASTELLEN: aus dem
+  % Rohwert 43.4679 wurde im Satz "43,467.9" statt "43,5". Die Rohwerte in
+  % data/kennzahlen.tex tragen volle Genauigkeit, deshalb trat der Fehler
+  % bei jeder ungerundeten Prozentangabe auf.
+  group-digits          = integer,
+  detect-weight         = true,
+  detect-family         = true
+}
+
+% --- Betragsmakros --------------------------------------------------
+% Die Rohwerte stehen in data/kennzahlen.tex im englischen Format und in
+% voller Genauigkeit. Die Formatierung erfolgt ausschliesslich hier.
+%   \MioUSD       - Fliesstext, auf eine Nachkommastelle gerundet
+%   \MioUSDexakt  - Rechenwege und Tabellen, volle veroeffentlichte Genauigkeit
+% Der Konzernabschluss weist in Mio. USD ohne Nachkommastelle aus; die
+% Rundung liegt trotzdem in der Ausgabe und nicht im gespeicherten Wert,
+% damit abgeleitete Groessen (Margen, Veraenderungsraten) aus den exakten
+% Werten hervorgehen und nicht aus vorgerundeten.
+
+% --- Zitierweise ------------------------------------------------------
+% \Q{Schluessel}{Seite}: Fussnote mit Kurztitel (Sprung ins Quellenverzeichnis)
+% und GEDRUCKTER Seite. Seite "Deckblatt" fuer SEC-Deckblaetter ohne Seitenzahl.
+% \QW{Titel}{Schluessel}{Abrufdatum}: Webquelle; die Adresse steht nur im
+% Quellenverzeichnis, damit jede URL genau einmal im Dokument vorkommt.
+\definecolor{quellenlink}{RGB}{20,60,120}
+\newcommand{\quellensprung}[2]{\hyperref[#1]{\textcolor{quellenlink}{#2}}}
+\newcommand{\kurzOxyZK}{Occidental Petroleum, Form 10-K 2025}
+\newcommand{\kurzOxyPS}{Occidental Petroleum, Proxy Statement 2026 (DEF 14A)}
+\newcommand{\kurzTteZF}{TotalEnergies, Form 20-F 2025}
+\newcommand{\kurzTteURD}{TotalEnergies, Universal Registration Document 2025}
+\newcommand{\kurzTnkZF}{Teekay Tankers, Form 20-F 2025}
+\newcommand{\kurzFroZF}{Frontline, Form 20-F 2025}
+\newcommand{\kurzGeaGB}{GEA Group, Annual Report 2025}
+\newcommand{\kurzBesiGB}{BE Semiconductor Industries, Annual Report 2025}
+\newcommand{\Q}[2]{\footnote{\quellensprung{quelle:#1}{\csname kurz#1\endcsname}, S.~#2.}}
+\newcommand{\QW}[3]{\footnote{\quellensprung{#2}{#1} (abgerufen am #3).}}
+
+% --- Einheiten: Makros aus data/kennzahlen.tex sind bereits deutsch formatiert
+\newcommand{\Mio}[2]{#1\,Mio.\,#2}
+\newcommand{\je}[2]{#1\,#2}
+\newcommand{\Pz}[1]{#1\,\%}
+
+% --- Drei Farben, drei Verantwortlichkeiten (wie Pharma_AZN_RDY) ------
+% Schwarz: belegte Fakten. Blau: Einschaetzung des Verfassers. Rot: Votum.
+\definecolor{vdrot}{RGB}{155,25,30}
+\newcommand{\vd}[1]{{\color{vdrot}#1}}
+\definecolor{bkblau}{RGB}{20,60,150}
+\newcommand{\bk}[1]{{\color{bkblau}#1}}
+
+% --- Generierte Tabellenkoerper ohne angehaengtes \relax --------------
+\makeatletter
+\newcommand{\tabellenkoerper}[1]{\@@input #1.tex }
+\makeatother
+
+\newcommand{\annahme}[1]{%
+  \par\medskip\noindent\fbox{\parbox{0.97\linewidth}{\small\textbf{Annahme:} #1}}\par\medskip}
+
+% --- Drei Paare als Teile; Abschnittszaehlung je Teil neu -------------
+\let\origpart\part
+\renewcommand{\part}[1]{\clearpage\setcounter{section}{0}\origpart{#1}}
+
+% --- Die fuenf Tabellen je Titel (Koerper aus scripts/rechnung.py) ----
+% #1 Kuerzel (oxy, tte, ...), #2 Waehrung, #3 Label-Suffix
+\newcommand{\reihentabelle}[3]{%
+\begin{table}[htbp]\centering\small
+\caption{Mehrjahresreihe (Mio.~#2; Ergebnis je Aktie in #2). Freier Mittelzufluss =
+operativer Mittelzufluss + Investitionen + Leasingtilgung (Methode im Rahmen,
+S.~\pageref{sec:methode}). Beleg: Bericht und gedruckte Seite der Kapitalflussrechnung;
+\enquote{XBRL} = SEC-companyfacts, Sekund\"arquelle.}\label{tab:reihe-#3}
+\begin{tabular}{@{}lrrrrrrl@{}}\toprule
+Jahr & Operativ & Investitionen & Leasing & Freier Zufluss & Dividenden & EPS verw. & Beleg\\\midrule
+\tabellenkoerper{data/#1_reihe}
+\bottomrule\end{tabular}\end{table}}
+\newcommand{\schwellentabelle}[3]{%
+\begin{table}[htbp]\centering\small
+\caption{Schwellenkurs je Aktie (#2): Kurs, zu dem der interne Zinsfuss die H\"urde von
+\Pz{\Huerde} erreicht; letzte Spalte bei \Pz{\HuerdeLang}. Zufluss konstant, Endwert =
+Buchwert des Stammeigenkapitals 2025. n.\,b.\ = nicht bewertbar (negativer Zufluss).}\label{tab:schwelle-#3}
+\begin{tabular}{@{}lrrrrr@{}}\toprule
+Szenario & Zufluss (Mio.) & 5 Jahre & 10 Jahre & 15 Jahre & 10 J., \Pz{\HuerdeLang}\\\midrule
+\tabellenkoerper{data/#1_schwelle}
+\bottomrule\end{tabular}\end{table}}
+\newcommand{\umkehrtabellen}[1]{%
+\begin{table}[htbp]\centering\small
+\caption{Umkehrungen zum heutigen Kurs: erforderliches Wachstum des freien Zuflusses
+p.\,a.\ (oben) und erforderlicher Endwert als Vielfaches des Buchwerts (unten), je bei
+\Pz{\Huerde}.}\label{tab:umkehr-#1}
+\begin{tabular}{@{}lrrr@{}}\toprule
+Szenario & 5 Jahre & 10 Jahre & 15 Jahre\\\midrule
+\tabellenkoerper{data/#1_wachstum}
+\midrule
+\tabellenkoerper{data/#1_endwert}
+\bottomrule\end{tabular}\end{table}}
+\newcommand{\kgvtabelle}[2]{%
+\begin{table}[htbp]\centering\small
+\caption{Kurs-Gewinn-Verh\"altnis zum Jahresende: Schlusskurs (Yahoo Finance) durch
+verw\"assertes Ergebnis je Aktie (Tabelle~\ref{tab:reihe-#1}); nur Jahre mit positivem
+Ergebnis.}\label{tab:kgv-#1}
+\begin{tabular}{@{}lrrr@{}}\toprule
+Jahr & Kurs Jahresende (#2) & EPS verw. (#2) & KGV\\\midrule
+\tabellenkoerper{data/#1_kgv}
+\bottomrule\end{tabular}\end{table}}
+\newcommand{\paartabelle}[2]{%
+\begin{table}[htbp]\centering\small
+\caption{Paarvergleich: KGV heute, Median und Rang in der eigenen Reihe; freier Zufluss
+2025 im Verh\"altnis zum B\"orsenwert; B\"orsenwert zu Buchwert.}\label{tab:paar-#1}
+\begin{tabular}{@{}lrrrrr@{}}\toprule
+Titel & KGV heute & KGV-Median & Rang (\%) & Zufluss/B\"orsenwert & KBV\\\midrule
+\tabellenkoerper{data/#2}
+\bottomrule\end{tabular}\end{table}}

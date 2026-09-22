@@ -1,0 +1,129 @@
+{
+ "datei": "gea-ar-2023.txt",
+ "arten": {
+  "cf": {
+   "seite": "177",
+   "jahre": [
+    "2023",
+    "2022"
+   ],
+   "posten": {
+    "operativer_cf": [
+     {
+      "etikett": "Cash flow from operating activities",
+      "werte": [
+       537502.0,
+       471613.0
+      ],
+      "seite": "177"
+     }
+    ],
+    "investitionen": [
+     {
+      "etikett": "Payments to acquire property, plant and equipment, and intangible assets",
+      "werte": [
+       -228362.0,
+       -203802.0
+      ],
+      "seite": "177"
+     }
+    ],
+    "dividenden": [
+     {
+      "etikett": "Dividend payment by GEA Group Aktiengesellschaft",
+      "werte": [
+       -159590.0,
+       -159590.0
+      ],
+      "seite": "178"
+     }
+    ],
+    "rueckkauf": [
+     {
+      "etikett": "Purchase of treasury shares",
+      "werte": [
+       -16808.0,
+       -190457.0
+      ],
+      "seite": "178"
+     }
+    ]
+   },
+   "verworfen": [],
+   "tokens": 1696
+  },
+  "guv": {
+   "seite": "175",
+   "jahre": [
+    "2023",
+    "2022"
+   ],
+   "posten": {
+    "umsatz": [
+     {
+      "etikett": "Revenue",
+      "werte": [
+       8.1,
+       5373491.0
+      ],
+      "seite": "175"
+     }
+    ],
+    "eps_verwaessert": [
+     {
+      "etikett": "Basic and diluted earnings per share",
+      "werte": [
+       2.35,
+       2.13
+      ],
+      "seite": "175"
+     }
+    ],
+    "aktien_verwaessert": [
+     {
+      "etikett": "Weighted average number of ordinary shares used to calculate basic and diluted earnings per share (million)",
+      "werte": [
+       172.2,
+       175.9
+      ],
+      "seite": "175"
+     }
+    ]
+   },
+   "verworfen": [],
+   "tokens": 1256
+  },
+  "bilanz": {
+   "seite": "174",
+   "jahre": [
+    "2023",
+    "2022"
+   ],
+   "posten": {
+    "aktien_ausstehend": [
+     {
+      "etikett": "Weighted average number of ordinary shares used to calculate basic and diluted earnings per share (million)",
+      "werte": [
+       172.2,
+       175.9
+      ],
+      "seite": "175"
+     }
+    ]
+   },
+   "verworfen": [
+    [
+     "eigenkapital",
+     "Equity attributable to shareholders of GEA Group AG",
+     "Zeile traegt nicht 2 Werte"
+    ],
+    [
+     "aktien_ausstehend",
+     "Issued capital",
+     "Etikett passt nicht zum Posten"
+    ]
+   ],
+   "tokens": 1531
+  }
+ }
+}

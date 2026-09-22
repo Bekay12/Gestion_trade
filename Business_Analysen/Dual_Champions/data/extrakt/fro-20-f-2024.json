@@ -1,0 +1,138 @@
+{
+ "datei": "fro-20-f-2024.txt",
+ "arten": {
+  "cf": {
+   "seite": "F-8",
+   "jahre": [
+    "2024",
+    "2023",
+    "2022"
+   ],
+   "posten": {
+    "operativer_cf": [
+     {
+      "etikett": "net cash provided by operating activities",
+      "werte": [
+       736412.0,
+       856181.0,
+       385330.0
+      ],
+      "seite": "F-8"
+     }
+    ],
+    "investitionen": [
+     {
+      "etikett": "Additions to newbuildings, vessels and equipment",
+      "werte": [
+       -915248.0,
+       -1631423.0,
+       -335815.0
+      ],
+      "seite": "F-8"
+     }
+    ],
+    "dividenden": [
+     {
+      "etikett": "Cash dividends paid",
+      "werte": [
+       8.0,
+       -434115.0,
+       -638928.0
+      ],
+      "seite": "F-8"
+     }
+    ],
+    "leasing": [
+     {
+      "etikett": "Repayment of obligations under leases",
+      "werte": [
+       18.0,
+       -930.0,
+       -862.0
+      ],
+      "seite": "F-8"
+     }
+    ]
+   },
+   "verworfen": [],
+   "tokens": 1612
+  },
+  "guv": {
+   "seite": "F-4",
+   "jahre": [
+    "2024",
+    "2023",
+    "2022"
+   ],
+   "posten": {
+    "aktien_verwaessert": [
+     {
+      "etikett": "Basic and diluted earnings per share",
+      "werte": [
+       8.0,
+       2.23,
+       2.95
+      ],
+      "seite": "F-4"
+     }
+    ],
+    "eps_verwaessert": [
+     {
+      "etikett": "Basic and diluted earnings per share",
+      "werte": [
+       8.0,
+       2.23,
+       2.95
+      ],
+      "seite": "F-4"
+     }
+    ],
+    "umsatz": [
+     {
+      "etikett": "Revenues",
+      "werte": [
+       4.0,
+       2050385.0,
+       1802184.0
+      ],
+      "seite": "F-4"
+     }
+    ],
+    "ergebnis": [
+     {
+      "etikett": "Profit for the period",
+      "werte": [
+       495583.0,
+       656414.0,
+       475537.0
+      ],
+      "seite": "F-4"
+     }
+    ]
+   },
+   "verworfen": [],
+   "tokens": 972
+  },
+  "bilanz": {
+   "seite": "F-7",
+   "jahre": [
+    "2024",
+    "2023"
+   ],
+   "posten": {
+    "eigenkapital": [
+     {
+      "etikett": "Total equity attributable to the shareholders of the Company",
+      "werte": [
+       2340653.0,
+       2277818.0
+      ],
+      "seite": "F-7"
+     }
+    ]
+   },
+   "verworfen": [],
+   "tokens": 471
+  }
+ }
+}

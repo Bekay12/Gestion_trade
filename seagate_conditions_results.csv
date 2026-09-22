@@ -1,33 +1,191 @@
 ticker,nom,secteur,score,C1_CA_Growth,C1_ok,C2_Marge,C2_ok,C3_Valorisation,C3_ok,C4_Momentum,C4_ok,C5_Volume,C5_ok
-AGEN,Agenus Inc.,Healthcare,4,40.2%,True,97.4%,True,2/3 proxies,True,99.0%,False,2.46x,True
-DUOL,"Duolingo, Inc.",Technology,4,26.5%,True,72.7%,True,2/3 proxies,True,32.4%,True,0.78x,False
-TIGO,Millicom International Cellular,Communication Services,4,45.1%,True,77.1%,True,2/3 proxies,True,11.7%,True,0.94x,False
-ERO,Ero Copper Corp.,Basic Materials,4,110.4%,True,42.8%,True,2/3 proxies,True,12.3%,True,0.83x,False
-ORCL,Oracle Corporation,Technology,4,20.6%,True,65.8%,True,3/3 proxies,True,-21.1%,False,1.27x,True
-BE,Bloom Energy Corporation,Industrials,4,165.5%,True,31.7%,True,2/3 proxies,True,-22.7%,False,1.37x,True
-AMD,"Advanced Micro Devices, Inc.",Technology,3,37.8%,True,53.1%,True,1/3 proxies,False,46.0%,True,0.84x,False
-CRDO,Credo Technology Group Holding ,Technology,3,157.0%,True,68.0%,True,0/3 proxies,False,22.9%,True,0.99x,False
-AMSC,American Superconductor Corpora,Industrials,3,29.6%,True,30.8%,True,3/3 proxies,True,-39.2%,False,0.71x,False
-VRT,"Vertiv Holdings, LLC",Industrials,3,24.1%,True,38.0%,True,2/3 proxies,True,-20.8%,False,1.13x,False
-LITE,Lumentum Holdings Inc.,Technology,2,90.1%,True,40.8%,True,1/3 proxies,False,-14.6%,False,0.83x,False
-AMZn,"Amazon.com, Inc.",Consumer Cyclical,2,19.6%,False,50.8%,True,2/3 proxies,True,1.4%,False,1.18x,False
-SMCI,"Super Micro Computer, Inc.",Technology,2,122.7%,True,8.4%,False,3/3 proxies,True,13.9%,False,0.97x,False
-QCOM,QUALCOMM Incorporated,Technology,2,-4.0%,False,54.2%,True,3/3 proxies,True,-12.5%,False,0.85x,False
-FCEL,"FuelCell Energy, Inc.",Industrials,2,-4.9%,False,-18.2%,False,2/3 proxies,True,66.1%,False,1.28x,True
-ARM,Arm Holdings plc,Technology,2,22.4%,True,97.5%,True,1/3 proxies,False,34.3%,False,0.69x,False
-KRMN,Karman Holdings Inc.,Industrials,2,51.0%,True,41.0%,True,1/3 proxies,False,-14.2%,False,1.19x,False
-SPIR,"Spire Global, Inc.",Industrials,2,-33.7%,False,42.3%,True,2/3 proxies,True,-18.1%,False,0.56x,False
-RKLB,Rocket Lab Corporation,Industrials,2,63.5%,True,36.6%,True,1/3 proxies,False,-5.4%,False,0.85x,False
-PLUG,"Plug Power, Inc.",Industrials,2,22.3%,True,-31.2%,False,2/3 proxies,True,-34.9%,False,0.76x,False
-PL,Planet Labs PBC,Industrials,2,42.1%,True,55.6%,True,1/3 proxies,False,-38.5%,False,0.82x,False
-ASTS,"AST SpaceMobile, Inc.",Technology,2,1952.2%,True,44.8%,True,1/3 proxies,False,10.1%,False,0.84x,False
-6503.T,MITSUBISHI ELECTRIC CORP,Industrials,1,14.0%,False,32.5%,True,0/3 proxies,False,-9.5%,False,0.9x,False
-CLS,"Celestica, Inc.",Technology,1,62.4%,True,12.0%,False,1/3 proxies,False,-11.1%,False,1.05x,False
-LUNR,"Intuitive Machines, Inc.",Industrials,1,198.7%,True,9.7%,False,1/3 proxies,False,-43.7%,False,0.73x,False
-IREN,IREN LIMITED,Financial Services,1,-0.0%,False,68.4%,True,1/3 proxies,False,-25.4%,False,1.0x,False
-6969.T,MATSUO ELECTRIC CO,Technology,1,-3.5%,False,22.2%,False,2/3 proxies,True,-20.9%,False,0.95x,False
-NEE,"NextEra Energy, Inc.",Utilities,1,12.4%,False,61.0%,True,1/3 proxies,False,-8.8%,False,1.04x,False
-APLD,Applied Digital Corporation,Technology,1,406.6%,True,25.9%,False,1/3 proxies,False,-21.6%,False,0.93x,False
-6962.T,DAISHINKU CORP,Technology,0,10.3%,False,23.2%,False,1/3 proxies,False,0.0%,False,0.69x,False
-BLDP,"Ballard Power Systems, Inc.",Industrials,0,15.4%,False,16.4%,False,1/3 proxies,False,-36.7%,False,0.86x,False
-GHM,Graham Corporation,Industrials,0,13.0%,False,23.6%,False,0/3 proxies,False,7.1%,False,1.13x,False
+TNK,Teekay Tankers Ltd.,Energy,5,63.0%,True,50.3%,True,2/3 proxies,True,30.5%,True,1.24x,True
+EOG,"EOG Resources, Inc.",Energy,4,58.7%,True,62.6%,True,2/3 proxies,True,9.4%,True,0.92x,False
+OXY,Occidental Petroleum Corporatio,Energy,4,53.4%,True,73.3%,True,2/3 proxies,True,13.7%,True,0.85x,False
+UU.L,UNITED UTILITIES GROUP PLC ORD ,Utilities,3,22.9%,True,98.5%,True,2/3 proxies,True,6.5%,False,0.82x,False
+FDS,FactSet Research Systems Inc.,Financial Services,3,6.4%,False,51.4%,True,2/3 proxies,True,30.3%,True,0.93x,False
+EQNR.OL,EQUINOR,Energy,3,37.4%,True,40.1%,True,2/3 proxies,True,nan%,False,0.92x,False
+GOOGL,Alphabet Inc.,Communication Services,3,24.2%,True,60.9%,True,2/3 proxies,True,0.0%,False,0.79x,False
+CRWD,"CrowdStrike Holdings, Inc.",Technology,3,25.8%,True,75.2%,True,0/3 proxies,False,40.7%,True,0.95x,False
+MRVL,"Marvell Technology, Inc.",Technology,3,36.5%,True,52.2%,True,2/3 proxies,True,-20.6%,False,0.63x,False
+BESI.AS,BE Semiconductor Industries N.V,Technology,3,68.7%,True,64.1%,True,2/3 proxies,True,nan%,False,0.95x,False
+NTAP,"NetApp, Inc.",Technology,3,29.9%,True,70.6%,True,0/3 proxies,False,25.3%,True,0.82x,False
+RMD,ResMed Inc.,Healthcare,3,8.6%,False,61.6%,True,2/3 proxies,True,19.7%,True,1.0x,False
+ASMDEE-B.ST,Asmodee Group AB ser. B,Consumer Cyclical,3,20.9%,True,42.7%,True,0/3 proxies,False,22.5%,True,0.71x,False
+SU.TO,SUNCOR ENERGY INC.,Energy,3,45.9%,True,60.4%,True,1/3 proxies,False,24.8%,True,1.07x,False
+TTE.PA,TOTALENERGIES,Energy,3,27.8%,True,37.7%,True,2/3 proxies,True,nan%,False,0.9x,False
+4507.T,SHIONOGI & CO,Healthcare,3,63.7%,True,82.1%,True,2/3 proxies,True,5.1%,False,0.94x,False
+TRMB,Trimble Inc.,Technology,3,11.0%,False,71.8%,True,2/3 proxies,True,16.9%,True,1.13x,False
+XOM,ExxonMobil Holdings Corporation,Energy,3,44.1%,True,29.8%,False,2/3 proxies,True,18.9%,True,0.93x,False
+HOOD,"Robinhood Markets, Inc.",Financial Services,3,32.3%,True,91.9%,True,0/3 proxies,False,13.3%,True,0.87x,False
+G24.DE,Scout24 SE                    N,Communication Services,3,20.0%,False,79.6%,True,2/3 proxies,True,-0.2%,False,1.28x,True
+FRO,Frontline Plc,Energy,3,96.5%,True,63.0%,True,1/3 proxies,False,32.0%,True,1.01x,False
+CINF,Cincinnati Financial Corporatio,Financial Services,2,31.6%,True,31.1%,True,1/3 proxies,False,-1.5%,False,0.72x,False
+COTN.SW,COMET N,Technology,2,5.6%,False,39.0%,True,2/3 proxies,True,-16.4%,False,0.76x,False
+CWC.DE,CEWE Stiftung & Co. KGaA      I,Consumer Cyclical,2,6.0%,False,77.7%,True,1/3 proxies,False,13.7%,True,1.03x,False
+JNJ,Johnson & Johnson,Healthcare,2,6.6%,False,68.1%,True,0/3 proxies,False,17.3%,True,0.84x,False
+GTT.PA,GAZTRANSPORT & TECHNIGAZ,Energy,2,-0.4%,False,96.8%,True,1/3 proxies,False,18.3%,True,0.9x,False
+GXI.DE,Gerresheimer AG               I,Healthcare,2,22.0%,True,23.6%,False,2/3 proxies,True,nan%,False,0.82x,False
+HAG.DE,HENSOLDT AG                   I,Industrials,2,22.2%,True,21.0%,False,2/3 proxies,True,9.6%,False,0.66x,False
+EG,"Everest Group, Ltd.",Financial Services,2,-11.3%,False,15.3%,False,2/3 proxies,True,11.1%,True,0.9x,False
+EL.PA,ESSILORLUXOTTICA,Healthcare,2,5.7%,False,60.0%,True,2/3 proxies,True,nan%,False,1.03x,False
+8306.T,MITSUBISHI UFJ FINANCIAL GROUP ,Financial Services,2,28.8%,True,0.0%,False,1/3 proxies,False,8.6%,True,0.91x,False
+MC.PA,LVMH,Consumer Cyclical,2,-2.9%,False,66.4%,True,3/3 proxies,True,nan%,False,0.94x,False
+EVD.DE,CTS Eventim AG & Co. KGaA     I,Communication Services,2,13.0%,False,25.9%,False,2/3 proxies,True,nan%,False,1.26x,True
+GILD,"Gilead Sciences, Inc.",Healthcare,2,10.2%,False,79.6%,True,0/3 proxies,False,20.9%,True,0.82x,False
+VZ,Verizon Communications Inc.,Communication Services,2,-0.7%,False,59.5%,True,2/3 proxies,True,7.8%,False,0.75x,False
+ZEAL.CO,Zealand Pharma A/S,Healthcare,2,-50.6%,False,100.0%,True,2/3 proxies,True,nan%,False,0.92x,False
+URBN,"Urban Outfitters, Inc.",Consumer Cyclical,2,10.4%,False,36.0%,True,2/3 proxies,True,3.1%,False,1.02x,False
+VH2.DE,Friedrich Vorwerk Group SE    I,Industrials,2,16.5%,False,56.1%,True,2/3 proxies,True,-6.6%,False,0.67x,False
+9433.T,KDDI CORPORATION,Communication Services,2,3.6%,False,42.8%,True,1/3 proxies,False,16.1%,True,0.96x,False
+AAPL,Apple Inc.,Technology,2,16.4%,False,48.7%,True,0/3 proxies,False,13.3%,True,0.81x,False
+ADP,"Automatic Data Processing, Inc.",Technology,2,6.8%,False,48.7%,True,1/3 proxies,False,27.2%,True,0.85x,False
+TNIE.DE,tonies SE                     A,Consumer Cyclical,2,37.5%,True,50.5%,True,0/3 proxies,False,-7.1%,False,1.13x,False
+4063.T,SHIN-ETSU CHEMICAL CO,Basic Materials,2,5.4%,False,33.9%,True,2/3 proxies,True,-20.0%,False,0.81x,False
+TRI.TO,THOMSON REUTERS CORPORATION,Industrials,2,9.5%,False,39.7%,True,3/3 proxies,True,16.8%,False,0.87x,False
+TYL,"Tyler Technologies, Inc.",Technology,2,8.2%,False,47.2%,True,1/3 proxies,False,22.6%,True,1.01x,False
+SPCX,Space Exploration Technologies ,Industrials,2,91.9%,True,51.9%,True,1/3 proxies,False,N/A,False,N/A,False
+SAND.ST,Sandvik AB,Industrials,2,23.7%,True,40.3%,True,1/3 proxies,False,nan%,False,0.94x,False
+SEM.VI,Semperit AG Holding,Industrials,2,13.9%,False,59.0%,True,2/3 proxies,True,nan%,False,0.6x,False
+SLF.TO,SUN LIFE FINANCIAL INC.,Financial Services,2,7.5%,False,40.9%,True,2/3 proxies,True,4.9%,False,1.14x,False
+AUTL,Autolus Therapeutics plc,Healthcare,2,118.4%,True,-74.6%,False,0/3 proxies,False,30.2%,False,1.28x,True
+RI.PA,PERNOD RICARD,Consumer Defensive,2,-13.2%,False,58.4%,True,2/3 proxies,True,nan%,False,1.0x,False
+RPM,RPM International Inc.,Basic Materials,2,7.2%,False,41.4%,True,1/3 proxies,False,-8.1%,False,1.3x,True
+G1A.DE,GEA Group AG                  I,Industrials,2,10.0%,False,37.7%,True,2/3 proxies,True,nan%,False,0.97x,False
+FSLR,"First Solar, Inc.",Technology,2,-3.7%,False,44.0%,True,3/3 proxies,True,-25.5%,False,0.92x,False
+NFLX,"Netflix, Inc.",Communication Services,2,13.4%,False,49.1%,True,3/3 proxies,True,-1.5%,False,0.77x,False
+KRZ.IR,KERRY GROUP PLC,Consumer Defensive,2,-3.7%,False,50.2%,True,2/3 proxies,True,nan%,False,0.88x,False
+BION.SW,BB BIOTECH N,Healthcare,2,116257.7%,True,100.0%,True,1/3 proxies,False,nan%,False,1.01x,False
+BKNG,Booking Holdings Inc. Common St,Consumer Cyclical,2,8.1%,False,87.2%,True,3/3 proxies,True,0.3%,False,0.89x,False
+MET,"MetLife, Inc.",Financial Services,2,10.5%,False,24.0%,False,2/3 proxies,True,11.5%,True,0.83x,False
+MKC,"McCormick & Company, Incorporat",Consumer Defensive,2,16.7%,False,38.9%,True,2/3 proxies,True,7.5%,False,0.75x,False
+MRK,"Merck & Company, Inc.",Healthcare,2,5.1%,False,75.9%,True,0/3 proxies,False,27.9%,True,1.03x,False
+FPE3.DE,FUCHS SE                      N,Basic Materials,2,21.5%,True,34.8%,True,1/3 proxies,False,nan%,False,0.95x,False
+BNTX,BioNTech SE,Healthcare,2,-59.5%,False,76.6%,True,1/3 proxies,False,6.5%,False,1.29x,True
+BSLN.SW,BASILEA N,Healthcare,2,14.5%,False,38.5%,True,1/3 proxies,False,nan%,False,1.59x,True
+BSX,Boston Scientific Corporation,Healthcare,2,7.5%,False,69.2%,True,3/3 proxies,True,-2.2%,False,0.98x,False
+CDP,COPT Defense Properties,Real Estate,2,3.9%,False,58.3%,True,2/3 proxies,True,2.9%,False,0.84x,False
+KSB3.DE,KSB SE & Co. KGaA             I,Industrials,2,1.5%,False,58.0%,True,2/3 proxies,True,nan%,False,0.88x,False
+LEGN,Legend Biotech Corporation,Healthcare,2,51.9%,True,56.6%,True,1/3 proxies,False,-40.0%,False,0.87x,False
+BE,Bloom Energy Corporation,Industrials,2,165.5%,True,31.7%,True,1/3 proxies,False,-23.2%,False,1.03x,False
+2503.T,KIRIN HOLDINGS COMPANY LIMITED,Consumer Defensive,1,9.2%,False,48.4%,True,1/3 proxies,False,2.7%,False,0.87x,False
+AOF.DE,ATOSS Software SE             I,Technology,1,13.0%,False,78.2%,True,1/3 proxies,False,nan%,False,0.8x,False
+ARCT,Arcturus Therapeutics Holdings ,Healthcare,1,-89.5%,False,-195.5%,False,1/3 proxies,False,121.7%,False,1.75x,True
+ULVR.L,UNILEVER PLC ORD 3.5P,Consumer Defensive,1,0.5%,False,47.1%,True,1/3 proxies,False,3.8%,False,0.8x,False
+UMI.BR,UMICORE,Industrials,1,60.1%,True,7.7%,False,1/3 proxies,False,nan%,False,0.65x,False
+9020.T,EAST JAPAN RAILWAY CO,Industrials,1,8.0%,False,36.9%,True,1/3 proxies,False,4.1%,False,0.88x,False
+9022.T,CENTRAL JAPAN RAILWAY CO,Industrials,1,3.0%,False,51.9%,True,1/3 proxies,False,17.1%,False,0.75x,False
+9432.T,NTT INC,Communication Services,1,10.9%,False,27.3%,False,1/3 proxies,False,23.1%,True,0.92x,False
+9532.T,OSAKA GAS CO,Utilities,1,1.5%,False,20.7%,False,1/3 proxies,False,11.4%,True,0.94x,False
+WEC,"WEC Energy Group, Inc.",Utilities,1,2.6%,False,41.9%,True,1/3 proxies,False,-7.9%,False,1.08x,False
+WUW.DE,WUESTENROT+WUERTT.AG O.N.,Financial Services,1,-0.2%,False,26.7%,False,2/3 proxies,True,nan%,False,0.78x,False
+4536.T,SANTEN PHARMACEUTICAL CO,Healthcare,1,0.3%,False,59.1%,True,1/3 proxies,False,-12.1%,False,1.06x,False
+ENR.DE,Siemens Energy AG             N,Industrials,1,17.5%,False,20.8%,False,2/3 proxies,True,-13.7%,False,0.8x,False
+ENX.PA,EURONEXT,Financial Services,1,16.7%,False,100.0%,True,1/3 proxies,False,8.1%,False,0.82x,False
+ETR,Entergy Corporation,Utilities,1,5.9%,False,47.0%,True,0/3 proxies,False,-8.5%,False,0.82x,False
+FAST,Fastenal Company,Industrials,1,14.7%,False,44.7%,True,0/3 proxies,False,6.8%,False,0.88x,False
+DTE.DE,DEUTSCHE TELEKOM AG           N,Communication Services,1,4.3%,False,44.9%,True,1/3 proxies,False,nan%,False,0.81x,False
+ECL,Ecolab Inc.,Basic Materials,1,9.7%,False,44.2%,True,0/3 proxies,False,0.3%,False,0.9x,False
+ED,"Consolidated Edison, Inc.",Utilities,1,13.2%,False,53.4%,True,1/3 proxies,False,-0.6%,False,0.9x,False
+FME.DE,Fresenius Medical Care AG     I,Healthcare,1,1.4%,False,26.4%,False,2/3 proxies,True,nan%,False,0.94x,False
+FRE.DE,Fresenius SE & Co. KGaA       N,Healthcare,1,5.2%,False,25.4%,False,2/3 proxies,True,nan%,False,0.86x,False
+D05.SI,DBS,Financial Services,1,6.8%,False,0.0%,False,1/3 proxies,False,17.2%,True,0.87x,False
+DB1.DE,DEUTSCHE BOERSE AG            N,Financial Services,1,11.7%,False,80.5%,True,1/3 proxies,False,nan%,False,0.91x,False
+DBD,Diebold Nixdorf Incorporated,Technology,1,1.7%,False,26.3%,False,2/3 proxies,True,-23.7%,False,0.86x,False
+DE,Deere & Company,Industrials,1,4.9%,False,25.2%,False,0/3 proxies,False,14.6%,True,1.0x,False
+TKMS.DE,TKMS AG & Co. KGaA            I,Industrials,1,36.7%,True,17.9%,False,0/3 proxies,False,2.2%,False,0.88x,False
+TLX.DE,Talanx AG                     N,Financial Services,1,-21.6%,False,16.9%,False,1/3 proxies,False,13.8%,True,0.92x,False
+AG1.DE,AUTO1 Group SE                I,Consumer Cyclical,1,23.4%,True,12.0%,False,1/3 proxies,False,-20.4%,False,0.95x,False
+AI.PA,AIR LIQUIDE,Basic Materials,1,0.8%,False,64.6%,True,0/3 proxies,False,nan%,False,0.84x,False
+AIR.PA,AIRBUS SE,Industrials,1,27.7%,True,16.3%,False,1/3 proxies,False,nan%,False,0.77x,False
+ALC.SW,ALCON N,Healthcare,1,8.7%,False,57.2%,True,1/3 proxies,False,0.7%,False,0.87x,False
+HAL,Halliburton Company,Energy,1,3.7%,False,15.1%,False,2/3 proxies,True,-3.9%,False,0.92x,False
+HBH.DE,Hornbach Holding AG&Co.KGaA   I,Consumer Cyclical,1,4.9%,False,34.9%,True,1/3 proxies,False,nan%,False,0.84x,False
+IBE.MC,ACCIONES IBERDROLA,Utilities,1,9.8%,False,53.9%,True,0/3 proxies,False,nan%,False,0.8x,False
+ICL,ICL Group Ltd.,Basic Materials,1,16.5%,False,30.6%,True,1/3 proxies,False,6.8%,False,0.94x,False
+IDXX,"IDEXX Laboratories, Inc.",Healthcare,1,9.7%,False,62.4%,True,1/3 proxies,False,-6.2%,False,0.84x,False
+IPN.PA,IPSEN,Healthcare,1,18.7%,False,81.0%,True,1/3 proxies,False,nan%,False,0.74x,False
+IRDM,Iridium Communications Inc,Communication Services,1,3.8%,False,71.9%,True,0/3 proxies,False,8.4%,False,0.52x,False
+ISRG,"Intuitive Surgical, Inc.",Healthcare,1,18.5%,False,66.7%,True,1/3 proxies,False,-2.4%,False,0.86x,False
+JEN.DE,JENOPTIK AG                   N,Technology,1,2.8%,False,34.5%,True,1/3 proxies,False,nan%,False,0.72x,False
+CNR.TO,CANADIAN NATIONAL RAILWAY CO.,Industrials,1,11.3%,False,56.0%,True,1/3 proxies,False,4.9%,False,0.95x,False
+CRSP,CRISPR Therapeutics AG,Healthcare,1,1041.4%,True,0.0%,False,1/3 proxies,False,4.0%,False,0.94x,False
+CUZ,Cousins Properties Incorporated,Real Estate,1,11.6%,False,67.8%,True,1/3 proxies,False,0.4%,False,0.86x,False
+KWS.DE,KWS SAAT SE & Co. KGaA        I,Basic Materials,1,1.1%,False,63.2%,True,1/3 proxies,False,nan%,False,1.01x,False
+LIN,Linde plc,Basic Materials,1,9.3%,False,48.3%,True,0/3 proxies,False,-10.6%,False,0.89x,False
+LMT,Lockheed Martin Corporation,Industrials,1,10.5%,False,11.8%,False,2/3 proxies,True,8.7%,False,0.91x,False
+M12.DE,M1 Kliniken AG                I,Healthcare,1,5.4%,False,14.5%,False,1/3 proxies,False,16.3%,True,0.74x,False
+BMY,Bristol-Myers Squibb Company,Healthcare,1,5.7%,False,71.7%,True,1/3 proxies,False,16.6%,False,0.8x,False
+BNN.DE,BRAIN Biotech AG              N,Basic Materials,1,-16.5%,False,57.3%,True,1/3 proxies,False,-1.8%,False,1.18x,False
+BXP,"BXP, Inc.",Real Estate,1,3.7%,False,56.5%,True,0/3 proxies,False,-1.7%,False,0.92x,False
+CA.PA,CARREFOUR,Consumer Defensive,1,2.0%,False,17.8%,False,2/3 proxies,True,nan%,False,0.78x,False
+MLP.DE,MLP SE                        I,Financial Services,1,14.9%,False,28.5%,False,1/3 proxies,False,nan%,False,1.51x,True
+MO,"Altria Group, Inc.",Consumer Defensive,1,1.2%,False,87.0%,True,1/3 proxies,False,1.6%,False,1.05x,False
+MRU.TO,METRO INC,Consumer Defensive,1,1.4%,False,19.5%,False,1/3 proxies,False,0.4%,False,1.26x,True
+MTB,M&T Bank Corporation,Financial Services,1,6.2%,False,0.0%,False,2/3 proxies,True,0.5%,False,0.94x,False
+BAS.DE,BASF SE                       N,Basic Materials,1,16.4%,False,23.6%,False,2/3 proxies,True,nan%,False,0.84x,False
+BAYN.DE,Bayer AG                      N,Healthcare,1,1.2%,False,60.5%,True,0/3 proxies,False,nan%,False,0.73x,False
+BFSA.DE,BEFESA S.A.                   A,Industrials,1,3.8%,False,45.9%,True,1/3 proxies,False,5.1%,False,1.02x,False
+MTRS.ST,Munters Group AB,Industrials,1,5.5%,False,29.6%,False,1/3 proxies,False,-24.4%,False,1.2x,True
+MUV2.DE,MUENCHENER RUECKVERS.-GES. AG N,Financial Services,1,1.3%,False,35.4%,True,1/3 proxies,False,nan%,False,0.92x,False
+MUX.DE,Mutares SE & Co. KGaA         N,Financial Services,1,7.8%,False,39.2%,True,1/3 proxies,False,nan%,False,0.59x,False
+NEE,"NextEra Energy, Inc.",Utilities,1,12.4%,False,61.0%,True,1/3 proxies,False,-5.8%,False,0.91x,False
+NESN.SW,NESTLE N,Consumer Defensive,1,-2.5%,False,45.7%,True,0/3 proxies,False,-4.9%,False,0.85x,False
+NOC,Northrop Grumman Corporation,Industrials,1,5.1%,False,20.1%,False,2/3 proxies,True,4.4%,False,0.82x,False
+NOVN.SW,NOVARTIS N,Healthcare,1,0.8%,False,75.0%,True,1/3 proxies,False,-7.4%,False,1.07x,False
+NXT.L,NEXT PLC ORD 10P,Consumer Cyclical,1,9.6%,False,44.1%,True,1/3 proxies,False,-0.8%,False,0.92x,False
+OERL.SW,OC OERLIKON N,Industrials,1,0.5%,False,30.9%,True,1/3 proxies,False,nan%,False,1.06x,False
+P4O.DE,PLANOPTIK AG                  I,Technology,1,5.7%,False,83.2%,True,1/3 proxies,False,nan%,False,0.57x,False
+PLD,"Prologis, Inc.",Real Estate,1,12.3%,False,75.5%,True,0/3 proxies,False,-5.5%,False,0.82x,False
+PPG,"PPG Industries, Inc.",Basic Materials,1,7.2%,False,41.2%,True,1/3 proxies,False,-11.6%,False,0.82x,False
+PUB.PA,PUBLICIS GROUPE SA,Communication Services,1,3.0%,False,46.7%,True,1/3 proxies,False,nan%,False,0.91x,False
+SAN.PA,SANOFI,Healthcare,1,14.6%,False,73.5%,True,1/3 proxies,False,nan%,False,0.77x,False
+SIE.DE,SIEMENS AG                    N,Industrials,1,7.3%,False,39.4%,True,0/3 proxies,False,nan%,False,0.95x,False
+SLB,SLB Limited,Energy,1,5.0%,False,17.0%,False,2/3 proxies,True,7.2%,False,0.91x,False
+SNA,Snap-On Incorporated,Industrials,1,4.2%,False,51.8%,True,1/3 proxies,False,-4.2%,False,0.85x,False
+SU.PA,SCHNEIDER ELECTRIC SE,Industrials,1,9.8%,False,42.1%,True,0/3 proxies,False,nan%,False,0.84x,False
+SUBC.OL,SUBSEA 7,Energy,1,9.8%,False,18.4%,False,2/3 proxies,True,nan%,False,0.81x,False
+RR.L,ROLLS-ROYCE HOLDINGS PLC ORD SH,Industrials,1,20.6%,True,28.8%,False,0/3 proxies,False,4.2%,False,0.7x,False
+ASSA-B.ST,ASSA ABLOY AB ser. B,Industrials,1,3.3%,False,43.1%,True,1/3 proxies,False,nan%,False,0.76x,False
+ATM.NZ,The a2 Milk Company Limited Ord,Consumer Defensive,1,6.5%,False,47.7%,True,1/3 proxies,False,1.4%,False,0.77x,False
+ATO,Atmos Energy Corporation,Utilities,1,4.8%,False,62.2%,True,1/3 proxies,False,-4.9%,False,0.78x,False
+RWE.DE,RWE AG                        I,Utilities,1,-9.1%,False,39.0%,True,1/3 proxies,False,nan%,False,0.93x,False
+ABI.BR,AB INBEV,Consumer Defensive,1,11.0%,False,56.5%,True,1/3 proxies,False,nan%,False,0.95x,False
+UNH,UnitedHealth Group Incorporated,Healthcare,1,0.4%,False,19.7%,False,2/3 proxies,True,-6.8%,False,0.8x,False
+UNP,Union Pacific Corporation,Industrials,1,11.5%,False,56.3%,True,1/3 proxies,False,8.0%,False,0.83x,False
+UQA.VI,UNIQA Insurance Group AG,Financial Services,1,12.1%,False,17.5%,False,2/3 proxies,True,nan%,False,0.86x,False
+VACN.SW,VAT GROUP N,Industrials,1,-8.3%,False,61.4%,True,1/3 proxies,False,-8.5%,False,0.87x,False
+VEEV,Veeva Systems Inc.,Healthcare,1,17.6%,False,75.0%,True,1/3 proxies,False,69.9%,False,0.87x,False
+7012.T,KAWASAKI HEAVY INDUSTRIES,Industrials,1,11.3%,False,20.0%,False,3/3 proxies,True,-25.9%,False,0.92x,False
+7751.T,CANON INC,Technology,1,3.6%,False,47.8%,True,1/3 proxies,False,7.2%,False,0.78x,False
+8088.T,IWATANI CORPORATION,Industrials,1,13.1%,False,26.3%,False,1/3 proxies,False,15.6%,True,0.9x,False
+8725.T,MS&AD INS GP HLDGS,Financial Services,1,2.4%,False,28.4%,False,1/3 proxies,False,12.4%,True,0.9x,False
+8801.T,MITSUI FUDOSAN,Real Estate,1,-23.1%,False,24.6%,False,2/3 proxies,True,0.4%,False,0.88x,False
+9007.T,ODAKYU ELECTRIC RAILWAY CO,Industrials,1,3.5%,False,29.3%,False,1/3 proxies,False,10.5%,True,0.88x,False
+VIE.PA,VEOLIA ENVIRON.,Industrials,1,0.7%,False,17.9%,False,2/3 proxies,True,nan%,False,0.88x,False
+VIV.PA,VIVENDI SE,Communication Services,1,-3.4%,False,32.1%,True,1/3 proxies,False,nan%,False,0.95x,False
+8TRA.DE,TRATON SE                     I,Industrials,0,4.1%,False,17.3%,False,1/3 proxies,False,12.4%,False,0.83x,False
+Z74.SI,Singtel,Communication Services,0,4.9%,False,25.6%,False,1/3 proxies,False,2.3%,False,0.74x,False
+BA,Boeing Company (The),Industrials,0,8.0%,False,4.7%,False,0/3 proxies,False,-10.2%,False,0.87x,False
+BA.L,BAE SYSTEMS PLC ORD 2.5P,Industrials,0,7.7%,False,13.3%,False,0/3 proxies,False,11.0%,False,0.92x,False
+BANB.SW,BACHEM N,Healthcare,0,4.3%,False,27.0%,False,1/3 proxies,False,nan%,False,0.77x,False
+TGHN.DE,Logwin AG                     N,Industrials,0,6.5%,False,11.1%,False,1/3 proxies,False,nan%,False,0.36x,False
+TKA.DE,thyssenkrupp AG               I,Industrials,0,7.8%,False,13.5%,False,0/3 proxies,False,nan%,False,0.98x,False
+RBI.VI,Raiffeisen Bank Internat. AG,Financial Services,0,1.8%,False,0.0%,False,1/3 proxies,False,nan%,False,0.88x,False
+REY.MI,REPLY,Technology,0,8.0%,False,17.1%,False,1/3 proxies,False,nan%,False,0.69x,False
+RIO.L,RIO TINTO PLC ORD 10P,Basic Materials,0,15.5%,False,29.8%,False,1/3 proxies,False,-0.6%,False,1.06x,False
+NTLA,"Intellia Therapeutics, Inc.",Healthcare,0,-46.2%,False,0.0%,False,1/3 proxies,False,-22.9%,False,0.73x,False
+BEAM,Beam Therapeutics Inc.,Healthcare,0,-94.2%,False,-161.9%,False,1/3 proxies,False,-29.8%,False,0.88x,False
+COLR.BR,Colruyt Group N.V.,Consumer Defensive,0,1.7%,False,29.4%,False,1/3 proxies,False,nan%,False,0.73x,False
+CS.PA,AXA,Financial Services,0,4.5%,False,14.9%,False,1/3 proxies,False,nan%,False,0.9x,False
+HST,"Host Hotels & Resorts, Inc.",Real Estate,0,3.6%,False,29.2%,False,1/3 proxies,False,-9.8%,False,0.94x,False
+ALV.DE,Allianz SE                    v,Financial Services,0,12.1%,False,25.0%,False,1/3 proxies,False,nan%,False,0.89x,False
+AMG.AS,AMG Critical Materials N.V.,Basic Materials,0,19.1%,False,20.8%,False,1/3 proxies,False,nan%,False,0.73x,False
+CWK.L,CRANSWICK PLC ORD 10P,Consumer Defensive,0,8.7%,False,15.9%,False,1/3 proxies,False,-7.8%,False,0.84x,False
+DBK.DE,DEUTSCHE BANK AG              N,Financial Services,0,8.7%,False,0.0%,False,1/3 proxies,False,nan%,False,0.95x,False
+DEZ.DE,DEUTZ AG                      I,Industrials,0,13.0%,False,21.9%,False,1/3 proxies,False,nan%,False,1.08x,False
+DG.PA,VINCI,Industrials,0,2.3%,False,17.0%,False,1/3 proxies,False,nan%,False,0.99x,False
+DTE,DTE Energy Company,Utilities,0,-1.5%,False,29.3%,False,1/3 proxies,False,-12.5%,False,1.0x,False
+DTG.DE,Daimler Truck Holding AG      N,Industrials,0,5.3%,False,17.5%,False,1/3 proxies,False,5.5%,False,0.99x,False
+VKTX,"Viking Therapeutics, Inc.",Healthcare,0,N/A,False,0.0%,False,1/3 proxies,False,-10.4%,False,0.87x,False
+VOE.VI,voestalpine AG,Basic Materials,0,2.4%,False,20.5%,False,1/3 proxies,False,nan%,False,0.86x,False

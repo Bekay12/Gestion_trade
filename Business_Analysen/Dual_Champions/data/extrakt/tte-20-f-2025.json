@@ -1,0 +1,151 @@
+{
+ "datei": "tte-20-f-2025.txt",
+ "arten": {
+  "cf": {
+   "seite": "F-12",
+   "jahre": [
+    "2025",
+    "2024",
+    "2023"
+   ],
+   "posten": {
+    "operativer_cf": [
+     {
+      "etikett": "CASH FLOW FROM OPERATING ACTIVITIES",
+      "werte": [
+       13357.0,
+       16031.0,
+       21510.0
+      ],
+      "seite": "F-12"
+     }
+    ],
+    "investitionen": [
+     {
+      "etikett": "Intangible assets and property, plant and equipment additions",
+      "werte": [
+       -16953.0,
+       -14909.0,
+       -17722.0
+      ],
+      "seite": "F-12"
+     }
+    ],
+    "dividenden": [
+     {
+      "etikett": "Dividend",
+      "werte": [
+       -7611.0,
+       -7611.0,
+       -311.0
+      ],
+      "seite": "F-13"
+     }
+    ],
+    "rueckkauf": [
+     {
+      "etikett": "– Treasury shares",
+      "werte": [
+       -7714.0,
+       -7995.0,
+       -9167.0
+      ],
+      "seite": "F-12"
+     }
+    ]
+   },
+   "verworfen": [
+    [
+     "investitionen",
+     "Intangible assets and property, plant and equipment additions (Note 7)",
+     "Etikett nicht woertlich auf der Seite"
+    ],
+    [
+     "dividenden",
+     "Dividends paid: – Parent company shareholders",
+     "Etikett nicht woertlich auf der Seite"
+    ]
+   ],
+   "tokens": 1785
+  },
+  "guv": {
+   "seite": "F-9",
+   "jahre": [
+    "2025",
+    "2024",
+    "2023"
+   ],
+   "posten": {
+    "umsatz": [
+     {
+      "etikett": "Sales",
+      "werte": [
+       201196.0,
+       214550.0,
+       237128.0
+      ],
+      "seite": "F-9"
+     }
+    ],
+    "ergebnis": [
+     {
+      "etikett": "CONSOLIDATED NET INCOME",
+      "werte": [
+       13357.0,
+       16031.0,
+       21510.0
+      ],
+      "seite": "F-9"
+     }
+    ],
+    "eps_verwaessert": [
+     {
+      "etikett": "Fully-diluted earnings per share ($)",
+      "werte": [
+       5.78,
+       6.69,
+       8.67
+      ],
+      "seite": "F-9"
+     }
+    ]
+   },
+   "verworfen": [],
+   "tokens": 1139
+  },
+  "bilanz": {
+   "seite": "F-11",
+   "jahre": [
+    "2025",
+    "2024",
+    "2023"
+   ],
+   "posten": {
+    "eigenkapital": [
+     {
+      "etikett": "Total shareholders' equity - TotalEnergies share",
+      "werte": [
+       114883.0,
+       117858.0,
+       116753.0
+      ],
+      "seite": "F-11"
+     }
+    ],
+    "aktien_ausstehend": [
+     {
+      "etikett": "Common shares",
+      "werte": [
+       7059.0,
+       7577.0,
+       7616.0
+      ],
+      "seite": "F-11"
+     }
+    ]
+   },
+   "verworfen": [],
+   "tokens": 1614
+  }
+ }
+}

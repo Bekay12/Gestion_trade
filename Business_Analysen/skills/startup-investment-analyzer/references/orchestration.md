@@ -18,9 +18,9 @@ Three domains for a listed company, four for a startup. They are chosen to be
 
 | # | Domain | Covers | Feeds |
 |---|---|---|---|
-| 1 | Company & governance | Management, board, mandates, ownership / cap table, legal structure, sites | §1 |
-| 2 | Financials & metrics | All figures with page anchors, multi-year series, guidance vs. actual | §2, §3, §6 |
-| 3 | Market & options | Competitors, market size, the strategic options or investment criteria | §5 |
+| 1 | Company & governance | Management, board, mandates, ownership / cap table, directors' dealings (12 months), legal structure, sites | §1 |
+| 2 | Financials & metrics | All figures with page anchors, multi-year series, year-end prices for the historical multiples, guidance vs. actual | §2, §3, §6, §7.3 |
+| 3 | Market & options | Competitors, market size, evidence for the competitive position (market share, two peers' margins and multiples, same year and definition), the strategic options or investment criteria | §1.6, §5, §7.3 |
 | 4 | Traction & financing *(startup only)* | ARR/MRR, cohorts, burn, runway, round history, terms | §2, §5 |
 
 Section 4 (explaining the trajectory), section 6 (flow analysis) and section 7 (verdict)

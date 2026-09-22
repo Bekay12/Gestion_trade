@@ -1,0 +1,305 @@
+{
+ "emittent": "tte",
+ "themen": {
+  "eigentuemer": [
+   {
+    "fakt": "BlackRock ist ein Hauptaktionär mit einem Anteil von 6,5 % am Grundkapital.",
+    "zitat": "TotalEnergies SE’s major shareholders(2) as of December 31, 2025, 2024 and 2023 were as follows: ... BlackRock, Inc.(b) ... 6.5",
+    "zahl": "6.5",
+    "bericht": "tte-urd-2025.txt",
+    "seite": "430",
+    "belegt": true
+   },
+   {
+    "fakt": "Mitarbeiter der Gesellschaft halten Anteile an TotalEnergies.",
+    "zitat": "Company employees(c)",
+    "zahl": "",
+    "bericht": "tte-urd-2025.txt",
+    "seite": "430",
+    "belegt": true
+   },
+   {
+    "fakt": "Der FCPE TotalEnergies Actionnariat France (ein französischer Mitarbeiter-Mutual Fund) hält 5,5 % des Grundkapitals.",
+    "zitat": "of which FCPE TotalEnergies Actionnariat France (French employee mutual fund)",
+    "zahl": "5.5",
+    "bericht": "tte-urd-2025.txt",
+    "seite": "430",
+    "belegt": true
+   },
+   {
+    "fakt": "Andere Aktionäre halten den Rest der Anteile an TotalEnergies.",
+    "zitat": "Other shareholders",
+    "zahl": "",
+    "bericht": "tte-urd-2025.txt",
+    "seite": "430",
+    "belegt": true
+   },
+   {
+    "fakt": "Die Anzahl der Aktien, die das Grundkapital bilden, betrug Ende 2025 über 2 Milliarden.",
+    "zitat": "Number of shares composing the share capital ... 2,206,585,543",
+    "zahl": "2,206,585,543",
+    "bericht": "tte-urd-2025.txt",
+    "seite": "430",
+    "belegt": true
+   },
+   {
+    "fakt": "BlackRock meldete im März 2025 eine Anzahl von Stimmrechten.",
+    "zitat": "Information taken from threshold notification form sent by BlackRock, Inc (“BlackRock”) to TotalEnergies on March 31, 2025",
+    "zahl": "",
+    "bericht": "tte-urd-2025.txt",
+    "seite": "430",
+    "belegt": true
+   }
+  ],
+  "wettbewerb": [
+   {
+    "fakt": "TotalEnergies ist der weltweit führende Händler für Kraftstoffe.",
+    "zitat": "No. 1 worldwide distributor",
+    "zahl": "",
+    "bericht": "tte-urd-2025.txt",
+    "seite": "122",
+    "belegt": true
+   },
+   {
+    "fakt": "TotalEnergies ist in Frankreich und Afrika die Nummer 4 bei der Verteilung von Schmierstoffen.",
+    "zitat": "No. 4 of inland lubricants(b) network in France and in Africa(a)",
+    "zahl": "4",
+    "bericht": "tte-urd-2025.txt",
+    "seite": "122",
+    "belegt": true
+   },
+   {
+    "fakt": "Die Marke TotalEnergies betreibt fast 12.800 Tankstellen weltweit.",
+    "zitat": "network of almost 12,800 service stations",
+    "zahl": "12,800",
+    "bericht": "tte-urd-2025.txt",
+    "seite": "122",
+    "belegt": true
+   },
+   {
+    "fakt": "TotalEnergies überwacht und bedient rund 90.000 Ladepunkte für Elektrofahrzeuge.",
+    "zitat": "close to 90,000 EV charging points(1), all bearing the Company’s brands",
+    "zahl": "90,000",
+    "bericht": "tte-urd-2025.txt",
+    "seite": "122",
+    "belegt": true
+   },
+   {
+    "fakt": "TotalEnergies plant bis 2028 über 300 Multi-Energie-Standorte in Frankreich zu haben.",
+    "zitat": "Over 300 multi-energy sites in France by 2028",
+    "zahl": "300",
+    "bericht": "tte-urd-2025.txt",
+    "seite": "122",
+    "belegt": true
+   },
+   {
+    "fakt": "TotalEnergies ist in Frankreich und Afrika eine führende Kraft bei der Verteilung von Erdölprodukten.",
+    "zitat": "M&S has a strong presence in Western Europe and in Africa, regions in which TotalEnergies is a leading player in the distribution of petroleum products(1).",
+    "zahl": "",
+    "bericht": "tte-urd-2025.txt",
+    "seite": "123",
+    "belegt": true
+   },
+   {
+    "fakt": "TotalEnergies ist führend bei der Anzahl an Tankstellen in Frankreich und Afrika.",
+    "zitat": "As regards its network of service stations, M&S intends to capitalize on its leading position in terms of number of service stations in France and Africa(2), with the aim of:",
+    "zahl": "",
+    "bericht": "tte-urd-2025.txt",
+    "seite": "123",
+    "belegt": true
+   },
+   {
+    "fakt": "TotalEnergies plant bis 2028 über 300 Multi-Energie-Standorte in Frankreich zu haben.",
+    "zitat": "– developing its network of multi-energy service stations in France, with the aim of having over 300 multi-energy sites in France by 2028;",
+    "zahl": "",
+    "bericht": "tte-urd-2025.txt",
+    "seite": "123",
+    "belegt": true
+   },
+   {
+    "fakt": "In China wird der Bedarf an flüssigen Brennstoffen voraussichtlich um 2030 seinen Höhepunkt erreichen.",
+    "zitat": "– in China, demand for liquid fuels could peak around 2030 as a result of increasing electrification:",
+    "zahl": "",
+    "bericht": "tte-urd-2025.txt",
+    "seite": "123",
+    "belegt": true
+   },
+   {
+    "fakt": "Bis 2035 werden mehr als 68 % der neuen leichten Fahrzeuge in China vollständig elektrisch oder Plug-in-Hybride sein.",
+    "zitat": "more than 68% of new light vehicles are likely to be fully electric or plug-in hybrids by 2035.",
+    "zahl": "",
+    "bericht": "tte-urd-2025.txt",
+    "seite": "123",
+    "belegt": true
+   },
+   {
+    "fakt": "TotalEnergies ist in Frankreich der Marktführer für ultraschnelles Laden auf Autobahnen und Schnellstraßen.",
+    "zitat": "With close to 290 stations equipped and close to 1,850 150 kW-or more charging points installed, TotalEnergies is France's number one player in ultra-fast(4) charging on highways and expressways(5).",
+    "zahl": "",
+    "bericht": "tte-urd-2025.txt",
+    "seite": "125",
+    "belegt": true
+   },
+   {
+    "fakt": "TotalEnergies ist der führende Anbieter von Superethanol E85 in Frankreich.",
+    "zitat": "TotalEnergies remains the country's leading distributor of super-ethanol E85 in the country, in number of service stations(2) with more than 950 sites offering this largely renewable fuel.",
+    "zahl": "",
+    "bericht": "tte-urd-2025.txt",
+    "seite": "125",
+    "belegt": true
+   },
+   {
+    "fakt": "Die Waschnetzwerke von TotalEnergies sind das führende Netzwerk Frankreichs.",
+    "zitat": "Non-fuel activities (catering, Bonjour-branded stores, Wash- branded washing centers – France's leading washing network(3) – local partnerships and cards) are growing steadily...",
+    "zahl": "",
+    "bericht": "tte-urd-2025.txt",
+    "seite": "125",
+    "belegt": true
+   },
+   {
+    "fakt": "TotalEnergies betreibt oder überwacht in Europa rund 80.000 Ladepunkte.",
+    "zitat": "At year-end 2025, TotalEnergies operates or supervises approximately 80,000 charging points, through 650 sites, in Europe.",
+    "zahl": "80,000",
+    "bericht": "tte-urd-2025.txt",
+    "seite": "125",
+    "belegt": true
+   },
+   {
+    "fakt": "TotalEnergies betreibt oder überwacht über Frankreich hinweg mehr als 25.000 Ladepunkte.",
+    "zitat": "Nationwide, M&S operated or supervised over 25,000 charging points at year-end 2025.",
+    "zahl": "25,000",
+    "bericht": "tte-urd-2025.txt",
+    "seite": "125",
+    "belegt": true
+   },
+   {
+    "fakt": "TotalEnergies ist der drittgrößte Binnenvertriebler von Schmierstoffen in Europa.",
+    "zitat": "Third-largest inland lubricants distributor(1) in Europe, TotalEnergies offers a wide range of products for motorists...",
+    "zahl": "",
+    "bericht": "tte-urd-2025.txt",
+    "seite": "126",
+    "belegt": true
+   },
+   {
+    "fakt": "In Frankreich belieferte die Gesellschaft 2025 über 1.150 Kunden mit HVO100.",
+    "zitat": "In France, the Company supplied HVO100 to over 1,150 business customers in 2025.",
+    "zahl": "over 1,150",
+    "bericht": "tte-urd-2025.txt",
+    "seite": "126",
+    "belegt": true
+   },
+   {
+    "fakt": "TotalEnergies bietet Zugang zu einem Netz von über einer Million Ladestellen in Europa an.",
+    "zitat": "access to a network of over 1,000,000 charging points in Europe",
+    "zahl": "over 1,000,000",
+    "bericht": "tte-urd-2025.txt",
+    "seite": "126",
+    "belegt": true
+   },
+   {
+    "fakt": "Im Juni 2025 kündigte das Unternehmen an, Volotea mit nachhaltigem Flugkraftstoff zu beliefern.",
+    "zitat": "in June 2025, the Company announced that it would supply Volotea with sustainable aviation fuel at several French airports until 2029",
+    "zahl": "",
+    "bericht": "tte-urd-2025.txt",
+    "seite": "126",
+    "belegt": true
+   },
+   {
+    "fakt": "Im Juli 2024 bestätigten Air France-KLM und TotalEnergies eine Vereinbarung zur Lieferung von bis zu 1,5 Mio. Tonnen SAF.",
+    "zitat": "in July 2024, Air France-KLM and TotalEnergies confirmed their agreement for the supply of up to 1.5 Mt of SAF over 10 years",
+    "zahl": "up to 1.5 Mt",
+    "bericht": "tte-urd-2025.txt",
+    "seite": "126",
+    "belegt": true
+   },
+   {
+    "fakt": "Im Juli 2024 unterzeichneten Airbus und TotalEnergies eine strategische Partnerschaft.",
+    "zitat": "in February 2024, Airbus and TotalEnergies signed a strategic partnership...",
+    "zahl": "",
+    "bericht": "tte-urd-2025.txt",
+    "seite": "126",
+    "belegt": true
+   },
+   {
+    "fakt": "Die SAF-Partnerschaft mit Airbus soll mehr als die Hälfte der Bedürfnisse in Europa decken.",
+    "zitat": "This partnership covers the supply of sustainable aviation fuel to Airbus to meet more than half of its needs in Europe",
+    "zahl": "more than half",
+    "bericht": "tte-urd-2025.txt",
+    "seite": "126",
+    "belegt": true
+   },
+   {
+    "fakt": "Im Jahr 2024 gründeten TotalEnergies und Air Liquide die Joint-Venture TEAL Mobility.",
+    "zitat": "In 2024, TotalEnergies and Air Liquide created TEAL Mobility...",
+    "zahl": "",
+    "bericht": "tte-urd-2025.txt",
+    "seite": "126",
+    "belegt": true
+   },
+   {
+    "fakt": "Ende 2025 betrieb TEAL Mobility 15 Wasserstofftankstellen (im Vergleich zu 8 im Jahr 2024).",
+    "zitat": "At year-end 2025, TEAL Mobility operated 15 hydrogen stations (as opposed to 8 in 2024)",
+    "zahl": "15",
+    "bericht": "tte-urd-2025.txt",
+    "seite": "126",
+    "belegt": true
+   },
+   {
+    "fakt": "In Deutschland hält die Gesellschaft einen Anteil von fast 12,1 % an der H2 Mobility.",
+    "zitat": "In Germany, the Company holds a stake close to 12.1% in the H2 Mobility joint-venture",
+    "zahl": "close to 12.1%",
+    "bericht": "tte-urd-2025.txt",
+    "seite": "126",
+    "belegt": true
+   },
+   {
+    "fakt": "Ende 2025 hielt TotalEnergies einen Anteil von fast 11,6 % an HysetCo.",
+    "zitat": "In France, TotalEnergies held a stake of nearly 11.6% in HysetCo at year-end 2025",
+    "zahl": "nearly 11.6%",
+    "bericht": "tte-urd-2025.txt",
+    "seite": "126",
+    "belegt": true
+   },
+   {
+    "fakt": "Ende 2024 waren über 200 EV-Ladepunkte von der Gesellschaft bei Logistikdepots installiert.",
+    "zitat": "At year-end 2025, over 200 EV charging points were rolled-out by the Company in carriers' depots",
+    "zahl": "over 200",
+    "bericht": "tte-urd-2025.txt",
+    "seite": "126",
+    "belegt": true
+   },
+   {
+    "fakt": "Ende 2024 betrieb TotalEnergies mehr als 200 NGV-Stationen in Europa.",
+    "zitat": "At year-end 2025, TotalEnergies operated more than 200 NGV stations in Europe",
+    "zahl": "more than 200",
+    "bericht": "tte-urd-2025.txt",
+    "seite": "126",
+    "belegt": true
+   },
+   {
+    "fakt": "TotalEnergies ist der führende Petroleum-Produkte-Händler in Afrika mit einem Marktanteil von etwa 15 %.",
+    "zitat": "TotalEnergies is the leading petroleum products retailer in Africa with close to 15%(1) market share in 2025.",
+    "zahl": "15%",
+    "bericht": "tte-urd-2025.txt",
+    "seite": "127",
+    "belegt": true
+   },
+   {
+    "fakt": "In Asien und dem Nahen Osten ist TotalEnergies ein führender Anbieter von Schmierstoffen.",
+    "zitat": "The Lubricants business contributes to the growth of TotalEnergies in Asia-Pacific and the Middle East. The lubricants production capacity in this area is spread among nine operated production sites, including in China, Dubai, and Singapore.",
+    "zahl": "",
+    "bericht": "tte-urd-2025.txt",
+    "seite": "127",
+    "belegt": true
+   },
+   {
+    "fakt": "TotalEnergies ist ein führender Schmierstofflieferant für Great Wall Motors (GWM) seit 2012.",
+    "zitat": "As an example, TotalEnergies has been a leading lubricants supplier to Great Wall Motors (GWM) since 2012, with whom it has also been developing EV fluids since 2020, in China.",
+    "zahl": "",
+    "bericht": "tte-urd-2025.txt",
+    "seite": "127",
+    "belegt": true
+   }
+  ]
+ }
+}

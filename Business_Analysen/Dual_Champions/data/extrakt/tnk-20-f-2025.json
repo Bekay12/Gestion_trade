@@ -1,0 +1,133 @@
+{
+ "datei": "tnk-20-f-2025.txt",
+ "arten": {
+  "cf": {
+   "seite": "F-6",
+   "jahre": [
+    "2025",
+    "2024",
+    "2023"
+   ],
+   "posten": {
+    "operativer_cf": [
+     {
+      "etikett": "Net operating cash flow",
+      "werte": [
+       305894.0,
+       471912.0,
+       631245.0
+      ],
+      "seite": "F-6"
+     }
+    ],
+    "investitionen": [
+     {
+      "etikett": "Expenditures for vessels and equipment",
+      "werte": [
+       -2995.0,
+       -4841.0,
+       -10198.0
+      ],
+      "seite": "F-6"
+     }
+    ],
+    "dividenden": [
+     {
+      "etikett": "Cash dividends paid",
+      "werte": [
+       -68998.0,
+       -102819.0,
+       -59518.0
+      ],
+      "seite": "F-6"
+     }
+    ]
+   },
+   "verworfen": [
+    [
+     "investitionen",
+     "Vessel acquisitions",
+     "Zeile traegt nicht 3 Werte"
+    ]
+   ],
+   "tokens": 1619
+  },
+  "guv": {
+   "seite": "F-3",
+   "jahre": [
+    "2025",
+    "2024",
+    "2023"
+   ],
+   "posten": {
+    "umsatz": [
+     {
+      "etikett": "Total revenues",
+      "werte": [
+       951797.0,
+       1229336.0,
+       1473699.0
+      ],
+      "seite": "F-3"
+     }
+    ],
+    "ergebnis": [
+     {
+      "etikett": "Net income",
+      "werte": [
+       351186.0,
+       403667.0,
+       519890.0
+      ],
+      "seite": "F-3"
+     }
+    ],
+    "eps_verwaessert": [
+     {
+      "etikett": "• Diluted earnings per share",
+      "werte": [
+       10.1,
+       11.63,
+       15.04
+      ],
+      "seite": "F-3"
+     }
+    ],
+    "aktien_verwaessert": [
+     {
+      "etikett": "Weighted-average number of Class A and Class B common shares outstanding",
+      "werte": [
+       34604637.0,
+       34406223.0,
+       34159818.0
+      ],
+      "seite": "F-3"
+     }
+    ]
+   },
+   "verworfen": [],
+   "tokens": 1296
+  },
+  "bilanz": {
+   "seite": "F-5",
+   "jahre": [
+    "2025",
+    "2024"
+   ],
+   "posten": {
+    "eigenkapital": [
+     {
+      "etikett": "Total equity",
+      "werte": [
+       2043616.0,
+       1756550.0
+      ],
+      "seite": "F-5"
+     }
+    ]
+   },
+   "verworfen": [],
+   "tokens": 1293
+  }
+ }
+}

@@ -1,0 +1,13 @@
+\babel@toc {ngerman}{}\relax 
+\contentsline {section}{Rahmen und Methode}{3}{section*.2}%
+\contentsline {section}{\numberline {1}Daimler Truck Holding AG (Xetra: DTG)}{4}{section.1}%
+\contentsline {subsection}{\numberline {1.1}Eigent\"umer}{4}{subsection.1.1}%
+\contentsline {subsection}{\numberline {1.2}Directors' Dealings}{4}{subsection.1.2}%
+\contentsline {subsection}{\numberline {1.3}Wettbewerbsposition}{4}{subsection.1.3}%
+\contentsline {subsection}{\numberline {1.4}Mehrjahresreihe}{4}{subsection.1.4}%
+\contentsline {subsection}{\numberline {1.5}Kursverlauf}{6}{subsection.1.5}%
+\contentsline {subsection}{\numberline {1.6}Verwendung des Zuflusses}{6}{subsection.1.6}%
+\contentsline {subsection}{\numberline {1.7}Analystenkonsens}{7}{subsection.1.7}%
+\contentsline {subsection}{\numberline {1.8}Votum}{7}{subsection.1.8}%
+\contentsline {section}{Quellen}{9}{section*.6}%
+\providecommand \tocbasic@end@toc@file {}\tocbasic@end@toc@file 

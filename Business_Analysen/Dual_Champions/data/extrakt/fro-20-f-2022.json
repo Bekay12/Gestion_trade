@@ -1,0 +1,77 @@
+{
+ "datei": "fro-20-f-2022.txt",
+ "arten": {
+  "cf": {
+   "seite": "F-8",
+   "jahre": [
+    "2022",
+    "2021"
+   ],
+   "posten": {
+    "operativer_cf": [
+     {
+      "etikett": "net cash provided by operating activities",
+      "werte": [
+       385330.0,
+       85261.0
+      ],
+      "seite": "F-8"
+     }
+    ],
+    "investitionen": [
+     {
+      "etikett": "Additions to newbuildings, vessels and equipment",
+      "werte": [
+       -335815.0,
+       -473761.0
+      ],
+      "seite": "F-8"
+     }
+    ],
+    "rueckkauf": [
+     {
+      "etikett": "Purchase of shares",
+      "werte": [
+       10.0,
+       -357.0
+      ],
+      "seite": "F-8"
+     }
+    ],
+    "leasing": [
+     {
+      "etikett": "Repayment of obligations under leases",
+      "werte": [
+       -2123.0,
+       -9284.0
+      ],
+      "seite": "F-8"
+     }
+    ]
+   },
+   "verworfen": [],
+   "tokens": 1277
+  },
+  "bilanz": {
+   "seite": "F-26",
+   "jahre": [
+    "2035",
+    "2031"
+   ],
+   "posten": {
+    "eigenkapital": [
+     {
+      "etikett": "Total equity attributable to the shareholders of the Company",
+      "werte": [
+       1653014.0,
+       -10501.0
+      ],
+      "seite": "F-26"
+     }
+    ]
+   },
+   "verworfen": [],
+   "tokens": 1517
+  }
+ }
+}

@@ -1,0 +1,162 @@
+{
+ "datei": "tte-20-f-2022.txt",
+ "arten": {
+  "cf": {
+   "seite": "F-12",
+   "jahre": [
+    "2022",
+    "2021",
+    "2020"
+   ],
+   "posten": {
+    "operativer_cf": [
+     {
+      "etikett": "CASH FLOW FROM OPERATING ACTIVITIES",
+      "werte": [
+       21044.0,
+       16366.0,
+       -7336.0
+      ],
+      "seite": "F-12"
+     }
+    ],
+    "dividenden": [
+     {
+      "etikett": "Dividend",
+      "werte": [
+       -7899.0,
+       -7899.0,
+       -234.0
+      ],
+      "seite": "F-13"
+     }
+    ],
+    "rueckkauf": [
+     {
+      "etikett": "Purchase of treasury shares",
+      "werte": [
+       -13236044.0,
+       -611.0,
+       -611.0
+      ],
+      "seite": "F-13"
+     }
+    ],
+    "investitionen": [
+     {
+      "etikett": "Intangible assets and property, plant and equipment additions",
+      "werte": [
+       -15690.0,
+       -12343.0,
+       -10764.0
+      ],
+      "seite": "F-12"
+     }
+    ]
+   },
+   "verworfen": [
+    [
+     "investitionen",
+     "Intangible assets and property, plant and equipment additions (Note 7)",
+     "Etikett nicht woertlich auf der Seite"
+    ],
+    [
+     "dividenden",
+     "Dividends paid: – Parent company shareholders",
+     "Etikett nicht woertlich auf der Seite"
+    ]
+   ],
+   "tokens": 1745
+  },
+  "guv": {
+   "seite": "F-9",
+   "jahre": [
+    "2022",
+    "2021",
+    "2020"
+   ],
+   "posten": {
+    "umsatz": [
+     {
+      "etikett": "Sales",
+      "werte": [
+       280999.0,
+       205863.0,
+       140685.0
+      ],
+      "seite": "F-9"
+     }
+    ],
+    "ergebnis": [
+     {
+      "etikett": "CONSOLIDATED NET INCOME",
+      "werte": [
+       21044.0,
+       16366.0,
+       -7336.0
+      ],
+      "seite": "F-9"
+     }
+    ],
+    "eps_verwaessert": [
+     {
+      "etikett": "Fully-diluted earnings per share ($)",
+      "werte": [
+       7.85,
+       5.92,
+       -2.9
+      ],
+      "seite": "F-9"
+     }
+    ],
+    "aktien_verwaessert": [
+     {
+      "etikett": "Fully-diluted earnings per share ($)",
+      "werte": [
+       7.85,
+       5.92,
+       -2.9
+      ],
+      "seite": "F-9"
+     }
+    ]
+   },
+   "verworfen": [],
+   "tokens": 1126
+  },
+  "bilanz": {
+   "seite": "F-11",
+   "jahre": [
+    "2022",
+    "2021",
+    "2020"
+   ],
+   "posten": {
+    "eigenkapital": [
+     {
+      "etikett": "Total shareholders' equity - TotalEnergies share",
+      "werte": [
+       111724.0,
+       111736.0,
+       103702.0
+      ],
+      "seite": "F-11"
+     }
+    ],
+    "aktien_ausstehend": [
+     {
+      "etikett": "Common shares",
+      "werte": [
+       8163.0,
+       8224.0,
+       8267.0
+      ],
+      "seite": "F-11"
+     }
+    ]
+   },
+   "verworfen": [],
+   "tokens": 1595
+  }
+ }
+}

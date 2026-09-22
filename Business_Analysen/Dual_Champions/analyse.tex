@@ -1,0 +1,35 @@
+\documentclass[a4paper,11pt,DIV=12,parskip=half]{scrartcl}
+\input{preamble}
+\input{data/kennzahlen}
+\input{data/pruefung}
+\begin{document}
+\input{sections/00-deckblatt}
+\tableofcontents
+\clearpage
+\input{sections/10-rahmen}
+
+\part{Paar 1: \"Ol und Gas}
+\renewcommand{\teiltitel}{Paar 1: \"Ol und Gas}
+\input{sections/21-oxy}
+\IfFileExists{sections/22-tte.tex}{\input{sections/22-tte}}{}
+\IfFileExists{sections/23-paar1.tex}{\input{sections/23-paar1}}{}
+
+\IfFileExists{sections/31-tnk.tex}{%
+\part{Paar 2: Tankerreedereien}
+\renewcommand{\teiltitel}{Paar 2: Tankerreedereien}
+\input{sections/31-tnk}
+\IfFileExists{sections/32-fro.tex}{\input{sections/32-fro}}{}
+\IfFileExists{sections/33-paar2.tex}{\input{sections/33-paar2}}{}}{}
+
+\IfFileExists{sections/41-gea.tex}{%
+\part{Paar 3: Europ\"aische Ausr\"uster}
+\renewcommand{\teiltitel}{Paar 3: Europ\"aische Ausr\"uster}
+\input{sections/41-gea}
+\IfFileExists{sections/42-besi.tex}{\input{sections/42-besi}}{}
+\IfFileExists{sections/43-paar3.tex}{\input{sections/43-paar3}}{}}{}
+
+\clearpage
+\markright{}
+\IfFileExists{sections/90-luecken.tex}{\input{sections/90-luecken}}{}
+\input{sections/91-quellen}
+\end{document}

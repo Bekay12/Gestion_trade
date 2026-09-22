@@ -1,0 +1,61 @@
+{
+ "quelle": "EQS News, Directors' Dealings (Meldungen des Emittenten nach Art. 19 MAR)",
+ "abgerufen": "2026-09-19",
+ "hinweis": "Einzeln abgerufene Meldungen; Vollstaendigkeit nicht garantiert. Laut Websuche weitere Kaeufe Ende Juni 2026 (Becker, Sterley, Kocherscheidt) - nicht einzeln geprueft.",
+ "geschaefte": [
+  {
+   "datum": "2026-03-27",
+   "person": "Alexander Kocherscheidt",
+   "rolle": "Vorstand",
+   "art": "Kauf",
+   "preis": 59.6,
+   "volumen": 29800.0,
+   "url": "https://www.eqs-news.com/news/directors-dealings/gea-group-aktiengesellschaft-alexander-kocherscheidt-kauf/3e8a2276-1f97-43e2-89d8-6873c82f6fc9_de"
+  },
+  {
+   "datum": "2026-05-12",
+   "person": "Alexander Kocherscheidt",
+   "rolle": "Vorstand",
+   "art": "Kauf",
+   "preis": 55.6,
+   "volumen": 44480.0,
+   "url": "https://www.eqs-news.com/news/directors-dealings/gea-group-aktiengesellschaft-alexander-kocherscheidt-buy/e0bc6692-02ec-4bd6-9560-684785508763_en"
+  },
+  {
+   "datum": "2026-05-13",
+   "person": "Stefan Klebert",
+   "rolle": "Vorstand (Vorsitzender)",
+   "art": "Kauf",
+   "preis": 55.15,
+   "volumen": 275750.0,
+   "url": "https://www.eqs-news.com/de/news/directors-dealings/gea-group-aktiengesellschaft-stefan-klebert-kauf/3061df70-ad91-4638-9ffd-da37e1638f64_de"
+  },
+  {
+   "datum": "2026-05-18",
+   "person": "Klaus Stojentin",
+   "rolle": "Vorstand",
+   "art": "Kauf",
+   "preis": 54.2,
+   "volumen": 94850.0,
+   "url": "https://www.eqs-news.com/news/directors-dealings/gea-group-aktiengesellschaft-klaus-stojentin-buy/185e8e78-8861-4b2e-982d-db3722daa521"
+  },
+  {
+   "datum": "2026-06-03",
+   "person": "Stefan Klebert",
+   "rolle": "Vorstand (Vorsitzender)",
+   "art": "Kauf",
+   "preis": 53.6,
+   "volumen": 321600.0,
+   "url": "https://www.eqs-news.com/news/directors-dealings/gea-group-aktiengesellschaft-stefan-klebert-buy/67934dca-8158-4459-9eae-2ff7da82eb74_en"
+  },
+  {
+   "datum": "2026-06-05",
+   "person": "Peter Lauwers",
+   "rolle": "Vorstand",
+   "art": "Kauf",
+   "preis": 54.9,
+   "volumen": 54900.0,
+   "url": "https://www.eqs-news.com/news/directors-dealings/gea-group-aktiengesellschaft-peter-lauwers-buy/5e4ad2bc-2088-4811-b02b-7178076fbca0_en"
+  }
+ ]
+}

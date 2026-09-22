@@ -1,0 +1,154 @@
+{
+ "datei": "oxy-10-k-2022.txt",
+ "arten": {
+  "cf": {
+   "seite": "67",
+   "jahre": [
+    "2022",
+    "2021",
+    "2020"
+   ],
+   "posten": {
+    "operativer_cf": [
+     {
+      "etikett": "Net cash provided by operating activities",
+      "werte": [
+       16810.0,
+       10434.0,
+       3955.0
+      ],
+      "seite": "67"
+     }
+    ],
+    "investitionen": [
+     {
+      "etikett": "Capital expenditures",
+      "werte": [
+       -4497.0,
+       -2870.0,
+       -2535.0
+      ],
+      "seite": "67"
+     }
+    ],
+    "dividenden": [
+     {
+      "etikett": "Cash dividends paid on common and preferred stock",
+      "werte": [
+       -1184.0,
+       -839.0,
+       -1845.0
+      ],
+      "seite": "67"
+     }
+    ],
+    "rueckkauf": [
+     {
+      "etikett": "Purchases of treasury stock",
+      "werte": [
+       -3099.0,
+       -8.0,
+       -12.0
+      ],
+      "seite": "67"
+     }
+    ]
+   },
+   "verworfen": [],
+   "tokens": 1613
+  },
+  "guv": {
+   "seite": "64",
+   "jahre": [
+    "2022",
+    "2021",
+    "2020"
+   ],
+   "posten": {
+    "umsatz": [
+     {
+      "etikett": "Net sales",
+      "werte": [
+       36634.0,
+       25956.0,
+       17809.0
+      ],
+      "seite": "64"
+     }
+    ],
+    "ergebnis": [
+     {
+      "etikett": "NET INCOME (LOSS) ATTRIBUTABLE TO COMMON STOCKHOLDERS",
+      "werte": [
+       12504.0,
+       1522.0,
+       -15675.0
+      ],
+      "seite": "64"
+     }
+    ],
+    "eps_verwaessert": [
+     {
+      "etikett": "Net income (loss) attributable to common stockholders—diluted",
+      "werte": [
+       12.4,
+       1.58,
+       -17.06
+      ],
+      "seite": "64"
+     }
+    ],
+    "vorzugsdividende": [
+     {
+      "etikett": "Less: Preferred stock dividends",
+      "werte": [
+       -800.0,
+       -800.0,
+       -844.0
+      ],
+      "seite": "64"
+     }
+    ]
+   },
+   "verworfen": [
+    [
+     "eps_verwaessert",
+     "Income (loss) from continuing operations—diluted\nLoss from discontinued operations—diluted\nNet income (loss) attributable to common stockholders—diluted",
+     "Etikett nicht woertlich auf der Seite"
+    ]
+   ],
+   "tokens": 1309
+  },
+  "bilanz": {
+   "seite": "63",
+   "jahre": [
+    "2022",
+    "2021"
+   ],
+   "posten": {
+    "eigenkapital": [
+     {
+      "etikett": "Total stockholders’ equity",
+      "werte": [
+       30085.0,
+       20327.0
+      ],
+      "seite": "63"
+     }
+    ],
+    "vorzugsaktien": [
+     {
+      "etikett": "Less: Preferred stock dividends",
+      "werte": [
+       -800.0,
+       -800.0
+      ],
+      "seite": "64"
+     }
+    ]
+   },
+   "verworfen": [],
+   "tokens": 961
+  }
+ }
+}

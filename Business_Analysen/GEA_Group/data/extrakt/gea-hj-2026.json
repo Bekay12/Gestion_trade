@@ -1,0 +1,98 @@
+{
+ "datei": "gea-hj-2026.txt",
+ "arten": {
+  "cf": {
+   "seite": "35",
+   "jahre": [
+    "2026",
+    "2025"
+   ],
+   "posten": {
+    "operativer_cf": [
+     {
+      "etikett": "Cash flow from operating activities",
+      "werte": [
+       60339.0,
+       64632.0
+      ],
+      "seite": "35"
+     }
+    ],
+    "investitionen": [
+     {
+      "etikett": "Payments to acquire property, plant and equipment, and intangible assets",
+      "werte": [
+       -72391.0,
+       -91630.0
+      ],
+      "seite": "35"
+     }
+    ]
+   },
+   "verworfen": [
+    [
+     "dividenden",
+     "Dividend payments",
+     "Zeile traegt nicht 2 Werte"
+    ],
+    [
+     "rueckkauf",
+     "Payments for acquisition of treasury shares",
+     "Zeile traegt nicht 2 Werte"
+    ]
+   ],
+   "tokens": 1618
+  },
+  "guv": {
+   "seite": "32",
+   "jahre": [
+    "2026",
+    "2025"
+   ],
+   "posten": {
+    "umsatz": [
+     {
+      "etikett": "Revenue",
+      "werte": [
+       2715637.0,
+       2570230.0
+      ],
+      "seite": "32"
+     }
+    ],
+    "ergebnis": [
+     {
+      "etikett": "Profit for the period",
+      "werte": [
+       221511.0,
+       201369.0
+      ],
+      "seite": "32"
+     }
+    ],
+    "eps_verwaessert": [
+     {
+      "etikett": "Basic and diluted earnings per share",
+      "werte": [
+       1.37,
+       1.2
+      ],
+      "seite": "32"
+     }
+    ],
+    "aktien_verwaessert": [
+     {
+      "etikett": "Weighted average number of ordinary shares used to calculate basic and diluted earnings per share (in million shares)",
+      "werte": [
+       162.8,
+       163.5
+      ],
+      "seite": "32"
+     }
+    ]
+   },
+   "verworfen": [],
+   "tokens": 1278
+  }
+ }
+}

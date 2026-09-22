@@ -1,0 +1,126 @@
+% preamble.tex - Praeambel des vertieften Filters Daimler Truck
+% Uebernommen aus Business_Analysen/Dual_Champions, auf einen einzelnen Titel zurueckgebaut.
+\usepackage[T1]{fontenc}
+\usepackage[utf8]{inputenc}
+\usepackage{lmodern}
+\usepackage[ngerman]{babel}
+\usepackage{csquotes}
+\usepackage[patch={item,toc,eqnum}]{microtype}
+\usepackage{xcolor}
+\usepackage{amsmath}
+\usepackage{amssymb}
+\usepackage{booktabs}
+\usepackage{longtable}
+\usepackage{array}
+\usepackage{tabularx}
+\usepackage{siunitx}
+\usepackage{graphicx}
+\usepackage{tikz}
+\usepackage{placeins}
+\usepackage{needspace}
+\usepackage[hidelinks]{hyperref}
+\usepackage{url}
+
+\areaset[current]{463.07pt}{636.6pt}
+\clubpenalty=10000
+\widowpenalty=10000
+\displaywidowpenalty=10000
+\usepackage[para]{footmisc}
+
+\usepackage[automark]{scrlayer-scrpage}
+\pagestyle{scrheadings}
+\renewcommand{\sectionmark}[1]{\markright{\thesection\quad #1}}
+\clearpairofpagestyles
+\setkomafont{pagehead}{\normalfont\small}
+\ihead{\rightmark}
+\ohead{Daimler Truck}
+\KOMAoptions{headsepline=true}
+\cfoot*{\pagemark}
+\setcounter{tocdepth}{2}
+
+\sisetup{
+  output-decimal-marker = {,}, group-separator = {.}, group-minimum-digits = 4,
+  group-digits = integer, detect-weight = true, detect-family = true
+}
+
+\definecolor{quellenlink}{RGB}{20,60,120}
+\newcommand{\quellensprung}[2]{\hyperref[#1]{\textcolor{quellenlink}{#2}}}
+\newcommand{\kurzDaimlerA}{Daimler Truck, Annual Report 2025}
+\newcommand{\kurzDaimlerB}{Daimler Truck, Annual Report 2024}
+\newcommand{\kurzDaimlerC}{Daimler Truck, Annual Report 2023}
+\newcommand{\kurzDaimlerD}{Daimler Truck, Annual Report 2022}
+\newcommand{\Q}[2]{\footnote{\quellensprung{quelle:#1}{\csname kurz#1\endcsname}, S.~#2.}}
+\newcommand{\QW}[3]{\footnote{\quellensprung{#2}{#1} (abgerufen am #3).}}
+
+\newcommand{\Mio}[2]{#1\,Mio.\,#2}
+\newcommand{\je}[2]{#1\,#2}
+\newcommand{\Pz}[1]{#1\,\%}
+
+\definecolor{vdrot}{RGB}{155,25,30}
+\newcommand{\vd}[1]{{\color{vdrot}#1}}
+\definecolor{bkblau}{RGB}{20,60,150}
+\newcommand{\bk}[1]{{\color{bkblau}#1}}
+
+\makeatletter
+\newcommand{\tabellenkoerper}[1]{\@@input #1.tex }
+\makeatother
+\newcommand{\annahme}[1]{%
+  \par\medskip\noindent\fbox{\parbox{0.97\linewidth}{\small\textbf{Annahme:} #1}}\par\medskip}
+
+\newcommand{\reihentabelle}{%
+\begin{table}[htbp]\centering\small
+\caption{Mehrjahresreihe 2022--2025 (Mio.~EUR; Marge und ROCE in \%, EPS in EUR, Absatz in
+Tsd.\ Fahrzeugen). \enquote{Ind.} = Industrial Business (ohne Financial Services). Freier
+Zufluss ist der von Daimler Truck selbst ausgewiesene \enquote{Free cash flow of the
+Industrial Business}, nicht selbst gerechnet (Methode S.~\pageref{sec:methode}).}\label{tab:reihe}
+\begin{tabular}{@{}lrrrrrrrl@{}}\toprule
+Jahr & Umsatz Ind. & EBIT ber. & Marge ber. Ind. & ROCE Ind. & FCF Ind. & EPS & Absatz & Beleg\\\midrule
+\tabellenkoerper{data/reihe}
+\bottomrule\end{tabular}\end{table}}
+
+\newcommand{\kurstabelle}{%
+\begin{table}[htbp]\centering\small
+\caption{Absatz gegen Kurs: beide als Ver\"anderung zum Vorjahr. Schlusskurse zum
+Jahresende, Yahoo Finance.}\label{tab:kurs}
+\begin{tabular}{@{}lrrrr@{}}\toprule
+Jahr & Absatz (Tsd.\ Fzg.) & Ver\"and.\ in \% & Kurs Jahresende (EUR) & Ver\"and.\ in \%\\\midrule
+\tabellenkoerper{data/kurs}
+\bottomrule\end{tabular}\end{table}}
+
+\newcommand{\kgvtabelle}{%
+\begin{table}[htbp]\centering\small
+\caption{Kurs-Gewinn-Verh\"altnis zum Jahresende.}\label{tab:kgv}
+\begin{tabular}{@{}lrrr@{}}\toprule
+Jahr & Kurs Jahresende (EUR) & EPS (EUR) & KGV\\\midrule
+\tabellenkoerper{data/kgv}
+\bottomrule\end{tabular}\end{table}}
+
+\newcommand{\ausschuettungstabelle}{%
+\begin{table}[htbp]\centering\small
+\caption{Verwendung des freien Zuflusses der Industrial Business (Mio.~EUR).}\label{tab:ausschuettung}
+\begin{tabular}{@{}lrrrr@{}}\toprule
+Jahr & Dividende & R\"uckkauf & Freier Zufluss Ind. & Anteil\\\midrule
+\tabellenkoerper{data/ausschuettung}
+\bottomrule\end{tabular}\end{table}}
+
+\newcommand{\schwellentabelle}{%
+\begin{table}[htbp]\centering\small
+\caption{Schwellenkurs je Aktie (EUR): Kurs, zu dem der interne Zinsfuss die H\"urde von
+\Pz{\Huerde} erreicht; letzte Spalte bei \Pz{\HuerdeLang}. Zufluss konstant, Endwert =
+Buchwert des Eigenkapitals 2025.}\label{tab:schwelle}
+\begin{tabular}{@{}lrrrrr@{}}\toprule
+Szenario & Zufluss (Mio.) & 5 Jahre & 10 Jahre & 15 Jahre & 10 J., \Pz{\HuerdeLang}\\\midrule
+\tabellenkoerper{data/schwelle}
+\bottomrule\end{tabular}\end{table}}
+
+\newcommand{\umkehrtabellen}{%
+\begin{table}[htbp]\centering\small
+\caption{Umkehrungen zum heutigen Kurs bei \Pz{\Huerde}: erforderliches Wachstum des freien
+Zuflusses p.\,a.\ (oben) und erforderlicher Endwert als Vielfaches des Buchwerts
+(unten).}\label{tab:umkehr}
+\begin{tabular}{@{}lrrr@{}}\toprule
+Szenario & 5 Jahre & 10 Jahre & 15 Jahre\\\midrule
+\tabellenkoerper{data/wachstum}
+\midrule
+\tabellenkoerper{data/endwert}
+\bottomrule\end{tabular}\end{table}}

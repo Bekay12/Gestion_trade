@@ -1,0 +1,38 @@
+{
+ "emittent": "oxy",
+ "zeitraum": [
+  "2025-09-19",
+  "2026-09-19"
+ ],
+ "abgerufen": "2026-09-19",
+ "geschaefte": [
+  {
+   "datum": "2025-12-16",
+   "person": "KLESSE WILLIAM R",
+   "rolle": "Director",
+   "art": "Kauf",
+   "stueck": 5000.0,
+   "preis": 38.98,
+   "volumen": 194900.0,
+   "plan_10b5_1": false,
+   "url": "https://www.sec.gov/Archives/edgar/data/797468/000162828025057697/wk-form4_1766008806.xml"
+  },
+  {
+   "datum": "2026-06-23",
+   "person": "Jackson Richard A.",
+   "rolle": "President and CEO",
+   "art": "Kauf",
+   "stueck": 4770.0,
+   "preis": 52.38,
+   "volumen": 249852.6,
+   "plan_10b5_1": false,
+   "url": "https://www.sec.gov/Archives/edgar/data/797468/000162828026045313/wk-form4_1782342238.xml"
+  }
+ ],
+ "sonstige_codes": {
+  "A": 26,
+  "F": 21,
+  "G": 7,
+  "J": 2
+ }
+}

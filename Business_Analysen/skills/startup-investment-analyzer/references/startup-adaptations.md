@@ -37,7 +37,18 @@ than percentages — a 1x participating preference changes who gets paid.
 
 1.3 becomes **traction**: ARR/MRR trajectory, growth rate, and the retention numbers.
 1.4/1.5 become **existing investors and what they signalled** — did the lead follow on in
-the last round? Non-participation by an insider is information; note it factually.
+the last round? Non-participation by an insider is information; note it factually. This
+is also where the listed company's directors' dealings (1.2) land: a private company has
+no trade register, so insider behaviour shows only as follow-on or its absence.
+
+1.6 keeps its table and the rule that each claimed advantage names its figure; the
+evidence shifts to retention cohorts, gross margin against named competitors, and the
+patents or licences themselves. Section 5's **Competitive advantage** criterion then
+judges what 1.6 established, rather than restating it.
+
+The 7.3 multiple-in-context table has no own history to draw on; it becomes the round's
+valuation multiple against comparable rounds, which section 5 already requires under
+**Round terms**. Do not build it twice.
 
 ### 2. Financial analysis
 

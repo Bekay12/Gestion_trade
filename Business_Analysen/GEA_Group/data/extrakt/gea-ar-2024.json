@@ -1,0 +1,87 @@
+{
+ "datei": "gea-ar-2024.txt",
+ "arten": {
+  "cf": {
+   "seite": "310",
+   "jahre": [
+    "2024",
+    "2023"
+   ],
+   "posten": {
+    "operativer_cf": [
+     {
+      "etikett": "Cash flow from operating activities",
+      "werte": [
+       710500.0,
+       537502.0
+      ],
+      "seite": "310"
+     }
+    ],
+    "investitionen": [
+     {
+      "etikett": "Payments to acquire property, plant and equipment, and intangible assets",
+      "werte": [
+       -237105.0,
+       -228362.0
+      ],
+      "seite": "310"
+     }
+    ]
+   },
+   "verworfen": [],
+   "tokens": 1711
+  },
+  "guv": {
+   "seite": "308",
+   "jahre": [
+    "2024",
+    "2023"
+   ],
+   "posten": {
+    "umsatz": [
+     {
+      "etikett": "Revenue",
+      "werte": [
+       7.1,
+       5422129.0
+      ],
+      "seite": "308"
+     }
+    ],
+    "ergebnis": [
+     {
+      "etikett": "Profit for the period",
+      "werte": [
+       385026.0,
+       392762.0
+      ],
+      "seite": "308"
+     }
+    ],
+    "eps_verwaessert": [
+     {
+      "etikett": "Basic and diluted earnings per share",
+      "werte": [
+       2.38,
+       2.35
+      ],
+      "seite": "308"
+     }
+    ],
+    "aktien_verwaessert": [
+     {
+      "etikett": "Weighted average number of ordinary shares used to calculate basic and diluted earnings per share (million)",
+      "werte": [
+       167.6,
+       172.2
+      ],
+      "seite": "308"
+     }
+    ]
+   },
+   "verworfen": [],
+   "tokens": 1257
+  }
+ }
+}

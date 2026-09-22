@@ -1,0 +1,133 @@
+{
+ "datei": "oxy-10-k-2016.txt",
+ "arten": {
+  "cf": {
+   "seite": "45",
+   "jahre": [
+    "2016",
+    "2015",
+    "2014"
+   ],
+   "posten": {
+    "operativer_cf": [
+     {
+      "etikett": "net cash provided by operating activities",
+      "werte": [
+       3383.0,
+       3351.0,
+       11068.0
+      ],
+      "seite": "45"
+     }
+    ],
+    "investitionen": [
+     {
+      "etikett": "Capital expenditures",
+      "werte": [
+       -2717.0,
+       -5272.0,
+       -8930.0
+      ],
+      "seite": "45"
+     }
+    ],
+    "dividenden": [
+     {
+      "etikett": "Cash dividends paid",
+      "werte": [
+       -2309.0,
+       -2264.0,
+       -2210.0
+      ],
+      "seite": "45"
+     }
+    ],
+    "rueckkauf": [
+     {
+      "etikett": "Purchases of treasury stock",
+      "werte": [
+       -22.0,
+       -593.0,
+       -2500.0
+      ],
+      "seite": "45"
+     }
+    ]
+   },
+   "verworfen": [],
+   "tokens": 1435
+  },
+  "guv": {
+   "seite": "42",
+   "jahre": [
+    "2016",
+    "2015",
+    "2014"
+   ],
+   "posten": {
+    "eps_verwaessert": [
+     {
+      "etikett": "DILUTED EARNINGS (LOSS) PER COMMON SHARE",
+      "werte": [
+       -1.31,
+       -10.64,
+       -0.18
+      ],
+      "seite": "42"
+     }
+    ],
+    "umsatz": [
+     {
+      "etikett": "Net sales",
+      "werte": [
+       10090.0,
+       12480.0,
+       19312.0
+      ],
+      "seite": "42"
+     }
+    ],
+    "ergebnis": [
+     {
+      "etikett": "NET INCOME (LOSS) ATTRIBUTABLE TO COMMON STOCK",
+      "werte": [
+       -574.0,
+       -7829.0,
+       616.0
+      ],
+      "seite": "42"
+     }
+    ]
+   },
+   "verworfen": [
+    [
+     "aktien_verwaessert",
+     "(attributable to common stock)",
+     "Etikett passt nicht zum Posten"
+    ]
+   ],
+   "tokens": 1171
+  },
+  "bilanz": {
+   "seite": "41",
+   "jahre": [
+    "2016",
+    "2015"
+   ],
+   "posten": {
+    "eigenkapital": [
+     {
+      "etikett": "Total stockholders' equity",
+      "werte": [
+       21497.0,
+       24350.0
+      ],
+      "seite": "41"
+     }
+    ]
+   },
+   "verworfen": [],
+   "tokens": 702
+  }
+ }
+}

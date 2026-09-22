@@ -1,0 +1,71 @@
+\section*{Rahmen}
+\addcontentsline{toc}{section}{Rahmen}
+\markright{Rahmen}
+\label{sec:rahmen}
+
+\subsection*{Frage}
+
+Lohnt der Einstieg in einen der sechs Titel zum heutigen Kurs, und bis zu welchem
+Kurs? Die Titel stammen aus dem kombinierten Filter vom 19.~September 2026, der
+die \FilterTitel{} von Finanzzeitschriften zwischen Juni und September 2026 zum Kauf
+empfohlenen Titel nach Wachstums- und Sicherheitskriterien bewertet hat. Sie
+erf\"ullen beide Kriterienb\"undel zugleich (\enquote{Dual Champion}). Gew\"ahlt
+wurden die beiden punktbesten Titel, dazu je der beste Titel aus einer anderen
+Branche und ein Branchenpartner, damit jeder Titel gegen einen vergleichbaren
+gelesen werden kann.
+
+\bk{Die Auswahl hat einen eingebauten Fehler, und er ist der Grund f\"ur die
+Paarbildung: Das Wachstumskriterium des Filters misst die Umsatzver\"anderung
+gegen\"uber dem Vorjahr. In einer zyklischen Branche belohnt es den Gipfel des
+Zyklus. Sechs der acht punktbesten Titel waren \"Ol- und Gaswerte. Jede Rechnung
+dieses Dokuments stellt deshalb die Frage, an welcher Stelle seiner eigenen
+Geschichte ein Titel heute steht.}
+
+\subsection*{Umfang}
+
+Vertiefter Filter, kein Vollbericht. Je Titel: Eigent\"umer und Directors'
+Dealings der letzten zw\"olf Monate (Teil~1.2 des Musters), Wettbewerbsposition
+(1.6), Mehrjahresreihe des freien Mittelzuflusses (2), Kursverlauf (4) und
+Votum mit Schwellenkurs, erforderlichem Wachstum, erforderlichem Endwert und
+Multiple im Kontext (7). Nicht bearbeitet: Organe (1.1), Analystenkonsens (1.4),
+strategische Ma{\ss}nahmen (3) und Handlungsoptionen (5). Ein Votum aus diesem
+Filter ist deshalb ein Votum zur Bewertung, nicht zur Strategie.
+
+\subsection*{Methode in einem Absatz}
+\label{sec:methode}
+
+Die Kapitalflussrechnungen wurden aus den gedruckten Seiten der Jahresberichte
+gelesen, jede Seite \"uber ihre gedruckte Seitenzahl. Ein lokales Sprachmodell
+benannte die Zeilen, Code las die Werte; \GeprueftAnzahl{} Werte wurden gegen den Text
+der zitierten Seite gepr\"uft, keiner fehlt. Wo zwei Berichte dasselbe Jahr
+drucken, m\"ussen die Lesungen \"ubereinstimmen; Abweichungen sind entweder als
+Anpassung des sp\"ateren Berichts erkl\"art oder brechen den Bau ab. F\"ur die
+vier SEC-Emittenten wurde jede Reihe zus\"atzlich gegen die XBRL-Daten der SEC
+gehalten; Jahre ohne lesbaren Abschluss sind aus XBRL gef\"ullt und in den
+Tabellen als Sekund\"arquelle ausgewiesen.
+
+\annahme{Freier Mittelzufluss = operativer Mittelzufluss abz\"uglich
+Investitionen in Sachanlagen, Schiffe, \"Ol- und Gasverm\"ogen und immaterielle
+Werte, abz\"uglich der Tilgung von Leasingverbindlichkeiten (IFRS-Bilanzierer)
+und der Vorzugsdividende (Occidental). Finanzanlagen, Unternehmenserwerbe und
+Verkaufserl\"ose bleiben au{\ss}en vor. Bei Reedereien z\"ahlen auch Schiffsk\"aufe
+zu den Investitionen, weil die Flotte altert und ersetzt werden muss.}
+
+\annahme{Anlegerrechnung je Titel, unternehmensweit: Einstieg zum heutigen
+B\"orsenwert, j\"ahrlicher Zufluss in H\"ohe des freien Mittelzuflusses,
+konstant gehalten, Endwert in H\"ohe des Buchwerts des Stammeigenkapitals 2025.
+Die Rechnung ist vor Steuern des Anlegers und prognostiziert nichts: Sie h\"alt
+das Niveau fest und fragt, welcher Preis dazu passt und welches Wachstum der
+heutige Preis bereits enth\"alt.}
+
+\annahme{H\"urde \Pz{\Huerde}: die annualisierte Zehnjahresrendite des MSCI
+World einschlie{\ss}lich Dividenden\QW{MSCI World Index (USD), Factsheet}{quelle:msci}{19.09.2026},
+also die Rendite der Alternative, die ein Anleger ohne Einzeltitelwahl h\"atte.
+Sie ist hoch, weil das Jahrzehnt au{\ss}ergew\"ohnlich war; jede Schwellentabelle
+zeigt deshalb eine Spalte mit \Pz{\HuerdeLang}, der Rendite desselben Index seit
+Ende 1987 (gleiche Quelle).}
+
+\bk{Drei Szenarien je Titel, alle aus der eigenen Reihe des Unternehmens: der
+Median (Basis), das 25.~Perzentil (pessimistisch) und das Gesch\"aftsjahr 2025.
+Keines ist eine Prognose. Liegt 2025 hoch in der eigenen Reihe, ist die Basis
+das ehrlichere Szenario; liegt es tief, das Gesch\"aftsjahr.}

@@ -1,0 +1,32 @@
+{
+ "emittent": "tnk",
+ "themen": {
+  "eigentuemer": [
+   {
+    "fakt": "Teekay Corporation kontrolliert alle ausstehenden Class B-Aktien und 6.018.317 Class A-Aktien.",
+    "zitat": "Teekay Corporation currently controls all of our outstanding Class B common shares and 6,018,317 Class A common shares.",
+    "zahl": "",
+    "bericht": "tnk-20-f-2025.txt",
+    "seite": "66",
+    "belegt": true
+   },
+   {
+    "fakt": "Die Teekay Corporation hält insgesamt 20,1 % der Class A-Aktien und 100 % der Class B-Aktien.",
+    "zitat": "Teekay Corporation (1) 6,018,317 20.1% 4,625,997 100.0%",
+    "zahl": "",
+    "bericht": "tnk-20-f-2025.txt",
+    "seite": "66",
+    "belegt": true
+   },
+   {
+    "fakt": "Dimensional Fund Advisors LP hält 6,1 % der Class A-Aktien.",
+    "zitat": "Dimensional Fund Advisors LP (2) 1,835,312 6.1% — —",
+    "zahl": "",
+    "bericht": "tnk-20-f-2025.txt",
+    "seite": "66",
+    "belegt": true
+   }
+  ],
+  "wettbewerb": []
+ }
+}

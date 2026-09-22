@@ -1,0 +1,632 @@
+{
+ "gea": {
+  "operativer_cf": {
+   "2019": {
+    "wert": 483.229,
+    "roh": 483229.0,
+    "bericht": "gea-ar-2020",
+    "seite": "126",
+    "etikett": "Cash flow from operating activities of continued operations",
+    "lesungen": 1,
+    "abweichend": [],
+    "summe": false
+   },
+   "2020": {
+    "wert": 717.843,
+    "roh": 717843.0,
+    "bericht": "gea-ar-2021",
+    "seite": "148",
+    "etikett": "Cash flow from operating activities of continued operations",
+    "lesungen": 2,
+    "abweichend": [],
+    "summe": false
+   },
+   "2021": {
+    "wert": 675.869,
+    "roh": 675869.0,
+    "bericht": "gea-ar-2022",
+    "seite": "165",
+    "etikett": "Cash flow from operating activities of continued operations",
+    "lesungen": 2,
+    "abweichend": [],
+    "summe": false
+   },
+   "2022": {
+    "wert": 471.613,
+    "roh": 471613.0,
+    "bericht": "gea-ar-2023",
+    "seite": "177",
+    "etikett": "Cash flow from operating activities of continued operations",
+    "lesungen": 2,
+    "abweichend": [],
+    "summe": false
+   },
+   "2023": {
+    "wert": 537.502,
+    "roh": 537502.0,
+    "bericht": "gea-ar-2024",
+    "seite": "310",
+    "etikett": "Cash flow from operating activities of continued operations",
+    "lesungen": 2,
+    "abweichend": [],
+    "summe": false
+   },
+   "2024": {
+    "wert": 710.5,
+    "roh": 710500.0,
+    "bericht": "gea-ar-2025",
+    "seite": "315",
+    "etikett": "Cash flow from operating activities of continued operations",
+    "lesungen": 2,
+    "abweichend": [],
+    "summe": false
+   },
+   "2025": {
+    "wert": 726.657,
+    "roh": 726657.0,
+    "bericht": "gea-ar-2025",
+    "seite": "315",
+    "etikett": "Cash flow from operating activities of continued operations",
+    "lesungen": 1,
+    "abweichend": [],
+    "summe": false
+   }
+  },
+  "investitionen": {
+   "2019": {
+    "wert": -136.962,
+    "roh": -136962.0,
+    "bericht": "gea-ar-2020",
+    "seite": "126",
+    "etikett": "Payments to acquire property, plant and equipment, and intangible assets",
+    "lesungen": 1,
+    "abweichend": [],
+    "summe": false
+   },
+   "2020": {
+    "wert": -97.584,
+    "roh": -97584.0,
+    "bericht": "gea-ar-2021",
+    "seite": "148",
+    "etikett": "Payments to acquire property, plant and equipment, and intangible assets",
+    "lesungen": 2,
+    "abweichend": [],
+    "summe": false
+   },
+   "2021": {
+    "wert": -129.854,
+    "roh": -129854.0,
+    "bericht": "gea-ar-2022",
+    "seite": "165",
+    "etikett": "Payments to acquire property, plant and equipment, and intangible assets",
+    "lesungen": 2,
+    "abweichend": [],
+    "summe": false
+   },
+   "2022": {
+    "wert": -203.802,
+    "roh": -203802.0,
+    "bericht": "gea-ar-2023",
+    "seite": "177",
+    "etikett": "Payments to acquire property, plant and equipment, and intangible assets",
+    "lesungen": 2,
+    "abweichend": [],
+    "summe": false
+   },
+   "2023": {
+    "wert": -228.362,
+    "roh": -228362.0,
+    "bericht": "gea-ar-2024",
+    "seite": "310",
+    "etikett": "Payments to acquire property, plant and equipment, and intangible assets",
+    "lesungen": 2,
+    "abweichend": [],
+    "summe": false
+   },
+   "2024": {
+    "wert": -237.105,
+    "roh": -237105.0,
+    "bericht": "gea-ar-2025",
+    "seite": "315",
+    "etikett": "Payments to acquire property, plant and equipment, and intangible assets",
+    "lesungen": 2,
+    "abweichend": [],
+    "summe": false
+   },
+   "2025": {
+    "wert": -255.292,
+    "roh": -255292.0,
+    "bericht": "gea-ar-2025",
+    "seite": "315",
+    "etikett": "Payments to acquire property, plant and equipment, and intangible assets",
+    "lesungen": 1,
+    "abweichend": [],
+    "summe": false
+   }
+  },
+  "leasing": {
+   "2019": {
+    "wert": -63.483,
+    "roh": -63483.0,
+    "bericht": "gea-ar-2020",
+    "seite": "126",
+    "etikett": "Payments from lease liabilities",
+    "lesungen": 1,
+    "abweichend": [],
+    "summe": false
+   },
+   "2020": {
+    "wert": -62.362,
+    "roh": -62362.0,
+    "bericht": "gea-ar-2021",
+    "seite": "148",
+    "etikett": "Payments from lease liabilities",
+    "lesungen": 2,
+    "abweichend": [],
+    "summe": false
+   },
+   "2021": {
+    "wert": -61.87,
+    "roh": -61870.0,
+    "bericht": "gea-ar-2022",
+    "seite": "165",
+    "etikett": "Payments from lease liabilities",
+    "lesungen": 2,
+    "abweichend": [],
+    "summe": false
+   },
+   "2022": {
+    "wert": -63.682,
+    "roh": -63682.0,
+    "bericht": "gea-ar-2023",
+    "seite": "177",
+    "etikett": "Payments from lease liabilities",
+    "lesungen": 2,
+    "abweichend": [],
+    "summe": false
+   },
+   "2023": {
+    "wert": -64.033,
+    "roh": -64033.0,
+    "bericht": "gea-ar-2024",
+    "seite": "310",
+    "etikett": "Payments from lease liabilities",
+    "lesungen": 2,
+    "abweichend": [],
+    "summe": false
+   },
+   "2024": {
+    "wert": -68.267,
+    "roh": -68267.0,
+    "bericht": "gea-ar-2025",
+    "seite": "315",
+    "etikett": "Payments from lease liabilities",
+    "lesungen": 2,
+    "abweichend": [],
+    "summe": false
+   },
+   "2025": {
+    "wert": -71.015,
+    "roh": -71015.0,
+    "bericht": "gea-ar-2025",
+    "seite": "315",
+    "etikett": "Payments from lease liabilities",
+    "lesungen": 1,
+    "abweichend": [],
+    "summe": false
+   }
+  },
+  "dividenden": {
+   "2019": {
+    "wert": -153.418,
+    "roh": -153418.0,
+    "bericht": "gea-ar-2020",
+    "seite": "126",
+    "etikett": "Dividend payments",
+    "lesungen": 1,
+    "abweichend": [],
+    "summe": false
+   },
+   "2020": {
+    "wert": -153.418,
+    "roh": -153418.0,
+    "bericht": "gea-ar-2021",
+    "seite": "148",
+    "etikett": "Dividend payments",
+    "lesungen": 2,
+    "abweichend": [],
+    "summe": false
+   },
+   "2021": {
+    "wert": -153.418,
+    "roh": -153418.0,
+    "bericht": "gea-ar-2022",
+    "seite": "165",
+    "etikett": "Dividend payments",
+    "lesungen": 2,
+    "abweichend": [],
+    "summe": false
+   },
+   "2022": {
+    "wert": -159.59,
+    "roh": -159590.0,
+    "bericht": "gea-ar-2023",
+    "seite": "177",
+    "etikett": "Dividend payments",
+    "lesungen": 2,
+    "abweichend": [],
+    "summe": false
+   },
+   "2023": {
+    "wert": -163.715,
+    "roh": -163715.0,
+    "bericht": "gea-ar-2024",
+    "seite": "310",
+    "etikett": "Dividend payments",
+    "lesungen": 2,
+    "abweichend": [],
+    "summe": false
+   },
+   "2024": {
+    "wert": -168.566,
+    "roh": -168566.0,
+    "bericht": "gea-ar-2025",
+    "seite": "315",
+    "etikett": "Dividend payments",
+    "lesungen": 2,
+    "abweichend": [],
+    "summe": false
+   },
+   "2025": {
+    "wert": -187.222,
+    "roh": -187222.0,
+    "bericht": "gea-ar-2025",
+    "seite": "315",
+    "etikett": "Dividend payments",
+    "lesungen": 1,
+    "abweichend": [],
+    "summe": false
+   }
+  },
+  "umsatz": {
+   "2019": {
+    "wert": 4879.702,
+    "roh": 4879702.0,
+    "bericht": "gea-ar-2020",
+    "seite": "124",
+    "etikett": "Revenue",
+    "lesungen": 1,
+    "abweichend": [],
+    "summe": false
+   },
+   "2020": {
+    "wert": 4635.054,
+    "roh": 4635054.0,
+    "bericht": "gea-ar-2021",
+    "seite": "146",
+    "etikett": "Revenue",
+    "lesungen": 2,
+    "abweichend": [],
+    "summe": false
+   },
+   "2021": {
+    "wert": 4702.905,
+    "roh": 4702905.0,
+    "bericht": "gea-ar-2022",
+    "seite": "163",
+    "etikett": "Revenue",
+    "lesungen": 2,
+    "abweichend": [],
+    "summe": false
+   },
+   "2022": {
+    "wert": 5164.714,
+    "roh": 5164714.0,
+    "bericht": "gea-ar-2023",
+    "seite": "175",
+    "etikett": "Revenue",
+    "lesungen": 2,
+    "abweichend": [],
+    "summe": false
+   },
+   "2023": {
+    "wert": 5373.491,
+    "roh": 5373491.0,
+    "bericht": "gea-ar-2024",
+    "seite": "308",
+    "etikett": "Revenue",
+    "lesungen": 2,
+    "abweichend": [],
+    "summe": false
+   },
+   "2024": {
+    "wert": 5422.129,
+    "roh": 5422129.0,
+    "bericht": "gea-ar-2025",
+    "seite": "313",
+    "etikett": "Revenue",
+    "lesungen": 2,
+    "abweichend": [],
+    "summe": false
+   },
+   "2025": {
+    "wert": 5495.356,
+    "roh": 5495356.0,
+    "bericht": "gea-ar-2025",
+    "seite": "313",
+    "etikett": "Revenue",
+    "lesungen": 1,
+    "abweichend": [],
+    "summe": false
+   }
+  },
+  "ergebnis": {
+   "2019": {
+    "wert": -170.671,
+    "roh": -170671.0,
+    "bericht": "gea-ar-2020",
+    "seite": "124",
+    "etikett": "Profit for the period",
+    "lesungen": 1,
+    "abweichend": [],
+    "summe": false
+   },
+   "2020": {
+    "wert": 96.825,
+    "roh": 96825.0,
+    "bericht": "gea-ar-2020",
+    "seite": "124",
+    "etikett": "Profit for the period",
+    "lesungen": 1,
+    "abweichend": [],
+    "summe": false
+   },
+   "2021": {
+    "wert": 305.172,
+    "roh": 305172.0,
+    "bericht": "gea-ar-2022",
+    "seite": "164",
+    "etikett": "Profit for the period",
+    "lesungen": 1,
+    "abweichend": [],
+    "summe": false
+   },
+   "2022": {
+    "wert": 401.428,
+    "roh": 401428.0,
+    "bericht": "gea-ar-2022",
+    "seite": "164",
+    "etikett": "Profit for the period",
+    "lesungen": 1,
+    "abweichend": [],
+    "summe": false
+   },
+   "2023": {
+    "wert": 392.762,
+    "roh": 392762.0,
+    "bericht": "gea-ar-2024",
+    "seite": "308",
+    "etikett": "Profit for the period",
+    "lesungen": 1,
+    "abweichend": [],
+    "summe": false
+   },
+   "2024": {
+    "wert": 385.026,
+    "roh": 385026.0,
+    "bericht": "gea-ar-2025",
+    "seite": "313",
+    "etikett": "Profit for the period",
+    "lesungen": 2,
+    "abweichend": [],
+    "summe": false
+   },
+   "2025": {
+    "wert": 414.013,
+    "roh": 414013.0,
+    "bericht": "gea-ar-2025",
+    "seite": "313",
+    "etikett": "Profit for the period",
+    "lesungen": 1,
+    "abweichend": [],
+    "summe": false
+   }
+  },
+  "eps_verwaessert": {
+   "2019": {
+    "wert": -0.95,
+    "roh": -0.95,
+    "bericht": "gea-ar-2020",
+    "seite": "124",
+    "etikett": "Basic and diluted earnings per share",
+    "lesungen": 1,
+    "abweichend": [],
+    "summe": false
+   },
+   "2020": {
+    "wert": 0.54,
+    "roh": 0.54,
+    "bericht": "gea-ar-2021",
+    "seite": "146",
+    "etikett": "Basic and diluted earnings per share",
+    "lesungen": 2,
+    "abweichend": [],
+    "summe": false
+   },
+   "2021": {
+    "wert": 1.7,
+    "roh": 1.7,
+    "bericht": "gea-ar-2022",
+    "seite": "163",
+    "etikett": "Basic and diluted earnings per share",
+    "lesungen": 2,
+    "abweichend": [],
+    "summe": false
+   },
+   "2022": {
+    "wert": 2.28,
+    "roh": 2.28,
+    "bericht": "gea-ar-2023",
+    "seite": "175",
+    "etikett": "Basic and diluted earnings per share",
+    "lesungen": 2,
+    "abweichend": [],
+    "summe": false
+   },
+   "2023": {
+    "wert": 2.28,
+    "roh": 2.28,
+    "bericht": "gea-ar-2024",
+    "seite": "308",
+    "etikett": "Basic and diluted earnings per share",
+    "lesungen": 2,
+    "abweichend": [],
+    "summe": false
+   },
+   "2024": {
+    "wert": 2.3,
+    "roh": 2.3,
+    "bericht": "gea-ar-2025",
+    "seite": "313",
+    "etikett": "Basic and diluted earnings per share",
+    "lesungen": 2,
+    "abweichend": [],
+    "summe": false
+   },
+   "2025": {
+    "wert": 2.54,
+    "roh": 2.54,
+    "bericht": "gea-ar-2025",
+    "seite": "313",
+    "etikett": "Basic and diluted earnings per share",
+    "lesungen": 1,
+    "abweichend": [],
+    "summe": false
+   }
+  },
+  "aktien_verwaessert": {
+   "2019": {
+    "wert": 180.5,
+    "roh": 180.5,
+    "bericht": "gea-ar-2020",
+    "seite": "124",
+    "etikett": "Weighted average number of ordinary shares used to calculate basic and diluted earnings per share (million)",
+    "lesungen": 1,
+    "abweichend": [],
+    "summe": false
+   },
+   "2020": {
+    "wert": 180.5,
+    "roh": 180.5,
+    "bericht": "gea-ar-2021",
+    "seite": "146",
+    "etikett": "Weighted average number of ordinary shares used to calculate basic and diluted earnings per share (million)",
+    "lesungen": 2,
+    "abweichend": [],
+    "summe": false
+   },
+   "2021": {
+    "wert": 180.0,
+    "roh": 180.0,
+    "bericht": "gea-ar-2022",
+    "seite": "163",
+    "etikett": "Weighted average number of ordinary shares used to calculate basic and diluted earnings per share (million)",
+    "lesungen": 2,
+    "abweichend": [],
+    "summe": false
+   },
+   "2022": {
+    "wert": 175.9,
+    "roh": 175.9,
+    "bericht": "gea-ar-2023",
+    "seite": "175",
+    "etikett": "Weighted average number of ordinary shares used to calculate basic and diluted earnings per share (million)",
+    "lesungen": 2,
+    "abweichend": [],
+    "summe": false
+   },
+   "2023": {
+    "wert": 172.2,
+    "roh": 172.2,
+    "bericht": "gea-ar-2024",
+    "seite": "308",
+    "etikett": "Weighted average number of ordinary shares used to calculate basic and diluted earnings per share (million)",
+    "lesungen": 2,
+    "abweichend": [],
+    "summe": false
+   },
+   "2024": {
+    "wert": 167.6,
+    "roh": 167.6,
+    "bericht": "gea-ar-2025",
+    "seite": "313",
+    "etikett": "Weighted average number of ordinary shares used to calculate basic and diluted earnings per share (in million shares)",
+    "lesungen": 2,
+    "abweichend": [],
+    "summe": false
+   },
+   "2025": {
+    "wert": 163.1,
+    "roh": 163.1,
+    "bericht": "gea-ar-2025",
+    "seite": "313",
+    "etikett": "Weighted average number of ordinary shares used to calculate basic and diluted earnings per share (in million shares)",
+    "lesungen": 1,
+    "abweichend": [],
+    "summe": false
+   }
+  },
+  "rueckkauf": {
+   "2021": {
+    "wert": -93.792,
+    "roh": -93792.0,
+    "bericht": "gea-ar-2022",
+    "seite": "165",
+    "etikett": "Payments for acquisition of treasury shares",
+    "lesungen": 1,
+    "abweichend": [],
+    "summe": false
+   },
+   "2022": {
+    "wert": -205.578,
+    "roh": -205578.0,
+    "bericht": "gea-ar-2023",
+    "seite": "177",
+    "etikett": "Payments for acquisition of treasury shares",
+    "lesungen": 2,
+    "abweichend": [],
+    "summe": false
+   },
+   "2023": {
+    "wert": -52.74,
+    "roh": -52740.0,
+    "bericht": "gea-ar-2024",
+    "seite": "310",
+    "etikett": "Payments for acquisition of treasury shares",
+    "lesungen": 2,
+    "abweichend": [],
+    "summe": false
+   },
+   "2024": {
+    "wert": -230.454,
+    "roh": -230454.0,
+    "bericht": "gea-ar-2025",
+    "seite": "315",
+    "etikett": "Payments for acquisition of treasury shares",
+    "lesungen": 2,
+    "abweichend": [],
+    "summe": false
+   },
+   "2025": {
+    "wert": -120.058,
+    "roh": -120058.0,
+    "bericht": "gea-ar-2025",
+    "seite": "315",
+    "etikett": "Payments for acquisition of treasury shares",
+    "lesungen": 1,
+    "abweichend": [],
+    "summe": false
+   }
+  }
+ }
+}

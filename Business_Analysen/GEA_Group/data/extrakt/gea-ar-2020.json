@@ -1,0 +1,87 @@
+{
+ "datei": "gea-ar-2020.txt",
+ "arten": {
+  "cf": {
+   "seite": "126",
+   "jahre": [
+    "2020",
+    "2019"
+   ],
+   "posten": {
+    "operativer_cf": [
+     {
+      "etikett": "Cash flow from operating activities",
+      "werte": [
+       717843.0,
+       483229.0
+      ],
+      "seite": "126"
+     }
+    ],
+    "investitionen": [
+     {
+      "etikett": "Payments to acquire property, plant and equipment, and intangible assets",
+      "werte": [
+       97584.0,
+       136962.0
+      ],
+      "seite": "126"
+     }
+    ]
+   },
+   "verworfen": [],
+   "tokens": 1544
+  },
+  "guv": {
+   "seite": "124",
+   "jahre": [
+    "2020",
+    "2019"
+   ],
+   "posten": {
+    "umsatz": [
+     {
+      "etikett": "Revenue",
+      "werte": [
+       7.1,
+       4635054.0
+      ],
+      "seite": "124"
+     }
+    ],
+    "ergebnis": [
+     {
+      "etikett": "Profit for the period",
+      "werte": [
+       96825.0,
+       170671.0
+      ],
+      "seite": "124"
+     }
+    ],
+    "eps_verwaessert": [
+     {
+      "etikett": "Basic and diluted earnings per share",
+      "werte": [
+       0.6,
+       1.03
+      ],
+      "seite": "124"
+     }
+    ],
+    "aktien_verwaessert": [
+     {
+      "etikett": "Weighted average number of ordinary shares used to calculate basic and diluted earnings per share (million)",
+      "werte": [
+       180.5,
+       180.5
+      ],
+      "seite": "124"
+     }
+    ]
+   },
+   "verworfen": [],
+   "tokens": 1167
+  }
+ }
+}

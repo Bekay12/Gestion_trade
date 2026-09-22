@@ -1,0 +1,67 @@
+% Unnummeriert, damit die sieben Teile des Musters die Nummern 1 bis 7 tragen.
+\section*{Rahmen und Methode}
+\addcontentsline{toc}{section}{Rahmen und Methode}
+\markright{Rahmen und Methode}
+\label{sec:methode}
+
+\subsection*{Gegenstand}
+
+GEA Group Aktiengesellschaft, D\"usseldorf, ist ein Maschinen- und Anlagenbauer f\"ur die
+Nahrungsmittel-, Getr\"anke- und Pharmaindustrie. Der Bericht betrachtet die
+Gesch\"aftsjahre 2019 bis 2025 sowie das erste Halbjahr 2026 und entscheidet \"uber den
+Kauf der Aktie zum Kurs von \je{\Kurs}{EUR} (\KursDatum).
+
+\subsection*{Quellen}
+
+Prim\"arquellen sind die Gesch\"aftsberichte 2020 bis 2025 und der Halbjahresfinanzbericht
+2026, jeweils in der englischen Originalfassung und lokal abgelegt. Jede Seitenangabe
+bezeichnet die \emph{gedruckte} Seite, nicht die Seitenzahl der PDF-Datei; beide
+unterscheiden sich bei GEA um mehrere Seiten. Sekund\"arquellen sind als solche
+gekennzeichnet: Kurse (Yahoo Finance), der Analystenkonsens (MarketScreener), die
+Directors' Dealings (EQS-Meldungen nach Art.~19 MAR) und die H\"urde (MSCI).
+
+\subsection*{Wie die Zahlen in dieses Dokument kommen}
+
+Die Gesch\"aftsberichte werden seitenweise zerlegt; ein lokales Sprachmodell benennt
+lediglich die \emph{Zeilenetiketten} der Abschl\"usse, die Werte liest Programmcode aus
+dem Textlayer derselben Seite. Danach pr\"uft \texttt{scripts/pruefe\_seiten.py} jeden
+gespeicherten Wert gegen den Text der Seite, die er als Beleg nennt:
+\GeprueftAnzahl{} von \GeprueftAnzahl{} Werten sind so belegt. Der Flie{\ss}text enth\"alt
+keine Zahl von Hand; \texttt{scripts/check\_literals.py} bricht den Bau ab, sobald doch
+eine erscheint.
+
+Diese Pr\"ufung erkennt eine falsch zugeordnete Zahl nicht, wenn die Zahl auf der Seite
+steht. Gegen diesen Fall stehen zwei weitere Pr\"ufungen: die Kette \"uber zwei Berichte
+(jeder Bericht druckt das Vorjahr, beide m\"ussen \"ubereinstimmen) und der Vergleich der
+Kennzahlenseite mit der Kapitalflussrechnung.
+
+\subsection*{Die drei Gr\"o{\ss}en, auf denen der Bericht ruht}
+
+\textbf{Freier Zufluss.} Operativer Mittelzufluss der fortgef\"uhrten T\"atigkeit,
+vermindert um Investitionen und um die Tilgung von Leasingverbindlichkeiten. GEA weist
+einen eigenen \enquote{Free Cash Flow} aus, der 2025 mit \Mio{\FreierCashflowGea}{EUR}
+\"uber dieser Gr\"o{\ss}e liegt\Q{GeaGB}{2}; der Bericht rechnet mit der eigenen Gr\"o{\ss}e,
+weil nur sie den Leasingabfluss enth\"alt, den ein Eigent\"umer ebenso tragen muss wie
+eine Investition.
+
+\textbf{H\"urde.} \Pz{\Huerde} p.\,a.\ Das ist die Rendite des MSCI World (Gross Returns,
+USD) \"uber zehn Jahre nach dem Factsheet zum 31.08.2026\QW{MSCI World Index, Index
+Factsheet 31.08.2026}{quelle:msci}{19.09.2026}. Eine Anlage in GEA muss diese Rendite
+schlagen, sonst ist der Indexfonds die bessere Wahl. Als Sensitivit\"at dient die
+Rendite seit Auflage des Index (1987) von \Pz{\HuerdeLang}; sie f\"uhrt zu einem
+h\"oheren Schwellenkurs und ist damit die f\"ur GEA g\"unstigere Annahme.
+
+\textbf{Endwert.} Der Buchwert des Eigenkapitals zum 31.12.2025,
+\Mio{\Eigenkapital}{EUR}\Q{GeaGB}{312}, entspricht \je{\BuchwertJeAktie}{EUR} je Aktie.
+
+\annahme{Alle Rechnungen sind Vorsteuerrechnungen auf Ebene des Unternehmens. Der
+Zufluss ist der Zufluss an das Unternehmen, nicht der nach Abgeltungsteuer beim Anleger
+verbleibende Betrag. Wer die Anlage in einem steuerpflichtigen Depot h\"alt, muss die
+ausgewiesenen Renditen entsprechend k\"urzen; die H\"urde (Indexrendite) w\"are dann
+ebenfalls zu k\"urzen, sodass der Vergleich der Optionen untereinander bestehen bleibt.}
+
+\annahme{Der freie Zufluss wird in allen Szenarien \emph{konstant} fortgeschrieben. Das
+ist keine Prognose, sondern der Verzicht auf eine. Der Bericht holt den fehlenden
+Wachstumsterm in Abschnitt~\ref{sec:votum} als Umkehrung zur\"uck: statt Wachstum zu
+sch\"atzen, rechnet er aus, welches Wachstum der heutige Kurs bereits voraussetzt, und
+h\"alt es gegen die eigene Reihe und gegen die Ziele des Unternehmens.}

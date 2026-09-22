@@ -180,7 +180,9 @@ by design, and are always obtainable elsewhere:
 | Number of covering analysts with their estimates | same, and it often differs from the company's own count |
 | Short interest, index membership, free-float factor | exchange and index provider |
 | Current price, FX rate, market capitalisation today | market data |
-| Peer multiples | screeners |
+| Peer multiples | screeners; same definition and same date as the subject's (rule 11) |
+| Directors' dealings (board and management trades) | issuer's MAR Art. 19 notices and the national regulator's register (BaFin, AMF, FCA); US: SEC Form 4 on EDGAR |
+| The subject's own historical multiples | computed: year-end price history over the section 2 series, never a screener's single current value |
 
 So before any line of the "Data not available" section, ask the second question:
 *is it unobtainable, or merely not in this document?* Only the first is a gap. The

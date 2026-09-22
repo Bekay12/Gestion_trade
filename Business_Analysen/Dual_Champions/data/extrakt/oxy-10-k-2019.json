@@ -1,0 +1,106 @@
+{
+ "datei": "oxy-10-k-2019.txt",
+ "arten": {
+  "cf": {
+   "seite": "63",
+   "jahre": [
+    "2019",
+    "2018",
+    "2017"
+   ],
+   "posten": {
+    "operativer_cf": [
+     {
+      "etikett": "Net cash provided by operating activities",
+      "werte": [
+       7375.0,
+       7669.0,
+       4861.0
+      ],
+      "seite": "63"
+     }
+    ],
+    "investitionen": [
+     {
+      "etikett": "Capital expenditures",
+      "werte": [
+       -6355.0,
+       -4975.0,
+       -3599.0
+      ],
+      "seite": "63"
+     }
+    ],
+    "dividenden": [
+     {
+      "etikett": "Cash dividends paid",
+      "werte": [
+       -2624.0,
+       -2374.0,
+       -2346.0
+      ],
+      "seite": "63"
+     }
+    ],
+    "rueckkauf": [
+     {
+      "etikett": "Purchases of treasury stock",
+      "werte": [
+       -237.0,
+       -1248.0,
+       -25.0
+      ],
+      "seite": "63"
+     }
+    ]
+   },
+   "verworfen": [],
+   "tokens": 1510
+  },
+  "guv": {
+   "seite": "60",
+   "jahre": [
+    "2019",
+    "2018",
+    "2017"
+   ],
+   "posten": {
+    "umsatz": [
+     {
+      "etikett": "Net sales",
+      "werte": [
+       20393.0,
+       17824.0,
+       12508.0
+      ],
+      "seite": "60"
+     }
+    ],
+    "ergebnis": [
+     {
+      "etikett": "NET INCOME (LOSS) ATTRIBUTABLE TO COMMON STOCKHOLDERS",
+      "werte": [
+       -985.0,
+       4131.0,
+       1311.0
+      ],
+      "seite": "60"
+     }
+    ],
+    "eps_verwaessert": [
+     {
+      "etikett": "Net income (loss) attributable to common stockholders—diluted",
+      "werte": [
+       -1.22,
+       5.39,
+       1.7
+      ],
+      "seite": "60"
+     }
+    ]
+   },
+   "verworfen": [],
+   "tokens": 1246
+  }
+ }
+}

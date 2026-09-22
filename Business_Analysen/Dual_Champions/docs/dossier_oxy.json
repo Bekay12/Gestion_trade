@@ -1,0 +1,56 @@
+{
+ "emittent": "oxy",
+ "themen": {
+  "eigentuemer": [],
+  "wettbewerb": [
+   {
+    "fakt": "Occidental ist einer der größten Öl- und Gasproduzenten in den USA.",
+    "zitat": "The Company ranks among the largest oil and gas producers in the U.S.,",
+    "zahl": "",
+    "bericht": "oxy-10-k-2025.txt",
+    "seite": "3",
+    "belegt": true
+   },
+   {
+    "fakt": "Occidental hält führende Positionen im Permian Basin, DJ Basin sowie offshore Golf von Amerika.",
+    "zitat": "...holding leading positions in the Permian and DJ Basins as well as offshore Gulf of America,",
+    "zahl": "",
+    "bericht": "oxy-10-k-2025.txt",
+    "seite": "3",
+    "belegt": true
+   },
+   {
+    "fakt": "Occidental ist der größte unabhängige Ölproduzent in Oman.",
+    "zitat": "...and is the largest independent oil producer in Oman.",
+    "zahl": "",
+    "bericht": "oxy-10-k-2025.txt",
+    "seite": "3",
+    "belegt": true
+   },
+   {
+    "fakt": "Occidental Petroleum ist der Marktführer für CO₂-Flutung im Permian Basin.",
+    "zitat": "Permian EOR is the industry leader in Permian Basin CO2 flooding",
+    "zahl": "",
+    "bericht": "oxy-10-k-2025.txt",
+    "seite": "26",
+    "belegt": true
+   },
+   {
+    "fakt": "Die Produktion von Occidental Petroleum im Permian Basin belief sich auf etwa 10% des gesamten Ölanteils im Becken.",
+    "zitat": "producing approximately 10% of the total oil in the basin",
+    "zahl": "10",
+    "bericht": "oxy-10-k-2025.txt",
+    "seite": "26",
+    "belegt": true
+   },
+   {
+    "fakt": "Occidental Petroleum ist der viertgrößte Ölförderer im Tiefwasser-Golf von Amerika.",
+    "zitat": "The Company is the fourth-largest oil and gas producer in the deep-water Gulf of America",
+    "zahl": "",
+    "bericht": "oxy-10-k-2025.txt",
+    "seite": "26",
+    "belegt": true
+   }
+  ]
+ }
+}

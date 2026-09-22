@@ -20,10 +20,11 @@ Section 7 is unaffected and is where such a report earns its keep.
 | Sub-section | Content |
 |---|---|
 | 1.1 | Handelnde Personen — board, management, mandates, ties to the anchor shareholder |
-| 1.2 | Eigentümerstruktur — shareholders with percentages, free float, share count history |
+| 1.2 | Eigentümerstruktur — shareholders with percentages, free float, share count history, **directors' dealings over the last twelve months** |
 | 1.3 | Beurteilung durch die Kapitalmärkte — listing, market cap, price development |
 | 1.4 | Analystenabdeckung **und Konsens** — covering houses, and the aggregated consensus when one is obtainable |
 | 1.5 | **Botschaften und Lücken** — what analysts say *and* what is not obtainable |
+| 1.6 | **Wettbewerbsposition** — the competitive advantage, each claim anchored to a figure |
 
 **1.4 has two halves, and the second is easy to skip.** The company's own reports give at
 most the *number* of covering houses; they never give ratings or targets. That absence is
@@ -42,6 +43,42 @@ company does not explain it — do not round it away.
 **Governance signal worth a sentence:** overlapping mandates between the supervisory board
 and the controlling shareholder, and any technical expertise deliberately seated on the
 board.
+
+**Directors' dealings belong in 1.2, as a table, not as a mood.** Board and management
+must report their own trades in the company's shares (EU: Art. 19 MAR notifications,
+published by the issuer and the national regulator; US: SEC Form 4). The annual report
+never carries them, so they are secondary data under `rigor-and-assumptions.md` rule 5:
+
+| Date | Person, function | Buy / sell | Shares | Price | Volume | Source, retrieved |
+|---|---|---|---|---|---|---|
+
+Twelve months, all trades, sells included. Then one factual sentence on the pattern, and
+no more: purchases after a sharp fall and sales under a pre-arranged plan (10b5-1 in the
+US) are different facts, and an exercise of options followed by an immediate sale is a
+compensation event, not a view. A single buy is a data point, not a signal; say how many
+persons traded, not only how much. An empty register is a finding too: state the search
+and its date.
+
+### 1.6 Wettbewerbsposition: a moat is a figure or it is an adjective
+
+Financial magazines justify roughly one buy recommendation in five with "market leader",
+"strong brand" or "pricing power", and almost never attach a number. This sub-section does
+the opposite. Each claimed advantage names the figure that would show it, from the
+company's own reports where possible:
+
+| Claimed advantage | Evidence that would show it | Figure, source | Holds? |
+|---|---|---|---|
+| Market share / leadership | share of a defined market, with the market's definition | | yes / no / not obtainable |
+| Pricing power | gross margin stable or rising through an input-cost shock | | |
+| Switching costs / recurring revenue | share of recurring revenue, retention or renewal rate | | |
+| Scale | margin against two named peers, same fiscal year | | |
+| Regulatory or licence position | the licence, patent or concession, with its expiry | | |
+
+Keep 1.6 factual like section 3: it states what the figures show, and section 7 judges.
+A claim that no figure supports goes into 1.5 as a gap, not into the table as a *yes*. The
+advantage matters to the verdict through one channel only: it is what makes the
+constant-level cash flow in section 6, or the required growth rate in 7.3, plausible over
+ten years rather than two.
 
 ---
 
@@ -434,6 +471,30 @@ argument is needed to separate them.
 Where the function returns None, say so: the price is then not justifiable by growth of the
 earnings stream at any rate inside the bracket, and widening the bracket until a number
 appears is how a report starts lying.
+
+### The multiple in context: its own history and two peers
+
+"P/E of 8" is the valuation argument financial magazines use most, and on its own it says
+nothing: 8 is cheap for one company and dear for another, and cheap at a cyclical peak is
+a trap. Put the current multiple where rule 12b puts the base case, in its own history,
+and beside two named peers:
+
+| Multiple | Today | 10-year median | Percentile of today | Peer A | Peer B |
+|---|---|---|---|---|---|
+| EV/EBITDA or P/E (say which, and trailing or forward) | | | | | |
+
+Build the history from the section 2 series and the price history, at matching dates
+(`rigor-and-assumptions.md` rule 11: year-end price over the same year's earnings, never a
+current price over last year's). Peer multiples are secondary data under rule 5: source,
+retrieval date, and the same definition on both sides.
+
+This table is a **cross-check, not a threshold**. The entry price is 7.3's break-even,
+computed from the subject's own cash flow and hurdle; a low multiple never overrides it.
+What the table adds is the reading the break-even cannot give: whether the market is
+pricing the company below its own habit (then say what fell, per rule 12b's corollary:
+the leading indicator or only the multiple) or whether the "cheap" multiple merely sits
+on peak earnings. If the multiple's percentile and the base case's percentile point in
+opposite directions, that is a finding for 7.2.
 
 ### 7.4 Triggers that flip the verdict
 

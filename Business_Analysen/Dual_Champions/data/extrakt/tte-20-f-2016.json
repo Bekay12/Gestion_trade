@@ -1,0 +1,85 @@
+{
+ "datei": "tte-20-f-2016.txt",
+ "arten": {
+  "cf": {
+   "seite": "9",
+   "jahre": [
+    "2016",
+    "2015",
+    "2014"
+   ],
+   "posten": {
+    "operativer_cf": [
+     {
+      "etikett": "Cash flow from operating activities",
+      "werte": [
+       1623.0,
+       2016.0,
+       30.0
+      ],
+      "seite": "9"
+     }
+    ]
+   },
+   "verworfen": [
+    [
+     "investitionen",
+     "Total expenditures",
+     "Etikett passt nicht zum Posten"
+    ]
+   ],
+   "tokens": 2157
+  },
+  "guv": {
+   "seite": "4",
+   "jahre": [
+    "2016",
+    "2015",
+    "2014"
+   ],
+   "posten": {
+    "ergebnis": [
+     {
+      "etikett": "Net income (Group share)",
+      "werte": [
+       2016.0,
+       22.0,
+       6196.0
+      ],
+      "seite": "4"
+     }
+    ],
+    "eps_verwaessert": [
+     {
+      "etikett": "Fully-diluted earnings per share ($)",
+      "werte": [
+       2.51,
+       2.16,
+       1.86
+      ],
+      "seite": "4"
+     }
+    ],
+    "aktien_verwaessert": [
+     {
+      "etikett": "Fully-diluted weighted-average shares (millions)",
+      "werte": [
+       2390.0,
+       2304.0,
+       2281.0
+      ],
+      "seite": "4"
+     }
+    ]
+   },
+   "verworfen": [
+    [
+     "umsatz",
+     "Non-Group sales",
+     "Etikett nicht woertlich auf der Seite"
+    ]
+   ],
+   "tokens": 2521
+  }
+ }
+}

@@ -1,0 +1,113 @@
+{
+ "datei": "fro-20-f-2016.txt",
+ "arten": {
+  "cf": {
+   "seite": "54",
+   "jahre": [
+    "2016",
+    "2015",
+    "2014"
+   ],
+   "posten": {
+    "operativer_cf": [
+     {
+      "etikett": "Net cash provided by operating activities",
+      "werte": [
+       31.0,
+       2016.0,
+       286.0
+      ],
+      "seite": "54"
+     }
+    ]
+   },
+   "verworfen": [],
+   "tokens": 1396
+  },
+  "guv": {
+   "seite": "F-3",
+   "jahre": [
+    "2016",
+    "2015",
+    "2014"
+   ],
+   "posten": {
+    "umsatz": [
+     {
+      "etikett": "Total operating revenues",
+      "werte": [
+       754306.0,
+       458934.0,
+       241826.0
+      ],
+      "seite": "F-3"
+     }
+    ],
+    "ergebnis": [
+     {
+      "etikett": "Net income attributable to the Company",
+      "werte": [
+       117010.0,
+       154624.0,
+       149469.0
+      ],
+      "seite": "F-3"
+     }
+    ],
+    "eps_verwaessert": [
+     {
+      "etikett": "Basic and diluted earnings per share attributable to the Company",
+      "werte": [
+       0.75,
+       1.29,
+       1.19
+      ],
+      "seite": "F-3"
+     }
+    ]
+   },
+   "verworfen": [],
+   "tokens": 1302
+  },
+  "bilanz": {
+   "seite": "3",
+   "jahre": [
+    "2016",
+    "2015",
+    "2014",
+    "2013",
+    "2012"
+   ],
+   "posten": {
+    "eigenkapital": [
+     {
+      "etikett": "Total equity attributable to the Company",
+      "werte": [
+       1499601.0,
+       1446282.0,
+       1123580.0,
+       1063157.0,
+       489427.0
+      ],
+      "seite": "3"
+     }
+    ],
+    "aktien_ausstehend": [
+     {
+      "etikett": "Ordinary shares outstanding (000s)",
+      "werte": [
+       -2.0,
+       169809.0,
+       156387.0,
+       116712.0,
+       127041.0
+      ],
+      "seite": "3"
+     }
+    ]
+   },
+   "verworfen": [],
+   "tokens": 1575
+  }
+ }
+}

@@ -1,0 +1,83 @@
+{
+ "datei": "gea-ar-2021.txt",
+ "arten": {
+  "cf": {
+   "seite": "148",
+   "jahre": [
+    "2021",
+    "2020"
+   ],
+   "posten": {
+    "operativer_cf": [
+     {
+      "etikett": "Cash flow from operating activities",
+      "werte": [
+       675869.0,
+       717843.0
+      ],
+      "seite": "148"
+     }
+    ],
+    "investitionen": [
+     {
+      "etikett": "Payments to acquire property, plant and equipment, and intangible assets",
+      "werte": [
+       129854.0,
+       97584.0
+      ],
+      "seite": "148"
+     }
+    ]
+   },
+   "verworfen": [
+    [
+     "leasing",
+     "Payments from lease liabilities",
+     "Zeile traegt nicht 2 Werte"
+    ]
+   ],
+   "tokens": 1723
+  },
+  "guv": {
+   "seite": "146",
+   "jahre": [
+    "2021",
+    "2020"
+   ],
+   "posten": {
+    "umsatz": [
+     {
+      "etikett": "Revenue",
+      "werte": [
+       7.1,
+       4702905.0
+      ],
+      "seite": "146"
+     }
+    ],
+    "eps_verwaessert": [
+     {
+      "etikett": "Basic and diluted earnings per share",
+      "werte": [
+       1.66,
+       0.6
+      ],
+      "seite": "146"
+     }
+    ],
+    "aktien_verwaessert": [
+     {
+      "etikett": "Weighted average number of ordinary shares used to calculate basic and diluted earnings per share (million)",
+      "werte": [
+       180.0,
+       180.5
+      ],
+      "seite": "146"
+     }
+    ]
+   },
+   "verworfen": [],
+   "tokens": 1247
+  }
+ }
+}

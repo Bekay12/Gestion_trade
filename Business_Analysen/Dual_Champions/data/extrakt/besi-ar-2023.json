@@ -1,0 +1,134 @@
+{
+ "datei": "besi-ar-2023.txt",
+ "arten": {
+  "cf": {
+   "seite": "142",
+   "jahre": [
+    "2023",
+    "2022"
+   ],
+   "posten": {
+    "operativer_cf": [
+     {
+      "etikett": "Net cash provided by operating activities",
+      "werte": [
+       208572.0,
+       271871.0
+      ],
+      "seite": "142"
+     }
+    ],
+    "investitionen": [
+     {
+      "etikett": "Capital expenditures",
+      "werte": [
+       9.0,
+       11.0
+      ],
+      "seite": "142"
+     }
+    ],
+    "leasing": [
+     {
+      "etikett": "Payments on lease liabilities",
+      "werte": [
+       18.0,
+       19.0
+      ],
+      "seite": "142"
+     }
+    ],
+    "rueckkauf": [
+     {
+      "etikett": "Purchase treasury shares",
+      "werte": [
+       -213387.0,
+       -146781.0
+      ],
+      "seite": "142"
+     }
+    ],
+    "dividenden": [
+     {
+      "etikett": "Dividend paid to shareholders",
+      "werte": [
+       -222109.0,
+       -269467.0
+      ],
+      "seite": "142"
+     }
+    ]
+   },
+   "verworfen": [
+    [
+     "investitionen",
+     "Capitalized development expenditures",
+     "Etikett passt nicht zum Posten"
+    ]
+   ],
+   "tokens": 1161
+  },
+  "guv": {
+   "seite": "140",
+   "jahre": [
+    "2023",
+    "2022"
+   ],
+   "posten": {
+    "umsatz": [
+     {
+      "etikett": "Revenue",
+      "werte": [
+       23.0,
+       24.0
+      ],
+      "seite": "140"
+     }
+    ],
+    "ergebnis": [
+     {
+      "etikett": "Net income",
+      "werte": [
+       177084.0,
+       240647.0
+      ],
+      "seite": "140"
+     }
+    ],
+    "eps_verwaessert": [
+     {
+      "etikett": "Diluted¹",
+      "werte": [
+       2.23,
+       2.9
+      ],
+      "seite": "140"
+     }
+    ]
+   },
+   "verworfen": [],
+   "tokens": 1125
+  },
+  "bilanz": {
+   "seite": "139",
+   "jahre": [
+    "2023",
+    "2022"
+   ],
+   "posten": {
+    "eigenkapital": [
+     {
+      "etikett": "Equity attributable to owners of the Company",
+      "werte": [
+       421413.0,
+       628535.0
+      ],
+      "seite": "139"
+     }
+    ]
+   },
+   "verworfen": [],
+   "tokens": 1219
+  }
+ }
+}

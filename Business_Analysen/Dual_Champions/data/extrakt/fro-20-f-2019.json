@@ -1,0 +1,146 @@
+{
+ "datei": "fro-20-f-2019.txt",
+ "arten": {
+  "cf": {
+   "seite": "F-8",
+   "jahre": [
+    "2019",
+    "2018",
+    "2017"
+   ],
+   "posten": {
+    "operativer_cf": [
+     {
+      "etikett": "net cash provided by operating activities",
+      "werte": [
+       280187.0,
+       46171.0,
+       130485.0
+      ],
+      "seite": "F-8"
+     }
+    ],
+    "investitionen": [
+     {
+      "etikett": "Additions to newbuildings, vessels and equipment",
+      "werte": [
+       -195972.0,
+       -216310.0,
+       -713560.0
+      ],
+      "seite": "F-8"
+     }
+    ],
+    "leasing": [
+     {
+      "etikett": "Payment of obligations under finance leases",
+      "werte": [
+       -15228.0,
+       -10094.0,
+       -31854.0
+      ],
+      "seite": "F-8"
+     }
+    ]
+   },
+   "verworfen": [],
+   "tokens": 1399
+  },
+  "guv": {
+   "seite": "F-4",
+   "jahre": [
+    "2019",
+    "2018",
+    "2017"
+   ],
+   "posten": {
+    "umsatz": [
+     {
+      "etikett": "Total operating revenues",
+      "werte": [
+       957322.0,
+       742266.0,
+       646326.0
+      ],
+      "seite": "F-4"
+     }
+    ],
+    "ergebnis": [
+     {
+      "etikett": "Net income (loss) attributable to the Company",
+      "werte": [
+       139972.0,
+       -8880.0,
+       -264861.0
+      ],
+      "seite": "F-4"
+     }
+    ],
+    "eps_verwaessert": [
+     {
+      "etikett": "Diluted earnings (loss) per share attributable to the Company",
+      "werte": [
+       0.78,
+       -0.05,
+       -1.56
+      ],
+      "seite": "F-4"
+     }
+    ],
+    "aktien_verwaessert": [
+     {
+      "etikett": "Diluted earnings (loss) per share attributable to the Company",
+      "werte": [
+       0.78,
+       -0.05,
+       -1.56
+      ],
+      "seite": "F-4"
+     }
+    ]
+   },
+   "verworfen": [],
+   "tokens": 1249
+  },
+  "bilanz": {
+   "seite": "5",
+   "jahre": [
+    "2019",
+    "2018",
+    "2017",
+    "2016",
+    "2015"
+   ],
+   "posten": {
+    "aktien_ausstehend": [
+     {
+      "etikett": "Ordinary shares outstanding (000s)",
+      "werte": [
+       -3.0,
+       196894.0,
+       169821.0,
+       169809.0,
+       169809.0
+      ],
+      "seite": "5"
+     }
+    ],
+    "eigenkapital": [
+     {
+      "etikett": "Total equity attributable to the Company",
+      "werte": [
+       1509976.0,
+       1163800.0,
+       1187308.0,
+       1499601.0,
+       1446282.0
+      ],
+      "seite": "5"
+     }
+    ]
+   },
+   "verworfen": [],
+   "tokens": 1581
+  }
+ }
+}

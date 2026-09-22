@@ -1,0 +1,132 @@
+{
+ "datei": "tnk-20-f-2016.txt",
+ "arten": {
+  "cf": {
+   "seite": "F-5",
+   "jahre": [
+    "2016",
+    "2015",
+    "2014"
+   ],
+   "posten": {
+    "operativer_cf": [
+     {
+      "etikett": "Net operating cash flow",
+      "werte": [
+       209976.0,
+       166789.0,
+       20940.0
+      ],
+      "seite": "F-5"
+     }
+    ],
+    "dividenden": [
+     {
+      "etikett": "Cash dividends paid",
+      "werte": [
+       -46847.0,
+       -15139.0,
+       -10165.0
+      ],
+      "seite": "F-5"
+     }
+    ],
+    "investitionen": [
+     {
+      "etikett": "Expenditures for vessels and equipment",
+      "werte": [
+       -9226.0,
+       -236229.0,
+       -2084.0
+      ],
+      "seite": "F-5"
+     }
+    ]
+   },
+   "verworfen": [
+    [
+     "investitionen",
+     "Expenditures for dry docking",
+     "Etikett passt nicht zum Posten"
+    ]
+   ],
+   "tokens": 1563
+  },
+  "guv": {
+   "seite": "F-3",
+   "jahre": [
+    "2016",
+    "2015",
+    "2014"
+   ],
+   "posten": {
+    "umsatz": [
+     {
+      "etikett": "Total revenues",
+      "werte": [
+       526896.0,
+       514193.0,
+       250002.0
+      ],
+      "seite": "F-3"
+     }
+    ],
+    "ergebnis": [
+     {
+      "etikett": "Net income",
+      "werte": [
+       62855.0,
+       179635.0,
+       60538.0
+      ],
+      "seite": "F-3"
+     }
+    ],
+    "eps_verwaessert": [
+     {
+      "etikett": "• Diluted earnings per share",
+      "werte": [
+       0.4,
+       1.35,
+       0.66
+      ],
+      "seite": "F-3"
+     }
+    ]
+   },
+   "verworfen": [],
+   "tokens": 1213
+  },
+  "bilanz": {
+   "seite": "F-4",
+   "jahre": [
+    "2016",
+    "2015"
+   ],
+   "posten": {
+    "eigenkapital": [
+     {
+      "etikett": "Total equity",
+      "werte": [
+       920624.0,
+       877461.0
+      ],
+      "seite": "F-4"
+     }
+    ],
+    "aktien_ausstehend": [
+     {
+      "etikett": "Common stock and additional paid-in capital (300 million shares authorized, 136.1 million Class A and 23.2 million class B shares issued and outstanding as of December 31, 2016 (2015 - 132.8 million Class A and 23.2 million Class B shares issued and outstanding)",
+      "werte": [
+       1103304.0,
+       1094874.0
+      ],
+      "seite": "F-4"
+     }
+    ]
+   },
+   "verworfen": [],
+   "tokens": 1166
+  }
+ }
+}

@@ -1,0 +1,139 @@
+{
+ "datei": "tnk-20-f-2024.txt",
+ "arten": {
+  "cf": {
+   "seite": "F-6",
+   "jahre": [
+    "2024",
+    "2023",
+    "2022"
+   ],
+   "posten": {
+    "operativer_cf": [
+     {
+      "etikett": "Net operating cash flow",
+      "werte": [
+       471912.0,
+       631245.0,
+       199689.0
+      ],
+      "seite": "F-6"
+     }
+    ],
+    "investitionen": [
+     {
+      "etikett": "Expenditures for vessels and equipment",
+      "werte": [
+       -4841.0,
+       -10198.0,
+       -15430.0
+      ],
+      "seite": "F-6"
+     }
+    ],
+    "leasing": [
+     {
+      "etikett": "Scheduled repayments of obligations related to finance leases",
+      "werte": [
+       -5213.0,
+       -34113.0,
+       -50636.0
+      ],
+      "seite": "F-6"
+     }
+    ]
+   },
+   "verworfen": [
+    [
+     "dividenden",
+     "Cash dividends paid",
+     "Zeile traegt nicht 3 Werte"
+    ]
+   ],
+   "tokens": 1618
+  },
+  "guv": {
+   "seite": "F-3",
+   "jahre": [
+    "2024",
+    "2023",
+    "2022"
+   ],
+   "posten": {
+    "umsatz": [
+     {
+      "etikett": "Total revenues",
+      "werte": [
+       1229336.0,
+       1473699.0,
+       1177956.0
+      ],
+      "seite": "F-3"
+     }
+    ],
+    "ergebnis": [
+     {
+      "etikett": "Net income",
+      "werte": [
+       403667.0,
+       519890.0,
+       235427.0
+      ],
+      "seite": "F-3"
+     }
+    ],
+    "eps_verwaessert": [
+     {
+      "etikett": "• Diluted earnings per share",
+      "werte": [
+       11.63,
+       15.04,
+       6.87
+      ],
+      "seite": "F-3"
+     }
+    ],
+    "aktien_verwaessert": [
+     {
+      "etikett": "Weighted-average number of Class A and Class B common shares outstanding",
+      "werte": [
+       34406223.0,
+       34159818.0,
+       33997579.0
+      ],
+      "seite": "F-3"
+     }
+    ]
+   },
+   "verworfen": [
+    [
+     "eps_verwaessert",
+     "Diluted earnings per share",
+     "Zeile traegt nicht 3 Werte"
+    ]
+   ],
+   "tokens": 1277
+  },
+  "bilanz": {
+   "seite": "F-5",
+   "jahre": [
+    "2024",
+    "2023"
+   ],
+   "posten": {
+    "eigenkapital": [
+     {
+      "etikett": "Total equity",
+      "werte": [
+       1756550.0,
+       1550157.0
+      ],
+      "seite": "F-5"
+     }
+    ]
+   },
+   "verworfen": [],
+   "tokens": 1422
+  }
+ }
+}

@@ -1,0 +1,100 @@
+{
+ "datei": "tnk-20-f-2022.txt",
+ "arten": {
+  "cf": {
+   "seite": "F-5",
+   "jahre": [
+    "2022",
+    "2021",
+    "2020"
+   ],
+   "posten": {
+    "operativer_cf": [
+     {
+      "etikett": "Net operating cash flow",
+      "werte": [
+       193265.0,
+       -107312.0,
+       347943.0
+      ],
+      "seite": "F-5"
+     }
+    ],
+    "investitionen": [
+     {
+      "etikett": "Expenditures for vessels and equipment",
+      "werte": [
+       -15430.0,
+       -21447.0,
+       -16025.0
+      ],
+      "seite": "F-5"
+     }
+    ]
+   },
+   "verworfen": [],
+   "tokens": 1519
+  },
+  "guv": {
+   "seite": "F-3",
+   "jahre": [
+    "2022",
+    "2021",
+    "2020"
+   ],
+   "posten": {
+    "umsatz": [
+     {
+      "etikett": "Total revenues",
+      "werte": [
+       1063111.0,
+       542367.0,
+       886434.0
+      ],
+      "seite": "F-3"
+     }
+    ],
+    "ergebnis": [
+     {
+      "etikett": "Net income (loss)",
+      "werte": [
+       229086.0,
+       -242372.0,
+       87317.0
+      ],
+      "seite": "F-3"
+     }
+    ]
+   },
+   "verworfen": [
+    [
+     "eps_verwaessert",
+     "Diluted earnings (loss) per share",
+     "Zeile traegt nicht 3 Werte"
+    ]
+   ],
+   "tokens": 1300
+  },
+  "bilanz": {
+   "seite": "F-4",
+   "jahre": [
+    "2022",
+    "2021"
+   ],
+   "posten": {
+    "eigenkapital": [
+     {
+      "etikett": "Total equity",
+      "werte": [
+       1070006.0,
+       838412.0
+      ],
+      "seite": "F-4"
+     }
+    ]
+   },
+   "verworfen": [],
+   "tokens": 1537
+  }
+ }
+}

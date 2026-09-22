@@ -1,21 +1,51 @@
 ticker,nom,secteur,pays,devise,prix,market_cap_B,score_total,score_growth,score_safe,profil,G1_CA_Growth_%,G1_ok,G2_Marge_%,G2_ok,G3_Underval,G3_ok,G4_Momentum_%,G4_ok,G5_VolRatio,G5_ok,S1_MCap_Mrd€,S1_ok,S2_DE_%,S2_ok,S3_Beta,S3_ok,S4_DivYield_%,S4_ok,S5_FCF_Marge_%,S5_ok,S6_FCF_Growth_%,S6_ok,S7_RevEPS_%,S7_ok
-CF,"CF Industries Holdings, Inc.",Basic Materials,United States,USD,132.55,20.06,10,3,7,💎 Dual Champion,17.6,False,42.5,True,2,True,25.5,True,0.95,False,17.4,True,40.5,True,0.4,True,183.0,True,16.5,True,88.3,True,58.6,True
-FRO.OL,FRONTLINE PLC,Energy,Cyprus,NOK,492.9,109.73,10,3,7,💎 Dual Champion,96.5,True,63.0,True,1,False,30.5,True,1.05,False,10.2,True,77.2,True,0.06,True,2084.0,True,9.7,True,750.1,True,423.3,True
-RACE.MI,FERRARI,Consumer Cyclical,Italy,EUR,351.55,61.75,9,2,7,🛡️  Pure Safe,8.4,False,51.6,True,0,False,12.2,True,0.73,False,61.8,True,86.4,True,0.6,True,103.0,True,13.6,True,9.0,True,9.2,True
-SN.L,SMITH & NEPHEW PLC ORD USD0.20,Healthcare,United Kingdom,GBp,1039.0,869.67,9,2,7,🛡️  Pure Safe,4.6,False,68.4,True,3,True,-8.3,False,1.04,False,10.2,True,73.1,True,0.68,True,280.0,True,16.8,True,3.4,True,5.2,True
-RMD,ResMed Inc.,Healthcare,United States,USD,229.37,33.09,9,3,6,💎 Dual Champion,8.6,False,61.6,True,2,True,18.3,True,0.97,False,28.6,True,12.5,True,0.77,True,118.0,True,16.6,True,1.0,True,5.5,False
-AVGO,Broadcom Inc.,Technology,United States,USD,342.7,1635.95,9,3,6,💎 Dual Champion,85.5,True,75.5,True,2,True,-9.0,False,0.91,False,1416.2,True,59.6,True,1.46,False,75.0,True,34.3,True,216.1,True,150.4,True
-NVDA,NVIDIA Corporation,Technology,United States,USD,212.54,5132.2,8,2,6,🛡️  Pure Safe,105.9,True,74.7,True,1,False,2.5,False,0.85,False,4442.9,True,17.0,True,2.22,False,47.0,True,13.8,True,125.9,True,116.8,True
-ZS,"Zscaler, Inc.",Technology,United States,USD,189.96,30.97,8,3,5,💎 Dual Champion,24.9,True,76.9,True,1,False,49.3,True,0.72,False,26.8,True,71.9,True,0.95,False,0.0,False,32.1,True,24.9,True,24.9,True
-ENR.DE,Siemens Energy AG             N,Industrials,Germany,EUR,133.24,113.37,7,1,6,🛡️  Pure Safe,17.5,False,20.8,False,2,True,-21.3,False,0.79,False,113.4,True,26.5,True,1.87,False,53.0,True,14.8,True,76.1,True,48.8,True
-NOVO-B.CO,Novo Nordisk B A/S,Healthcare,Denmark,DKK,275.85,1218.96,7,2,5,🛡️  Pure Safe,2.1,False,82.0,True,2,True,-1.5,False,0.91,False,163.1,True,63.3,True,0.34,True,417.0,True,11.4,True,-20.8,False,-9.2,False
-NTES,"NetEase, Inc.",Communication Services,China,USD,118.99,76.18,7,2,5,🛡️  Pure Safe,7.9,False,67.2,True,3,True,-2.3,False,0.82,False,66.0,True,7.3,True,0.79,True,248.0,True,28.1,True,-18.8,False,-5.4,False
-MSFT,Microsoft Corporation,Technology,United States,USD,498.34,3700.45,7,2,5,🛡️  Pure Safe,17.7,False,67.9,True,0,False,26.5,True,0.66,False,3203.5,True,29.1,True,1.11,False,72.0,True,5.0,False,31.3,True,24.7,True
-META,"Meta Platforms, Inc.",Communication Services,United States,USD,667.0,1699.19,7,3,4,⚖️  Balanced,28.0,True,81.7,True,1,False,11.1,True,0.93,False,1471.0,True,43.0,True,1.24,False,32.0,True,9.4,True,-13.6,False,7.3,False
-NOW,"ServiceNow, Inc.",Technology,United States,USD,141.52,146.31,7,4,3,⚖️  Balanced,24.0,True,74.8,True,2,True,39.7,True,0.68,False,126.7,True,67.5,True,0.97,False,0.0,False,35.0,True,-22.6,False,1.0,False
-GS,"Goldman Sachs Group, Inc. (The)",Financial Services,United States,USD,964.44,280.82,6,3,3,⚖️  Balanced,42.5,True,82.1,True,2,True,-11.6,False,0.85,False,243.1,True,725.4,False,1.28,False,202.0,True,,False,,False,67.4,True
-ORCL,Oracle Corporation,Technology,United States,USD,141.82,408.52,6,3,3,⚖️  Balanced,29.6,True,64.0,True,3,True,-24.7,False,0.91,False,353.7,True,251.7,False,1.73,False,138.0,True,-63.9,False,62.6,False,42.0,True
-DBK.DE,DEUTSCHE BANK AG              N,Financial Services,Germany,EUR,33.63,63.19,4,1,3,⚪ Below,8.7,False,0.0,False,1,False,8.7,True,0.92,False,63.2,True,,False,1.0,False,293.0,True,,False,,False,13.8,True
-0241.HK,ALI HEALTH,Healthcare,Hong Kong,HKD,2.92,47.31,4,1,3,⚪ Below,7.6,False,24.0,False,3,True,-12.9,False,0.68,False,,False,0.3,True,1.59,False,229.0,True,1.8,False,0.9,True,4.2,False
-SMSN.IL,SAMSUNG ELECTRONICS CO LTD (ATT,Technology,South Korea,USD,4576.0,,3,1,2,⚪ Below,-22.3,False,32.0,True,1,False,-18.3,False,0.71,False,,False,2.5,True,0.88,False,213.0,True,-5.0,False,-85.9,False,-54.9,False
-ALDX,"Aldeyra Therapeutics, Inc.",Healthcare,United States,USD,1.39,0.08,1,0,1,⚪ Below,,False,0.0,False,1,False,-21.9,False,0.63,False,0.1,False,0.4,True,1.19,False,0.0,False,,False,,False,,False
+OMV.VI,OMV AG,Energy,Austria,EUR,72.05,23.5,11,4,7,💎 Dual Champion,39.7,True,32.2,True,2,True,27.7,True,0.8,False,23.5,True,37.6,True,0.23,True,4.37,True,29.1,True,111.3,True,79.3,True
+RMD,ResMed Inc.,Healthcare,United States,USD,224.99,32.46,9,3,6,💎 Dual Champion,8.6,False,61.6,True,2,True,19.4,True,1.0,False,28.2,True,12.5,True,0.77,True,1.17,True,16.6,True,1.0,True,5.5,False
+NAT,Nordic American Tankers Limited,Energy,Bermuda,USD,8.25,1.75,9,4,5,💎 Dual Champion,97.5,True,53.2,True,2,True,32.9,True,1.0,False,1.5,False,85.1,True,-0.52,False,13.09,True,19.6,True,97.5,True,97.5,True
+YAR.OL,YARA INTERNATIONAL,Basic Materials,Norway,NOK,450.6,114.75,8,1,7,🛡️  Pure Safe,8.1,False,30.0,True,1,False,4.7,False,1.03,False,10.6,True,41.7,True,0.24,True,4.88,True,12.9,True,31.8,True,19.9,True
+MAIN,Main Street Capital Corporation,Financial Services,United States,USD,56.19,5.25,7,1,6,🛡️  Pure Safe,3.9,False,100.0,True,1,False,11.6,False,0.8,False,4.6,False,80.3,True,0.73,True,5.66,True,43.2,True,20.4,True,9.6,True
+KVYO,"Klaviyo, Inc. Series A",Technology,United States,USD,15.42,4.61,7,2,5,🛡️  Pure Safe,26.4,True,73.8,True,1,False,19.9,False,1.03,False,4.0,False,11.8,True,0.57,True,0.0,False,20.5,True,26.4,True,26.4,True
+VOXR,Vox Royalty Corp.,Basic Materials,United States,USD,5.72,0.4,7,3,4,⚖️  Balanced,122.6,True,94.3,True,1,False,11.5,True,0.97,False,0.3,False,,False,0.82,False,1.05,True,120.0,True,122.6,True,122.6,True
+MGTX,MeiraGTx Holdings plc,Healthcare,United States,USD,13.25,1.27,7,3,4,⚖️  Balanced,8608.6,True,97.9,True,1,False,15.4,True,0.85,False,1.1,False,52.1,True,1.27,False,0.0,False,14.2,True,8608.6,True,8608.6,True
+BKT,BlackRock Income Trust Inc. (Th,Financial Services,United States,USD,9.74,0.32,7,3,4,⚖️  Balanced,45.0,True,100.0,True,0,False,-6.9,False,1.23,True,0.3,False,36.0,True,0.5,True,10.87,True,112.3,True,-92.6,False,-24.7,False
+P,"Everpure, Inc.",Technology,United States,USD,104.14,34.7,7,4,3,⚖️  Balanced,37.7,True,69.7,True,0,False,35.2,True,1.41,True,30.2,True,14.6,True,1.43,False,0.0,False,-2.7,False,57.4,False,43.9,True
+RVTY,"Revvity, Inc.",Healthcare,United States,USD,143.45,16.01,6,2,4,⚪ Below,1.3,False,55.0,True,1,False,44.8,True,1.11,False,13.9,True,46.2,True,1.09,False,0.2,True,20.8,True,-3.9,False,1.2,False
+HRZN,Horizon Technology Finance Corp,Financial Services,United States,USD,4.67,0.32,6,2,4,⚪ Below,2.1,False,100.0,True,2,True,12.3,False,1.03,False,0.3,False,96.4,True,0.98,False,15.42,True,27.5,True,2.1,True,2.1,False
+ESI,Element Solutions Inc.,Basic Materials,United States,USD,32.73,7.98,6,2,4,⚪ Below,56.4,True,38.6,True,1,False,-33.3,False,0.98,False,6.9,False,75.0,True,1.26,False,0.98,True,1.6,False,63.1,True,59.1,True
+BCE,"BCE, Inc.",Communication Services,Canada,USD,22.06,20.57,6,2,4,⚪ Below,1.5,False,44.9,True,2,True,-2.6,False,0.86,False,17.9,True,172.8,False,0.61,True,5.7,True,10.5,True,-3.6,False,-1.1,False
+GSL,Global Ship Lease Inc New,Industrials,Greece,USD,45.84,1.65,6,3,3,⚖️  Balanced,2.0,False,68.0,True,2,True,19.6,True,0.99,False,1.4,False,34.5,True,0.85,False,5.45,True,17.0,True,-3.9,False,-1.6,False
+PRGO,Perrigo Company plc,Healthcare,Ireland,USD,13.56,1.88,6,3,3,⚖️  Balanced,-3.2,False,33.3,True,2,True,41.2,True,0.8,False,1.6,False,138.2,False,0.6,True,8.55,True,10.5,True,-3.2,False,-3.2,False
+OBE,Obsidian Energy Ltd.,Energy,Canada,USD,12.26,0.82,6,3,3,⚖️  Balanced,41.7,True,59.3,True,0,False,33.4,True,1.02,False,0.7,False,26.8,True,0.32,True,0.0,False,-11.4,False,174.5,False,116.1,True
+ORCL,Oracle Corporation,Technology,United States,USD,147.61,446.33,6,3,3,⚖️  Balanced,29.6,True,64.0,True,3,True,-15.7,False,0.93,False,388.4,True,251.7,False,1.73,False,1.35,True,-63.9,False,62.6,False,42.1,True
+PKX,POSCO Holdings Inc.,Basic Materials,South Korea,USD,58.21,17.61,5,1,4,⚪ Below,9.7,False,7.9,False,3,True,0.6,False,0.66,False,15.3,True,49.6,True,1.66,False,266.0,True,-4.9,False,328.3,False,169.0,True
+JBL,Jabil Inc.,Technology,United States,USD,299.57,31.39,5,1,4,⚪ Below,11.8,False,9.2,False,2,True,-20.6,False,0.85,False,27.3,True,297.1,False,1.29,False,0.11,True,3.6,False,23.9,True,19.7,True
+HDB,HDFC Bank Limited,Financial Services,India,USD,23.16,119.02,5,1,4,⚪ Below,16.6,False,0.0,False,3,True,-7.7,False,1.02,False,103.6,True,,False,0.4,True,1.76,True,,False,,False,17.4,True
+KT,KT Corporation,Communication Services,South Korea,USD,19.38,9.23,5,2,3,⚪ Below,-10.1,False,100.0,True,1,False,8.6,True,0.82,False,8.0,False,61.7,True,0.09,True,420.0,True,3.1,False,-36.0,False,-22.6,False
+ENEL.MI,ENEL,Utilities,Italy,EUR,8.87,87.99,5,2,3,⚪ Below,8.5,False,38.2,True,2,True,-9.4,False,1.01,False,88.0,True,147.7,False,0.89,False,5.86,True,-0.9,False,32.4,False,20.1,True
+AIRT,"Air T, Inc.",Industrials,United States,USD,31.0,0.08,5,3,2,⚪ Below,62.9,True,22.7,False,1,False,34.8,True,2.01,True,0.1,False,318.4,False,0.28,True,0.0,False,-12.7,False,62.9,False,62.9,True
+PSKY,Paramount Skydance Corporation,Communication Services,United States,USD,10.21,11.43,5,3,2,⚪ Below,0.9,False,33.3,True,2,True,3.2,False,1.22,True,9.9,False,126.5,False,1.52,False,1.96,True,60.4,True,-28.1,False,-26.6,False
+FSUN,FirstSun Capital Bancorp,Financial Services,United States,USD,39.34,1.73,4,2,2,⚪ Below,42.2,True,0.0,False,1,False,9.2,True,1.12,False,1.5,False,,False,0.2,True,0.0,False,,False,,False,42.2,True
+PDM,"Piedmont Realty Trust, Inc.",Real Estate,United States,USD,9.13,1.14,4,2,2,⚪ Below,2.7,False,60.0,True,0,False,1.3,False,1.29,True,1.0,False,152.6,False,1.35,False,0.0,False,45.6,True,2.7,True,2.7,False
+MP,MP Materials Corp.,Basic Materials,United States,USD,47.26,8.42,4,2,2,⚪ Below,119.7,True,42.3,True,1,False,-21.6,False,1.0,False,7.3,False,41.4,True,1.95,False,0.0,False,-104.0,False,119.7,False,119.7,True
+TGB,Trekor Metals Limited,Basic Materials,Canada,USD,8.64,3.16,4,3,1,⚪ Below,184.8,True,46.7,True,1,False,24.1,True,0.99,False,2.8,False,89.4,True,2.07,False,0.0,False,-10.6,False,1.6,False,85.8,False
+RUSHA,"Rush Enterprises, Inc.",Consumer Cyclical,United States,USD,48.92,5.71,3,0,3,⚪ Below,-1.6,False,19.9,False,1,False,3.9,False,0.87,False,5.0,False,63.1,True,0.88,False,1.14,True,4.3,False,0.4,True,-0.3,False
+GRPN,"Groupon, Inc.",Communication Services,United States,USD,19.08,0.78,3,1,2,⚪ Below,-0.8,False,90.7,True,1,False,12.9,False,0.8,False,0.7,False,,False,0.24,True,0.0,False,11.7,True,-0.8,False,-0.8,False
+APTV,Aptiv PLC,Consumer Cyclical,Switzerland,USD,43.59,9.05,3,1,2,⚪ Below,2.3,False,19.3,False,3,True,-31.4,False,1.19,False,7.9,False,64.9,True,1.33,False,0.0,False,7.9,True,-36.9,False,-16.5,False
+RDW,Redwire Corporation,Industrials,United States,USD,10.74,2.68,3,1,2,⚪ Below,89.6,True,22.7,False,1,False,-17.5,False,0.47,False,2.3,False,5.5,True,3.09,False,0.0,False,-6.1,False,89.6,False,89.6,True
+PTON,"Peloton Interactive, Inc.",Consumer Cyclical,United States,USD,4.97,2.18,3,1,2,⚪ Below,0.1,False,52.6,True,1,False,-8.5,False,0.77,False,1.9,False,,False,2.53,False,0.0,False,14.5,True,185.2,True,80.4,False
+BFS,"Saul Centers, Inc.",Real Estate,United States,USD,30.24,0.75,3,1,2,⚪ Below,8.4,False,70.3,True,0,False,-15.5,False,1.18,False,0.7,False,341.8,False,0.88,False,7.8,True,28.0,True,-18.3,False,-9.2,False
+SQFT,"Presidio Property Trust, Inc.",Real Estate,United States,USD,1.26,0.0,3,2,1,⚪ Below,-12.9,False,63.0,True,1,False,-51.7,False,2.88,True,0.0,False,374.2,False,1.82,False,0.0,False,13.5,True,-12.9,False,-12.9,False
+XENE,Xenon Pharmaceuticals Inc.,Healthcare,Canada,USD,39.75,3.85,2,0,2,⚪ Below,,False,0.0,False,1,False,-27.5,False,0.94,False,3.4,False,0.5,True,0.62,True,0.0,False,,False,,False,,False
+CMPS,COMPASS Pathways Plc - American,Healthcare,United Kingdom,USD,15.19,2.1,2,0,2,⚪ Below,,False,0.0,False,0,False,20.3,False,0.72,False,1.8,False,64.6,True,2.55,False,0.0,False,,False,,True,,False
+LVHI,Franklin International Low Vola,N/A,N/A,USD,42.26,,2,1,1,⚪ Below,,False,,False,1,False,3.9,False,1.33,True,,False,,False,,False,3.71,True,,False,,False,,False
+TSHA,"Taysha Gene Therapies, Inc.",Healthcare,United States,USD,5.02,1.64,2,1,1,⚪ Below,,False,100.0,True,1,False,-23.1,False,0.98,False,1.4,False,14.6,True,1.17,False,0.0,False,-1476.1,False,,False,,False
+LINK-USD,Chainlink USD,N/A,N/A,USD,12.46,9.35,2,2,0,⚪ Below,,False,,False,1,False,45.2,True,1.33,True,8.1,False,,False,,False,,False,,False,,False,,False
+EWC,iShares MSCI Canada Index Fund,N/A,N/A,USD,60.22,,1,0,1,⚪ Below,,False,,False,1,False,4.0,False,0.96,False,,False,,False,,False,1.22,True,,False,,False,,False
+EUFN,iShares MSCI Europe Financials ,N/A,N/A,USD,41.12,,1,0,1,⚪ Below,,False,,False,1,False,5.2,False,1.14,False,,False,,False,,False,3.92,True,,False,,False,,False
+RGS,Regis Corporation,Consumer Cyclical,United States,USD,26.71,0.07,1,1,0,⚪ Below,-7.3,False,37.5,True,1,False,-2.2,False,1.11,False,0.1,False,155.5,False,1.42,False,0.0,False,2.7,False,-96.2,False,-51.9,False
+IPF,SPDR S&P International Financia,N/A,N/A,USD,22.59,,0,0,0,⚪ Below,,False,,False,1,False,,False,,False,,False,,False,,False,,False,,False,,False,,False
+SPCH,Leverage Shares 2X Long SPCX Da,N/A,N/A,USD,10.4,,0,0,0,⚪ Below,,False,,False,1,False,,False,,False,,False,,False,,False,0.0,False,,False,,False,,False
+^GDAXI,DAX                           P,N/A,N/A,EUR,25304.06,,0,0,0,⚪ Below,,False,,False,0,False,2.3,False,0.88,False,,False,,False,,False,,False,,False,,False,,False
+NEBX,Tradr 2X Long NBIS Daily ETF,N/A,N/A,USD,24.7,,0,0,0,⚪ Below,,False,,False,1,False,-60.9,False,1.03,False,,False,,False,,False,0.0,False,,False,,False,,False
+ZEAL,ZEAL,N/A,N/A,N/A,,,0,0,0,⚪ Below,,False,,False,0,False,,False,,False,,False,,False,,False,,False,,False,,False,,False
+EDF.PA,EDF.PA,N/A,N/A,N/A,,,0,0,0,⚪ Below,,False,,False,0,False,,False,,False,,False,,False,,False,,False,,False,,False,,False
