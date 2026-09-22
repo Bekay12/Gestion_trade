@@ -123,6 +123,33 @@ class TestSqueeze(unittest.TestCase):
         self.assertNotEqual(v.classe, "SQUEEZE")
 
 
+class TestSqueezeNeSuffitPas(unittest.TestCase):
+    """Cas reel LXEO, 22.09.2026: SI 29,1 %, catalyseur verifie, RVOL 5,0 - et
+    pourtant gap comble, cloture sous le VWAP et sous la cloture de la veille.
+    Le short interest ne rachete pas une seance de distribution."""
+
+    def test_sous_vwap_interdit_le_squeeze(self):
+        v = qualifier(_base(short_interest_pct=29.1, rvol=5.0, prix=4.07, vwap=4.145))
+        self.assertNotEqual(v.classe, "SQUEEZE")
+        self.assertTrue(any("VWAP" in a for a in v.alertes))
+
+    def test_gap_non_tenu_interdit_le_squeeze(self):
+        v = qualifier(_base(short_interest_pct=29.1, rvol=5.0, gap_tenu_30min=False))
+        self.assertNotEqual(v.classe, "SQUEEZE")
+
+    def test_squeeze_reste_possible_au_dessus_du_vwap_et_gap_tenu(self):
+        """La garde ne doit pas tuer le vrai cas."""
+        v = qualifier(_base(short_interest_pct=29.1, rvol=5.0, prix=4.40,
+                            vwap=4.20, gap_tenu_30min=True))
+        self.assertEqual(v.classe, "SQUEEZE")
+
+    def test_gap_tenu_inconnu_n_interdit_pas_le_squeeze(self):
+        """Inconnu n'est pas faux: avant l'ouverture, la tenue n'est pas mesurable."""
+        v = qualifier(_base(short_interest_pct=29.1, rvol=5.0, prix=4.40,
+                            vwap=4.20, gap_tenu_30min=None))
+        self.assertEqual(v.classe, "SQUEEZE")
+
+
 class TestContinuationEtFade(unittest.TestCase):
 
     def test_catalyseur_rvol_fort_au_dessus_vwap_donne_continuation(self):

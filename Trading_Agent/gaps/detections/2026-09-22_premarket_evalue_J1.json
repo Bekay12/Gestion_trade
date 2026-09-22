@@ -1,0 +1,28 @@
+{
+ "detection": "2026-09-22_premarket.json",
+ "evalue_le": "2026-09-22T22:09:33.710837",
+ "fenetre_jours": 1,
+ "notes": [
+  {
+   "ticker": "LXEO",
+   "classe": "A_CONFIRMER",
+   "resultat": "comble",
+   "motif": "gap comble, cloture -5.6 % : l'attente a evite l'entree",
+   "variation_pct": -5.57
+  },
+  {
+   "ticker": "GDC",
+   "classe": "INSUFFISANT",
+   "resultat": "non juge",
+   "motif": "ecarte a la detection, aucune promesse",
+   "variation_pct": -12.57
+  },
+  {
+   "ticker": "VEEA",
+   "classe": "INSUFFISANT",
+   "resultat": "non juge",
+   "motif": "ecarte a la detection, aucune promesse",
+   "variation_pct": -0.83
+  }
+ ]
+}

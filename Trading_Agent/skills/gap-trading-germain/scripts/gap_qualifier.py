@@ -197,11 +197,20 @@ def qualifier(g: Gap) -> Verdict:
 
     # 3. Squeeze: la configuration explicite de la formation,
     #    "Short Interest eleve + Low Float + Catalyseur".
+    # Le short interest et le catalyseur ne suffisent pas: un titre sous son VWAP
+    # est en distribution, pas en couverture de shorts (P7 Ch.01, et non-negociable
+    # 4 du SKILL.md). Mesure du 22.09.2026 sur LXEO: SI 29,1 %, catalyseur reel,
+    # RVOL 5,0 - et pourtant gap comble, cloture sous le VWAP et sous la cloture
+    # de la veille. Sans ces deux gardes, le code prononcait SQUEEZE sur une
+    # seance de distribution et annoncait un horizon de plusieurs jours.
+    sous_vwap = g.vwap is not None and g.prix is not None and g.prix < g.vwap
     squeeze = (g.short_interest_pct is not None
                and g.short_interest_pct >= SHORT_INTEREST_SQUEEZE
                and catalyseur_haussier
                and rvol_connu and rvol >= RVOL_SURVEILLER
-               and not g.volume_pic_au_sommet)
+               and not g.volume_pic_au_sommet
+               and not sous_vwap
+               and g.gap_tenu_30min is not False)
     if squeeze:
         motifs.append(f"short interest {g.short_interest_pct:.1f} % avant le mouvement "
                       f"(seuil {SHORT_INTEREST_SQUEEZE:.0f} %)")
