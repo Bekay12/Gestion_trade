@@ -9,6 +9,7 @@ trading (actions US, petites capitalisations, catalyseurs de dilution) et un
 | [docu/](docu/) | Sources, synthèse, règles, questionnaire |
 | [agent/](agent/) | Moteur de décision et portefeuille papier |
 | [scripts/youtube/](scripts/youtube/) | Ingestion incrémentale des transcripts |
+| [gaps/](gaps/) | Détections de gaps, notation, backtests, cycle quotidien |
 
 ## Langue
 
@@ -68,6 +69,17 @@ Toutes les suites sont hors ligne : ni réseau, ni clé, ni compte.
 .venv\Scripts\python.exe agent\Test\test_scanner.py   # 31
 .venv\Scripts\python.exe agent\Test\test_doctor.py    # 11
 ```
+
+Le cycle de gaps ajoute sa propre suite, hors ligne elle aussi. Ce dossier
+tourne sous Linux, d'où la forme POSIX :
+
+```bash
+python3 gaps/Test/test_cycle_quotidien.py             # 15
+```
+
+Les suites du skill `gap-trading-germain` vivent dans
+`~/.claude/skills/gap-trading-germain/scripts/Test/` (162 tests), avec une
+copie d'archive dans [skills/](skills/).
 
 Pas de CI. Les lancer manuellement avant toute modification de règle.
 

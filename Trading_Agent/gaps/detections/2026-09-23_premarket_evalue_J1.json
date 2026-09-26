@@ -1,0 +1,112 @@
+{
+ "detection": "2026-09-23_premarket.json",
+ "evalue_le": "2026-09-23T22:04:13.147436",
+ "fenetre_jours": 1,
+ "notes": [
+  {
+   "ticker": "EDVA",
+   "classe": "FADE",
+   "resultat": "juste",
+   "motif": "gap comble dans la seance",
+   "variation_pct": -18.32
+  },
+  {
+   "ticker": "IPDN",
+   "classe": "FADE",
+   "resultat": "juste",
+   "motif": "gap comble dans la seance",
+   "variation_pct": -21.62
+  },
+  {
+   "ticker": "VTGN",
+   "classe": "FADE",
+   "resultat": "juste",
+   "motif": "gap comble dans la seance",
+   "variation_pct": -4.58
+  },
+  {
+   "ticker": "CAPS",
+   "classe": "FADE",
+   "resultat": "juste",
+   "motif": "gap comble dans la seance",
+   "variation_pct": -7.36
+  },
+  {
+   "ticker": "ZONE",
+   "classe": "FADE",
+   "resultat": "juste",
+   "motif": "gap comble dans la seance",
+   "variation_pct": -9.64
+  },
+  {
+   "ticker": "CYPH",
+   "classe": "PUMP_RISK",
+   "resultat": "juste",
+   "motif": "retombe de -4.7 %, l'alerte etait fondee",
+   "variation_pct": -4.75
+  },
+  {
+   "ticker": "TNMG",
+   "classe": "PUMP_RISK",
+   "resultat": "faux",
+   "motif": "a tenu (+13.5 %) : alerte trop severe",
+   "variation_pct": 13.5
+  },
+  {
+   "ticker": "CDT",
+   "classe": "PUMP_RISK",
+   "resultat": "juste",
+   "motif": "retombe de -2.9 %, l'alerte etait fondee",
+   "variation_pct": -2.95
+  },
+  {
+   "ticker": "WHLR",
+   "classe": "PUMP_RISK",
+   "resultat": "faux",
+   "motif": "a tenu (+4.4 %) : alerte trop severe",
+   "variation_pct": 4.41
+  },
+  {
+   "ticker": "GRML",
+   "classe": "PUMP_RISK",
+   "resultat": "juste",
+   "motif": "retombe de -36.0 %, l'alerte etait fondee",
+   "variation_pct": -36.02
+  },
+  {
+   "ticker": "SQFT",
+   "classe": "INSUFFISANT",
+   "resultat": "non juge",
+   "motif": "ecarte a la detection, aucune promesse",
+   "variation_pct": 3.79
+  },
+  {
+   "ticker": "HAO",
+   "classe": "INSUFFISANT",
+   "resultat": "non juge",
+   "motif": "ecarte a la detection, aucune promesse",
+   "variation_pct": -5.67
+  },
+  {
+   "ticker": "BFRG",
+   "classe": "INSUFFISANT",
+   "resultat": "non juge",
+   "motif": "ecarte a la detection, aucune promesse",
+   "variation_pct": 21.19
+  },
+  {
+   "ticker": "DCOY",
+   "classe": "INSUFFISANT",
+   "resultat": "non juge",
+   "motif": "ecarte a la detection, aucune promesse",
+   "variation_pct": -12.1
+  },
+  {
+   "ticker": "WAFU",
+   "classe": "INSUFFISANT",
+   "resultat": "non juge",
+   "motif": "ecarte a la detection, aucune promesse",
+   "variation_pct": -1.23
+  }
+ ]
+}

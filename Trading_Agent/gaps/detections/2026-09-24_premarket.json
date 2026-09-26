@@ -1,0 +1,237 @@
+{
+ "date": "2026-09-24T07:55:53.628433-04:00",
+ "mode": "premarket",
+ "fenetre_au_scan": "premarket",
+ "min_gap": 5,
+ "verdicts": [
+  {
+   "ticker": "DCX",
+   "classe": "PUMP_RISK",
+   "horizon": "aucun",
+   "sortie": "ne pas entrer; si deja en position, sortir",
+   "motifs": [
+    "2 signal(aux) de manipulation presents"
+   ],
+   "alertes": [
+    "montee rapide sans catalyseur identifie (RVOL eleve)",
+    "nano cap (28 M$), facile a manipuler"
+   ],
+   "inconnues": [
+    "catalyseur non verifie (EDGAR / news)",
+    "tenue a 30 min inconnue (mesurable seulement apres l'ouverture)"
+   ],
+   "comblement_attendu_pct": 78
+  },
+  {
+   "ticker": "RETO",
+   "classe": "PUMP_RISK",
+   "horizon": "aucun",
+   "sortie": "ne pas entrer; si deja en position, sortir",
+   "motifs": [
+    "3 signal(aux) de manipulation presents"
+   ],
+   "alertes": [
+    "montee rapide sans catalyseur identifie (RVOL eleve)",
+    "nano cap (6 M$), facile a manipuler",
+    "low float (3.3 M), mouvements violents"
+   ],
+   "inconnues": [
+    "catalyseur non verifie (EDGAR / news)",
+    "tenue a 30 min inconnue (mesurable seulement apres l'ouverture)"
+   ],
+   "comblement_attendu_pct": 78
+  },
+  {
+   "ticker": "TWG",
+   "classe": "PUMP_RISK",
+   "horizon": "aucun",
+   "sortie": "ne pas entrer; si deja en position, sortir",
+   "motifs": [
+    "4 signal(aux) de manipulation presents"
+   ],
+   "alertes": [
+    "montee rapide sans catalyseur identifie (RVOL eleve)",
+    "nano cap (18 M$), facile a manipuler",
+    "low float (16.1 M), mouvements violents",
+    "cours sous le VWAP (-1.5 %), pression vendeuse"
+   ],
+   "inconnues": [
+    "catalyseur non verifie (EDGAR / news)",
+    "tenue a 30 min inconnue (mesurable seulement apres l'ouverture)"
+   ],
+   "comblement_attendu_pct": 78
+  },
+  {
+   "ticker": "CDT",
+   "classe": "PUMP_RISK",
+   "horizon": "aucun",
+   "sortie": "ne pas entrer; si deja en position, sortir",
+   "motifs": [
+    "4 signal(aux) de manipulation presents"
+   ],
+   "alertes": [
+    "montee rapide sans catalyseur identifie (RVOL eleve)",
+    "nano cap (2 M$), facile a manipuler",
+    "low float (0.3 M), mouvements violents",
+    "cours sous le VWAP (-4.9 %), pression vendeuse"
+   ],
+   "inconnues": [
+    "catalyseur non verifie (EDGAR / news)",
+    "tenue a 30 min inconnue (mesurable seulement apres l'ouverture)"
+   ],
+   "comblement_attendu_pct": 78
+  },
+  {
+   "ticker": "ZBAO",
+   "classe": "PUMP_RISK",
+   "horizon": "aucun",
+   "sortie": "ne pas entrer; si deja en position, sortir",
+   "motifs": [
+    "4 signal(aux) de manipulation presents"
+   ],
+   "alertes": [
+    "montee rapide sans catalyseur identifie (RVOL eleve)",
+    "nano cap (45 M$), facile a manipuler",
+    "low float (8.1 M), mouvements violents",
+    "cours sous le VWAP (-9.4 %), pression vendeuse"
+   ],
+   "inconnues": [
+    "catalyseur non verifie (EDGAR / news)",
+    "tenue a 30 min inconnue (mesurable seulement apres l'ouverture)"
+   ],
+   "comblement_attendu_pct": 78
+  },
+  {
+   "ticker": "SDEV",
+   "classe": "PUMP_RISK",
+   "horizon": "aucun",
+   "sortie": "ne pas entrer; si deja en position, sortir",
+   "motifs": [
+    "1 signal(aux) de manipulation presents"
+   ],
+   "alertes": [
+    "montee rapide sans catalyseur identifie (RVOL eleve)"
+   ],
+   "inconnues": [
+    "catalyseur non verifie (EDGAR / news)",
+    "tenue a 30 min inconnue (mesurable seulement apres l'ouverture)"
+   ],
+   "comblement_attendu_pct": 42
+  },
+  {
+   "ticker": "NCPL",
+   "classe": "PUMP_RISK",
+   "horizon": "aucun",
+   "sortie": "ne pas entrer; si deja en position, sortir",
+   "motifs": [
+    "3 signal(aux) de manipulation presents"
+   ],
+   "alertes": [
+    "montee rapide sans catalyseur identifie (RVOL eleve)",
+    "nano cap (8 M$), facile a manipuler",
+    "low float (4.4 M), mouvements violents"
+   ],
+   "inconnues": [
+    "catalyseur non verifie (EDGAR / news)",
+    "tenue a 30 min inconnue (mesurable seulement apres l'ouverture)"
+   ],
+   "comblement_attendu_pct": 25
+  },
+  {
+   "ticker": "GRML",
+   "classe": "PUMP_RISK",
+   "horizon": "aucun",
+   "sortie": "ne pas entrer; si deja en position, sortir",
+   "motifs": [
+    "4 signal(aux) de manipulation presents"
+   ],
+   "alertes": [
+    "montee rapide sans catalyseur identifie (RVOL eleve)",
+    "nano cap (36 M$), facile a manipuler",
+    "low float (2.6 M), mouvements violents",
+    "cours sous le VWAP (-3.6 %), pression vendeuse"
+   ],
+   "inconnues": [
+    "catalyseur non verifie (EDGAR / news)",
+    "tenue a 30 min inconnue (mesurable seulement apres l'ouverture)"
+   ],
+   "comblement_attendu_pct": 25
+  },
+  {
+   "ticker": "PFSA",
+   "classe": "PUMP_RISK",
+   "horizon": "aucun",
+   "sortie": "ne pas entrer; si deja en position, sortir",
+   "motifs": [
+    "3 signal(aux) de manipulation presents"
+   ],
+   "alertes": [
+    "montee rapide sans catalyseur identifie (RVOL eleve)",
+    "nano cap (1 M$), facile a manipuler",
+    "low float (0.5 M), mouvements violents"
+   ],
+   "inconnues": [
+    "catalyseur non verifie (EDGAR / news)",
+    "tenue a 30 min inconnue (mesurable seulement apres l'ouverture)"
+   ],
+   "comblement_attendu_pct": 8
+  },
+  {
+   "ticker": "WETO",
+   "classe": "PUMP_RISK",
+   "horizon": "aucun",
+   "sortie": "ne pas entrer; si deja en position, sortir",
+   "motifs": [
+    "3 signal(aux) de manipulation presents"
+   ],
+   "alertes": [
+    "montee rapide sans catalyseur identifie (RVOL eleve)",
+    "nano cap (2 M$), facile a manipuler",
+    "low float (0.2 M), mouvements violents"
+   ],
+   "inconnues": [
+    "catalyseur non verifie (EDGAR / news)",
+    "tenue a 30 min inconnue (mesurable seulement apres l'ouverture)"
+   ],
+   "comblement_attendu_pct": 8
+  },
+  {
+   "ticker": "VRME",
+   "classe": "INSUFFISANT",
+   "horizon": "aucun",
+   "sortie": "ne pas entrer",
+   "motifs": [
+    "volume moyen 38,550 < 100,000 (plancher structurel: sortie de position incertaine)"
+   ],
+   "alertes": [
+    "montee rapide sans catalyseur identifie (RVOL eleve)",
+    "nano cap (15 M$), facile a manipuler",
+    "low float (10.8 M), mouvements violents"
+   ],
+   "inconnues": [
+    "catalyseur non verifie (EDGAR / news)",
+    "tenue a 30 min inconnue (mesurable seulement apres l'ouverture)"
+   ],
+   "comblement_attendu_pct": 42
+  },
+  {
+   "ticker": "GCTK",
+   "classe": "INSUFFISANT",
+   "horizon": "aucun",
+   "sortie": "ne pas entrer",
+   "motifs": [
+    "volume moyen 59,300 < 100,000 (plancher structurel: sortie de position incertaine)"
+   ],
+   "alertes": [
+    "montee rapide sans catalyseur identifie (RVOL eleve)",
+    "nano cap (2 M$), facile a manipuler",
+    "low float (0.6 M), mouvements violents"
+   ],
+   "inconnues": [
+    "catalyseur non verifie (EDGAR / news)",
+    "tenue a 30 min inconnue (mesurable seulement apres l'ouverture)"
+   ],
+   "comblement_attendu_pct": 8
+  }
+ ]
+}

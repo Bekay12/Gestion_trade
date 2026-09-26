@@ -1,0 +1,187 @@
+{
+ "BENF": {
+  "float_actions": 1531507,
+  "market_cap": 22613562,
+  "short_interest_pct": 13.35
+ },
+ "BFRG": {
+  "float_actions": 15971037,
+  "market_cap": 12341324,
+  "short_interest_pct": 0.63
+ },
+ "CAPS": {
+  "float_actions": 11146784,
+  "market_cap": 3554733,
+  "short_interest_pct": 0.68
+ },
+ "CDT": {
+  "float_actions": 343924,
+  "market_cap": 1095509,
+  "short_interest_pct": 1.78
+ },
+ "CTNT": {
+  "float_actions": 1109199,
+  "market_cap": 42001,
+  "short_interest_pct": 29.86
+ },
+ "CYPH": {
+  "float_actions": 74751841,
+  "market_cap": 443989248,
+  "short_interest_pct": 11.38
+ },
+ "DCOY": {
+  "float_actions": 586404,
+  "market_cap": 2024521,
+  "short_interest_pct": 1.62
+ },
+ "DCX": {
+  "float_actions": 335783143,
+  "market_cap": 115901,
+  "short_interest_pct": 0.04
+ },
+ "EDVA": {
+  "float_actions": 6346216,
+  "market_cap": 1329999,
+  "short_interest_pct": 4.9
+ },
+ "FTHM": {
+  "float_actions": 24332977,
+  "market_cap": 19942822,
+  "short_interest_pct": 2.12
+ },
+ "GCTK": {
+  "float_actions": 636239,
+  "market_cap": 1852791,
+  "short_interest_pct": 12.11
+ },
+ "GDC": {
+  "float_actions": 4090239,
+  "market_cap": 5661000,
+  "short_interest_pct": 11.41
+ },
+ "GETY": {
+  "float_actions": 196228291,
+  "market_cap": 58239508,
+  "short_interest_pct": 13.01
+ },
+ "GLND": {
+  "float_actions": null,
+  "market_cap": 242265264,
+  "short_interest_pct": null
+ },
+ "GRML": {
+  "float_actions": 2623990,
+  "market_cap": 111648976,
+  "short_interest_pct": 9.08
+ },
+ "HAO": {
+  "float_actions": 19864,
+  "market_cap": 1061765,
+  "short_interest_pct": 6.45
+ },
+ "IFBD": {
+  "float_actions": 8186773,
+  "market_cap": 10972691,
+  "short_interest_pct": 0.17
+ },
+ "INLF": {
+  "float_actions": 1392,
+  "market_cap": 5560519,
+  "short_interest_pct": 1.18
+ },
+ "IPDN": {
+  "float_actions": 364962,
+  "market_cap": 2996149,
+  "short_interest_pct": 8.58
+ },
+ "LXEO": {
+  "float_actions": 51225651,
+  "market_cap": 271711776,
+  "short_interest_pct": 29.32
+ },
+ "NCPL": {
+  "float_actions": 4387760,
+  "market_cap": 10673143,
+  "short_interest_pct": 3.15
+ },
+ "ONCO": {
+  "float_actions": 3949068,
+  "market_cap": 4511937,
+  "short_interest_pct": 3.09
+ },
+ "PFSA": {
+  "float_actions": 518192,
+  "market_cap": 1320482,
+  "short_interest_pct": 5.21
+ },
+ "RETO": {
+  "float_actions": 3269702,
+  "market_cap": 5508602,
+  "short_interest_pct": 0.31
+ },
+ "SDEV": {
+  "float_actions": 22550189,
+  "market_cap": 75417000,
+  "short_interest_pct": 4.35
+ },
+ "SQFT": {
+  "float_actions": 977972,
+  "market_cap": 2151648,
+  "short_interest_pct": 5.24
+ },
+ "SUGP": {
+  "float_actions": 435803,
+  "market_cap": 1393299,
+  "short_interest_pct": 3.87
+ },
+ "TNMG": {
+  "float_actions": 237283,
+  "market_cap": 26711310,
+  "short_interest_pct": 0.13
+ },
+ "TWG": {
+  "float_actions": 16098871,
+  "market_cap": 10809768,
+  "short_interest_pct": 0.53
+ },
+ "VEEA": {
+  "float_actions": 1521105,
+  "market_cap": 9580980,
+  "short_interest_pct": 64.77
+ },
+ "VRME": {
+  "float_actions": 10774528,
+  "market_cap": 12637272,
+  "short_interest_pct": 0.51
+ },
+ "VTGN": {
+  "float_actions": 41422740,
+  "market_cap": 12114897,
+  "short_interest_pct": 6.12
+ },
+ "WAFU": {
+  "float_actions": 1274519,
+  "market_cap": 6571733,
+  "short_interest_pct": 20.25
+ },
+ "WETO": {
+  "float_actions": 176268,
+  "market_cap": 1843039,
+  "short_interest_pct": 38.16
+ },
+ "WHLR": {
+  "float_actions": 53650,
+  "market_cap": 2954697,
+  "short_interest_pct": 5.06
+ },
+ "ZBAO": {
+  "float_actions": 8149408,
+  "market_cap": 42786264,
+  "short_interest_pct": 0.02
+ },
+ "ZONE": {
+  "float_actions": 215846634,
+  "market_cap": 65221524,
+  "short_interest_pct": 3.63
+ }
+}

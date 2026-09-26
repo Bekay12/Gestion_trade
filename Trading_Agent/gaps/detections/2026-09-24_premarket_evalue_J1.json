@@ -1,0 +1,91 @@
+{
+ "detection": "2026-09-24_premarket.json",
+ "evalue_le": "2026-09-24T22:25:11.711778",
+ "fenetre_jours": 1,
+ "notes": [
+  {
+   "ticker": "DCX",
+   "classe": "PUMP_RISK",
+   "resultat": "juste",
+   "motif": "retombe de -12.6 %, l'alerte etait fondee",
+   "variation_pct": -12.61
+  },
+  {
+   "ticker": "RETO",
+   "classe": "PUMP_RISK",
+   "resultat": "juste",
+   "motif": "retombe de -1.5 %, l'alerte etait fondee",
+   "variation_pct": -1.48
+  },
+  {
+   "ticker": "TWG",
+   "classe": "PUMP_RISK",
+   "resultat": "juste",
+   "motif": "retombe de -20.0 %, l'alerte etait fondee",
+   "variation_pct": -20.02
+  },
+  {
+   "ticker": "CDT",
+   "classe": "PUMP_RISK",
+   "resultat": "juste",
+   "motif": "retombe de -0.1 %, l'alerte etait fondee",
+   "variation_pct": -0.08
+  },
+  {
+   "ticker": "ZBAO",
+   "classe": "PUMP_RISK",
+   "resultat": "faux",
+   "motif": "a tenu (+11.1 %) : alerte trop severe",
+   "variation_pct": 11.06
+  },
+  {
+   "ticker": "SDEV",
+   "classe": "PUMP_RISK",
+   "resultat": "faux",
+   "motif": "a tenu (+5.7 %) : alerte trop severe",
+   "variation_pct": 5.74
+  },
+  {
+   "ticker": "NCPL",
+   "classe": "PUMP_RISK",
+   "resultat": "juste",
+   "motif": "retombe de -15.6 %, l'alerte etait fondee",
+   "variation_pct": -15.61
+  },
+  {
+   "ticker": "GRML",
+   "classe": "PUMP_RISK",
+   "resultat": "faux",
+   "motif": "a tenu (+16.8 %) : alerte trop severe",
+   "variation_pct": 16.78
+  },
+  {
+   "ticker": "PFSA",
+   "classe": "PUMP_RISK",
+   "resultat": "juste",
+   "motif": "retombe de -14.0 %, l'alerte etait fondee",
+   "variation_pct": -14.04
+  },
+  {
+   "ticker": "WETO",
+   "classe": "PUMP_RISK",
+   "resultat": "juste",
+   "motif": "retombe de -5.9 %, l'alerte etait fondee",
+   "variation_pct": -5.93
+  },
+  {
+   "ticker": "VRME",
+   "classe": "INSUFFISANT",
+   "resultat": "non juge",
+   "motif": "ecarte a la detection, aucune promesse",
+   "variation_pct": -10.06
+  },
+  {
+   "ticker": "GCTK",
+   "classe": "INSUFFISANT",
+   "resultat": "non juge",
+   "motif": "ecarte a la detection, aucune promesse",
+   "variation_pct": 6.17
+  }
+ ]
+}

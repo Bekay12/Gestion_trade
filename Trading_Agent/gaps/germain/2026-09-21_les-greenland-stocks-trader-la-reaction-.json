@@ -1,0 +1,26 @@
+{
+ "url": "https://academygermain.com/actualites/les-greenland-stocks-trader-la-reaction-du-prix-pas-le-theme-21-septembre-2026",
+ "titre": "Les « Greenland stocks » : trader la réaction du prix, pas le thème — 21 septembre 2026",
+ "date": "2026-09-21",
+ "lignes": [
+  {
+   "ticker": "GLND",
+   "societe": "Greenland Energy · États-Unis · non-ADR",
+   "catalyseur": "🟢 Deal Groenland + offre 80 Mile · 🔴 dilution lourde",
+   "resultat": "+1 319,08 $"
+  },
+  {
+   "ticker": "GRML",
+   "societe": "Greenland Mines · Groenland/É.-U. · non-ADR",
+   "catalyseur": "🟢 Terres rares (Sarfartoq) · ⚠ ATM 50 M$",
+   "resultat": "+141,63 $"
+  },
+  {
+   "ticker": "LGHL",
+   "societe": "Lion Group · Singapour · **ADR/ADS**",
+   "catalyseur": "🟠 Narratif crypto (HYPE) · reverse ADS 1-pour-20",
+   "resultat": "+1 672,01 $"
+  }
+ ],
+ "anomalies": []
+}

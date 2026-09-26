@@ -1,0 +1,8074 @@
+{
+ "parametres": {
+  "annees": 2,
+  "min_gap": 5.0,
+  "jours": 3,
+  "sans_statique": true,
+  "tickers": 37
+ },
+ "resultats": [
+  {
+   "date": "2025-10-22",
+   "ticker": "BENF",
+   "classe": "PUMP_RISK",
+   "resultat": "faux",
+   "variation_pct": 0.47,
+   "fenetre": {
+    "ouverture": [
+     6.76800012588501,
+     8.359999656677246,
+     7.599999904632568
+    ],
+    "cloture": [
+     11.920000076293945,
+     7.815999984741211,
+     6.800000190734863
+    ],
+    "bas": [
+     6.335999965667725,
+     6.480000019073486,
+     6.239999771118164
+    ],
+    "haut": [
+     12.479999542236328,
+     9.039999961853027,
+     8.239999771118164
+    ]
+   },
+   "alertes": [
+    "montee rapide sans catalyseur identifie (RVOL eleve)"
+   ],
+   "gap_pct": 73.72,
+   "rvol": 256.67,
+   "rvol_pre_tendance": 1171.49,
+   "atr_pct": 11.51
+  },
+  {
+   "date": "2025-10-31",
+   "ticker": "BENF",
+   "classe": "PUMP_RISK",
+   "resultat": "faux",
+   "variation_pct": 0.73,
+   "fenetre": {
+    "ouverture": [
+     5.447999954223633,
+     5.671999931335449,
+     5.440000057220459
+    ],
+    "cloture": [
+     6.624000072479248,
+     5.74399995803833,
+     5.48799991607666
+    ],
+    "bas": [
+     5.360000133514404,
+     5.607999801635742,
+     5.440000057220459
+    ],
+    "haut": [
+     7.4079999923706055,
+     6.544000148773193,
+     5.616000175476074
+    ]
+   },
+   "alertes": [
+    "montee rapide sans catalyseur identifie (RVOL eleve)"
+   ],
+   "gap_pct": 22.04,
+   "rvol": 97.73,
+   "rvol_pre_tendance": 361.19,
+   "atr_pct": 28.25
+  },
+  {
+   "date": "2024-12-27",
+   "ticker": "BFRG",
+   "classe": "PUMP_RISK",
+   "resultat": "juste",
+   "variation_pct": -21.26,
+   "fenetre": {
+    "ouverture": [
+     2.5399999618530273,
+     2.200000047683716,
+     2.190000057220459
+    ],
+    "cloture": [
+     2.2100000381469727,
+     2.1700000762939453,
+     2.0
+    ],
+    "bas": [
+     2.0999999046325684,
+     2.009999990463257,
+     1.9500000476837158
+    ],
+    "haut": [
+     2.5399999618530273,
+     2.2799999713897705,
+     2.190000057220459
+    ]
+   },
+   "alertes": [
+    "montee rapide sans catalyseur identifie (RVOL eleve)",
+    "repasse sous la cloture de la veille (-3.5 %): le gap est efface, tout acheteur du jour est en perte"
+   ],
+   "gap_pct": 10.92,
+   "rvol": 9.56,
+   "rvol_pre_tendance": 18.32,
+   "atr_pct": 13.23
+  },
+  {
+   "date": "2025-01-22",
+   "ticker": "BFRG",
+   "classe": "PUMP_RISK",
+   "resultat": "juste",
+   "variation_pct": -4.0,
+   "fenetre": {
+    "ouverture": [
+     2.5,
+     2.569999933242798,
+     2.5999999046325684
+    ],
+    "cloture": [
+     2.6600000858306885,
+     2.5999999046325684,
+     2.4000000953674316
+    ],
+    "bas": [
+     2.4000000953674316,
+     2.3399999141693115,
+     2.369999885559082
+    ],
+    "haut": [
+     2.950000047683716,
+     2.696000099182129,
+     2.635999917984009
+    ]
+   },
+   "alertes": [
+    "montee rapide sans catalyseur identifie (RVOL eleve)"
+   ],
+   "gap_pct": 6.84,
+   "rvol": 13.77,
+   "rvol_pre_tendance": 31.29,
+   "atr_pct": 9.58
+  },
+  {
+   "date": "2025-02-10",
+   "ticker": "BFRG",
+   "classe": "PUMP_RISK",
+   "resultat": "faux",
+   "variation_pct": 0.62,
+   "fenetre": {
+    "ouverture": [
+     3.2200000286102295,
+     3.509999990463257,
+     2.819999933242798
+    ],
+    "cloture": [
+     3.359999895095825,
+     3.015000104904175,
+     3.240000009536743
+    ],
+    "bas": [
+     3.200000047683716,
+     3.009999990463257,
+     2.809999942779541
+    ],
+    "haut": [
+     4.348999977111816,
+     4.0,
+     3.5
+    ]
+   },
+   "alertes": [
+    "montee rapide sans catalyseur identifie (RVOL eleve)"
+   ],
+   "gap_pct": 12.59,
+   "rvol": 37.83,
+   "rvol_pre_tendance": 114.01,
+   "atr_pct": 12.58
+  },
+  {
+   "date": "2025-03-03",
+   "ticker": "BFRG",
+   "classe": "FADE",
+   "resultat": "juste",
+   "variation_pct": -20.89,
+   "fenetre": {
+    "ouverture": [
+     2.3889999389648438,
+     1.7999999523162842,
+     1.9299999475479126
+    ],
+    "cloture": [
+     1.8899999856948853,
+     1.899999976158142,
+     1.9700000286102295
+    ],
+    "bas": [
+     1.8700000047683716,
+     1.7599999904632568,
+     1.8200000524520874
+    ],
+    "haut": [
+     2.3889999389648438,
+     1.9800000190734863,
+     1.9900000095367432
+    ]
+   },
+   "alertes": [
+    "repasse sous la cloture de la veille (-9.6 %): le gap est efface, tout acheteur du jour est en perte"
+   ],
+   "gap_pct": 14.31,
+   "rvol": 0.74,
+   "rvol_pre_tendance": 3.18,
+   "atr_pct": 31.35
+  },
+  {
+   "date": "2025-04-11",
+   "ticker": "BFRG",
+   "classe": "PUMP_RISK",
+   "resultat": "faux",
+   "variation_pct": 5.23,
+   "fenetre": {
+    "ouverture": [
+     1.5299999713897705,
+     2.0799999237060547,
+     1.7300000190734863
+    ],
+    "cloture": [
+     2.0999999046325684,
+     1.7899999618530273,
+     1.6100000143051147
+    ],
+    "bas": [
+     1.4199999570846558,
+     1.7100000381469727,
+     1.590000033378601
+    ],
+    "haut": [
+     2.200000047683716,
+     2.119999885559082,
+     1.850000023841858
+    ]
+   },
+   "alertes": [
+    "montee rapide sans catalyseur identifie (RVOL eleve)"
+   ],
+   "gap_pct": 8.51,
+   "rvol": 104.42,
+   "rvol_pre_tendance": 24.49,
+   "atr_pct": 11.94
+  },
+  {
+   "date": "2026-02-17",
+   "ticker": "BFRG",
+   "classe": "FADE",
+   "resultat": "juste",
+   "variation_pct": -2.0,
+   "fenetre": {
+    "ouverture": [
+     0.5,
+     0.49000000953674316,
+     0.5669999718666077
+    ],
+    "cloture": [
+     0.49000000953674316,
+     0.5389999747276306,
+     0.6420000195503235
+    ],
+    "bas": [
+     0.47999998927116394,
+     0.47999998927116394,
+     0.550000011920929
+    ],
+    "haut": [
+     0.6050000190734863,
+     0.5899999737739563,
+     0.6830000281333923
+    ]
+   },
+   "alertes": [
+    "montee rapide sans catalyseur identifie (RVOL eleve)"
+   ],
+   "gap_pct": 8.7,
+   "rvol": 2.66,
+   "rvol_pre_tendance": 9.19,
+   "atr_pct": 15.45
+  },
+  {
+   "date": "2026-02-19",
+   "ticker": "BFRG",
+   "classe": "PUMP_RISK",
+   "resultat": "juste",
+   "variation_pct": -10.58,
+   "fenetre": {
+    "ouverture": [
+     0.5669999718666077,
+     0.6399999856948853,
+     0.5799999833106995
+    ],
+    "cloture": [
+     0.6420000195503235,
+     0.5360000133514404,
+     0.5070000290870667
+    ],
+    "bas": [
+     0.550000011920929,
+     0.527999997138977,
+     0.49000000953674316
+    ],
+    "haut": [
+     0.6830000281333923,
+     0.6700000166893005,
+     0.5839999914169312
+    ]
+   },
+   "alertes": [
+    "montee rapide sans catalyseur identifie (RVOL eleve)"
+   ],
+   "gap_pct": 5.19,
+   "rvol": 2.97,
+   "rvol_pre_tendance": 10.84,
+   "atr_pct": 13.14
+  },
+  {
+   "date": "2026-03-30",
+   "ticker": "BFRG",
+   "classe": "PUMP_RISK",
+   "resultat": "faux",
+   "variation_pct": 54.29,
+   "fenetre": {
+    "ouverture": [
+     1.0499999523162842,
+     1.190000057220459,
+     1.440000057220459
+    ],
+    "cloture": [
+     1.0499999523162842,
+     1.6799999475479126,
+     1.6200000047683716
+    ],
+    "bas": [
+     0.9649999737739563,
+     1.190000057220459,
+     1.3600000143051147
+    ],
+    "haut": [
+     1.5499999523162842,
+     1.9600000381469727,
+     1.7200000286102295
+    ]
+   },
+   "alertes": [
+    "montee rapide sans catalyseur identifie (RVOL eleve)"
+   ],
+   "gap_pct": 106.69,
+   "rvol": 3456.75,
+   "rvol_pre_tendance": 1418.16,
+   "atr_pct": 12.52
+  },
+  {
+   "date": "2026-03-31",
+   "ticker": "BFRG",
+   "classe": "PUMP_RISK",
+   "resultat": "faux",
+   "variation_pct": 0.84,
+   "fenetre": {
+    "ouverture": [
+     1.190000057220459,
+     1.440000057220459,
+     1.5
+    ],
+    "cloture": [
+     1.6799999475479126,
+     1.6200000047683716,
+     1.2000000476837158
+    ],
+    "bas": [
+     1.190000057220459,
+     1.3600000143051147,
+     1.1299999952316284
+    ],
+    "haut": [
+     1.9600000381469727,
+     1.7200000286102295,
+     1.5
+    ]
+   },
+   "alertes": [
+    "montee rapide sans catalyseur identifie (RVOL eleve)"
+   ],
+   "gap_pct": 13.33,
+   "rvol": 1632.09,
+   "rvol_pre_tendance": 669.57,
+   "atr_pct": 11.36
+  },
+  {
+   "date": "2026-04-13",
+   "ticker": "BFRG",
+   "classe": "PUMP_RISK",
+   "resultat": "juste",
+   "variation_pct": -20.51,
+   "fenetre": {
+    "ouverture": [
+     1.1799999475479126,
+     1.0299999713897705,
+     1.0199999809265137
+    ],
+    "cloture": [
+     1.0499999523162842,
+     1.0099999904632568,
+     0.9380000233650208
+    ],
+    "bas": [
+     0.9549999833106995,
+     0.9649999737739563,
+     0.9049999713897705
+    ],
+    "haut": [
+     1.1799999475479126,
+     1.0499999523162842,
+     1.0199999809265137
+    ]
+   },
+   "alertes": [
+    "montee rapide sans catalyseur identifie (RVOL eleve)"
+   ],
+   "gap_pct": 33.18,
+   "rvol": 46.95,
+   "rvol_pre_tendance": 49.54,
+   "atr_pct": 29.52
+  },
+  {
+   "date": "2026-05-26",
+   "ticker": "BFRG",
+   "classe": "FADE",
+   "resultat": "juste",
+   "variation_pct": 2.76,
+   "fenetre": {
+    "ouverture": [
+     0.6890000104904175,
+     0.699999988079071,
+     0.699999988079071
+    ],
+    "cloture": [
+     0.7080000042915344,
+     0.6729999780654907,
+     0.7200000286102295
+    ],
+    "bas": [
+     0.671999990940094,
+     0.6600000262260437,
+     0.6710000038146973
+    ],
+    "haut": [
+     0.7300000190734863,
+     0.7149999737739563,
+     0.7599999904632568
+    ]
+   },
+   "alertes": [],
+   "gap_pct": 5.35,
+   "rvol": 1.6,
+   "rvol_pre_tendance": 1.86,
+   "atr_pct": 7.35
+  },
+  {
+   "date": "2025-09-18",
+   "ticker": "CAPS",
+   "classe": "PUMP_RISK",
+   "resultat": "juste",
+   "variation_pct": -8.28,
+   "fenetre": {
+    "ouverture": [
+     1.4500000476837158,
+     1.5199999809265137,
+     1.3799999952316284
+    ],
+    "cloture": [
+     1.5199999809265137,
+     1.399999976158142,
+     1.3300000429153442
+    ],
+    "bas": [
+     1.340000033378601,
+     1.3799999952316284,
+     1.2599999904632568
+    ],
+    "haut": [
+     1.5700000524520874,
+     1.5399999618530273,
+     1.3799999952316284
+    ]
+   },
+   "alertes": [
+    "montee rapide sans catalyseur identifie (RVOL eleve)"
+   ],
+   "gap_pct": 15.08,
+   "rvol": 32.98,
+   "rvol_pre_tendance": 90.94,
+   "atr_pct": 6.67
+  },
+  {
+   "date": "2025-10-01",
+   "ticker": "CAPS",
+   "classe": "PUMP_RISK",
+   "resultat": "juste",
+   "variation_pct": -6.43,
+   "fenetre": {
+    "ouverture": [
+     1.399999976158142,
+     1.25,
+     1.3700000047683716
+    ],
+    "cloture": [
+     1.2799999713897705,
+     1.399999976158142,
+     1.309999942779541
+    ],
+    "bas": [
+     1.2799999713897705,
+     1.25,
+     1.2899999618530273
+    ],
+    "haut": [
+     1.5,
+     1.440000057220459,
+     1.3899999856948853
+    ]
+   },
+   "alertes": [
+    "montee rapide sans catalyseur identifie (RVOL eleve)",
+    "repasse sous la cloture de la veille (-2.3 %): le gap est efface, tout acheteur du jour est en perte"
+   ],
+   "gap_pct": 6.87,
+   "rvol": 106.32,
+   "rvol_pre_tendance": 189.29,
+   "atr_pct": 9.26
+  },
+  {
+   "date": "2026-05-14",
+   "ticker": "CAPS",
+   "classe": "FADE",
+   "resultat": "juste",
+   "variation_pct": -9.09,
+   "fenetre": {
+    "ouverture": [
+     0.33000001311302185,
+     0.30000001192092896,
+     0.2800000011920929
+    ],
+    "cloture": [
+     0.30000001192092896,
+     0.2800000011920929,
+     0.30000001192092896
+    ],
+    "bas": [
+     0.30000001192092896,
+     0.25999999046325684,
+     0.2800000011920929
+    ],
+    "haut": [
+     0.33000001311302185,
+     0.3100000023841858,
+     0.3100000023841858
+    ]
+   },
+   "alertes": [
+    "montee rapide sans catalyseur identifie (RVOL eleve)",
+    "repasse sous la cloture de la veille (-3.2 %): le gap est efface, tout acheteur du jour est en perte"
+   ],
+   "gap_pct": 6.45,
+   "rvol": 1.98,
+   "rvol_pre_tendance": 6.91,
+   "atr_pct": 9.76
+  },
+  {
+   "date": "2026-05-20",
+   "ticker": "CAPS",
+   "classe": "PUMP_RISK",
+   "resultat": "juste",
+   "variation_pct": -9.76,
+   "fenetre": {
+    "ouverture": [
+     0.4099999964237213,
+     0.33000001311302185,
+     0.3100000023841858
+    ],
+    "cloture": [
+     0.38999998569488525,
+     0.33000001311302185,
+     0.3700000047683716
+    ],
+    "bas": [
+     0.3499999940395355,
+     0.33000001311302185,
+     0.3100000023841858
+    ],
+    "haut": [
+     0.47999998927116394,
+     0.3700000047683716,
+     0.3799999952316284
+    ]
+   },
+   "alertes": [
+    "montee rapide sans catalyseur identifie (RVOL eleve)"
+   ],
+   "gap_pct": 32.26,
+   "rvol": 390.53,
+   "rvol_pre_tendance": 1355.89,
+   "atr_pct": 10.07
+  },
+  {
+   "date": "2026-09-23",
+   "ticker": "CAPS",
+   "classe": "PUMP_RISK",
+   "resultat": "juste",
+   "variation_pct": -30.43,
+   "fenetre": {
+    "ouverture": [
+     0.23000000417232513,
+     0.17000000178813934,
+     0.17000000178813934
+    ],
+    "cloture": [
+     0.20000000298023224,
+     0.18000000715255737,
+     0.1599999964237213
+    ],
+    "bas": [
+     0.15000000596046448,
+     0.17000000178813934,
+     0.1599999964237213
+    ],
+    "haut": [
+     0.23000000417232513,
+     0.1899999976158142,
+     0.17000000178813934
+    ]
+   },
+   "alertes": [
+    "montee rapide sans catalyseur identifie (RVOL eleve)"
+   ],
+   "gap_pct": 27.78,
+   "rvol": 496.51,
+   "rvol_pre_tendance": 536.46,
+   "atr_pct": 9.29
+  },
+  {
+   "date": "2026-05-08",
+   "ticker": "CTNT",
+   "classe": "PUMP_RISK",
+   "resultat": "juste",
+   "variation_pct": -10.87,
+   "fenetre": {
+    "ouverture": [
+     2.759999990463257,
+     2.7100000381469727,
+     2.559999942779541
+    ],
+    "cloture": [
+     2.9200000762939453,
+     2.700000047683716,
+     2.4600000381469727
+    ],
+    "bas": [
+     2.609999895095825,
+     2.5899999141693115,
+     2.4600000381469727
+    ],
+    "haut": [
+     3.130000114440918,
+     2.7899999618530273,
+     2.630000114440918
+    ]
+   },
+   "alertes": [
+    "montee rapide sans catalyseur identifie (RVOL eleve)"
+   ],
+   "gap_pct": 11.74,
+   "rvol": 6.71,
+   "rvol_pre_tendance": 96129.11,
+   "atr_pct": 58.73
+  },
+  {
+   "date": "2026-06-02",
+   "ticker": "CTNT",
+   "classe": "PUMP_RISK",
+   "resultat": "juste",
+   "variation_pct": -30.08,
+   "fenetre": {
+    "ouverture": [
+     2.559999942779541,
+     1.5399999618530273,
+     1.690000057220459
+    ],
+    "cloture": [
+     1.649999976158142,
+     1.7400000095367432,
+     1.7899999618530273
+    ],
+    "bas": [
+     1.6200000047683716,
+     1.4800000190734863,
+     1.649999976158142
+    ],
+    "haut": [
+     2.5999999046325684,
+     1.8799999952316284,
+     1.9900000095367432
+    ]
+   },
+   "alertes": [
+    "montee rapide sans catalyseur identifie (RVOL eleve)",
+    "repasse sous la cloture de la veille (-9.3 %): le gap est efface, tout acheteur du jour est en perte"
+   ],
+   "gap_pct": 40.66,
+   "rvol": 82.2,
+   "rvol_pre_tendance": 61449.32,
+   "atr_pct": 15.22
+  },
+  {
+   "date": "2026-06-18",
+   "ticker": "CTNT",
+   "classe": "PUMP_RISK",
+   "resultat": "juste",
+   "variation_pct": -8.33,
+   "fenetre": {
+    "ouverture": [
+     1.9199999570846558,
+     1.6100000143051147,
+     1.7000000476837158
+    ],
+    "cloture": [
+     1.590000033378601,
+     1.8200000524520874,
+     1.7599999904632568
+    ],
+    "bas": [
+     1.465000033378601,
+     1.5700000524520874,
+     1.7000000476837158
+    ],
+    "haut": [
+     2.3499999046325684,
+     1.8899999856948853,
+     1.8899999856948853
+    ]
+   },
+   "alertes": [
+    "montee rapide sans catalyseur identifie (RVOL eleve)"
+   ],
+   "gap_pct": 21.14,
+   "rvol": 56.11,
+   "rvol_pre_tendance": 101.77,
+   "atr_pct": 23.06
+  },
+  {
+   "date": "2026-06-30",
+   "ticker": "CTNT",
+   "classe": "PUMP_RISK",
+   "resultat": "faux",
+   "variation_pct": null,
+   "fenetre": {
+    "ouverture": [
+     1.75,
+     1.559999942779541,
+     1.7999999523162842
+    ],
+    "cloture": [
+     1.659999966621399,
+     1.7999999523162842,
+     1.75
+    ],
+    "bas": [
+     1.5800000429153442,
+     1.559999942779541,
+     1.7100000381469727
+    ],
+    "haut": [
+     1.75,
+     1.8700000047683716,
+     1.850000023841858
+    ]
+   },
+   "alertes": [
+    "montee rapide sans catalyseur identifie (RVOL eleve)"
+   ],
+   "gap_pct": 13.64,
+   "rvol": 13.68,
+   "rvol_pre_tendance": 34.11,
+   "atr_pct": 13.89
+  },
+  {
+   "date": "2026-09-21",
+   "ticker": "CTNT",
+   "classe": "PUMP_RISK",
+   "resultat": "juste",
+   "variation_pct": -24.0,
+   "fenetre": {
+    "ouverture": [
+     0.05000000074505806,
+     0.0430000014603138,
+     0.03400000184774399
+    ],
+    "cloture": [
+     0.04600000008940697,
+     0.04399999976158142,
+     0.03799999877810478
+    ],
+    "bas": [
+     0.0430000014603138,
+     0.04100000113248825,
+     0.032999999821186066
+    ],
+    "haut": [
+     0.05000000074505806,
+     0.04500000178813934,
+     0.03999999910593033
+    ]
+   },
+   "alertes": [
+    "montee rapide sans catalyseur identifie (RVOL eleve)",
+    "repasse sous la cloture de la veille (-2.1 %): le gap est efface, tout acheteur du jour est en perte"
+   ],
+   "gap_pct": 6.38,
+   "rvol": 1282.22,
+   "rvol_pre_tendance": 721.13,
+   "atr_pct": 380.59
+  },
+  {
+   "date": "2025-03-26",
+   "ticker": "CYPH",
+   "classe": "PUMP_RISK",
+   "resultat": "juste",
+   "variation_pct": -31.68,
+   "fenetre": {
+    "ouverture": [
+     0.46399998664855957,
+     0.4099999964237213,
+     0.33899998664855957
+    ],
+    "cloture": [
+     0.45399999618530273,
+     0.36500000953674316,
+     0.31700000166893005
+    ],
+    "bas": [
+     0.4099999964237213,
+     0.3610000014305115,
+     0.3050000071525574
+    ],
+    "haut": [
+     0.6499999761581421,
+     0.42399999499320984,
+     0.3490000069141388
+    ]
+   },
+   "alertes": [
+    "montee rapide sans catalyseur identifie (RVOL eleve)"
+   ],
+   "gap_pct": 19.59,
+   "rvol": 418.04,
+   "rvol_pre_tendance": 238.38,
+   "atr_pct": 10.2
+  },
+  {
+   "date": "2025-06-03",
+   "ticker": "CYPH",
+   "classe": "FADE",
+   "resultat": "juste",
+   "variation_pct": -2.11,
+   "fenetre": {
+    "ouverture": [
+     0.3790000081062317,
+     0.36000001430511475,
+     0.41999998688697815
+    ],
+    "cloture": [
+     0.3709999918937683,
+     0.4050000011920929,
+     0.39500001072883606
+    ],
+    "bas": [
+     0.35899999737739563,
+     0.3569999933242798,
+     0.382999986410141
+    ],
+    "haut": [
+     0.40799999237060547,
+     0.41499999165534973,
+     0.41999998688697815
+    ]
+   },
+   "alertes": [],
+   "gap_pct": 5.57,
+   "rvol": 3.21,
+   "rvol_pre_tendance": 2.47,
+   "atr_pct": 10.86
+  },
+  {
+   "date": "2025-06-23",
+   "ticker": "CYPH",
+   "classe": "PUMP_RISK",
+   "resultat": "juste",
+   "variation_pct": -31.22,
+   "fenetre": {
+    "ouverture": [
+     0.4099999964237213,
+     0.30000001192092896,
+     0.27000001072883606
+    ],
+    "cloture": [
+     0.3089999854564667,
+     0.2800000011920929,
+     0.28200000524520874
+    ],
+    "bas": [
+     0.3089999854564667,
+     0.26600000262260437,
+     0.27000001072883606
+    ],
+    "haut": [
+     0.43799999356269836,
+     0.30000001192092896,
+     0.2930000126361847
+    ]
+   },
+   "alertes": [
+    "montee rapide sans catalyseur identifie (RVOL eleve)",
+    "repasse sous la cloture de la veille (-18.0 %): le gap est efface, tout acheteur du jour est en perte"
+   ],
+   "gap_pct": 8.75,
+   "rvol": 194.84,
+   "rvol_pre_tendance": 133.05,
+   "atr_pct": 14.77
+  },
+  {
+   "date": "2025-10-02",
+   "ticker": "CYPH",
+   "classe": "PUMP_RISK",
+   "resultat": "faux",
+   "variation_pct": 38.16,
+   "fenetre": {
+    "ouverture": [
+     0.5529999732971191,
+     0.7210000157356262,
+     0.800000011920929
+    ],
+    "cloture": [
+     0.7300000190734863,
+     0.5339999794960022,
+     0.7639999985694885
+    ],
+    "bas": [
+     0.5199999809265137,
+     0.460999995470047,
+     0.6510000228881836
+    ],
+    "haut": [
+     0.7490000128746033,
+     0.796999990940094,
+     0.984000027179718
+    ]
+   },
+   "alertes": [
+    "montee rapide sans catalyseur identifie (RVOL eleve)"
+   ],
+   "gap_pct": 5.13,
+   "rvol": 12.6,
+   "rvol_pre_tendance": 21.33,
+   "atr_pct": 8.14
+  },
+  {
+   "date": "2025-10-06",
+   "ticker": "CYPH",
+   "classe": "PUMP_RISK",
+   "resultat": "juste",
+   "variation_pct": -6.25,
+   "fenetre": {
+    "ouverture": [
+     0.800000011920929,
+     0.6880000233650208,
+     0.6309999823570251
+    ],
+    "cloture": [
+     0.7639999985694885,
+     0.6259999871253967,
+     0.75
+    ],
+    "bas": [
+     0.6510000228881836,
+     0.6129999756813049,
+     0.6200000047683716
+    ],
+    "haut": [
+     0.984000027179718,
+     0.7440000176429749,
+     0.7689999938011169
+    ]
+   },
+   "alertes": [
+    "montee rapide sans catalyseur identifie (RVOL eleve)"
+   ],
+   "gap_pct": 49.81,
+   "rvol": 131.6,
+   "rvol_pre_tendance": 297.33,
+   "atr_pct": 14.64
+  },
+  {
+   "date": "2025-10-17",
+   "ticker": "CYPH",
+   "classe": "FADE",
+   "resultat": "juste",
+   "variation_pct": -9.06,
+   "fenetre": {
+    "ouverture": [
+     0.6069999933242798,
+     0.574999988079071,
+     0.5099999904632568
+    ],
+    "cloture": [
+     0.5519999861717224,
+     0.5230000019073486,
+     0.4860000014305115
+    ],
+    "bas": [
+     0.550000011920929,
+     0.49399998784065247,
+     0.48100000619888306
+    ],
+    "haut": [
+     0.6200000047683716,
+     0.574999988079071,
+     0.5210000276565552
+    ]
+   },
+   "alertes": [
+    "repasse sous la cloture de la veille (-3.7 %): le gap est efface, tout acheteur du jour est en perte"
+   ],
+   "gap_pct": 5.93,
+   "rvol": 0.74,
+   "rvol_pre_tendance": 2.34,
+   "atr_pct": 26.95
+  },
+  {
+   "date": "2025-11-12",
+   "ticker": "CYPH",
+   "classe": "PUMP_RISK",
+   "resultat": "faux",
+   "variation_pct": 354.55,
+   "fenetre": {
+    "ouverture": [
+     0.6050000190734863,
+     1.4299999475479126,
+     2.059999942779541
+    ],
+    "cloture": [
+     2.049999952316284,
+     1.7599999904632568,
+     2.75
+    ],
+    "bas": [
+     0.5849999785423279,
+     1.340000033378601,
+     1.8899999856948853
+    ],
+    "haut": [
+     2.5399999618530273,
+     1.9800000190734863,
+     3.549999952316284
+    ]
+   },
+   "alertes": [
+    "montee rapide sans catalyseur identifie (RVOL eleve)"
+   ],
+   "gap_pct": 38.13,
+   "rvol": 908.56,
+   "rvol_pre_tendance": 889.43,
+   "atr_pct": 9.45
+  },
+  {
+   "date": "2025-11-14",
+   "ticker": "CYPH",
+   "classe": "PUMP_RISK",
+   "resultat": "faux",
+   "variation_pct": 44.17,
+   "fenetre": {
+    "ouverture": [
+     2.059999942779541,
+     3.0399999618530273,
+     2.2799999713897705
+    ],
+    "cloture": [
+     2.75,
+     2.430000066757202,
+     2.9700000286102295
+    ],
+    "bas": [
+     1.8899999856948853,
+     2.4000000953674316,
+     2.240000009536743
+    ],
+    "haut": [
+     3.549999952316284,
+     3.4200000762939453,
+     3.0899999141693115
+    ]
+   },
+   "alertes": [
+    "montee rapide sans catalyseur identifie (RVOL eleve)"
+   ],
+   "gap_pct": 17.05,
+   "rvol": 281.17,
+   "rvol_pre_tendance": 305.22,
+   "atr_pct": 13.39
+  },
+  {
+   "date": "2025-11-17",
+   "ticker": "CYPH",
+   "classe": "PUMP_RISK",
+   "resultat": "juste",
+   "variation_pct": -3.29,
+   "fenetre": {
+    "ouverture": [
+     3.0399999618530273,
+     2.2799999713897705,
+     3.1649999618530273
+    ],
+    "cloture": [
+     2.430000066757202,
+     2.9700000286102295,
+     2.940000057220459
+    ],
+    "bas": [
+     2.4000000953674316,
+     2.240000009536743,
+     2.700000047683716
+    ],
+    "haut": [
+     3.4200000762939453,
+     3.0899999141693115,
+     3.369999885559082
+    ]
+   },
+   "alertes": [
+    "montee rapide sans catalyseur identifie (RVOL eleve)",
+    "repasse sous la cloture de la veille (-11.6 %): le gap est efface, tout acheteur du jour est en perte"
+   ],
+   "gap_pct": 10.55,
+   "rvol": 97.8,
+   "rvol_pre_tendance": 103.6,
+   "atr_pct": 17.87
+  },
+  {
+   "date": "2025-11-19",
+   "ticker": "CYPH",
+   "classe": "PUMP_RISK",
+   "resultat": "juste",
+   "variation_pct": -27.96,
+   "fenetre": {
+    "ouverture": [
+     3.1649999618530273,
+     3.140000104904175,
+     2.890000104904175
+    ],
+    "cloture": [
+     2.940000057220459,
+     2.940000057220459,
+     2.2799999713897705
+    ],
+    "bas": [
+     2.700000047683716,
+     2.799999952316284,
+     2.1700000762939453
+    ],
+    "haut": [
+     3.369999885559082,
+     3.700000047683716,
+     2.9200000762939453
+    ]
+   },
+   "alertes": [
+    "montee rapide sans catalyseur identifie (RVOL eleve)",
+    "repasse sous la cloture de la veille (-1.0 %): le gap est efface, tout acheteur du jour est en perte"
+   ],
+   "gap_pct": 6.57,
+   "rvol": 34.38,
+   "rvol_pre_tendance": 38.24,
+   "atr_pct": 18.15
+  },
+  {
+   "date": "2025-11-20",
+   "ticker": "CYPH",
+   "classe": "PUMP_RISK",
+   "resultat": "juste",
+   "variation_pct": -41.72,
+   "fenetre": {
+    "ouverture": [
+     3.140000104904175,
+     2.890000104904175,
+     2.305000066757202
+    ],
+    "cloture": [
+     2.940000057220459,
+     2.2799999713897705,
+     1.8300000429153442
+    ],
+    "bas": [
+     2.799999952316284,
+     2.1700000762939453,
+     1.75
+    ],
+    "haut": [
+     3.700000047683716,
+     2.9200000762939453,
+     2.440000057220459
+    ]
+   },
+   "alertes": [
+    "montee rapide sans catalyseur identifie (RVOL eleve)"
+   ],
+   "gap_pct": 6.8,
+   "rvol": 29.43,
+   "rvol_pre_tendance": 44.29,
+   "atr_pct": 20.23
+  },
+  {
+   "date": "2025-11-26",
+   "ticker": "CYPH",
+   "classe": "PUMP_RISK",
+   "resultat": "juste",
+   "variation_pct": -25.0,
+   "fenetre": {
+    "ouverture": [
+     1.6399999856948853,
+     1.659999966621399,
+     1.3700000047683716
+    ],
+    "cloture": [
+     1.690000057220459,
+     1.5299999713897705,
+     1.2300000190734863
+    ],
+    "bas": [
+     1.4600000381469727,
+     1.5299999713897705,
+     1.2000000476837158
+    ],
+    "haut": [
+     1.7999999523162842,
+     1.7400000095367432,
+     1.4800000190734863
+    ]
+   },
+   "alertes": [
+    "montee rapide sans catalyseur identifie (RVOL eleve)"
+   ],
+   "gap_pct": 10.81,
+   "rvol": 1.63,
+   "rvol_pre_tendance": 15.58,
+   "atr_pct": 43.95
+  },
+  {
+   "date": "2025-12-08",
+   "ticker": "CYPH",
+   "classe": "FADE",
+   "resultat": "juste",
+   "variation_pct": -3.33,
+   "fenetre": {
+    "ouverture": [
+     1.2000000476837158,
+     1.2400000095367432,
+     1.5800000429153442
+    ],
+    "cloture": [
+     1.159999966621399,
+     1.6200000047683716,
+     1.440000057220459
+    ],
+    "bas": [
+     1.159999966621399,
+     1.1799999475479126,
+     1.4299999475479126
+    ],
+    "haut": [
+     1.3799999952316284,
+     1.6699999570846558,
+     1.6200000047683716
+    ]
+   },
+   "alertes": [
+    "montee rapide sans catalyseur identifie (RVOL eleve)"
+   ],
+   "gap_pct": 8.11,
+   "rvol": 0.63,
+   "rvol_pre_tendance": 8.62,
+   "atr_pct": 39.29
+  },
+  {
+   "date": "2025-12-09",
+   "ticker": "CYPH",
+   "classe": "PUMP_RISK",
+   "resultat": "faux",
+   "variation_pct": 27.42,
+   "fenetre": {
+    "ouverture": [
+     1.2400000095367432,
+     1.5800000429153442,
+     1.5399999618530273
+    ],
+    "cloture": [
+     1.6200000047683716,
+     1.440000057220459,
+     1.5800000429153442
+    ],
+    "bas": [
+     1.1799999475479126,
+     1.4299999475479126,
+     1.399999976158142
+    ],
+    "haut": [
+     1.6699999570846558,
+     1.6200000047683716,
+     1.6100000143051147
+    ]
+   },
+   "alertes": [
+    "montee rapide sans catalyseur identifie (RVOL eleve)"
+   ],
+   "gap_pct": 6.9,
+   "rvol": 1.84,
+   "rvol_pre_tendance": 24.51,
+   "atr_pct": 26.63
+  },
+  {
+   "date": "2025-12-11",
+   "ticker": "CYPH",
+   "classe": "FADE",
+   "resultat": "juste",
+   "variation_pct": 2.6,
+   "fenetre": {
+    "ouverture": [
+     1.5399999618530273,
+     1.6399999856948853,
+     1.409999966621399
+    ],
+    "cloture": [
+     1.5800000429153442,
+     1.440000057220459,
+     1.2000000476837158
+    ],
+    "bas": [
+     1.399999976158142,
+     1.409999966621399,
+     1.1699999570846558
+    ],
+    "haut": [
+     1.6100000143051147,
+     1.649999976158142,
+     1.4299999475479126
+    ]
+   },
+   "alertes": [
+    "montee rapide sans catalyseur identifie (RVOL eleve)"
+   ],
+   "gap_pct": 6.94,
+   "rvol": 0.46,
+   "rvol_pre_tendance": 6.89,
+   "atr_pct": 22.02
+  },
+  {
+   "date": "2025-12-19",
+   "ticker": "CYPH",
+   "classe": "PUMP_RISK",
+   "resultat": "faux",
+   "variation_pct": 14.56,
+   "fenetre": {
+    "ouverture": [
+     1.0299999713897705,
+     1.2899999618530273,
+     1.1100000143051147
+    ],
+    "cloture": [
+     1.2999999523162842,
+     1.100000023841858,
+     1.1799999475479126
+    ],
+    "bas": [
+     1.0,
+     1.0700000524520874,
+     1.0399999618530273
+    ],
+    "haut": [
+     1.309999942779541,
+     1.3179999589920044,
+     1.1799999475479126
+    ]
+   },
+   "alertes": [
+    "montee rapide sans catalyseur identifie (RVOL eleve)"
+   ],
+   "gap_pct": 10.16,
+   "rvol": 2.3,
+   "rvol_pre_tendance": 10.3,
+   "atr_pct": 20.18
+  },
+  {
+   "date": "2025-12-29",
+   "ticker": "CYPH",
+   "classe": "FADE",
+   "resultat": "juste",
+   "variation_pct": -7.81,
+   "fenetre": {
+    "ouverture": [
+     1.2799999713897705,
+     1.2000000476837158,
+     1.2999999523162842
+    ],
+    "cloture": [
+     1.1799999475479126,
+     1.309999942779541,
+     1.159999966621399
+    ],
+    "bas": [
+     1.159999966621399,
+     1.159999966621399,
+     1.1200000047683716
+    ],
+    "haut": [
+     1.309999942779541,
+     1.340999960899353,
+     1.3049999475479126
+    ]
+   },
+   "alertes": [
+    "repasse sous la cloture de la veille (-1.7 %): le gap est efface, tout acheteur du jour est en perte"
+   ],
+   "gap_pct": 6.67,
+   "rvol": 1.52,
+   "rvol_pre_tendance": 4.42,
+   "atr_pct": 19.49
+  },
+  {
+   "date": "2026-01-06",
+   "ticker": "CYPH",
+   "classe": "FADE",
+   "resultat": "juste",
+   "variation_pct": -0.83,
+   "fenetre": {
+    "ouverture": [
+     1.2000000476837158,
+     1.1399999856948853,
+     0.9599999785423279
+    ],
+    "cloture": [
+     1.190000057220459,
+     1.100000023841858,
+     1.159999966621399
+    ],
+    "bas": [
+     1.100000023841858,
+     1.0800000429153442,
+     0.9409999847412109
+    ],
+    "haut": [
+     1.2350000143051147,
+     1.1799999475479126,
+     1.1799999475479126
+    ]
+   },
+   "alertes": [],
+   "gap_pct": 5.26,
+   "rvol": 0.63,
+   "rvol_pre_tendance": 1.54,
+   "atr_pct": 15.34
+  },
+  {
+   "date": "2026-02-06",
+   "ticker": "CYPH",
+   "classe": "FADE",
+   "resultat": "faux",
+   "variation_pct": 8.44,
+   "fenetre": {
+    "ouverture": [
+     0.6399999856948853,
+     0.6899999976158142,
+     0.6570000052452087
+    ],
+    "cloture": [
+     0.6940000057220459,
+     0.6800000071525574,
+     0.625
+    ],
+    "bas": [
+     0.6399999856948853,
+     0.6309999823570251,
+     0.6119999885559082
+    ],
+    "haut": [
+     0.7699999809265137,
+     0.7110000252723694,
+     0.6800000071525574
+    ]
+   },
+   "alertes": [],
+   "gap_pct": 5.09,
+   "rvol": 1.05,
+   "rvol_pre_tendance": 0.5,
+   "atr_pct": 15.31
+  },
+  {
+   "date": "2026-03-04",
+   "ticker": "CYPH",
+   "classe": "FADE",
+   "resultat": "juste",
+   "variation_pct": 10.32,
+   "fenetre": {
+    "ouverture": [
+     0.6489999890327454,
+     0.6710000038146973,
+     0.5879999995231628
+    ],
+    "cloture": [
+     0.7160000205039978,
+     0.6159999966621399,
+     0.5139999985694885
+    ],
+    "bas": [
+     0.621999979019165,
+     0.6039999723434448,
+     0.5
+    ],
+    "haut": [
+     0.7440000176429749,
+     0.6800000071525574,
+     0.5899999737739563
+    ]
+   },
+   "alertes": [],
+   "gap_pct": 5.53,
+   "rvol": 2.31,
+   "rvol_pre_tendance": 1.15,
+   "atr_pct": 12.51
+  },
+  {
+   "date": "2026-03-16",
+   "ticker": "CYPH",
+   "classe": "FADE",
+   "resultat": "juste",
+   "variation_pct": 10.16,
+   "fenetre": {
+    "ouverture": [
+     0.6399999856948853,
+     0.7099999785423279,
+     0.7400000095367432
+    ],
+    "cloture": [
+     0.7049999833106995,
+     0.7940000295639038,
+     0.7170000076293945
+    ],
+    "bas": [
+     0.6100000143051147,
+     0.6700000166893005,
+     0.6919999718666077
+    ],
+    "haut": [
+     0.7319999933242798,
+     0.8299999833106995,
+     0.753000020980835
+    ]
+   },
+   "alertes": [],
+   "gap_pct": 10.34,
+   "rvol": 2.14,
+   "rvol_pre_tendance": 1.16,
+   "atr_pct": 12.81
+  },
+  {
+   "date": "2026-03-31",
+   "ticker": "CYPH",
+   "classe": "FADE",
+   "resultat": "faux",
+   "variation_pct": 14.88,
+   "fenetre": {
+    "ouverture": [
+     0.6919999718666077,
+     0.7649999856948853,
+     0.7360000014305115
+    ],
+    "cloture": [
+     0.7950000166893005,
+     0.7699999809265137,
+     0.7630000114440918
+    ],
+    "bas": [
+     0.6919999718666077,
+     0.7350000143051147,
+     0.7210000157356262
+    ],
+    "haut": [
+     0.800000011920929,
+     0.796999990940094,
+     0.7900000214576721
+    ]
+   },
+   "alertes": [],
+   "gap_pct": 10.54,
+   "rvol": 1.27,
+   "rvol_pre_tendance": 0.81,
+   "atr_pct": 11.64
+  },
+  {
+   "date": "2026-04-08",
+   "ticker": "CYPH",
+   "classe": "FADE",
+   "resultat": "juste",
+   "variation_pct": -4.38,
+   "fenetre": {
+    "ouverture": [
+     0.843999981880188,
+     0.8090000152587891,
+     1.0299999713897705
+    ],
+    "cloture": [
+     0.8069999814033508,
+     0.9990000128746033,
+     1.059999942779541
+    ],
+    "bas": [
+     0.7799999713897705,
+     0.75,
+     0.9800000190734863
+    ],
+    "haut": [
+     0.8989999890327454,
+     1.0099999904632568,
+     1.1399999856948853
+    ]
+   },
+   "alertes": [],
+   "gap_pct": 15.78,
+   "rvol": 1.89,
+   "rvol_pre_tendance": 1.21,
+   "atr_pct": 10.55
+  },
+  {
+   "date": "2026-05-06",
+   "ticker": "CYPH",
+   "classe": "PUMP_RISK",
+   "resultat": "juste",
+   "variation_pct": -4.8,
+   "fenetre": {
+    "ouverture": [
+     1.25,
+     1.1399999856948853,
+     1.059999942779541
+    ],
+    "cloture": [
+     1.1299999952316284,
+     1.059999942779541,
+     1.190000057220459
+    ],
+    "bas": [
+     1.0750000476837158,
+     1.0099999904632568,
+     1.0499999523162842
+    ],
+    "haut": [
+     1.2799999713897705,
+     1.149999976158142,
+     1.2100000381469727
+    ]
+   },
+   "alertes": [
+    "montee rapide sans catalyseur identifie (RVOL eleve)"
+   ],
+   "gap_pct": 16.82,
+   "rvol": 7.07,
+   "rvol_pre_tendance": 10.76,
+   "atr_pct": 9.74
+  },
+  {
+   "date": "2026-05-26",
+   "ticker": "CYPH",
+   "classe": "FADE",
+   "resultat": "juste",
+   "variation_pct": -10.08,
+   "fenetre": {
+    "ouverture": [
+     1.2899999618530273,
+     1.149999976158142,
+     1.0499999523162842
+    ],
+    "cloture": [
+     1.159999966621399,
+     1.0700000524520874,
+     1.1200000047683716
+    ],
+    "bas": [
+     1.1100000143051147,
+     1.0399999618530273,
+     1.0299999713897705
+    ],
+    "haut": [
+     1.3990000486373901,
+     1.1579999923706055,
+     1.1510000228881836
+    ]
+   },
+   "alertes": [
+    "repasse sous la cloture de la veille (-3.3 %): le gap est efface, tout acheteur du jour est en perte"
+   ],
+   "gap_pct": 7.5,
+   "rvol": 2.23,
+   "rvol_pre_tendance": 4.44,
+   "atr_pct": 13.92
+  },
+  {
+   "date": "2026-06-08",
+   "ticker": "CYPH",
+   "classe": "PUMP_RISK",
+   "resultat": "faux",
+   "variation_pct": 3.79,
+   "fenetre": {
+    "ouverture": [
+     0.6340000033378601,
+     0.699999988079071,
+     0.6700000166893005
+    ],
+    "cloture": [
+     0.7080000042915344,
+     0.6759999990463257,
+     0.6579999923706055
+    ],
+    "bas": [
+     0.628000020980835,
+     0.6370000243186951,
+     0.6399999856948853
+    ],
+    "haut": [
+     0.7950000166893005,
+     0.7649999856948853,
+     0.7400000095367432
+    ]
+   },
+   "alertes": [
+    "montee rapide sans catalyseur identifie (RVOL eleve)"
+   ],
+   "gap_pct": 22.16,
+   "rvol": 8.24,
+   "rvol_pre_tendance": 16.4,
+   "atr_pct": 28.21
+  },
+  {
+   "date": "2026-06-15",
+   "ticker": "CYPH",
+   "classe": "FADE",
+   "resultat": "juste",
+   "variation_pct": 1.63,
+   "fenetre": {
+    "ouverture": [
+     0.800000011920929,
+     0.800000011920929,
+     0.7599999904632568
+    ],
+    "cloture": [
+     0.8130000233650208,
+     0.7860000133514404,
+     0.7620000243186951
+    ],
+    "bas": [
+     0.7570000290870667,
+     0.7379999756813049,
+     0.7590000033378601
+    ],
+    "haut": [
+     0.8500000238418579,
+     0.8399999737739563,
+     0.8180000185966492
+    ]
+   },
+   "alertes": [
+    "montee rapide sans catalyseur identifie (RVOL eleve)"
+   ],
+   "gap_pct": 23.08,
+   "rvol": 3.42,
+   "rvol_pre_tendance": 6.37,
+   "atr_pct": 20.66
+  },
+  {
+   "date": "2026-07-01",
+   "ticker": "CYPH",
+   "classe": "FADE",
+   "resultat": "juste",
+   "variation_pct": -2.87,
+   "fenetre": {
+    "ouverture": [
+     0.6629999876022339,
+     0.718999981880188,
+     0.6650000214576721
+    ],
+    "cloture": [
+     0.6439999938011169,
+     0.6660000085830688,
+     0.675000011920929
+    ],
+    "bas": [
+     0.6299999952316284,
+     0.6499999761581421,
+     0.6499999761581421
+    ],
+    "haut": [
+     0.6890000104904175,
+     0.7200000286102295,
+     0.6919999718666077
+    ]
+   },
+   "alertes": [],
+   "gap_pct": 8.33,
+   "rvol": 0.49,
+   "rvol_pre_tendance": 0.49,
+   "atr_pct": 12.52
+  },
+  {
+   "date": "2026-07-02",
+   "ticker": "CYPH",
+   "classe": "FADE",
+   "resultat": "juste",
+   "variation_pct": -7.37,
+   "fenetre": {
+    "ouverture": [
+     0.718999981880188,
+     0.6650000214576721,
+     0.6650000214576721
+    ],
+    "cloture": [
+     0.6660000085830688,
+     0.675000011920929,
+     0.699999988079071
+    ],
+    "bas": [
+     0.6499999761581421,
+     0.6499999761581421,
+     0.6330000162124634
+    ],
+    "haut": [
+     0.7200000286102295,
+     0.6919999718666077,
+     0.7829999923706055
+    ]
+   },
+   "alertes": [],
+   "gap_pct": 11.65,
+   "rvol": 0.73,
+   "rvol_pre_tendance": 0.61,
+   "atr_pct": 12.3
+  },
+  {
+   "date": "2026-07-15",
+   "ticker": "CYPH",
+   "classe": "FADE",
+   "resultat": "juste",
+   "variation_pct": -3.95,
+   "fenetre": {
+    "ouverture": [
+     0.7839999794960022,
+     0.734000027179718,
+     0.6740000247955322
+    ],
+    "cloture": [
+     0.753000020980835,
+     0.7129999995231628,
+     0.7080000042915344
+    ],
+    "bas": [
+     0.75,
+     0.6890000104904175,
+     0.6690000295639038
+    ],
+    "haut": [
+     0.7850000262260437,
+     0.7400000095367432,
+     0.7450000047683716
+    ]
+   },
+   "alertes": [],
+   "gap_pct": 7.1,
+   "rvol": 0.63,
+   "rvol_pre_tendance": 0.34,
+   "atr_pct": 8.87
+  },
+  {
+   "date": "2026-08-20",
+   "ticker": "CYPH",
+   "classe": "FADE",
+   "resultat": "juste",
+   "variation_pct": 3.48,
+   "fenetre": {
+    "ouverture": [
+     1.149999976158142,
+     1.3200000524520874,
+     1.8300000429153442
+    ],
+    "cloture": [
+     1.190000057220459,
+     1.4199999570846558,
+     1.6799999475479126
+    ],
+    "bas": [
+     1.0499999523162842,
+     1.184999942779541,
+     1.5299999713897705
+    ],
+    "haut": [
+     1.25,
+     1.4500000476837158,
+     2.0199999809265137
+    ]
+   },
+   "alertes": [
+    "montee rapide sans catalyseur identifie (RVOL eleve)"
+   ],
+   "gap_pct": 7.48,
+   "rvol": 7.77,
+   "rvol_pre_tendance": 4.17,
+   "atr_pct": 8.22
+  },
+  {
+   "date": "2026-08-21",
+   "ticker": "CYPH",
+   "classe": "PUMP_RISK",
+   "resultat": "faux",
+   "variation_pct": 24.24,
+   "fenetre": {
+    "ouverture": [
+     1.3200000524520874,
+     1.8300000429153442,
+     1.559999942779541
+    ],
+    "cloture": [
+     1.4199999570846558,
+     1.6799999475479126,
+     1.6399999856948853
+    ],
+    "bas": [
+     1.184999942779541,
+     1.5299999713897705,
+     1.5299999713897705
+    ],
+    "haut": [
+     1.4500000476837158,
+     2.0199999809265137,
+     1.8200000524520874
+    ]
+   },
+   "alertes": [
+    "montee rapide sans catalyseur identifie (RVOL eleve)"
+   ],
+   "gap_pct": 10.92,
+   "rvol": 14.66,
+   "rvol_pre_tendance": 8.06,
+   "atr_pct": 7.88
+  },
+  {
+   "date": "2026-08-24",
+   "ticker": "CYPH",
+   "classe": "PUMP_RISK",
+   "resultat": "juste",
+   "variation_pct": -10.93,
+   "fenetre": {
+    "ouverture": [
+     1.8300000429153442,
+     1.559999942779541,
+     1.600000023841858
+    ],
+    "cloture": [
+     1.6799999475479126,
+     1.6399999856948853,
+     1.6299999952316284
+    ],
+    "bas": [
+     1.5299999713897705,
+     1.5299999713897705,
+     1.5399999618530273
+    ],
+    "haut": [
+     2.0199999809265137,
+     1.8200000524520874,
+     1.809999942779541
+    ]
+   },
+   "alertes": [
+    "montee rapide sans catalyseur identifie (RVOL eleve)"
+   ],
+   "gap_pct": 28.87,
+   "rvol": 27.59,
+   "rvol_pre_tendance": 17.38,
+   "atr_pct": 8.92
+  },
+  {
+   "date": "2026-08-27",
+   "ticker": "CYPH",
+   "classe": "FADE",
+   "resultat": "juste",
+   "variation_pct": 8.0,
+   "fenetre": {
+    "ouverture": [
+     1.75,
+     1.8200000524520874,
+     1.7350000143051147
+    ],
+    "cloture": [
+     1.8899999856948853,
+     1.7100000381469727,
+     1.8250000476837158
+    ],
+    "bas": [
+     1.7300000190734863,
+     1.6200000047683716,
+     1.6100000143051147
+    ],
+    "haut": [
+     2.049999952316284,
+     1.840000033378601,
+     1.8600000143051147
+    ]
+   },
+   "alertes": [
+    "montee rapide sans catalyseur identifie (RVOL eleve)"
+   ],
+   "gap_pct": 7.36,
+   "rvol": 8.72,
+   "rvol_pre_tendance": 7.26,
+   "atr_pct": 10.94
+  },
+  {
+   "date": "2026-09-03",
+   "ticker": "CYPH",
+   "classe": "PUMP_RISK",
+   "resultat": "faux",
+   "variation_pct": 48.17,
+   "fenetre": {
+    "ouverture": [
+     1.774999976158142,
+     2.2200000286102295,
+     2.430000066757202
+    ],
+    "cloture": [
+     2.2699999809265137,
+     2.4200000762939453,
+     2.630000114440918
+    ],
+    "bas": [
+     1.7100000381469727,
+     2.130000114440918,
+     2.299999952316284
+    ],
+    "haut": [
+     2.299999952316284,
+     2.490000009536743,
+     2.825000047683716
+    ]
+   },
+   "alertes": [
+    "montee rapide sans catalyseur identifie (RVOL eleve)"
+   ],
+   "gap_pct": 5.65,
+   "rvol": 3.58,
+   "rvol_pre_tendance": 11.64,
+   "atr_pct": 12.98
+  },
+  {
+   "date": "2026-09-11",
+   "ticker": "CYPH",
+   "classe": "FADE",
+   "resultat": "juste",
+   "variation_pct": -5.23,
+   "fenetre": {
+    "ouverture": [
+     2.390000104904175,
+     2.259999990463257,
+     2.4100000858306885
+    ],
+    "cloture": [
+     2.265000104904175,
+     2.5799999237060547,
+     2.2200000286102295
+    ],
+    "bas": [
+     2.2300000190734863,
+     2.2300000190734863,
+     2.055000066757202
+    ],
+    "haut": [
+     2.5199999809265137,
+     2.609999895095825,
+     2.4100000858306885
+    ]
+   },
+   "alertes": [
+    "montee rapide sans catalyseur identifie (RVOL eleve)"
+   ],
+   "gap_pct": 8.64,
+   "rvol": 1.12,
+   "rvol_pre_tendance": 7.64,
+   "atr_pct": 17.17
+  },
+  {
+   "date": "2026-09-16",
+   "ticker": "CYPH",
+   "classe": "PUMP_RISK",
+   "resultat": "faux",
+   "variation_pct": 44.58,
+   "fenetre": {
+    "ouverture": [
+     2.490000009536743,
+     2.674999952316284,
+     3.0350000858306885
+    ],
+    "cloture": [
+     2.440000057220459,
+     3.069999933242798,
+     3.5999999046325684
+    ],
+    "bas": [
+     2.299999952316284,
+     2.5999999046325684,
+     3.009999990463257
+    ],
+    "haut": [
+     2.7200000286102295,
+     3.25,
+     3.7100000381469727
+    ]
+   },
+   "alertes": [
+    "montee rapide sans catalyseur identifie (RVOL eleve)"
+   ],
+   "gap_pct": 12.16,
+   "rvol": 1.97,
+   "rvol_pre_tendance": 15.27,
+   "atr_pct": 16.66
+  },
+  {
+   "date": "2026-09-17",
+   "ticker": "CYPH",
+   "classe": "PUMP_RISK",
+   "resultat": "faux",
+   "variation_pct": 27.1,
+   "fenetre": {
+    "ouverture": [
+     2.674999952316284,
+     3.0350000858306885,
+     4.0
+    ],
+    "cloture": [
+     3.069999933242798,
+     3.5999999046325684,
+     3.4000000953674316
+    ],
+    "bas": [
+     2.5999999046325684,
+     3.009999990463257,
+     3.375
+    ],
+    "haut": [
+     3.25,
+     3.7100000381469727,
+     4.019999980926514
+    ]
+   },
+   "alertes": [
+    "montee rapide sans catalyseur identifie (RVOL eleve)"
+   ],
+   "gap_pct": 9.63,
+   "rvol": 2.32,
+   "rvol_pre_tendance": 18.22,
+   "atr_pct": 14.15
+  },
+  {
+   "date": "2026-09-21",
+   "ticker": "CYPH",
+   "classe": "PUMP_RISK",
+   "resultat": "juste",
+   "variation_pct": -9.75,
+   "fenetre": {
+    "ouverture": [
+     4.0,
+     3.509999990463257,
+     3.819999933242798
+    ],
+    "cloture": [
+     3.4000000953674316,
+     3.7300000190734863,
+     3.609999895095825
+    ],
+    "bas": [
+     3.375,
+     3.424999952316284,
+     3.490000009536743
+    ],
+    "haut": [
+     4.019999980926514,
+     3.8980000019073486,
+     3.9800000190734863
+    ]
+   },
+   "alertes": [
+    "montee rapide sans catalyseur identifie (RVOL eleve)",
+    "repasse sous la cloture de la veille (-5.6 %): le gap est efface, tout acheteur du jour est en perte"
+   ],
+   "gap_pct": 11.11,
+   "rvol": 1.38,
+   "rvol_pre_tendance": 14.69,
+   "atr_pct": 14.51
+  },
+  {
+   "date": "2026-09-21",
+   "ticker": "DCX",
+   "classe": "PUMP_RISK",
+   "resultat": "juste",
+   "variation_pct": -48.23,
+   "fenetre": {
+    "ouverture": [
+     0.14100000262260437,
+     0.10999999940395355,
+     0.08900000154972076
+    ],
+    "cloture": [
+     0.12099999934434891,
+     0.10400000214576721,
+     0.0729999989271164
+    ],
+    "bas": [
+     0.10599999874830246,
+     0.10199999809265137,
+     0.07199999690055847
+    ],
+    "haut": [
+     0.14100000262260437,
+     0.10999999940395355,
+     0.08900000154972076
+    ]
+   },
+   "alertes": [
+    "montee rapide sans catalyseur identifie (RVOL eleve)",
+    "repasse sous la cloture de la veille (-9.0 %): le gap est efface, tout acheteur du jour est en perte"
+   ],
+   "gap_pct": 6.02,
+   "rvol": 235.43,
+   "rvol_pre_tendance": 442.61,
+   "atr_pct": 112.99
+  },
+  {
+   "date": "2026-06-04",
+   "ticker": "EDVA",
+   "classe": "PUMP_RISK",
+   "resultat": "juste",
+   "variation_pct": -18.97,
+   "fenetre": {
+    "ouverture": [
+     1.559999942779541,
+     1.059999942779541,
+     1.0399999618530273
+    ],
+    "cloture": [
+     1.340000033378601,
+     1.0,
+     1.2640000581741333
+    ],
+    "bas": [
+     1.1239999532699585,
+     0.972000002861023,
+     0.972000002861023
+    ],
+    "haut": [
+     1.600000023841858,
+     1.159999966621399,
+     1.3600000143051147
+    ]
+   },
+   "alertes": [
+    "montee rapide sans catalyseur identifie (RVOL eleve)"
+   ],
+   "gap_pct": 61.16,
+   "rvol": 401.31,
+   "rvol_pre_tendance": 680.86,
+   "atr_pct": 15.65
+  },
+  {
+   "date": "2026-06-30",
+   "ticker": "EDVA",
+   "classe": "FADE",
+   "resultat": "juste",
+   "variation_pct": -0.64,
+   "fenetre": {
+    "ouverture": [
+     0.6240000128746033,
+     0.5960000157356262,
+     0.628000020980835
+    ],
+    "cloture": [
+     0.6200000047683716,
+     0.6320000290870667,
+     0.5839999914169312
+    ],
+    "bas": [
+     0.6039999723434448,
+     0.5839999914169312,
+     0.5680000185966492
+    ],
+    "haut": [
+     0.699999988079071,
+     0.6320000290870667,
+     0.6320000290870667
+    ]
+   },
+   "alertes": [
+    "montee rapide sans catalyseur identifie (RVOL eleve)"
+   ],
+   "gap_pct": 8.33,
+   "rvol": 1.52,
+   "rvol_pre_tendance": 6.06,
+   "atr_pct": 20.05
+  },
+  {
+   "date": "2026-07-06",
+   "ticker": "EDVA",
+   "classe": "PUMP_RISK",
+   "resultat": "juste",
+   "variation_pct": -40.82,
+   "fenetre": {
+    "ouverture": [
+     1.1759999990463257,
+     0.6000000238418579,
+     0.6159999966621399
+    ],
+    "cloture": [
+     0.8320000171661377,
+     0.6399999856948853,
+     0.6959999799728394
+    ],
+    "bas": [
+     0.7319999933242798,
+     0.5720000267028809,
+     0.6000000238418579
+    ],
+    "haut": [
+     1.2760000228881836,
+     0.6959999799728394,
+     0.7599999904632568
+    ]
+   },
+   "alertes": [
+    "montee rapide sans catalyseur identifie (RVOL eleve)"
+   ],
+   "gap_pct": 101.37,
+   "rvol": 232.96,
+   "rvol_pre_tendance": 469.41,
+   "atr_pct": 14.56
+  },
+  {
+   "date": "2026-07-31",
+   "ticker": "EDVA",
+   "classe": "PUMP_RISK",
+   "resultat": "juste",
+   "variation_pct": -18.6,
+   "fenetre": {
+    "ouverture": [
+     0.4300000071525574,
+     0.2980000078678131,
+     0.3160000145435333
+    ],
+    "cloture": [
+     0.3700000047683716,
+     0.35499998927116394,
+     0.3499999940395355
+    ],
+    "bas": [
+     0.328000009059906,
+     0.29100000858306885,
+     0.3160000145435333
+    ],
+    "haut": [
+     0.44999998807907104,
+     0.35499998927116394,
+     0.3499999940395355
+    ]
+   },
+   "alertes": [
+    "montee rapide sans catalyseur identifie (RVOL eleve)"
+   ],
+   "gap_pct": 24.64,
+   "rvol": 70.57,
+   "rvol_pre_tendance": 134.51,
+   "atr_pct": 11.45
+  },
+  {
+   "date": "2026-09-23",
+   "ticker": "EDVA",
+   "classe": "PUMP_RISK",
+   "resultat": "juste",
+   "variation_pct": -23.51,
+   "fenetre": {
+    "ouverture": [
+     0.25099998712539673,
+     0.1889999955892563,
+     0.1889999955892563
+    ],
+    "cloture": [
+     0.20499999821186066,
+     0.1899999976158142,
+     0.19200000166893005
+    ],
+    "bas": [
+     0.16899999976158142,
+     0.1720000058412552,
+     0.1809999942779541
+    ],
+    "haut": [
+     0.3089999854564667,
+     0.19699999690055847,
+     0.20100000500679016
+    ]
+   },
+   "alertes": [
+    "montee rapide sans catalyseur identifie (RVOL eleve)",
+    "repasse sous la cloture de la veille (-11.3 %): le gap est efface, tout acheteur du jour est en perte"
+   ],
+   "gap_pct": 8.66,
+   "rvol": 182.31,
+   "rvol_pre_tendance": 129.51,
+   "atr_pct": 16.31
+  },
+  {
+   "date": "2025-09-11",
+   "ticker": "FTHM",
+   "classe": "PUMP_RISK",
+   "resultat": "faux",
+   "variation_pct": 8.85,
+   "fenetre": {
+    "ouverture": [
+     2.5999999046325684,
+     2.8399999141693115,
+     3.0
+    ],
+    "cloture": [
+     2.8399999141693115,
+     2.819999933242798,
+     2.8299999237060547
+    ],
+    "bas": [
+     2.4200000762939453,
+     2.609999895095825,
+     2.740000009536743
+    ],
+    "haut": [
+     2.9800000190734863,
+     2.9700000286102295,
+     3.0899999141693115
+    ]
+   },
+   "alertes": [
+    "montee rapide sans catalyseur identifie (RVOL eleve)"
+   ],
+   "gap_pct": 9.7,
+   "rvol": 4.5,
+   "rvol_pre_tendance": 15.55,
+   "atr_pct": 16.58
+  },
+  {
+   "date": "2025-09-15",
+   "ticker": "FTHM",
+   "classe": "FADE",
+   "resultat": "juste",
+   "variation_pct": -5.67,
+   "fenetre": {
+    "ouverture": [
+     3.0,
+     2.799999952316284,
+     2.75
+    ],
+    "cloture": [
+     2.8299999237060547,
+     2.75,
+     2.630000114440918
+    ],
+    "bas": [
+     2.740000009536743,
+     2.549999952316284,
+     2.549999952316284
+    ],
+    "haut": [
+     3.0899999141693115,
+     2.8299999237060547,
+     3.369999885559082
+    ]
+   },
+   "alertes": [
+    "montee rapide sans catalyseur identifie (RVOL eleve)"
+   ],
+   "gap_pct": 6.38,
+   "rvol": 1.44,
+   "rvol_pre_tendance": 5.99,
+   "atr_pct": 13.27
+  },
+  {
+   "date": "2026-01-09",
+   "ticker": "FTHM",
+   "classe": "FADE",
+   "resultat": "juste",
+   "variation_pct": -8.97,
+   "fenetre": {
+    "ouverture": [
+     1.4500000476837158,
+     1.3700000047683716,
+     1.3899999856948853
+    ],
+    "cloture": [
+     1.3200000524520874,
+     1.3799999952316284,
+     1.3899999856948853
+    ],
+    "bas": [
+     1.25,
+     1.2300000190734863,
+     1.3079999685287476
+    ],
+    "haut": [
+     1.5199999809265137,
+     1.399999976158142,
+     1.4299999475479126
+    ]
+   },
+   "alertes": [
+    "montee rapide sans catalyseur identifie (RVOL eleve)"
+   ],
+   "gap_pct": 11.54,
+   "rvol": 6.15,
+   "rvol_pre_tendance": 4.73,
+   "atr_pct": 9.86
+  },
+  {
+   "date": "2026-06-16",
+   "ticker": "FTHM",
+   "classe": "PUMP_RISK",
+   "resultat": "faux",
+   "variation_pct": 123.38,
+   "fenetre": {
+    "ouverture": [
+     0.4790000021457672,
+     1.0549999475479126,
+     1.1299999952316284
+    ],
+    "cloture": [
+     0.6330000162124634,
+     1.1100000143051147,
+     1.0700000524520874
+    ],
+    "bas": [
+     0.44999998807907104,
+     1.0099999904632568,
+     1.059999942779541
+    ],
+    "haut": [
+     0.7749999761581421,
+     1.4299999475479126,
+     1.2400000095367432
+    ]
+   },
+   "alertes": [
+    "montee rapide sans catalyseur identifie (RVOL eleve)"
+   ],
+   "gap_pct": 8.86,
+   "rvol": 91.91,
+   "rvol_pre_tendance": 90.48,
+   "atr_pct": 11.72
+  },
+  {
+   "date": "2026-06-17",
+   "ticker": "FTHM",
+   "classe": "PUMP_RISK",
+   "resultat": "juste",
+   "variation_pct": -2.37,
+   "fenetre": {
+    "ouverture": [
+     1.0549999475479126,
+     1.1299999952316284,
+     1.090000033378601
+    ],
+    "cloture": [
+     1.1100000143051147,
+     1.0700000524520874,
+     1.0299999713897705
+    ],
+    "bas": [
+     1.0099999904632568,
+     1.059999942779541,
+     1.0199999809265137
+    ],
+    "haut": [
+     1.4299999475479126,
+     1.2400000095367432,
+     1.149999976158142
+    ]
+   },
+   "alertes": [
+    "montee rapide sans catalyseur identifie (RVOL eleve)"
+   ],
+   "gap_pct": 66.67,
+   "rvol": 504.61,
+   "rvol_pre_tendance": 531.21,
+   "atr_pct": 11.69
+  },
+  {
+   "date": "2026-06-15",
+   "ticker": "GDC",
+   "classe": "PUMP_RISK",
+   "resultat": "juste",
+   "variation_pct": -87.04,
+   "fenetre": {
+    "ouverture": [
+     40.5,
+     25.25,
+     7.5
+    ],
+    "cloture": [
+     26.25,
+     7.0,
+     5.25
+    ],
+    "bas": [
+     25.25,
+     5.5,
+     5.0
+    ],
+    "haut": [
+     41.5,
+     25.25,
+     8.0
+    ]
+   },
+   "alertes": [
+    "montee rapide sans catalyseur identifie (RVOL eleve)"
+   ],
+   "gap_pct": 63.64,
+   "rvol": 6.35,
+   "rvol_pre_tendance": 6134.67,
+   "atr_pct": 20.2
+  },
+  {
+   "date": "2026-06-17",
+   "ticker": "GDC",
+   "classe": "PUMP_RISK",
+   "resultat": "juste",
+   "variation_pct": -33.33,
+   "fenetre": {
+    "ouverture": [
+     7.5,
+     5.5,
+     5.25
+    ],
+    "cloture": [
+     5.25,
+     4.5,
+     5.0
+    ],
+    "bas": [
+     5.0,
+     4.0,
+     4.5
+    ],
+    "haut": [
+     8.0,
+     5.75,
+     5.5
+    ]
+   },
+   "alertes": [
+    "montee rapide sans catalyseur identifie (RVOL eleve)",
+    "repasse sous la cloture de la veille (-25.0 %): le gap est efface, tout acheteur du jour est en perte"
+   ],
+   "gap_pct": 7.14,
+   "rvol": 17.69,
+   "rvol_pre_tendance": 17101.12,
+   "atr_pct": 126.53
+  },
+  {
+   "date": "2026-06-22",
+   "ticker": "GDC",
+   "classe": "PUMP_RISK",
+   "resultat": "faux",
+   "variation_pct": 4.76,
+   "fenetre": {
+    "ouverture": [
+     5.25,
+     5.0,
+     4.75
+    ],
+    "cloture": [
+     5.0,
+     5.25,
+     5.5
+    ],
+    "bas": [
+     4.5,
+     4.0,
+     4.25
+    ],
+    "haut": [
+     5.5,
+     6.25,
+     6.0
+    ]
+   },
+   "alertes": [
+    "montee rapide sans catalyseur identifie (RVOL eleve)"
+   ],
+   "gap_pct": 16.67,
+   "rvol": 28.74,
+   "rvol_pre_tendance": 35277.51,
+   "atr_pct": 119.64
+  },
+  {
+   "date": "2026-08-03",
+   "ticker": "GDC",
+   "classe": "FADE",
+   "resultat": "juste",
+   "variation_pct": 2.82,
+   "fenetre": {
+    "ouverture": [
+     1.7699999809265137,
+     1.8200000524520874,
+     1.7300000190734863
+    ],
+    "cloture": [
+     1.8200000524520874,
+     1.75,
+     1.649999976158142
+    ],
+    "bas": [
+     1.7000000476837158,
+     1.6200000047683716,
+     1.5499999523162842
+    ],
+    "haut": [
+     2.049999952316284,
+     1.899999976158142,
+     1.7799999713897705
+    ]
+   },
+   "alertes": [],
+   "gap_pct": 5.36,
+   "rvol": 1.24,
+   "rvol_pre_tendance": 2.01,
+   "atr_pct": 12.99
+  },
+  {
+   "date": "2026-09-22",
+   "ticker": "GDC",
+   "classe": "PUMP_RISK",
+   "resultat": "juste",
+   "variation_pct": -21.31,
+   "fenetre": {
+    "ouverture": [
+     1.8300000429153442,
+     1.6299999952316284,
+     1.5399999618530273
+    ],
+    "cloture": [
+     1.600000023841858,
+     1.5700000524520874,
+     1.440000057220459
+    ],
+    "bas": [
+     1.475000023841858,
+     1.5499999523162842,
+     1.399999976158142
+    ],
+    "haut": [
+     2.140000104904175,
+     1.8600000143051147,
+     1.5399999618530273
+    ]
+   },
+   "alertes": [
+    "montee rapide sans catalyseur identifie (RVOL eleve)"
+   ],
+   "gap_pct": 25.34,
+   "rvol": 68.2,
+   "rvol_pre_tendance": 48.87,
+   "atr_pct": 11.13
+  },
+  {
+   "date": "2025-01-07",
+   "ticker": "GETY",
+   "classe": "PUMP_RISK",
+   "resultat": "juste",
+   "variation_pct": -28.92,
+   "fenetre": {
+    "ouverture": [
+     3.700000047683716,
+     2.884999990463257,
+     2.5799999237060547
+    ],
+    "cloture": [
+     3.190000057220459,
+     2.630000114440918,
+     2.630000114440918
+    ],
+    "bas": [
+     3.0799999237060547,
+     2.4549999237060547,
+     2.509999990463257
+    ],
+    "haut": [
+     3.865000009536743,
+     2.950000047683716,
+     2.6600000858306885
+    ]
+   },
+   "alertes": [
+    "montee rapide sans catalyseur identifie (RVOL eleve)"
+   ],
+   "gap_pct": 43.97,
+   "rvol": 107.69,
+   "rvol_pre_tendance": 207.25,
+   "atr_pct": 8.39
+  },
+  {
+   "date": "2025-04-08",
+   "ticker": "GETY",
+   "classe": "FADE",
+   "resultat": "juste",
+   "variation_pct": -9.03,
+   "fenetre": {
+    "ouverture": [
+     1.5499999523162842,
+     1.3799999952316284,
+     1.5299999713897705
+    ],
+    "cloture": [
+     1.409999966621399,
+     1.600000023841858,
+     1.5099999904632568
+    ],
+    "bas": [
+     1.3140000104904175,
+     1.3300000429153442,
+     1.465000033378601
+    ],
+    "haut": [
+     1.5499999523162842,
+     1.6200000047683716,
+     1.5700000524520874
+    ]
+   },
+   "alertes": [
+    "repasse sous la cloture de la veille (-3.4 %): le gap est efface, tout acheteur du jour est en perte"
+   ],
+   "gap_pct": 6.16,
+   "rvol": 2.24,
+   "rvol_pre_tendance": 1.78,
+   "atr_pct": 10.57
+  },
+  {
+   "date": "2025-06-11",
+   "ticker": "GETY",
+   "classe": "PUMP_RISK",
+   "resultat": "juste",
+   "variation_pct": -2.78,
+   "fenetre": {
+    "ouverture": [
+     1.7999999523162842,
+     1.8700000047683716,
+     1.8300000429153442
+    ],
+    "cloture": [
+     1.8899999856948853,
+     1.8799999952316284,
+     1.75
+    ],
+    "bas": [
+     1.7949999570846558,
+     1.7799999713897705,
+     1.75
+    ],
+    "haut": [
+     2.0899999141693115,
+     1.909000039100647,
+     1.8849999904632568
+    ]
+   },
+   "alertes": [
+    "montee rapide sans catalyseur identifie (RVOL eleve)"
+   ],
+   "gap_pct": 6.51,
+   "rvol": 13.27,
+   "rvol_pre_tendance": 8.9,
+   "atr_pct": 4.88
+  },
+  {
+   "date": "2025-10-31",
+   "ticker": "GETY",
+   "classe": "PUMP_RISK",
+   "resultat": "juste",
+   "variation_pct": -41.83,
+   "fenetre": {
+    "ouverture": [
+     3.059999942779541,
+     1.7599999904632568,
+     1.7999999523162842
+    ],
+    "cloture": [
+     1.8799999952316284,
+     1.9600000381469727,
+     1.7799999713897705
+    ],
+    "bas": [
+     1.875,
+     1.649999976158142,
+     1.7799999713897705
+    ],
+    "haut": [
+     3.2100000381469727,
+     1.9600000381469727,
+     1.9500000476837158
+    ]
+   },
+   "alertes": [
+    "montee rapide sans catalyseur identifie (RVOL eleve)",
+    "repasse sous la cloture de la veille (-6.5 %): le gap est efface, tout acheteur du jour est en perte"
+   ],
+   "gap_pct": 52.24,
+   "rvol": 152.21,
+   "rvol_pre_tendance": 256.67,
+   "atr_pct": 13.05
+  },
+  {
+   "date": "2025-12-31",
+   "ticker": "GETY",
+   "classe": "FADE",
+   "resultat": "juste",
+   "variation_pct": 0.0,
+   "fenetre": {
+    "ouverture": [
+     1.340000033378601,
+     1.3300000429153442,
+     1.3200000524520874
+    ],
+    "cloture": [
+     1.340000033378601,
+     1.309999942779541,
+     1.2999999523162842
+    ],
+    "bas": [
+     1.2400000095367432,
+     1.2899999618530273,
+     1.2999999523162842
+    ],
+    "haut": [
+     1.350000023841858,
+     1.350000023841858,
+     1.3559999465942383
+    ]
+   },
+   "alertes": [],
+   "gap_pct": 5.51,
+   "rvol": 1.67,
+   "rvol_pre_tendance": 2.83,
+   "atr_pct": 7.13
+  },
+  {
+   "date": "2026-02-23",
+   "ticker": "GETY",
+   "classe": "PUMP_RISK",
+   "resultat": "juste",
+   "variation_pct": -28.79,
+   "fenetre": {
+    "ouverture": [
+     0.9900000095367432,
+     0.7009999752044678,
+     0.7400000095367432
+    ],
+    "cloture": [
+     0.6800000071525574,
+     0.6909999847412109,
+     0.7049999833106995
+    ],
+    "bas": [
+     0.6700000166893005,
+     0.6809999942779541,
+     0.6700000166893005
+    ],
+    "haut": [
+     1.0099999904632568,
+     0.7839999794960022,
+     0.7400000095367432
+    ]
+   },
+   "alertes": [
+    "montee rapide sans catalyseur identifie (RVOL eleve)",
+    "repasse sous la cloture de la veille (-8.1 %): le gap est efface, tout acheteur du jour est en perte"
+   ],
+   "gap_pct": 33.78,
+   "rvol": 31.43,
+   "rvol_pre_tendance": 42.32,
+   "atr_pct": 18.58
+  },
+  {
+   "date": "2026-02-25",
+   "ticker": "GETY",
+   "classe": "FADE",
+   "resultat": "juste",
+   "variation_pct": -4.73,
+   "fenetre": {
+    "ouverture": [
+     0.7400000095367432,
+     0.699999988079071,
+     0.7900000214576721
+    ],
+    "cloture": [
+     0.7049999833106995,
+     0.7960000038146973,
+     0.777999997138977
+    ],
+    "bas": [
+     0.6700000166893005,
+     0.6930000185966492,
+     0.7360000014305115
+    ],
+    "haut": [
+     0.7400000095367432,
+     0.800000011920929,
+     0.7900000214576721
+    ]
+   },
+   "alertes": [],
+   "gap_pct": 7.09,
+   "rvol": 1.91,
+   "rvol_pre_tendance": 2.8,
+   "atr_pct": 16.95
+  },
+  {
+   "date": "2026-03-20",
+   "ticker": "GETY",
+   "classe": "FADE",
+   "resultat": "juste",
+   "variation_pct": -11.54,
+   "fenetre": {
+    "ouverture": [
+     0.9100000262260437,
+     0.7960000038146973,
+     0.8009999990463257
+    ],
+    "cloture": [
+     0.8050000071525574,
+     0.8119999766349792,
+     0.7760000228881836
+    ],
+    "bas": [
+     0.7799999713897705,
+     0.781000018119812,
+     0.7760000228881836
+    ],
+    "haut": [
+     0.9100000262260437,
+     0.8640000224113464,
+     0.8169999718666077
+    ]
+   },
+   "alertes": [
+    "repasse sous la cloture de la veille (-3.6 %): le gap est efface, tout acheteur du jour est en perte"
+   ],
+   "gap_pct": 8.98,
+   "rvol": 1.95,
+   "rvol_pre_tendance": 3.51,
+   "atr_pct": 10.18
+  },
+  {
+   "date": "2026-06-22",
+   "ticker": "GETY",
+   "classe": "PUMP_RISK",
+   "resultat": "juste",
+   "variation_pct": -32.86,
+   "fenetre": {
+    "ouverture": [
+     1.399999976158142,
+     1.1299999952316284,
+     1.0
+    ],
+    "cloture": [
+     1.149999976158142,
+     0.9300000071525574,
+     0.9399999976158142
+    ],
+    "bas": [
+     1.0299999713897705,
+     0.8999999761581421,
+     0.9049999713897705
+    ],
+    "haut": [
+     1.4800000190734863,
+     1.2400000095367432,
+     1.0099999904632568
+    ]
+   },
+   "alertes": [
+    "montee rapide sans catalyseur identifie (RVOL eleve)"
+   ],
+   "gap_pct": 131.4,
+   "rvol": 94.03,
+   "rvol_pre_tendance": 216.61,
+   "atr_pct": 11.65
+  },
+  {
+   "date": "2026-06-24",
+   "ticker": "GETY",
+   "classe": "PUMP_RISK",
+   "resultat": "juste",
+   "variation_pct": -6.8,
+   "fenetre": {
+    "ouverture": [
+     1.0,
+     0.8899999856948853,
+     0.9340000152587891
+    ],
+    "cloture": [
+     0.9399999976158142,
+     0.9890000224113464,
+     0.9319999814033508
+    ],
+    "bas": [
+     0.9049999713897705,
+     0.8870000243186951,
+     0.8930000066757202
+    ],
+    "haut": [
+     1.0099999904632568,
+     1.0099999904632568,
+     1.0499999523162842
+    ]
+   },
+   "alertes": [
+    "montee rapide sans catalyseur identifie (RVOL eleve)"
+   ],
+   "gap_pct": 7.53,
+   "rvol": 4.33,
+   "rvol_pre_tendance": 11.48,
+   "atr_pct": 15.95
+  },
+  {
+   "date": "2026-08-05",
+   "ticker": "GETY",
+   "classe": "FADE",
+   "resultat": "juste",
+   "variation_pct": -7.77,
+   "fenetre": {
+    "ouverture": [
+     0.5149999856948853,
+     0.45500001311302185,
+     0.46000000834465027
+    ],
+    "cloture": [
+     0.4749999940395355,
+     0.4410000145435333,
+     0.43700000643730164
+    ],
+    "bas": [
+     0.4560000002384186,
+     0.4320000112056732,
+     0.4300000071525574
+    ],
+    "haut": [
+     0.5149999856948853,
+     0.46700000762939453,
+     0.4620000123977661
+    ]
+   },
+   "alertes": [
+    "repasse sous la cloture de la veille (-0.6 %): le gap est efface, tout acheteur du jour est en perte"
+   ],
+   "gap_pct": 7.74,
+   "rvol": 0.51,
+   "rvol_pre_tendance": 0.6,
+   "atr_pct": 9.34
+  },
+  {
+   "date": "2026-08-13",
+   "ticker": "GETY",
+   "classe": "FADE",
+   "resultat": "juste",
+   "variation_pct": -3.35,
+   "fenetre": {
+    "ouverture": [
+     0.328000009059906,
+     0.32899999618530273,
+     0.29600000381469727
+    ],
+    "cloture": [
+     0.31700000166893005,
+     0.30799999833106995,
+     0.2759999930858612
+    ],
+    "bas": [
+     0.3050000071525574,
+     0.30399999022483826,
+     0.27000001072883606
+    ],
+    "haut": [
+     0.33000001311302185,
+     0.32899999618530273,
+     0.3059999942779541
+    ]
+   },
+   "alertes": [],
+   "gap_pct": 10.81,
+   "rvol": 0.94,
+   "rvol_pre_tendance": 1.14,
+   "atr_pct": 16.92
+  },
+  {
+   "date": "2026-09-21",
+   "ticker": "GLND",
+   "classe": "PUMP_RISK",
+   "resultat": "juste",
+   "variation_pct": -3.64,
+   "fenetre": {
+    "ouverture": [
+     3.0199999809265137,
+     2.940000057220459,
+     2.700000047683716
+    ],
+    "cloture": [
+     2.880000114440918,
+     2.509999990463257,
+     2.9100000858306885
+    ],
+    "bas": [
+     2.6500000953674316,
+     2.430000066757202,
+     2.5799999237060547
+    ],
+    "haut": [
+     3.390000104904175,
+     3.240000009536743,
+     3.049999952316284
+    ]
+   },
+   "alertes": [
+    "montee rapide sans catalyseur identifie (RVOL eleve)"
+   ],
+   "gap_pct": 151.67,
+   "rvol": 491.76,
+   "rvol_pre_tendance": 200.63,
+   "atr_pct": 8.16
+  },
+  {
+   "date": "2026-09-23",
+   "ticker": "GLND",
+   "classe": "PUMP_RISK",
+   "resultat": "faux",
+   "variation_pct": 105.19,
+   "fenetre": {
+    "ouverture": [
+     2.700000047683716,
+     3.2200000286102295,
+     6.110000133514404
+    ],
+    "cloture": [
+     2.9100000858306885,
+     5.349999904632568,
+     5.539999961853027
+    ],
+    "bas": [
+     2.5799999237060547,
+     3.190000057220459,
+     4.829999923706055
+    ],
+    "haut": [
+     3.049999952316284,
+     5.639999866485596,
+     6.690000057220459
+    ]
+   },
+   "alertes": [
+    "montee rapide sans catalyseur identifie (RVOL eleve)"
+   ],
+   "gap_pct": 7.57,
+   "rvol": 72.9,
+   "rvol_pre_tendance": 32.57,
+   "atr_pct": 11.0
+  },
+  {
+   "date": "2026-09-24",
+   "ticker": "GLND",
+   "classe": "PUMP_RISK",
+   "resultat": "faux",
+   "variation_pct": 72.05,
+   "fenetre": {
+    "ouverture": [
+     3.2200000286102295,
+     6.110000133514404
+    ],
+    "cloture": [
+     5.349999904632568,
+     5.539999961853027
+    ],
+    "bas": [
+     3.190000057220459,
+     4.829999923706055
+    ],
+    "haut": [
+     5.639999866485596,
+     6.690000057220459
+    ]
+   },
+   "alertes": [
+    "montee rapide sans catalyseur identifie (RVOL eleve)"
+   ],
+   "gap_pct": 10.65,
+   "rvol": 429.63,
+   "rvol_pre_tendance": 209.92,
+   "atr_pct": 9.53
+  },
+  {
+   "date": "2025-06-30",
+   "ticker": "GRML",
+   "classe": "PUMP_RISK",
+   "resultat": "faux",
+   "variation_pct": 17.24,
+   "fenetre": {
+    "ouverture": [
+     50.75,
+     52.0,
+     53.5
+    ],
+    "cloture": [
+     56.5,
+     53.0,
+     59.5
+    ],
+    "bas": [
+     49.0,
+     48.04999923706055,
+     51.0
+    ],
+    "haut": [
+     69.5,
+     57.0,
+     61.0
+    ]
+   },
+   "alertes": [
+    "montee rapide sans catalyseur identifie (RVOL eleve)"
+   ],
+   "gap_pct": 40.97,
+   "rvol": 18.53,
+   "rvol_pre_tendance": 549.78,
+   "atr_pct": 46.99
+  },
+  {
+   "date": "2025-07-10",
+   "ticker": "GRML",
+   "classe": "PUMP_RISK",
+   "resultat": "juste",
+   "variation_pct": -23.31,
+   "fenetre": {
+    "ouverture": [
+     81.5,
+     67.5,
+     62.25
+    ],
+    "cloture": [
+     73.0,
+     65.0,
+     62.5
+    ],
+    "bas": [
+     69.5,
+     65.0,
+     57.0
+    ],
+    "haut": [
+     82.5,
+     76.0,
+     65.0
+    ]
+   },
+   "alertes": [
+    "montee rapide sans catalyseur identifie (RVOL eleve)"
+   ],
+   "gap_pct": 18.98,
+   "rvol": 8.23,
+   "rvol_pre_tendance": 97.3,
+   "atr_pct": 19.14
+  },
+  {
+   "date": "2026-09-02",
+   "ticker": "GRML",
+   "classe": "PUMP_RISK",
+   "resultat": "juste",
+   "variation_pct": -2.86,
+   "fenetre": {
+    "ouverture": [
+     4.900000095367432,
+     4.940000057220459,
+     4.440000057220459
+    ],
+    "cloture": [
+     4.869999885559082,
+     4.480000019073486,
+     4.760000228881836
+    ],
+    "bas": [
+     4.599999904632568,
+     4.449999809265137,
+     4.385000228881836
+    ],
+    "haut": [
+     5.090000152587891,
+     5.019999980926514,
+     4.980000019073486
+    ]
+   },
+   "alertes": [
+    "montee rapide sans catalyseur identifie (RVOL eleve)"
+   ],
+   "gap_pct": 5.38,
+   "rvol": 7.48,
+   "rvol_pre_tendance": 14.9,
+   "atr_pct": 33.16
+  },
+  {
+   "date": "2026-09-21",
+   "ticker": "GRML",
+   "classe": "PUMP_RISK",
+   "resultat": "faux",
+   "variation_pct": 52.66,
+   "fenetre": {
+    "ouverture": [
+     7.329999923706055,
+     13.699999809265137,
+     17.334999084472656
+    ],
+    "cloture": [
+     9.420000076293945,
+     14.149999618530273,
+     11.1899995803833
+    ],
+    "bas": [
+     6.630000114440918,
+     12.609999656677246,
+     10.289999961853027
+    ],
+    "haut": [
+     11.680000305175781,
+     18.209999084472656,
+     17.989999771118164
+    ]
+   },
+   "alertes": [
+    "montee rapide sans catalyseur identifie (RVOL eleve)"
+   ],
+   "gap_pct": 157.19,
+   "rvol": 364.29,
+   "rvol_pre_tendance": 3268.25,
+   "atr_pct": 10.58
+  },
+  {
+   "date": "2026-09-22",
+   "ticker": "GRML",
+   "classe": "PUMP_RISK",
+   "resultat": "faux",
+   "variation_pct": 8.69,
+   "fenetre": {
+    "ouverture": [
+     13.699999809265137,
+     17.334999084472656,
+     12.75
+    ],
+    "cloture": [
+     14.149999618530273,
+     11.1899995803833,
+     14.890000343322754
+    ],
+    "bas": [
+     12.609999656677246,
+     10.289999961853027,
+     12.130000114440918
+    ],
+    "haut": [
+     18.209999084472656,
+     17.989999771118164,
+     16.0
+    ]
+   },
+   "alertes": [
+    "montee rapide sans catalyseur identifie (RVOL eleve)"
+   ],
+   "gap_pct": 45.44,
+   "rvol": 168.55,
+   "rvol_pre_tendance": 1512.14,
+   "atr_pct": 11.33
+  },
+  {
+   "date": "2026-09-23",
+   "ticker": "GRML",
+   "classe": "PUMP_RISK",
+   "resultat": "juste",
+   "variation_pct": -15.43,
+   "fenetre": {
+    "ouverture": [
+     17.334999084472656,
+     12.75,
+     16.479999542236328
+    ],
+    "cloture": [
+     11.1899995803833,
+     14.890000343322754,
+     14.65999984741211
+    ],
+    "bas": [
+     10.289999961853027,
+     12.130000114440918,
+     14.420000076293945
+    ],
+    "haut": [
+     17.989999771118164,
+     16.0,
+     17.3799991607666
+    ]
+   },
+   "alertes": [
+    "montee rapide sans catalyseur identifie (RVOL eleve)",
+    "repasse sous la cloture de la veille (-20.9 %): le gap est efface, tout acheteur du jour est en perte"
+   ],
+   "gap_pct": 22.51,
+   "rvol": 86.19,
+   "rvol_pre_tendance": 805.23,
+   "atr_pct": 18.92
+  },
+  {
+   "date": "2026-09-24",
+   "ticker": "GRML",
+   "classe": "PUMP_RISK",
+   "resultat": "faux",
+   "variation_pct": 14.98,
+   "fenetre": {
+    "ouverture": [
+     12.75,
+     16.479999542236328
+    ],
+    "cloture": [
+     14.890000343322754,
+     14.65999984741211
+    ],
+    "bas": [
+     12.130000114440918,
+     14.420000076293945
+    ],
+    "haut": [
+     16.0,
+     17.3799991607666
+    ]
+   },
+   "alertes": [
+    "montee rapide sans catalyseur identifie (RVOL eleve)"
+   ],
+   "gap_pct": 13.94,
+   "rvol": 67.57,
+   "rvol_pre_tendance": 596.65,
+   "atr_pct": 16.26
+  },
+  {
+   "date": "2026-08-14",
+   "ticker": "HAO",
+   "classe": "PUMP_RISK",
+   "resultat": "faux",
+   "variation_pct": 26.12,
+   "fenetre": {
+    "ouverture": [
+     3.559999942779541,
+     3.990000009536743,
+     4.110000133514404
+    ],
+    "cloture": [
+     3.9800000190734863,
+     4.079999923706055,
+     4.489999771118164
+    ],
+    "bas": [
+     3.1700000762939453,
+     3.5,
+     4.03000020980835
+    ],
+    "haut": [
+     4.170000076293945,
+     5.46999979019165,
+     4.670000076293945
+    ]
+   },
+   "alertes": [
+    "montee rapide sans catalyseur identifie (RVOL eleve)"
+   ],
+   "gap_pct": 9.2,
+   "rvol": 10.64,
+   "rvol_pre_tendance": 46.04,
+   "atr_pct": 9.98
+  },
+  {
+   "date": "2026-07-06",
+   "ticker": "INLF",
+   "classe": "PUMP_RISK",
+   "resultat": "juste",
+   "variation_pct": -21.64,
+   "fenetre": {
+    "ouverture": [
+     4.989999771118164,
+     4.650000095367432,
+     4.849999904632568
+    ],
+    "cloture": [
+     6.380000114440918,
+     5.349999904632568,
+     3.9100000858306885
+    ],
+    "bas": [
+     4.619999885559082,
+     4.650000095367432,
+     3.8259999752044678
+    ],
+    "haut": [
+     9.90999984741211,
+     7.0,
+     4.980000019073486
+    ]
+   },
+   "alertes": [
+    "montee rapide sans catalyseur identifie (RVOL eleve)"
+   ],
+   "gap_pct": 13.41,
+   "rvol": 10.21,
+   "rvol_pre_tendance": 157552.38,
+   "atr_pct": 1220.9
+  },
+  {
+   "date": "2026-07-22",
+   "ticker": "INLF",
+   "classe": "PUMP_RISK",
+   "resultat": "juste",
+   "variation_pct": -1.85,
+   "fenetre": {
+    "ouverture": [
+     3.25,
+     3.299999952316284,
+     3.690000057220459
+    ],
+    "cloture": [
+     3.759999990463257,
+     3.75,
+     3.190000057220459
+    ],
+    "bas": [
+     2.9700000286102295,
+     2.9800000190734863,
+     2.8499999046325684
+    ],
+    "haut": [
+     4.860000133514404,
+     3.75,
+     3.690000057220459
+    ]
+   },
+   "alertes": [
+    "montee rapide sans catalyseur identifie (RVOL eleve)"
+   ],
+   "gap_pct": 45.74,
+   "rvol": 59.26,
+   "rvol_pre_tendance": 1229626.51,
+   "atr_pct": 34.0
+  },
+  {
+   "date": "2026-07-28",
+   "ticker": "INLF",
+   "classe": "PUMP_RISK",
+   "resultat": "faux",
+   "variation_pct": 9.49,
+   "fenetre": {
+    "ouverture": [
+     4.730999946594238,
+     4.300000190734863,
+     4.329999923706055
+    ],
+    "cloture": [
+     5.300000190734863,
+     4.269999980926514,
+     5.179999828338623
+    ],
+    "bas": [
+     4.139999866485596,
+     4.0,
+     4.300000190734863
+    ],
+    "haut": [
+     8.180000305175781,
+     4.636000156402588,
+     6.170000076293945
+    ]
+   },
+   "alertes": [
+    "montee rapide sans catalyseur identifie (RVOL eleve)"
+   ],
+   "gap_pct": 44.24,
+   "rvol": 55.51,
+   "rvol_pre_tendance": 589639.29,
+   "atr_pct": 17.6
+  },
+  {
+   "date": "2026-08-05",
+   "ticker": "INLF",
+   "classe": "PUMP_RISK",
+   "resultat": "juste",
+   "variation_pct": -42.22,
+   "fenetre": {
+    "ouverture": [
+     7.804999828338623,
+     5.21999979019165,
+     5.110000133514404
+    ],
+    "cloture": [
+     6.269999980926514,
+     5.440000057220459,
+     4.510000228881836
+    ],
+    "bas": [
+     5.400000095367432,
+     4.739999771118164,
+     4.504000186920166
+    ],
+    "haut": [
+     9.479999542236328,
+     5.809999942779541,
+     5.489999771118164
+    ]
+   },
+   "alertes": [
+    "montee rapide sans catalyseur identifie (RVOL eleve)"
+   ],
+   "gap_pct": 145.44,
+   "rvol": 185.65,
+   "rvol_pre_tendance": 615740.4,
+   "atr_pct": 25.66
+  },
+  {
+   "date": "2026-08-10",
+   "ticker": "INLF",
+   "classe": "PUMP_RISK",
+   "resultat": "juste",
+   "variation_pct": -9.34,
+   "fenetre": {
+    "ouverture": [
+     5.460000038146973,
+     5.440000057220459,
+     4.900000095367432
+    ],
+    "cloture": [
+     5.599999904632568,
+     4.920000076293945,
+     4.949999809265137
+    ],
+    "bas": [
+     5.110000133514404,
+     4.909999847412109,
+     4.900000095367432
+    ],
+    "haut": [
+     5.690000057220459,
+     5.440000057220459,
+     5.199999809265137
+    ]
+   },
+   "alertes": [
+    "montee rapide sans catalyseur identifie (RVOL eleve)"
+   ],
+   "gap_pct": 21.06,
+   "rvol": 2.08,
+   "rvol_pre_tendance": 535.44,
+   "atr_pct": 32.37
+  },
+  {
+   "date": "2025-09-23",
+   "ticker": "IPDN",
+   "classe": "PUMP_RISK",
+   "resultat": "faux",
+   "variation_pct": 14.29,
+   "fenetre": {
+    "ouverture": [
+     4.199999809265137,
+     3.869999885559082,
+     4.070000171661377
+    ],
+    "cloture": [
+     4.760000228881836,
+     4.340000152587891,
+     4.800000190734863
+    ],
+    "bas": [
+     3.8399999141693115,
+     3.859999895095825,
+     4.059999942779541
+    ],
+    "haut": [
+     5.070000171661377,
+     4.420000076293945,
+     4.869999885559082
+    ]
+   },
+   "alertes": [
+    "montee rapide sans catalyseur identifie (RVOL eleve)"
+   ],
+   "gap_pct": 46.85,
+   "rvol": 78.65,
+   "rvol_pre_tendance": 595.3,
+   "atr_pct": 18.7
+  },
+  {
+   "date": "2025-10-28",
+   "ticker": "IPDN",
+   "classe": "PUMP_RISK",
+   "resultat": "juste",
+   "variation_pct": -24.63,
+   "fenetre": {
+    "ouverture": [
+     4.099999904632568,
+     3.0399999618530273,
+     3.009999990463257
+    ],
+    "cloture": [
+     3.059999942779541,
+     3.069999933242798,
+     3.0899999141693115
+    ],
+    "bas": [
+     2.799999952316284,
+     2.9600000381469727,
+     2.9200000762939453
+    ],
+    "haut": [
+     4.099999904632568,
+     3.140000104904175,
+     3.7300000190734863
+    ]
+   },
+   "alertes": [
+    "montee rapide sans catalyseur identifie (RVOL eleve)",
+    "repasse sous la cloture de la veille (-10.5 %): le gap est efface, tout acheteur du jour est en perte"
+   ],
+   "gap_pct": 19.88,
+   "rvol": 77.32,
+   "rvol_pre_tendance": 45.93,
+   "atr_pct": 15.17
+  },
+  {
+   "date": "2026-08-25",
+   "ticker": "IPDN",
+   "classe": "PUMP_RISK",
+   "resultat": "juste",
+   "variation_pct": -18.75,
+   "fenetre": {
+    "ouverture": [
+     0.1599999964237213,
+     0.14000000059604645,
+     0.11999999731779099
+    ],
+    "cloture": [
+     0.12999999523162842,
+     0.12999999523162842,
+     0.12999999523162842
+    ],
+    "bas": [
+     0.12999999523162842,
+     0.11999999731779099,
+     0.10999999940395355
+    ],
+    "haut": [
+     0.1599999964237213,
+     0.1599999964237213,
+     0.12999999523162842
+    ]
+   },
+   "alertes": [
+    "montee rapide sans catalyseur identifie (RVOL eleve)",
+    "repasse sous la cloture de la veille (-13.3 %): le gap est efface, tout acheteur du jour est en perte"
+   ],
+   "gap_pct": 6.67,
+   "rvol": 7.55,
+   "rvol_pre_tendance": 32.33,
+   "atr_pct": 45.05
+  },
+  {
+   "date": "2026-08-26",
+   "ticker": "IPDN",
+   "classe": "PUMP_RISK",
+   "resultat": "juste",
+   "variation_pct": -14.29,
+   "fenetre": {
+    "ouverture": [
+     0.14000000059604645,
+     0.11999999731779099,
+     0.11999999731779099
+    ],
+    "cloture": [
+     0.12999999523162842,
+     0.12999999523162842,
+     0.11999999731779099
+    ],
+    "bas": [
+     0.11999999731779099,
+     0.10999999940395355,
+     0.11999999731779099
+    ],
+    "haut": [
+     0.1599999964237213,
+     0.12999999523162842,
+     0.12999999523162842
+    ]
+   },
+   "alertes": [
+    "montee rapide sans catalyseur identifie (RVOL eleve)"
+   ],
+   "gap_pct": 7.69,
+   "rvol": 28.68,
+   "rvol_pre_tendance": 197.98,
+   "atr_pct": 45.05
+  },
+  {
+   "date": "2026-09-10",
+   "ticker": "IPDN",
+   "classe": "PUMP_RISK",
+   "resultat": "faux",
+   "variation_pct": 1750.0,
+   "fenetre": {
+    "ouverture": [
+     0.18000000715255737,
+     0.10999999940395355,
+     3.440000057220459
+    ],
+    "cloture": [
+     0.14000000059604645,
+     0.11999999731779099,
+     3.3299999237060547
+    ],
+    "bas": [
+     0.14000000059604645,
+     0.10000000149011612,
+     3.0299999713897705
+    ],
+    "haut": [
+     0.2199999988079071,
+     0.11999999731779099,
+     3.4800000190734863
+    ]
+   },
+   "alertes": [
+    "montee rapide sans catalyseur identifie (RVOL eleve)"
+   ],
+   "gap_pct": 38.46,
+   "rvol": 594.43,
+   "rvol_pre_tendance": 9478.9,
+   "atr_pct": 18.37
+  },
+  {
+   "date": "2026-09-23",
+   "ticker": "IPDN",
+   "classe": "PUMP_RISK",
+   "resultat": "juste",
+   "variation_pct": -34.97,
+   "fenetre": {
+    "ouverture": [
+     6.920000076293945,
+     4.300000190734863,
+     4.019999980926514
+    ],
+    "cloture": [
+     5.420000076293945,
+     4.170000076293945,
+     4.5
+    ],
+    "bas": [
+     4.699999809265137,
+     3.4000000953674316,
+     3.9000000953674316
+    ],
+    "haut": [
+     7.699999809265137,
+     4.409999847412109,
+     6.289999961853027
+    ]
+   },
+   "alertes": [
+    "montee rapide sans catalyseur identifie (RVOL eleve)"
+   ],
+   "gap_pct": 77.44,
+   "rvol": 28.73,
+   "rvol_pre_tendance": 477.86,
+   "atr_pct": 13.77
+  },
+  {
+   "date": "2025-03-24",
+   "ticker": "LXEO",
+   "classe": "PUMP_RISK",
+   "resultat": "faux",
+   "variation_pct": 33.44,
+   "fenetre": {
+    "ouverture": [
+     2.990000009536743,
+     4.190000057220459,
+     4.590000152587891
+    ],
+    "cloture": [
+     4.090000152587891,
+     4.440000057220459,
+     3.990000009536743
+    ],
+    "bas": [
+     2.9700000286102295,
+     3.7060000896453857,
+     3.9600000381469727
+    ],
+    "haut": [
+     4.269999980926514,
+     4.559999942779541,
+     4.590000152587891
+    ]
+   },
+   "alertes": [
+    "montee rapide sans catalyseur identifie (RVOL eleve)"
+   ],
+   "gap_pct": 10.33,
+   "rvol": 17.73,
+   "rvol_pre_tendance": 32.96,
+   "atr_pct": 9.63
+  },
+  {
+   "date": "2025-04-07",
+   "ticker": "LXEO",
+   "classe": "PUMP_RISK",
+   "resultat": "juste",
+   "variation_pct": -5.98,
+   "fenetre": {
+    "ouverture": [
+     2.509999990463257,
+     1.9299999475479126,
+     1.7799999713897705
+    ],
+    "cloture": [
+     1.7899999618530273,
+     1.8200000524520874,
+     2.359999895095825
+    ],
+    "bas": [
+     1.4500000476837158,
+     1.75,
+     1.75
+    ],
+    "haut": [
+     2.5299999713897705,
+     2.009999990463257,
+     2.640000104904175
+    ]
+   },
+   "alertes": [
+    "montee rapide sans catalyseur identifie (RVOL eleve)",
+    "repasse sous la cloture de la veille (-23.3 %): le gap est efface, tout acheteur du jour est en perte"
+   ],
+   "gap_pct": 7.49,
+   "rvol": 13.29,
+   "rvol_pre_tendance": 20.71,
+   "atr_pct": 34.32
+  },
+  {
+   "date": "2025-04-08",
+   "ticker": "LXEO",
+   "classe": "FADE",
+   "resultat": "juste",
+   "variation_pct": -5.7,
+   "fenetre": {
+    "ouverture": [
+     1.9299999475479126,
+     1.7799999713897705,
+     2.2899999618530273
+    ],
+    "cloture": [
+     1.8200000524520874,
+     2.359999895095825,
+     2.1700000762939453
+    ],
+    "bas": [
+     1.75,
+     1.75,
+     2.109999895095825
+    ],
+    "haut": [
+     2.009999990463257,
+     2.640000104904175,
+     2.3489999771118164
+    ]
+   },
+   "alertes": [
+    "montee rapide sans catalyseur identifie (RVOL eleve)"
+   ],
+   "gap_pct": 7.82,
+   "rvol": 3.65,
+   "rvol_pre_tendance": 6.0,
+   "atr_pct": 33.4
+  },
+  {
+   "date": "2025-05-08",
+   "ticker": "LXEO",
+   "classe": "FADE",
+   "resultat": "juste",
+   "variation_pct": -7.55,
+   "fenetre": {
+    "ouverture": [
+     3.244999885559082,
+     2.9800000190734863,
+     2.7899999618530273
+    ],
+    "cloture": [
+     3.0,
+     2.690000057220459,
+     2.630000114440918
+    ],
+    "bas": [
+     2.9700000286102295,
+     2.6700000762939453,
+     2.5309998989105225
+    ],
+    "haut": [
+     3.3489999771118164,
+     3.059999942779541,
+     3.109999895095825
+    ]
+   },
+   "alertes": [],
+   "gap_pct": 8.53,
+   "rvol": 2.59,
+   "rvol_pre_tendance": 4.36,
+   "atr_pct": 21.34
+  },
+  {
+   "date": "2025-05-27",
+   "ticker": "LXEO",
+   "classe": "FADE",
+   "resultat": "juste",
+   "variation_pct": -10.0,
+   "fenetre": {
+    "ouverture": [
+     3.0,
+     2.6700000762939453,
+     2.7799999713897705
+    ],
+    "cloture": [
+     2.700000047683716,
+     2.740000009536743,
+     2.869999885559082
+    ],
+    "bas": [
+     2.5399999618530273,
+     2.510999917984009,
+     2.6600000858306885
+    ],
+    "haut": [
+     3.0799999237060547,
+     2.890000104904175,
+     2.9100000858306885
+    ]
+   },
+   "alertes": [
+    "repasse sous la cloture de la veille (-4.3 %): le gap est efface, tout acheteur du jour est en perte"
+   ],
+   "gap_pct": 6.38,
+   "rvol": 2.27,
+   "rvol_pre_tendance": 3.62,
+   "atr_pct": 16.72
+  },
+  {
+   "date": "2025-07-30",
+   "ticker": "LXEO",
+   "classe": "FADE",
+   "resultat": "juste",
+   "variation_pct": 5.92,
+   "fenetre": {
+    "ouverture": [
+     4.389999866485596,
+     4.920000076293945,
+     4.519999980926514
+    ],
+    "cloture": [
+     4.650000095367432,
+     4.730000019073486,
+     4.610000133514404
+    ],
+    "bas": [
+     4.360000133514404,
+     4.710000038146973,
+     4.28000020980835
+    ],
+    "haut": [
+     5.059000015258789,
+     4.953000068664551,
+     4.78000020980835
+    ]
+   },
+   "alertes": [],
+   "gap_pct": 7.07,
+   "rvol": 3.64,
+   "rvol_pre_tendance": 1.9,
+   "atr_pct": 7.59
+  },
+  {
+   "date": "2025-07-31",
+   "ticker": "LXEO",
+   "classe": "FADE",
+   "resultat": "juste",
+   "variation_pct": -3.86,
+   "fenetre": {
+    "ouverture": [
+     4.920000076293945,
+     4.519999980926514,
+     4.619999885559082
+    ],
+    "cloture": [
+     4.730000019073486,
+     4.610000133514404,
+     4.769999980926514
+    ],
+    "bas": [
+     4.710000038146973,
+     4.28000020980835,
+     4.492000102996826
+    ],
+    "haut": [
+     4.953000068664551,
+     4.78000020980835,
+     4.960000038146973
+    ]
+   },
+   "alertes": [],
+   "gap_pct": 5.81,
+   "rvol": 1.86,
+   "rvol_pre_tendance": 1.0,
+   "atr_pct": 7.65
+  },
+  {
+   "date": "2025-10-07",
+   "ticker": "LXEO",
+   "classe": "PUMP_RISK",
+   "resultat": "juste",
+   "variation_pct": -0.61,
+   "fenetre": {
+    "ouverture": [
+     8.25,
+     8.520000457763672,
+     8.010000228881836
+    ],
+    "cloture": [
+     8.34000015258789,
+     8.029999732971191,
+     8.199999809265137
+    ],
+    "bas": [
+     7.880000114440918,
+     7.75,
+     7.915999889373779
+    ],
+    "haut": [
+     8.880000114440918,
+     8.520000457763672,
+     8.350000381469727
+    ]
+   },
+   "alertes": [
+    "montee rapide sans catalyseur identifie (RVOL eleve)"
+   ],
+   "gap_pct": 27.51,
+   "rvol": 22.12,
+   "rvol_pre_tendance": 27.96,
+   "atr_pct": 7.93
+  },
+  {
+   "date": "2025-10-15",
+   "ticker": "LXEO",
+   "classe": "FADE",
+   "resultat": "juste",
+   "variation_pct": -1.23,
+   "fenetre": {
+    "ouverture": [
+     8.9399995803833,
+     8.90999984741211,
+     9.130000114440918
+    ],
+    "cloture": [
+     8.829999923706055,
+     8.770000457763672,
+     9.579999923706055
+    ],
+    "bas": [
+     8.510000228881836,
+     8.75,
+     8.5
+    ],
+    "haut": [
+     8.9399995803833,
+     9.25,
+     9.59000015258789
+    ]
+   },
+   "alertes": [],
+   "gap_pct": 5.18,
+   "rvol": 1.26,
+   "rvol_pre_tendance": 2.26,
+   "atr_pct": 7.09
+  },
+  {
+   "date": "2025-11-20",
+   "ticker": "LXEO",
+   "classe": "FADE",
+   "resultat": "juste",
+   "variation_pct": -7.28,
+   "fenetre": {
+    "ouverture": [
+     9.609999656677246,
+     8.850000381469727,
+     9.210000038146973
+    ],
+    "cloture": [
+     8.90999984741211,
+     9.0600004196167,
+     9.989999771118164
+    ],
+    "bas": [
+     8.869999885559082,
+     8.75,
+     9.085000038146973
+    ],
+    "haut": [
+     9.6899995803833,
+     9.229999542236328,
+     10.069999694824219
+    ]
+   },
+   "alertes": [
+    "repasse sous la cloture de la veille (-2.0 %): le gap est efface, tout acheteur du jour est en perte"
+   ],
+   "gap_pct": 5.72,
+   "rvol": 1.09,
+   "rvol_pre_tendance": 2.39,
+   "atr_pct": 7.39
+  },
+  {
+   "date": "2025-12-18",
+   "ticker": "LXEO",
+   "classe": "FADE",
+   "resultat": "juste",
+   "variation_pct": 2.89,
+   "fenetre": {
+    "ouverture": [
+     9.680000305175781,
+     10.029999732971191,
+     10.710000038146973
+    ],
+    "cloture": [
+     9.960000038146973,
+     10.350000381469727,
+     10.630000114440918
+    ],
+    "bas": [
+     9.430000305175781,
+     9.859999656677246,
+     10.350000381469727
+    ],
+    "haut": [
+     10.100000381469727,
+     10.789999961853027,
+     10.899999618530273
+    ]
+   },
+   "alertes": [],
+   "gap_pct": 6.26,
+   "rvol": 2.42,
+   "rvol_pre_tendance": 2.24,
+   "atr_pct": 6.54
+  },
+  {
+   "date": "2026-03-31",
+   "ticker": "LXEO",
+   "classe": "FADE",
+   "resultat": "juste",
+   "variation_pct": -2.05,
+   "fenetre": {
+    "ouverture": [
+     5.860000133514404,
+     5.614999771118164,
+     5.510000228881836
+    ],
+    "cloture": [
+     5.739999771118164,
+     5.670000076293945,
+     5.71999979019165
+    ],
+    "bas": [
+     5.210000038146973,
+     5.610000133514404,
+     5.480000019073486
+    ],
+    "haut": [
+     5.925000190734863,
+     6.073999881744385,
+     5.829999923706055
+    ]
+   },
+   "alertes": [],
+   "gap_pct": 11.2,
+   "rvol": 1.81,
+   "rvol_pre_tendance": 1.58,
+   "atr_pct": 8.16
+  },
+  {
+   "date": "2026-09-22",
+   "ticker": "LXEO",
+   "classe": "FADE",
+   "resultat": "juste",
+   "variation_pct": -5.57,
+   "fenetre": {
+    "ouverture": [
+     4.309999942779541,
+     4.070000171661377,
+     3.5
+    ],
+    "cloture": [
+     4.070000171661377,
+     3.5199999809265137,
+     3.390000104904175
+    ],
+    "bas": [
+     4.034999847412109,
+     3.4549999237060547,
+     3.3299999237060547
+    ],
+    "haut": [
+     4.329999923706055,
+     4.090000152587891,
+     3.5
+    ]
+   },
+   "alertes": [
+    "repasse sous la cloture de la veille (-0.2 %): le gap est efface, tout acheteur du jour est en perte"
+   ],
+   "gap_pct": 5.64,
+   "rvol": 4.82,
+   "rvol_pre_tendance": 3.69,
+   "atr_pct": 5.89
+  },
+  {
+   "date": "2024-12-23",
+   "ticker": "NCPL",
+   "classe": "FADE",
+   "resultat": "juste",
+   "variation_pct": 0.5,
+   "fenetre": {
+    "ouverture": [
+     2.009999990463257,
+     2.059999942779541,
+     1.940000057220459
+    ],
+    "cloture": [
+     2.0199999809265137,
+     1.909999966621399,
+     1.9900000095367432
+    ],
+    "bas": [
+     1.940000057220459,
+     1.850000023841858,
+     1.909999966621399
+    ],
+    "haut": [
+     2.200000047683716,
+     2.069999933242798,
+     1.9900000095367432
+    ]
+   },
+   "alertes": [],
+   "gap_pct": 8.65,
+   "rvol": 2.32,
+   "rvol_pre_tendance": 4.24,
+   "atr_pct": 12.49
+  },
+  {
+   "date": "2025-12-09",
+   "ticker": "NCPL",
+   "classe": "PUMP_RISK",
+   "resultat": "faux",
+   "variation_pct": 1.92,
+   "fenetre": {
+    "ouverture": [
+     1.0399999618530273,
+     1.1799999475479126,
+     1.0700000524520874
+    ],
+    "cloture": [
+     1.399999976158142,
+     1.159999966621399,
+     1.059999942779541
+    ],
+    "bas": [
+     1.0299999713897705,
+     1.0099999904632568,
+     0.9649999737739563
+    ],
+    "haut": [
+     1.940000057220459,
+     1.3799999952316284,
+     1.1699999570846558
+    ]
+   },
+   "alertes": [
+    "montee rapide sans catalyseur identifie (RVOL eleve)"
+   ],
+   "gap_pct": 57.81,
+   "rvol": 1278.27,
+   "rvol_pre_tendance": 3868.78,
+   "atr_pct": 24.73
+  },
+  {
+   "date": "2025-12-15",
+   "ticker": "NCPL",
+   "classe": "PUMP_RISK",
+   "resultat": "juste",
+   "variation_pct": -13.79,
+   "fenetre": {
+    "ouverture": [
+     1.159999966621399,
+     1.090000033378601,
+     1.0800000429153442
+    ],
+    "cloture": [
+     1.1200000047683716,
+     1.090000033378601,
+     1.0
+    ],
+    "bas": [
+     1.0800000429153442,
+     1.090000033378601,
+     1.0
+    ],
+    "haut": [
+     1.2300000190734863,
+     1.2799999713897705,
+     1.128999948501587
+    ]
+   },
+   "alertes": [
+    "montee rapide sans catalyseur identifie (RVOL eleve)"
+   ],
+   "gap_pct": 6.42,
+   "rvol": 2.1,
+   "rvol_pre_tendance": 19.76,
+   "atr_pct": 29.97
+  },
+  {
+   "date": "2026-01-07",
+   "ticker": "NCPL",
+   "classe": "PUMP_RISK",
+   "resultat": "faux",
+   "variation_pct": 0.24,
+   "fenetre": {
+    "ouverture": [
+     0.8360000252723694,
+     0.7170000076293945,
+     0.7960000038146973
+    ],
+    "cloture": [
+     0.7409999966621399,
+     0.7900000214576721,
+     0.8379999995231628
+    ],
+    "bas": [
+     0.6909999847412109,
+     0.7099999785423279,
+     0.7910000085830688
+    ],
+    "haut": [
+     0.8399999737739563,
+     0.8880000114440918,
+     0.8700000047683716
+    ]
+   },
+   "alertes": [
+    "montee rapide sans catalyseur identifie (RVOL eleve)"
+   ],
+   "gap_pct": 22.76,
+   "rvol": 44.28,
+   "rvol_pre_tendance": 318.64,
+   "atr_pct": 11.22
+  },
+  {
+   "date": "2026-01-26",
+   "ticker": "NCPL",
+   "classe": "FADE",
+   "resultat": "juste",
+   "variation_pct": -6.25,
+   "fenetre": {
+    "ouverture": [
+     0.800000011920929,
+     0.7260000109672546,
+     0.7829999923706055
+    ],
+    "cloture": [
+     0.75,
+     0.7699999809265137,
+     0.777999997138977
+    ],
+    "bas": [
+     0.6899999976158142,
+     0.7149999737739563,
+     0.7379999756813049
+    ],
+    "haut": [
+     0.800000011920929,
+     0.7699999809265137,
+     0.7829999923706055
+    ]
+   },
+   "alertes": [
+    "repasse sous la cloture de la veille (-0.5 %): le gap est efface, tout acheteur du jour est en perte"
+   ],
+   "gap_pct": 6.1,
+   "rvol": 3.36,
+   "rvol_pre_tendance": 4.5,
+   "atr_pct": 10.99
+  },
+  {
+   "date": "2026-05-21",
+   "ticker": "NCPL",
+   "classe": "PUMP_RISK",
+   "resultat": "faux",
+   "variation_pct": 97.42,
+   "fenetre": {
+    "ouverture": [
+     0.5419999957084656,
+     0.7799999713897705,
+     0.8299999833106995
+    ],
+    "cloture": [
+     0.8199999928474426,
+     0.8190000057220459,
+     1.0700000524520874
+    ],
+    "bas": [
+     0.5210000276565552,
+     0.7139999866485596,
+     0.7409999966621399
+    ],
+    "haut": [
+     0.9549999833106995,
+     0.8669999837875366,
+     1.1200000047683716
+    ]
+   },
+   "alertes": [
+    "montee rapide sans catalyseur identifie (RVOL eleve)"
+   ],
+   "gap_pct": 19.38,
+   "rvol": 728.38,
+   "rvol_pre_tendance": 1013.07,
+   "atr_pct": 8.43
+  },
+  {
+   "date": "2026-05-27",
+   "ticker": "NCPL",
+   "classe": "PUMP_RISK",
+   "resultat": "juste",
+   "variation_pct": -15.06,
+   "fenetre": {
+    "ouverture": [
+     1.2949999570846558,
+     1.350000023841858,
+     1.2699999809265137
+    ],
+    "cloture": [
+     1.5750000476837158,
+     1.7899999618530273,
+     1.100000023841858
+    ],
+    "bas": [
+     1.2949999570846558,
+     1.309999942779541,
+     0.9300000071525574
+    ],
+    "haut": [
+     1.6100000143051147,
+     1.8700000047683716,
+     1.350000023841858
+    ]
+   },
+   "alertes": [
+    "montee rapide sans catalyseur identifie (RVOL eleve)"
+   ],
+   "gap_pct": 21.03,
+   "rvol": 136.63,
+   "rvol_pre_tendance": 164.46,
+   "atr_pct": 8.88
+  },
+  {
+   "date": "2026-06-03",
+   "ticker": "NCPL",
+   "classe": "PUMP_RISK",
+   "resultat": "juste",
+   "variation_pct": -1.89,
+   "fenetre": {
+    "ouverture": [
+     0.949999988079071,
+     0.9879999756813049,
+     1.0099999904632568
+    ],
+    "cloture": [
+     1.0099999904632568,
+     1.0199999809265137,
+     0.9319999814033508
+    ],
+    "bas": [
+     0.9010000228881836,
+     0.9330000281333923,
+     0.8820000290870667
+    ],
+    "haut": [
+     1.149999976158142,
+     1.059999942779541,
+     1.0099999904632568
+    ]
+   },
+   "alertes": [
+    "montee rapide sans catalyseur identifie (RVOL eleve)"
+   ],
+   "gap_pct": 5.32,
+   "rvol": 1.7,
+   "rvol_pre_tendance": 11.8,
+   "atr_pct": 28.12
+  },
+  {
+   "date": "2026-08-27",
+   "ticker": "NCPL",
+   "classe": "PUMP_RISK",
+   "resultat": "faux",
+   "variation_pct": 13.65,
+   "fenetre": {
+    "ouverture": [
+     0.6299999952316284,
+     0.5920000076293945,
+     0.699999988079071
+    ],
+    "cloture": [
+     0.5389999747276306,
+     0.6919999718666077,
+     0.7160000205039978
+    ],
+    "bas": [
+     0.5,
+     0.5299999713897705,
+     0.6700000166893005
+    ],
+    "haut": [
+     0.7390000224113464,
+     1.0399999618530273,
+     0.8270000219345093
+    ]
+   },
+   "alertes": [
+    "montee rapide sans catalyseur identifie (RVOL eleve)"
+   ],
+   "gap_pct": 25.75,
+   "rvol": 564.56,
+   "rvol_pre_tendance": 771.63,
+   "atr_pct": 20.5
+  },
+  {
+   "date": "2026-08-28",
+   "ticker": "NCPL",
+   "classe": "PUMP_RISK",
+   "resultat": "faux",
+   "variation_pct": 33.78,
+   "fenetre": {
+    "ouverture": [
+     0.5920000076293945,
+     0.699999988079071,
+     0.8299999833106995
+    ],
+    "cloture": [
+     0.6919999718666077,
+     0.7160000205039978,
+     0.7919999957084656
+    ],
+    "bas": [
+     0.5299999713897705,
+     0.6700000166893005,
+     0.7400000095367432
+    ],
+    "haut": [
+     1.0399999618530273,
+     0.8270000219345093,
+     0.8999999761581421
+    ]
+   },
+   "alertes": [
+    "montee rapide sans catalyseur identifie (RVOL eleve)"
+   ],
+   "gap_pct": 9.83,
+   "rvol": 511.11,
+   "rvol_pre_tendance": 783.77,
+   "atr_pct": 20.49
+  },
+  {
+   "date": "2026-09-01",
+   "ticker": "NCPL",
+   "classe": "PUMP_RISK",
+   "resultat": "juste",
+   "variation_pct": -24.22,
+   "fenetre": {
+    "ouverture": [
+     0.8299999833106995,
+     0.9089999794960022,
+     0.9300000071525574
+    ],
+    "cloture": [
+     0.7919999957084656,
+     1.0299999713897705,
+     0.6290000081062317
+    ],
+    "bas": [
+     0.7400000095367432,
+     0.9020000100135803,
+     0.5799999833106995
+    ],
+    "haut": [
+     0.8999999761581421,
+     1.149999976158142,
+     0.9620000123977661
+    ]
+   },
+   "alertes": [
+    "montee rapide sans catalyseur identifie (RVOL eleve)"
+   ],
+   "gap_pct": 15.92,
+   "rvol": 97.22,
+   "rvol_pre_tendance": 226.32,
+   "atr_pct": 20.08
+  },
+  {
+   "date": "2026-09-02",
+   "ticker": "NCPL",
+   "classe": "PUMP_RISK",
+   "resultat": "juste",
+   "variation_pct": -36.52,
+   "fenetre": {
+    "ouverture": [
+     0.9089999794960022,
+     0.9300000071525574,
+     0.75
+    ],
+    "cloture": [
+     1.0299999713897705,
+     0.6290000081062317,
+     0.5770000219345093
+    ],
+    "bas": [
+     0.9020000100135803,
+     0.5799999833106995,
+     0.5640000104904175
+    ],
+    "haut": [
+     1.149999976158142,
+     0.9620000123977661,
+     0.7599999904632568
+    ]
+   },
+   "alertes": [
+    "montee rapide sans catalyseur identifie (RVOL eleve)"
+   ],
+   "gap_pct": 14.77,
+   "rvol": 103.66,
+   "rvol_pre_tendance": 299.75,
+   "atr_pct": 17.09
+  },
+  {
+   "date": "2026-09-04",
+   "ticker": "NCPL",
+   "classe": "PUMP_RISK",
+   "resultat": "juste",
+   "variation_pct": -35.47,
+   "fenetre": {
+    "ouverture": [
+     0.75,
+     0.550000011920929,
+     0.4860000014305115
+    ],
+    "cloture": [
+     0.5770000219345093,
+     0.5019999742507935,
+     0.48399999737739563
+    ],
+    "bas": [
+     0.5640000104904175,
+     0.48500001430511475,
+     0.41100001335144043
+    ],
+    "haut": [
+     0.7599999904632568,
+     0.5580000281333923,
+     0.5180000066757202
+    ]
+   },
+   "alertes": [
+    "montee rapide sans catalyseur identifie (RVOL eleve)",
+    "repasse sous la cloture de la veille (-8.3 %): le gap est efface, tout acheteur du jour est en perte"
+   ],
+   "gap_pct": 19.24,
+   "rvol": 13.24,
+   "rvol_pre_tendance": 164.55,
+   "atr_pct": 37.42
+  },
+  {
+   "date": "2026-09-18",
+   "ticker": "NCPL",
+   "classe": "PUMP_RISK",
+   "resultat": "faux",
+   "variation_pct": 41.19,
+   "fenetre": {
+    "ouverture": [
+     0.6869999766349792,
+     1.1699999570846558,
+     1.0099999904632568
+    ],
+    "cloture": [
+     0.7409999966621399,
+     1.0099999904632568,
+     0.9700000286102295
+    ],
+    "bas": [
+     0.6759999990463257,
+     0.9879999756813049,
+     0.9020000100135803
+    ],
+    "haut": [
+     1.1200000047683716,
+     1.2699999809265137,
+     1.149999976158142
+    ]
+   },
+   "alertes": [
+    "montee rapide sans catalyseur identifie (RVOL eleve)"
+   ],
+   "gap_pct": 22.02,
+   "rvol": 24.69,
+   "rvol_pre_tendance": 1367.35,
+   "atr_pct": 25.03
+  },
+  {
+   "date": "2026-09-21",
+   "ticker": "NCPL",
+   "classe": "PUMP_RISK",
+   "resultat": "juste",
+   "variation_pct": -11.11,
+   "fenetre": {
+    "ouverture": [
+     1.1699999570846558,
+     1.0099999904632568,
+     1.0199999809265137
+    ],
+    "cloture": [
+     1.0099999904632568,
+     0.9700000286102295,
+     1.0399999618530273
+    ],
+    "bas": [
+     0.9879999756813049,
+     0.9020000100135803,
+     1.0199999809265137
+    ],
+    "haut": [
+     1.2699999809265137,
+     1.149999976158142,
+     1.399999976158142
+    ]
+   },
+   "alertes": [
+    "montee rapide sans catalyseur identifie (RVOL eleve)"
+   ],
+   "gap_pct": 57.89,
+   "rvol": 8.95,
+   "rvol_pre_tendance": 1057.47,
+   "atr_pct": 21.0
+  },
+  {
+   "date": "2026-09-23",
+   "ticker": "NCPL",
+   "classe": "PUMP_RISK",
+   "resultat": "faux",
+   "variation_pct": 33.33,
+   "fenetre": {
+    "ouverture": [
+     1.0199999809265137,
+     1.5149999856948853,
+     1.5
+    ],
+    "cloture": [
+     1.0399999618530273,
+     1.2699999809265137,
+     1.3600000143051147
+    ],
+    "bas": [
+     1.0199999809265137,
+     1.2000000476837158,
+     1.2300000190734863
+    ],
+    "haut": [
+     1.399999976158142,
+     1.6299999952316284,
+     1.6299999952316284
+    ]
+   },
+   "alertes": [
+    "montee rapide sans catalyseur identifie (RVOL eleve)"
+   ],
+   "gap_pct": 5.15,
+   "rvol": 1.59,
+   "rvol_pre_tendance": 263.9,
+   "atr_pct": 21.33
+  },
+  {
+   "date": "2026-09-24",
+   "ticker": "NCPL",
+   "classe": "PUMP_RISK",
+   "resultat": "juste",
+   "variation_pct": -10.23,
+   "fenetre": {
+    "ouverture": [
+     1.5149999856948853,
+     1.5
+    ],
+    "cloture": [
+     1.2699999809265137,
+     1.3600000143051147
+    ],
+    "bas": [
+     1.2000000476837158,
+     1.2300000190734863
+    ],
+    "haut": [
+     1.6299999952316284,
+     1.6299999952316284
+    ]
+   },
+   "alertes": [
+    "montee rapide sans catalyseur identifie (RVOL eleve)"
+   ],
+   "gap_pct": 45.67,
+   "rvol": 3.73,
+   "rvol_pre_tendance": 620.96,
+   "atr_pct": 18.25
+  },
+  {
+   "date": "2026-04-27",
+   "ticker": "ONCO",
+   "classe": "PUMP_RISK",
+   "resultat": "juste",
+   "variation_pct": -8.2,
+   "fenetre": {
+    "ouverture": [
+     7.929999828338623,
+     6.940000057220459,
+     6.900000095367432
+    ],
+    "cloture": [
+     7.420000076293945,
+     7.679999828338623,
+     7.28000020980835
+    ],
+    "bas": [
+     7.070000171661377,
+     6.829999923706055,
+     6.71999979019165
+    ],
+    "haut": [
+     8.359999656677246,
+     8.300000190734863,
+     7.46999979019165
+    ]
+   },
+   "alertes": [
+    "montee rapide sans catalyseur identifie (RVOL eleve)"
+   ],
+   "gap_pct": 34.86,
+   "rvol": 49.87,
+   "rvol_pre_tendance": 4340.19,
+   "atr_pct": 37.69
+  },
+  {
+   "date": "2026-07-06",
+   "ticker": "ONCO",
+   "classe": "PUMP_RISK",
+   "resultat": "juste",
+   "variation_pct": -5.15,
+   "fenetre": {
+    "ouverture": [
+     1.0099999904632568,
+     1.059999942779541,
+     1.0499999523162842
+    ],
+    "cloture": [
+     1.100000023841858,
+     1.0700000524520874,
+     0.9580000042915344
+    ],
+    "bas": [
+     0.9800000190734863,
+     1.0099999904632568,
+     0.9200000166893005
+    ],
+    "haut": [
+     1.2100000381469727,
+     1.1100000143051147,
+     1.0499999523162842
+    ]
+   },
+   "alertes": [
+    "montee rapide sans catalyseur identifie (RVOL eleve)"
+   ],
+   "gap_pct": 5.65,
+   "rvol": 5.88,
+   "rvol_pre_tendance": 10.5,
+   "atr_pct": 12.15
+  },
+  {
+   "date": "2026-08-31",
+   "ticker": "PFSA",
+   "classe": "PUMP_RISK",
+   "resultat": "juste",
+   "variation_pct": -13.87,
+   "fenetre": {
+    "ouverture": [
+     3.0999999046325684,
+     2.9800000190734863,
+     2.880000114440918
+    ],
+    "cloture": [
+     3.0,
+     2.880000114440918,
+     2.6700000762939453
+    ],
+    "bas": [
+     2.8399999141693115,
+     2.740000009536743,
+     2.559999942779541
+    ],
+    "haut": [
+     3.549999952316284,
+     2.9800000190734863,
+     2.8949999809265137
+    ]
+   },
+   "alertes": [
+    "montee rapide sans catalyseur identifie (RVOL eleve)"
+   ],
+   "gap_pct": 5.8,
+   "rvol": 6.78,
+   "rvol_pre_tendance": 40.39,
+   "atr_pct": 140.64
+  },
+  {
+   "date": "2026-09-24",
+   "ticker": "PFSA",
+   "classe": "PUMP_RISK",
+   "resultat": "juste",
+   "variation_pct": -37.89,
+   "fenetre": {
+    "ouverture": [
+     3.509999990463257,
+     2.700000047683716
+    ],
+    "cloture": [
+     3.0299999713897705,
+     2.180000066757202
+    ],
+    "bas": [
+     2.390000104904175,
+     2.0999999046325684
+    ],
+    "haut": [
+     4.179999828338623,
+     2.75
+    ]
+   },
+   "alertes": [
+    "montee rapide sans catalyseur identifie (RVOL eleve)"
+   ],
+   "gap_pct": 71.22,
+   "rvol": 394.85,
+   "rvol_pre_tendance": 1668.77,
+   "atr_pct": 16.65
+  },
+  {
+   "date": "2026-09-16",
+   "ticker": "RETO",
+   "classe": "PUMP_RISK",
+   "resultat": "juste",
+   "variation_pct": -95.88,
+   "fenetre": {
+    "ouverture": [
+     4.519999980926514,
+     0.6000000238418579,
+     0.20200000703334808
+    ],
+    "cloture": [
+     1.840000033378601,
+     0.20900000631809235,
+     0.1860000044107437
+    ],
+    "bas": [
+     1.5800000429153442,
+     0.1899999976158142,
+     0.15000000596046448
+    ],
+    "haut": [
+     20.850000381469727,
+     0.6119999885559082,
+     0.2029999941587448
+    ]
+   },
+   "alertes": [
+    "montee rapide sans catalyseur identifie (RVOL eleve)",
+    "repasse sous la cloture de la veille (-34.3 %): le gap est efface, tout acheteur du jour est en perte"
+   ],
+   "gap_pct": 61.43,
+   "rvol": 666.54,
+   "rvol_pre_tendance": 28757.56,
+   "atr_pct": 99.62
+  },
+  {
+   "date": "2026-09-24",
+   "ticker": "RETO",
+   "classe": "PUMP_RISK",
+   "resultat": "juste",
+   "variation_pct": -9.47,
+   "fenetre": {
+    "ouverture": [
+     0.16899999976158142,
+     0.16200000047683716
+    ],
+    "cloture": [
+     0.16599999368190765,
+     0.15299999713897705
+    ],
+    "bas": [
+     0.15600000321865082,
+     0.15199999511241913
+    ],
+    "haut": [
+     0.22100000083446503,
+     0.16500000655651093
+    ]
+   },
+   "alertes": [
+    "montee rapide sans catalyseur identifie (RVOL eleve)"
+   ],
+   "gap_pct": 6.29,
+   "rvol": 487.36,
+   "rvol_pre_tendance": 28083.35,
+   "atr_pct": 1132.57
+  },
+  {
+   "date": "2025-09-03",
+   "ticker": "SDEV",
+   "classe": "PUMP_RISK",
+   "resultat": "faux",
+   "variation_pct": 49.2,
+   "fenetre": {
+    "ouverture": [
+     12.5,
+     13.850000381469727,
+     18.700000762939453
+    ],
+    "cloture": [
+     13.399999618530273,
+     21.100000381469727,
+     18.649999618530273
+    ],
+    "bas": [
+     11.649999618530273,
+     13.850000381469727,
+     15.800000190734863
+    ],
+    "haut": [
+     13.550000190734863,
+     22.200000762939453,
+     19.799999237060547
+    ]
+   },
+   "alertes": [
+    "montee rapide sans catalyseur identifie (RVOL eleve)"
+   ],
+   "gap_pct": 9.65,
+   "rvol": 11.13,
+   "rvol_pre_tendance": 233.27,
+   "atr_pct": 11.41
+  },
+  {
+   "date": "2025-09-15",
+   "ticker": "SDEV",
+   "classe": "PUMP_RISK",
+   "resultat": "juste",
+   "variation_pct": -39.86,
+   "fenetre": {
+    "ouverture": [
+     14.550000190734863,
+     10.850000381469727,
+     10.649999618530273
+    ],
+    "cloture": [
+     13.699999809265137,
+     10.949999809265137,
+     8.75
+    ],
+    "bas": [
+     12.100000381469727,
+     10.5,
+     8.75
+    ],
+    "haut": [
+     16.5,
+     11.649999618530273,
+     11.0
+    ]
+   },
+   "alertes": [
+    "montee rapide sans catalyseur identifie (RVOL eleve)"
+   ],
+   "gap_pct": 12.36,
+   "rvol": 0.47,
+   "rvol_pre_tendance": 93.36,
+   "atr_pct": 26.28
+  },
+  {
+   "date": "2026-02-09",
+   "ticker": "SDEV",
+   "classe": "FADE",
+   "resultat": "juste",
+   "variation_pct": -14.94,
+   "fenetre": {
+    "ouverture": [
+     4.349999904632568,
+     3.5999999046325684,
+     3.549999952316284
+    ],
+    "cloture": [
+     3.700000047683716,
+     3.5,
+     3.299999952316284
+    ],
+    "bas": [
+     3.700000047683716,
+     3.5,
+     3.299999952316284
+    ],
+    "haut": [
+     4.75,
+     4.050000190734863,
+     3.549999952316284
+    ]
+   },
+   "alertes": [
+    "montee rapide sans catalyseur identifie (RVOL eleve)",
+    "repasse sous la cloture de la veille (-2.6 %): le gap est efface, tout acheteur du jour est en perte"
+   ],
+   "gap_pct": 14.47,
+   "rvol": 1.54,
+   "rvol_pre_tendance": 6.53,
+   "atr_pct": 83.98
+  },
+  {
+   "date": "2026-02-19",
+   "ticker": "SDEV",
+   "classe": "FADE",
+   "resultat": "faux",
+   "variation_pct": 8.51,
+   "fenetre": {
+    "ouverture": [
+     2.3499999046325684,
+     2.799999952316284,
+     2.799999952316284
+    ],
+    "cloture": [
+     2.549999952316284,
+     3.0,
+     2.0999999046325684
+    ],
+    "bas": [
+     2.3499999046325684,
+     2.549999952316284,
+     1.9500000476837158
+    ],
+    "haut": [
+     2.950000047683716,
+     3.75,
+     2.799999952316284
+    ]
+   },
+   "alertes": [],
+   "gap_pct": 9.3,
+   "rvol": 1.86,
+   "rvol_pre_tendance": 3.94,
+   "atr_pct": 42.16
+  },
+  {
+   "date": "2026-02-20",
+   "ticker": "SDEV",
+   "classe": "FADE",
+   "resultat": "juste",
+   "variation_pct": 7.14,
+   "fenetre": {
+    "ouverture": [
+     2.799999952316284,
+     2.799999952316284,
+     2.0999999046325684
+    ],
+    "cloture": [
+     3.0,
+     2.0999999046325684,
+     1.649999976158142
+    ],
+    "bas": [
+     2.549999952316284,
+     1.9500000476837158,
+     1.5499999523162842
+    ],
+    "haut": [
+     3.75,
+     2.799999952316284,
+     2.130000114440918
+    ]
+   },
+   "alertes": [
+    "montee rapide sans catalyseur identifie (RVOL eleve)"
+   ],
+   "gap_pct": 9.8,
+   "rvol": 4.59,
+   "rvol_pre_tendance": 9.27,
+   "atr_pct": 34.29
+  },
+  {
+   "date": "2026-07-02",
+   "ticker": "SDEV",
+   "classe": "PUMP_RISK",
+   "resultat": "juste",
+   "variation_pct": -5.3,
+   "fenetre": {
+    "ouverture": [
+     1.3200000524520874,
+     1.309999942779541,
+     1.3200000524520874
+    ],
+    "cloture": [
+     1.3600000143051147,
+     1.3799999952316284,
+     1.25
+    ],
+    "bas": [
+     1.2699999809265137,
+     1.2599999904632568,
+     1.25
+    ],
+    "haut": [
+     1.559999942779541,
+     1.4700000286102295,
+     1.399999976158142
+    ]
+   },
+   "alertes": [
+    "montee rapide sans catalyseur identifie (RVOL eleve)"
+   ],
+   "gap_pct": 26.92,
+   "rvol": 191.96,
+   "rvol_pre_tendance": 183.94,
+   "atr_pct": 11.4
+  },
+  {
+   "date": "2026-09-24",
+   "ticker": "SDEV",
+   "classe": "PUMP_RISK",
+   "resultat": "faux",
+   "variation_pct": 22.13,
+   "fenetre": {
+    "ouverture": [
+     1.2200000286102295,
+     1.5800000429153442
+    ],
+    "cloture": [
+     1.2899999618530273,
+     1.4900000095367432
+    ],
+    "bas": [
+     1.1799999475479126,
+     1.399999976158142
+    ],
+    "haut": [
+     1.2999999523162842,
+     1.8300000429153442
+    ]
+   },
+   "alertes": [
+    "montee rapide sans catalyseur identifie (RVOL eleve)"
+   ],
+   "gap_pct": 8.93,
+   "rvol": 13.68,
+   "rvol_pre_tendance": 42.49,
+   "atr_pct": 8.91
+  },
+  {
+   "date": "2026-06-16",
+   "ticker": "SUGP",
+   "classe": "PUMP_RISK",
+   "resultat": "juste",
+   "variation_pct": -57.5,
+   "fenetre": {
+    "ouverture": [
+     12.0,
+     4.664999961853027,
+     4.760000228881836
+    ],
+    "cloture": [
+     5.550000190734863,
+     5.199999809265137,
+     5.099999904632568
+    ],
+    "bas": [
+     5.0,
+     4.505000114440918,
+     4.650000095367432
+    ],
+    "haut": [
+     12.75,
+     5.449999809265137,
+     5.75
+    ]
+   },
+   "alertes": [
+    "montee rapide sans catalyseur identifie (RVOL eleve)"
+   ],
+   "gap_pct": 172.42,
+   "rvol": 257.61,
+   "rvol_pre_tendance": 66033.56,
+   "atr_pct": 50.55
+  },
+  {
+   "date": "2026-07-07",
+   "ticker": "SUGP",
+   "classe": "PUMP_RISK",
+   "resultat": "juste",
+   "variation_pct": -27.3,
+   "fenetre": {
+    "ouverture": [
+     4.670000076293945,
+     3.244999885559082,
+     3.424999952316284
+    ],
+    "cloture": [
+     3.8399999141693115,
+     3.674999952316284,
+     3.3949999809265137
+    ],
+    "bas": [
+     3.6600000858306885,
+     3.200000047683716,
+     3.309999942779541
+    ],
+    "haut": [
+     4.800000190734863,
+     3.674999952316284,
+     3.4800000190734863
+    ]
+   },
+   "alertes": [
+    "montee rapide sans catalyseur identifie (RVOL eleve)",
+    "repasse sous la cloture de la veille (-6.9 %): le gap est efface, tout acheteur du jour est en perte"
+   ],
+   "gap_pct": 13.21,
+   "rvol": 83.62,
+   "rvol_pre_tendance": 11691.08,
+   "atr_pct": 31.06
+  },
+  {
+   "date": "2026-08-21",
+   "ticker": "SUGP",
+   "classe": "PUMP_RISK",
+   "resultat": "juste",
+   "variation_pct": -69.71,
+   "fenetre": {
+    "ouverture": [
+     3.8299999237060547,
+     1.4299999475479126,
+     1.1399999856948853
+    ],
+    "cloture": [
+     1.600000023841858,
+     1.340000033378601,
+     1.159999966621399
+    ],
+    "bas": [
+     1.1200000047683716,
+     1.2400000095367432,
+     1.100000023841858
+    ],
+    "haut": [
+     4.25,
+     1.4800000190734863,
+     1.2300000190734863
+    ]
+   },
+   "alertes": [
+    "montee rapide sans catalyseur identifie (RVOL eleve)",
+    "repasse sous la cloture de la veille (-42.3 %): le gap est efface, tout acheteur du jour est en perte"
+   ],
+   "gap_pct": 38.02,
+   "rvol": 160.41,
+   "rvol_pre_tendance": 240.81,
+   "atr_pct": 39.76
+  },
+  {
+   "date": "2026-09-15",
+   "ticker": "SUGP",
+   "classe": "PUMP_RISK",
+   "resultat": "juste",
+   "variation_pct": -52.57,
+   "fenetre": {
+    "ouverture": [
+     1.0499999523162842,
+     0.609000027179718,
+     0.46000000834465027
+    ],
+    "cloture": [
+     0.6570000052452087,
+     0.4950000047683716,
+     0.49799999594688416
+    ],
+    "bas": [
+     0.6399999856948853,
+     0.44999998807907104,
+     0.4519999921321869
+    ],
+    "haut": [
+     1.2200000286102295,
+     0.609000027179718,
+     0.5299999713897705
+    ]
+   },
+   "alertes": [
+    "montee rapide sans catalyseur identifie (RVOL eleve)",
+    "repasse sous la cloture de la veille (-7.6 %): le gap est efface, tout acheteur du jour est en perte"
+   ],
+   "gap_pct": 47.68,
+   "rvol": 207.5,
+   "rvol_pre_tendance": 1137.43,
+   "atr_pct": 17.67
+  },
+  {
+   "date": "2025-10-02",
+   "ticker": "TNMG",
+   "classe": "PUMP_RISK",
+   "resultat": "juste",
+   "variation_pct": -24.1,
+   "fenetre": {
+    "ouverture": [
+     7.800000190734863,
+     5.800000190734863,
+     5.820000171661377
+    ],
+    "cloture": [
+     6.539999961853027,
+     5.739999771118164,
+     5.920000076293945
+    ],
+    "bas": [
+     6.239999771118164,
+     5.699999809265137,
+     5.820000171661377
+    ],
+    "haut": [
+     8.100000381469727,
+     6.340000152587891,
+     6.119999885559082
+    ]
+   },
+   "alertes": [
+    "montee rapide sans catalyseur identifie (RVOL eleve)"
+   ],
+   "gap_pct": 29.14,
+   "rvol": 15.15,
+   "rvol_pre_tendance": 798.81,
+   "atr_pct": 17.82
+  },
+  {
+   "date": "2025-10-08",
+   "ticker": "TNMG",
+   "classe": "PUMP_RISK",
+   "resultat": "faux",
+   "variation_pct": 13.48,
+   "fenetre": {
+    "ouverture": [
+     7.420000076293945,
+     11.800000190734863,
+     9.199999809265137
+    ],
+    "cloture": [
+     9.600000381469727,
+     10.920000076293945,
+     8.420000076293945
+    ],
+    "bas": [
+     7.28000020980835,
+     9.079999923706055,
+     8.199999809265137
+    ],
+    "haut": [
+     11.199999809265137,
+     12.279999732971191,
+     10.0
+    ]
+   },
+   "alertes": [
+    "montee rapide sans catalyseur identifie (RVOL eleve)"
+   ],
+   "gap_pct": 12.42,
+   "rvol": 15.2,
+   "rvol_pre_tendance": 855.41,
+   "atr_pct": 11.47
+  },
+  {
+   "date": "2025-10-09",
+   "ticker": "TNMG",
+   "classe": "PUMP_RISK",
+   "resultat": "juste",
+   "variation_pct": -36.61,
+   "fenetre": {
+    "ouverture": [
+     11.800000190734863,
+     9.199999809265137,
+     7.71999979019165
+    ],
+    "cloture": [
+     10.920000076293945,
+     8.420000076293945,
+     7.480000019073486
+    ],
+    "bas": [
+     9.079999923706055,
+     8.199999809265137,
+     7.039999961853027
+    ],
+    "haut": [
+     12.279999732971191,
+     10.0,
+     8.460000038146973
+    ]
+   },
+   "alertes": [
+    "montee rapide sans catalyseur identifie (RVOL eleve)"
+   ],
+   "gap_pct": 22.92,
+   "rvol": 5.39,
+   "rvol_pre_tendance": 303.36,
+   "atr_pct": 11.58
+  },
+  {
+   "date": "2026-06-29",
+   "ticker": "TNMG",
+   "classe": "PUMP_RISK",
+   "resultat": "juste",
+   "variation_pct": -20.87,
+   "fenetre": {
+    "ouverture": [
+     0.8240000009536743,
+     0.8500000238418579,
+     0.5559999942779541
+    ],
+    "cloture": [
+     1.0099999904632568,
+     0.6499999761581421,
+     0.6520000100135803
+    ],
+    "bas": [
+     0.7889999747276306,
+     0.5789999961853027,
+     0.550000011920929
+    ],
+    "haut": [
+     1.2899999618530273,
+     0.9340000152587891,
+     0.699999988079071
+    ]
+   },
+   "alertes": [
+    "montee rapide sans catalyseur identifie (RVOL eleve)"
+   ],
+   "gap_pct": 68.85,
+   "rvol": 3082.12,
+   "rvol_pre_tendance": 8998.22,
+   "atr_pct": 15.97
+  },
+  {
+   "date": "2026-08-04",
+   "ticker": "TNMG",
+   "classe": "PUMP_RISK",
+   "resultat": "juste",
+   "variation_pct": -29.91,
+   "fenetre": {
+    "ouverture": [
+     0.7789999842643738,
+     0.4300000071525574,
+     0.5099999904632568
+    ],
+    "cloture": [
+     0.47600001096725464,
+     0.550000011920929,
+     0.5460000038146973
+    ],
+    "bas": [
+     0.46000000834465027,
+     0.4099999964237213,
+     0.4830000102519989
+    ],
+    "haut": [
+     0.890999972820282,
+     0.5609999895095825,
+     0.5699999928474426
+    ]
+   },
+   "alertes": [
+    "montee rapide sans catalyseur identifie (RVOL eleve)"
+   ],
+   "gap_pct": 117.6,
+   "rvol": 539.04,
+   "rvol_pre_tendance": 2591.34,
+   "atr_pct": 18.79
+  },
+  {
+   "date": "2026-08-25",
+   "ticker": "TNMG",
+   "classe": "PUMP_RISK",
+   "resultat": "juste",
+   "variation_pct": -20.37,
+   "fenetre": {
+    "ouverture": [
+     0.652999997138977,
+     0.5429999828338623,
+     0.5550000071525574
+    ],
+    "cloture": [
+     0.5699999928474426,
+     0.5799999833106995,
+     0.5199999809265137
+    ],
+    "bas": [
+     0.5120000243186951,
+     0.5299999713897705,
+     0.5
+    ],
+    "haut": [
+     0.7990000247955322,
+     0.6150000095367432,
+     0.5720000267028809
+    ]
+   },
+   "alertes": [
+    "montee rapide sans catalyseur identifie (RVOL eleve)"
+   ],
+   "gap_pct": 64.07,
+   "rvol": 537.25,
+   "rvol_pre_tendance": 845.73,
+   "atr_pct": 11.98
+  },
+  {
+   "date": "2026-09-18",
+   "ticker": "TNMG",
+   "classe": "PUMP_RISK",
+   "resultat": "juste",
+   "variation_pct": -9.91,
+   "fenetre": {
+    "ouverture": [
+     4.340000152587891,
+     3.9100000858306885,
+     4.28000020980835
+    ],
+    "cloture": [
+     3.869999885559082,
+     4.340000152587891,
+     3.9100000858306885
+    ],
+    "bas": [
+     3.440000057220459,
+     3.799999952316284,
+     3.9100000858306885
+    ],
+    "haut": [
+     5.03000020980835,
+     4.579999923706055,
+     4.28000020980835
+    ]
+   },
+   "alertes": [
+    "montee rapide sans catalyseur identifie (RVOL eleve)"
+   ],
+   "gap_pct": 61.34,
+   "rvol": 176.66,
+   "rvol_pre_tendance": 78.25,
+   "atr_pct": 15.31
+  },
+  {
+   "date": "2026-09-08",
+   "ticker": "TWG",
+   "classe": "PUMP_RISK",
+   "resultat": "juste",
+   "variation_pct": -26.47,
+   "fenetre": {
+    "ouverture": [
+     0.5289999842643738,
+     0.48399999737739563,
+     0.46000000834465027
+    ],
+    "cloture": [
+     0.5210000276565552,
+     0.5099999904632568,
+     0.3889999985694885
+    ],
+    "bas": [
+     0.46299999952316284,
+     0.4650000035762787,
+     0.3799999952316284
+    ],
+    "haut": [
+     0.5419999957084656,
+     0.5149999856948853,
+     0.4790000021457672
+    ]
+   },
+   "alertes": [
+    "montee rapide sans catalyseur identifie (RVOL eleve)"
+   ],
+   "gap_pct": 19.41,
+   "rvol": 391.41,
+   "rvol_pre_tendance": 4126.4,
+   "atr_pct": 18.28
+  },
+  {
+   "date": "2024-12-26",
+   "ticker": "VRME",
+   "classe": "PUMP_RISK",
+   "resultat": "faux",
+   "variation_pct": 16.33,
+   "fenetre": {
+    "ouverture": [
+     0.6790000200271606,
+     0.7900000214576721,
+     0.7279999852180481
+    ],
+    "cloture": [
+     0.7889999747276306,
+     0.7436000108718872,
+     0.789900004863739
+    ],
+    "bas": [
+     0.6299999952316284,
+     0.699999988079071,
+     0.6995000243186951
+    ],
+    "haut": [
+     0.7889999747276306,
+     0.8025000095367432,
+     0.7900000214576721
+    ]
+   },
+   "alertes": [
+    "montee rapide sans catalyseur identifie (RVOL eleve)"
+   ],
+   "gap_pct": 6.09,
+   "rvol": 2.91,
+   "rvol_pre_tendance": 32.68,
+   "atr_pct": 8.78
+  },
+  {
+   "date": "2024-12-31",
+   "ticker": "VRME",
+   "classe": "PUMP_RISK",
+   "resultat": "juste",
+   "variation_pct": -22.41,
+   "fenetre": {
+    "ouverture": [
+     1.7400000095367432,
+     2.0,
+     1.7599999904632568
+    ],
+    "cloture": [
+     1.3600000143051147,
+     1.75,
+     1.350000023841858
+    ],
+    "bas": [
+     1.1799999475479126,
+     1.5399999618530273,
+     1.2799999713897705
+    ],
+    "haut": [
+     2.4798998832702637,
+     2.25,
+     1.7699999809265137
+    ]
+   },
+   "alertes": [
+    "montee rapide sans catalyseur identifie (RVOL eleve)"
+   ],
+   "gap_pct": 120.28,
+   "rvol": 375.45,
+   "rvol_pre_tendance": 4841.3,
+   "atr_pct": 13.72
+  },
+  {
+   "date": "2025-01-02",
+   "ticker": "VRME",
+   "classe": "PUMP_RISK",
+   "resultat": "juste",
+   "variation_pct": -20.0,
+   "fenetre": {
+    "ouverture": [
+     2.0,
+     1.7599999904632568,
+     1.6299999952316284
+    ],
+    "cloture": [
+     1.75,
+     1.350000023841858,
+     1.600000023841858
+    ],
+    "bas": [
+     1.5399999618530273,
+     1.2799999713897705,
+     1.5
+    ],
+    "haut": [
+     2.25,
+     1.7699999809265137,
+     1.649999976158142
+    ]
+   },
+   "alertes": [
+    "montee rapide sans catalyseur identifie (RVOL eleve)"
+   ],
+   "gap_pct": 47.06,
+   "rvol": 128.3,
+   "rvol_pre_tendance": 1654.35,
+   "atr_pct": 13.93
+  },
+  {
+   "date": "2025-01-06",
+   "ticker": "VRME",
+   "classe": "PUMP_RISK",
+   "resultat": "faux",
+   "variation_pct": 3.07,
+   "fenetre": {
+    "ouverture": [
+     1.6299999952316284,
+     1.590000033378601,
+     1.649999976158142
+    ],
+    "cloture": [
+     1.600000023841858,
+     1.5299999713897705,
+     1.6799999475479126
+    ],
+    "bas": [
+     1.5,
+     1.4500000476837158,
+     1.4800000190734863
+    ],
+    "haut": [
+     1.649999976158142,
+     1.7400000095367432,
+     3.490000009536743
+    ]
+   },
+   "alertes": [
+    "montee rapide sans catalyseur identifie (RVOL eleve)"
+   ],
+   "gap_pct": 20.74,
+   "rvol": 11.54,
+   "rvol_pre_tendance": 173.51,
+   "atr_pct": 18.35
+  },
+  {
+   "date": "2025-01-08",
+   "ticker": "VRME",
+   "classe": "PUMP_RISK",
+   "resultat": "faux",
+   "variation_pct": 150.3,
+   "fenetre": {
+    "ouverture": [
+     1.649999976158142,
+     1.8899999856948853,
+     3.2149999141693115
+    ],
+    "cloture": [
+     1.6799999475479126,
+     2.549999952316284,
+     4.130000114440918
+    ],
+    "bas": [
+     1.4800000190734863,
+     1.7999999523162842,
+     3.069999933242798
+    ],
+    "haut": [
+     3.490000009536743,
+     3.109999895095825,
+     4.960000038146973
+    ]
+   },
+   "alertes": [
+    "montee rapide sans catalyseur identifie (RVOL eleve)"
+   ],
+   "gap_pct": 7.84,
+   "rvol": 184.87,
+   "rvol_pre_tendance": 3063.63,
+   "atr_pct": 26.89
+  },
+  {
+   "date": "2025-01-10",
+   "ticker": "VRME",
+   "classe": "PUMP_RISK",
+   "resultat": "faux",
+   "variation_pct": 69.31,
+   "fenetre": {
+    "ouverture": [
+     1.8899999856948853,
+     3.2149999141693115,
+     4.550000190734863
+    ],
+    "cloture": [
+     2.549999952316284,
+     4.130000114440918,
+     3.200000047683716
+    ],
+    "bas": [
+     1.7999999523162842,
+     3.069999933242798,
+     3.1700000762939453
+    ],
+    "haut": [
+     3.109999895095825,
+     4.960000038146973,
+     5.0
+    ]
+   },
+   "alertes": [
+    "montee rapide sans catalyseur identifie (RVOL eleve)"
+   ],
+   "gap_pct": 12.5,
+   "rvol": 141.38,
+   "rvol_pre_tendance": 2299.44,
+   "atr_pct": 21.5
+  },
+  {
+   "date": "2025-01-13",
+   "ticker": "VRME",
+   "classe": "PUMP_RISK",
+   "resultat": "faux",
+   "variation_pct": 31.88,
+   "fenetre": {
+    "ouverture": [
+     3.2149999141693115,
+     4.550000190734863,
+     3.6098999977111816
+    ],
+    "cloture": [
+     4.130000114440918,
+     3.200000047683716,
+     4.239999771118164
+    ],
+    "bas": [
+     3.069999933242798,
+     3.1700000762939453,
+     3.34089994430542
+    ],
+    "haut": [
+     4.960000038146973,
+     5.0,
+     4.889999866485596
+    ]
+   },
+   "alertes": [
+    "montee rapide sans catalyseur identifie (RVOL eleve)"
+   ],
+   "gap_pct": 26.08,
+   "rvol": 140.82,
+   "rvol_pre_tendance": 2125.53,
+   "atr_pct": 17.33
+  },
+  {
+   "date": "2025-01-14",
+   "ticker": "VRME",
+   "classe": "PUMP_RISK",
+   "resultat": "juste",
+   "variation_pct": -5.49,
+   "fenetre": {
+    "ouverture": [
+     4.550000190734863,
+     3.6098999977111816,
+     4.289999961853027
+    ],
+    "cloture": [
+     3.200000047683716,
+     4.239999771118164,
+     4.300000190734863
+    ],
+    "bas": [
+     3.1700000762939453,
+     3.34089994430542,
+     3.6500000953674316
+    ],
+    "haut": [
+     5.0,
+     4.889999866485596,
+     4.769999980926514
+    ]
+   },
+   "alertes": [
+    "montee rapide sans catalyseur identifie (RVOL eleve)",
+    "repasse sous la cloture de la veille (-22.5 %): le gap est efface, tout acheteur du jour est en perte"
+   ],
+   "gap_pct": 10.17,
+   "rvol": 46.52,
+   "rvol_pre_tendance": 726.74,
+   "atr_pct": 26.32
+  },
+  {
+   "date": "2025-01-15",
+   "ticker": "VRME",
+   "classe": "PUMP_RISK",
+   "resultat": "juste",
+   "variation_pct": -0.27,
+   "fenetre": {
+    "ouverture": [
+     3.6098999977111816,
+     4.289999961853027,
+     4.130000114440918
+    ],
+    "cloture": [
+     4.239999771118164,
+     4.300000190734863,
+     3.5999999046325684
+    ],
+    "bas": [
+     3.34089994430542,
+     3.6500000953674316,
+     3.5999999046325684
+    ],
+    "haut": [
+     4.889999866485596,
+     4.769999980926514,
+     4.130000114440918
+    ]
+   },
+   "alertes": [
+    "montee rapide sans catalyseur identifie (RVOL eleve)"
+   ],
+   "gap_pct": 12.81,
+   "rvol": 35.44,
+   "rvol_pre_tendance": 520.31,
+   "atr_pct": 22.62
+  },
+  {
+   "date": "2025-01-23",
+   "ticker": "VRME",
+   "classe": "PUMP_RISK",
+   "resultat": "juste",
+   "variation_pct": -36.36,
+   "fenetre": {
+    "ouverture": [
+     2.640000104904175,
+     1.7999999523162842,
+     1.649999976158142
+    ],
+    "cloture": [
+     1.850000023841858,
+     1.7899999618530273,
+     1.6799999475479126
+    ],
+    "bas": [
+     1.850000023841858,
+     1.7000000476837158,
+     1.6200000047683716
+    ],
+    "haut": [
+     2.759999990463257,
+     2.039900064468384,
+     2.069999933242798
+    ]
+   },
+   "alertes": [
+    "montee rapide sans catalyseur identifie (RVOL eleve)",
+    "repasse sous la cloture de la veille (-22.9 %): le gap est efface, tout acheteur du jour est en perte"
+   ],
+   "gap_pct": 10.0,
+   "rvol": 1.78,
+   "rvol_pre_tendance": 69.65,
+   "atr_pct": 60.08
+  },
+  {
+   "date": "2025-02-07",
+   "ticker": "VRME",
+   "classe": "FADE",
+   "resultat": "juste",
+   "variation_pct": 0.0,
+   "fenetre": {
+    "ouverture": [
+     1.2899999618530273,
+     1.2000000476837158,
+     1.2100000381469727
+    ],
+    "cloture": [
+     1.2899999618530273,
+     1.2200000286102295,
+     1.1299999952316284
+    ],
+    "bas": [
+     1.2410999536514282,
+     1.2000000476837158,
+     1.1100000143051147
+    ],
+    "haut": [
+     1.3700000047683716,
+     1.2799999713897705,
+     1.2400000095367432
+    ]
+   },
+   "alertes": [],
+   "gap_pct": 6.61,
+   "rvol": 0.26,
+   "rvol_pre_tendance": 4.03,
+   "atr_pct": 25.37
+  },
+  {
+   "date": "2025-08-13",
+   "ticker": "VRME",
+   "classe": "PUMP_RISK",
+   "resultat": "juste",
+   "variation_pct": -0.57,
+   "fenetre": {
+    "ouverture": [
+     0.9200000166893005,
+     0.9067000150680542,
+     0.8799999952316284
+    ],
+    "cloture": [
+     0.9304999709129333,
+     0.8788999915122986,
+     0.9147999882698059
+    ],
+    "bas": [
+     0.8999999761581421,
+     0.8575000166893005,
+     0.8758999705314636
+    ],
+    "haut": [
+     0.9980000257492065,
+     0.9283999800682068,
+     0.9599000215530396
+    ]
+   },
+   "alertes": [
+    "montee rapide sans catalyseur identifie (RVOL eleve)"
+   ],
+   "gap_pct": 9.16,
+   "rvol": 5.06,
+   "rvol_pre_tendance": 25.79,
+   "atr_pct": 18.15
+  },
+  {
+   "date": "2025-09-19",
+   "ticker": "VRME",
+   "classe": "PUMP_RISK",
+   "resultat": "faux",
+   "variation_pct": 3.0,
+   "fenetre": {
+    "ouverture": [
+     1.0,
+     1.2999999523162842,
+     1.100000023841858
+    ],
+    "cloture": [
+     1.2799999713897705,
+     1.0800000429153442,
+     1.0299999713897705
+    ],
+    "bas": [
+     0.9800000190734863,
+     1.059999942779541,
+     0.9900000095367432
+    ],
+    "haut": [
+     1.350000023841858,
+     1.2999999523162842,
+     1.125
+    ]
+   },
+   "alertes": [
+    "montee rapide sans catalyseur identifie (RVOL eleve)"
+   ],
+   "gap_pct": 8.04,
+   "rvol": 89.7,
+   "rvol_pre_tendance": 157.96,
+   "atr_pct": 6.71
+  },
+  {
+   "date": "2025-10-06",
+   "ticker": "VRME",
+   "classe": "FADE",
+   "resultat": "juste",
+   "variation_pct": 1.85,
+   "fenetre": {
+    "ouverture": [
+     1.0800000429153442,
+     1.1200000047683716,
+     1.0800000429153442
+    ],
+    "cloture": [
+     1.100000023841858,
+     1.100000023841858,
+     1.090000033378601
+    ],
+    "bas": [
+     1.0499999523162842,
+     1.0299999713897705,
+     1.0299999713897705
+    ],
+    "haut": [
+     1.1399999856948853,
+     1.1390000581741333,
+     1.0983999967575073
+    ]
+   },
+   "alertes": [],
+   "gap_pct": 6.93,
+   "rvol": 2.14,
+   "rvol_pre_tendance": 4.25,
+   "atr_pct": 11.62
+  },
+  {
+   "date": "2025-10-17",
+   "ticker": "VRME",
+   "classe": "FADE",
+   "resultat": "juste",
+   "variation_pct": 2.73,
+   "fenetre": {
+    "ouverture": [
+     1.100000023841858,
+     1.25,
+     1.399999976158142
+    ],
+    "cloture": [
+     1.1299999952316284,
+     1.4299999475479126,
+     1.2699999809265137
+    ],
+    "bas": [
+     1.0399999618530273,
+     1.159999966621399,
+     1.2000000476837158
+    ],
+    "haut": [
+     1.2100000381469727,
+     1.4800000190734863,
+     1.399999976158142
+    ]
+   },
+   "alertes": [
+    "montee rapide sans catalyseur identifie (RVOL eleve)"
+   ],
+   "gap_pct": 6.8,
+   "rvol": 4.73,
+   "rvol_pre_tendance": 9.69,
+   "atr_pct": 8.08
+  },
+  {
+   "date": "2025-10-20",
+   "ticker": "VRME",
+   "classe": "PUMP_RISK",
+   "resultat": "juste",
+   "variation_pct": -12.8,
+   "fenetre": {
+    "ouverture": [
+     1.25,
+     1.399999976158142,
+     1.2000000476837158
+    ],
+    "cloture": [
+     1.4299999475479126,
+     1.2699999809265137,
+     1.090000033378601
+    ],
+    "bas": [
+     1.159999966621399,
+     1.2000000476837158,
+     1.0399999618530273
+    ],
+    "haut": [
+     1.4800000190734863,
+     1.399999976158142,
+     1.2300000190734863
+    ]
+   },
+   "alertes": [
+    "montee rapide sans catalyseur identifie (RVOL eleve)"
+   ],
+   "gap_pct": 10.62,
+   "rvol": 21.79,
+   "rvol_pre_tendance": 42.91,
+   "atr_pct": 7.84
+  },
+  {
+   "date": "2026-01-05",
+   "ticker": "VRME",
+   "classe": "PUMP_RISK",
+   "resultat": "juste",
+   "variation_pct": -9.47,
+   "fenetre": {
+    "ouverture": [
+     1.0800000429153442,
+     1.159999966621399,
+     1.0800000429153442
+    ],
+    "cloture": [
+     1.059999942779541,
+     1.0499999523162842,
+     0.9776999950408936
+    ],
+    "bas": [
+     0.9204999804496765,
+     1.0099999904632568,
+     0.949999988079071
+    ],
+    "haut": [
+     1.409999966621399,
+     1.159999966621399,
+     1.100000023841858
+    ]
+   },
+   "alertes": [
+    "montee rapide sans catalyseur identifie (RVOL eleve)"
+   ],
+   "gap_pct": 60.09,
+   "rvol": 1176.97,
+   "rvol_pre_tendance": 864.88,
+   "atr_pct": 8.75
+  },
+  {
+   "date": "2026-01-06",
+   "ticker": "VRME",
+   "classe": "PUMP_RISK",
+   "resultat": "juste",
+   "variation_pct": -11.21,
+   "fenetre": {
+    "ouverture": [
+     1.159999966621399,
+     1.0800000429153442,
+     0.949999988079071
+    ],
+    "cloture": [
+     1.0499999523162842,
+     0.9776999950408936,
+     1.0299999713897705
+    ],
+    "bas": [
+     1.0099999904632568,
+     0.949999988079071,
+     0.9420999884605408
+    ],
+    "haut": [
+     1.159999966621399,
+     1.100000023841858,
+     1.1200000047683716
+    ]
+   },
+   "alertes": [
+    "montee rapide sans catalyseur identifie (RVOL eleve)",
+    "repasse sous la cloture de la veille (-0.9 %): le gap est efface, tout acheteur du jour est en perte"
+   ],
+   "gap_pct": 9.43,
+   "rvol": 37.81,
+   "rvol_pre_tendance": 26.79,
+   "atr_pct": 9.41
+  },
+  {
+   "date": "2026-01-22",
+   "ticker": "VRME",
+   "classe": "PUMP_RISK",
+   "resultat": "juste",
+   "variation_pct": -7.09,
+   "fenetre": {
+    "ouverture": [
+     1.2699999809265137,
+     1.2400000095367432,
+     1.2599999904632568
+    ],
+    "cloture": [
+     1.2699999809265137,
+     1.2699999809265137,
+     1.1799999475479126
+    ],
+    "bas": [
+     1.25,
+     1.2304999828338623,
+     1.1649999618530273
+    ],
+    "haut": [
+     1.440000057220459,
+     1.3300000429153442,
+     1.2608000040054321
+    ]
+   },
+   "alertes": [
+    "montee rapide sans catalyseur identifie (RVOL eleve)"
+   ],
+   "gap_pct": 12.39,
+   "rvol": 4.04,
+   "rvol_pre_tendance": 11.98,
+   "atr_pct": 17.16
+  },
+  {
+   "date": "2025-10-07",
+   "ticker": "VTGN",
+   "classe": "FADE",
+   "resultat": "juste",
+   "variation_pct": -3.18,
+   "fenetre": {
+    "ouverture": [
+     4.090000152587891,
+     4.039999961853027,
+     4.019999980926514
+    ],
+    "cloture": [
+     3.9600000381469727,
+     4.019999980926514,
+     4.210000038146973
+    ],
+    "bas": [
+     3.8499999046325684,
+     3.940000057220459,
+     4.019999980926514
+    ],
+    "haut": [
+     4.25,
+     4.179999828338623,
+     4.389999866485596
+    ]
+   },
+   "alertes": [],
+   "gap_pct": 5.14,
+   "rvol": 2.51,
+   "rvol_pre_tendance": 2.61,
+   "atr_pct": 6.48
+  },
+  {
+   "date": "2025-11-03",
+   "ticker": "VTGN",
+   "classe": "FADE",
+   "resultat": "juste",
+   "variation_pct": 0.0,
+   "fenetre": {
+    "ouverture": [
+     4.239999771118164,
+     4.179999828338623,
+     4.150000095367432
+    ],
+    "cloture": [
+     4.239999771118164,
+     4.070000171661377,
+     4.179999828338623
+    ],
+    "bas": [
+     4.130000114440918,
+     4.059999942779541,
+     4.050000190734863
+    ],
+    "haut": [
+     4.650000095367432,
+     4.300000190734863,
+     4.28000020980835
+    ]
+   },
+   "alertes": [],
+   "gap_pct": 7.61,
+   "rvol": 2.22,
+   "rvol_pre_tendance": 3.37,
+   "atr_pct": 7.73
+  },
+  {
+   "date": "2026-04-01",
+   "ticker": "VTGN",
+   "classe": "FADE",
+   "resultat": "juste",
+   "variation_pct": 0.0,
+   "fenetre": {
+    "ouverture": [
+     0.6000000238418579,
+     0.6000000238418579,
+     0.5799999833106995
+    ],
+    "cloture": [
+     0.6000000238418579,
+     0.5899999737739563,
+     0.5400000214576721
+    ],
+    "bas": [
+     0.5899999737739563,
+     0.5899999737739563,
+     0.5400000214576721
+    ],
+    "haut": [
+     0.6299999952316284,
+     0.6100000143051147,
+     0.5799999833106995
+    ]
+   },
+   "alertes": [],
+   "gap_pct": 5.26,
+   "rvol": 1.81,
+   "rvol_pre_tendance": 0.82,
+   "atr_pct": 6.9
+  },
+  {
+   "date": "2026-06-08",
+   "ticker": "VTGN",
+   "classe": "FADE",
+   "resultat": "juste",
+   "variation_pct": -6.9,
+   "fenetre": {
+    "ouverture": [
+     0.5799999833106995,
+     0.5400000214576721,
+     0.5400000214576721
+    ],
+    "cloture": [
+     0.5400000214576721,
+     0.5400000214576721,
+     0.5400000214576721
+    ],
+    "bas": [
+     0.5299999713897705,
+     0.5199999809265137,
+     0.5199999809265137
+    ],
+    "haut": [
+     0.5799999833106995,
+     0.5699999928474426,
+     0.5600000023841858
+    ]
+   },
+   "alertes": [],
+   "gap_pct": 7.41,
+   "rvol": 0.88,
+   "rvol_pre_tendance": 1.18,
+   "atr_pct": 8.86
+  },
+  {
+   "date": "2026-06-22",
+   "ticker": "VTGN",
+   "classe": "FADE",
+   "resultat": "juste",
+   "variation_pct": -9.86,
+   "fenetre": {
+    "ouverture": [
+     0.7099999785423279,
+     0.6499999761581421,
+     0.6200000047683716
+    ],
+    "cloture": [
+     0.6399999856948853,
+     0.6299999952316284,
+     0.6600000262260437
+    ],
+    "bas": [
+     0.6200000047683716,
+     0.6100000143051147,
+     0.6100000143051147
+    ],
+    "haut": [
+     0.7099999785423279,
+     0.6899999976158142,
+     0.6700000166893005
+    ]
+   },
+   "alertes": [
+    "repasse sous la cloture de la veille (-4.5 %): le gap est efface, tout acheteur du jour est en perte"
+   ],
+   "gap_pct": 5.97,
+   "rvol": 2.03,
+   "rvol_pre_tendance": 2.32,
+   "atr_pct": 9.93
+  },
+  {
+   "date": "2026-09-22",
+   "ticker": "VTGN",
+   "classe": "PUMP_RISK",
+   "resultat": "faux",
+   "variation_pct": 20.0,
+   "fenetre": {
+    "ouverture": [
+     0.25,
+     0.38999998569488525,
+     0.3499999940395355
+    ],
+    "cloture": [
+     0.25,
+     0.3700000047683716,
+     0.30000001192092896
+    ],
+    "bas": [
+     0.23999999463558197,
+     0.3400000035762787,
+     0.27000001072883606
+    ],
+    "haut": [
+     0.27000001072883606,
+     0.550000011920929,
+     0.36000001430511475
+    ]
+   },
+   "alertes": [
+    "montee rapide sans catalyseur identifie (RVOL eleve)"
+   ],
+   "gap_pct": 8.7,
+   "rvol": 16.91,
+   "rvol_pre_tendance": 4.87,
+   "atr_pct": 6.0
+  },
+  {
+   "date": "2026-09-23",
+   "ticker": "VTGN",
+   "classe": "PUMP_RISK",
+   "resultat": "juste",
+   "variation_pct": -30.77,
+   "fenetre": {
+    "ouverture": [
+     0.38999998569488525,
+     0.3499999940395355,
+     0.2800000011920929
+    ],
+    "cloture": [
+     0.3700000047683716,
+     0.30000001192092896,
+     0.27000001072883606
+    ],
+    "bas": [
+     0.3400000035762787,
+     0.27000001072883606,
+     0.25999999046325684
+    ],
+    "haut": [
+     0.550000011920929,
+     0.36000001430511475,
+     0.30000001192092896
+    ]
+   },
+   "alertes": [
+    "montee rapide sans catalyseur identifie (RVOL eleve)"
+   ],
+   "gap_pct": 56.0,
+   "rvol": 1620.29,
+   "rvol_pre_tendance": 484.61,
+   "atr_pct": 9.65
+  },
+  {
+   "date": "2026-08-14",
+   "ticker": "WETO",
+   "classe": "PUMP_RISK",
+   "resultat": "faux",
+   "variation_pct": 209.86,
+   "fenetre": {
+    "ouverture": [
+     10.649999618530273,
+     10.15999984741211,
+     43.04999923706055
+    ],
+    "cloture": [
+     8.220000267028809,
+     24.59000015258789,
+     33.0
+    ],
+    "bas": [
+     7.260000228881836,
+     9.600000381469727,
+     26.799999237060547
+    ],
+    "haut": [
+     12.949999809265137,
+     29.499000549316406,
+     53.59000015258789
+    ]
+   },
+   "alertes": [
+    "montee rapide sans catalyseur identifie (RVOL eleve)"
+   ],
+   "gap_pct": 195.01,
+   "rvol": 363.76,
+   "rvol_pre_tendance": 71924.59,
+   "atr_pct": 31.3
+  },
+  {
+   "date": "2026-08-17",
+   "ticker": "WETO",
+   "classe": "PUMP_RISK",
+   "resultat": "faux",
+   "variation_pct": 104.33,
+   "fenetre": {
+    "ouverture": [
+     10.15999984741211,
+     43.04999923706055,
+     21.5
+    ],
+    "cloture": [
+     24.59000015258789,
+     33.0,
+     20.760000228881836
+    ],
+    "bas": [
+     9.600000381469727,
+     26.799999237060547,
+     17.350000381469727
+    ],
+    "haut": [
+     29.499000549316406,
+     53.59000015258789,
+     24.5
+    ]
+   },
+   "alertes": [
+    "montee rapide sans catalyseur identifie (RVOL eleve)"
+   ],
+   "gap_pct": 23.6,
+   "rvol": 167.13,
+   "rvol_pre_tendance": 45942.36,
+   "atr_pct": 16.15
+  },
+  {
+   "date": "2026-08-18",
+   "ticker": "WETO",
+   "classe": "PUMP_RISK",
+   "resultat": "juste",
+   "variation_pct": -36.06,
+   "fenetre": {
+    "ouverture": [
+     43.04999923706055,
+     21.5,
+     30.350000381469727
+    ],
+    "cloture": [
+     33.0,
+     20.760000228881836,
+     27.524999618530273
+    ],
+    "bas": [
+     26.799999237060547,
+     17.350000381469727,
+     26.200000762939453
+    ],
+    "haut": [
+     53.59000015258789,
+     24.5,
+     36.290000915527344
+    ]
+   },
+   "alertes": [
+    "montee rapide sans catalyseur identifie (RVOL eleve)"
+   ],
+   "gap_pct": 75.07,
+   "rvol": 35.26,
+   "rvol_pre_tendance": 12437.63,
+   "atr_pct": 18.16
+  },
+  {
+   "date": "2026-08-20",
+   "ticker": "WETO",
+   "classe": "PUMP_RISK",
+   "resultat": "juste",
+   "variation_pct": -9.09,
+   "fenetre": {
+    "ouverture": [
+     30.350000381469727,
+     25.09000015258789,
+     22.920000076293945
+    ],
+    "cloture": [
+     27.524999618530273,
+     26.010000228881836,
+     27.59000015258789
+    ],
+    "bas": [
+     26.200000762939453,
+     23.079999923706055,
+     22.549999237060547
+    ],
+    "haut": [
+     36.290000915527344,
+     27.530000686645508,
+     31.260000228881836
+    ]
+   },
+   "alertes": [
+    "montee rapide sans catalyseur identifie (RVOL eleve)"
+   ],
+   "gap_pct": 46.19,
+   "rvol": 13.14,
+   "rvol_pre_tendance": 5654.3,
+   "atr_pct": 26.67
+  },
+  {
+   "date": "2026-08-31",
+   "ticker": "WETO",
+   "classe": "PUMP_RISK",
+   "resultat": "juste",
+   "variation_pct": -45.49,
+   "fenetre": {
+    "ouverture": [
+     7.210000038146973,
+     7.684999942779541,
+     5.329999923706055
+    ],
+    "cloture": [
+     5.480000019073486,
+     5.940000057220459,
+     3.930000066757202
+    ],
+    "bas": [
+     5.429999828338623,
+     5.659999847412109,
+     3.4800000190734863
+    ],
+    "haut": [
+     14.0,
+     8.4399995803833,
+     5.340000152587891
+    ]
+   },
+   "alertes": [
+    "montee rapide sans catalyseur identifie (RVOL eleve)",
+    "repasse sous la cloture de la veille (-4.2 %): le gap est efface, tout acheteur du jour est en perte"
+   ],
+   "gap_pct": 26.05,
+   "rvol": 108.3,
+   "rvol_pre_tendance": 48678.89,
+   "atr_pct": 184.99
+  },
+  {
+   "date": "2026-09-01",
+   "ticker": "WETO",
+   "classe": "PUMP_RISK",
+   "resultat": "juste",
+   "variation_pct": -58.1,
+   "fenetre": {
+    "ouverture": [
+     7.684999942779541,
+     5.329999923706055,
+     4.070000171661377
+    ],
+    "cloture": [
+     5.940000057220459,
+     3.930000066757202,
+     3.2200000286102295
+    ],
+    "bas": [
+     5.659999847412109,
+     3.4800000190734863,
+     3.049999952316284
+    ],
+    "haut": [
+     8.4399995803833,
+     5.340000152587891,
+     4.070000171661377
+    ]
+   },
+   "alertes": [
+    "montee rapide sans catalyseur identifie (RVOL eleve)"
+   ],
+   "gap_pct": 40.24,
+   "rvol": 31.59,
+   "rvol_pre_tendance": 14134.01,
+   "atr_pct": 173.41
+  },
+  {
+   "date": "2026-09-04",
+   "ticker": "WETO",
+   "classe": "PUMP_RISK",
+   "resultat": "juste",
+   "variation_pct": -41.79,
+   "fenetre": {
+    "ouverture": [
+     4.139999866485596,
+     2.380000114440918,
+     2.5
+    ],
+    "cloture": [
+     2.549999952316284,
+     2.5399999618530273,
+     2.4100000858306885
+    ],
+    "bas": [
+     2.430000066757202,
+     2.25,
+     2.3610000610351562
+    ],
+    "haut": [
+     4.150000095367432,
+     2.75,
+     2.5
+    ]
+   },
+   "alertes": [
+    "montee rapide sans catalyseur identifie (RVOL eleve)",
+    "repasse sous la cloture de la veille (-20.8 %): le gap est efface, tout acheteur du jour est en perte"
+   ],
+   "gap_pct": 28.57,
+   "rvol": 23.89,
+   "rvol_pre_tendance": 11747.77,
+   "atr_pct": 330.73
+  },
+  {
+   "date": "2026-09-17",
+   "ticker": "WETO",
+   "classe": "PUMP_RISK",
+   "resultat": "juste",
+   "variation_pct": -22.17,
+   "fenetre": {
+    "ouverture": [
+     2.119999885559082,
+     1.7999999523162842,
+     1.6100000143051147
+    ],
+    "cloture": [
+     1.8600000143051147,
+     1.690000057220459,
+     1.649999976158142
+    ],
+    "bas": [
+     1.7999999523162842,
+     1.600000023841858,
+     1.600000023841858
+    ],
+    "haut": [
+     2.2100000381469727,
+     1.809999942779541,
+     1.687000036239624
+    ]
+   },
+   "alertes": [
+    "montee rapide sans catalyseur identifie (RVOL eleve)"
+   ],
+   "gap_pct": 15.22,
+   "rvol": 10.18,
+   "rvol_pre_tendance": 659.96,
+   "atr_pct": 98.27
+  },
+  {
+   "date": "2026-09-24",
+   "ticker": "WETO",
+   "classe": "PUMP_RISK",
+   "resultat": "juste",
+   "variation_pct": -15.35,
+   "fenetre": {
+    "ouverture": [
+     2.0199999809265137,
+     1.7200000286102295
+    ],
+    "cloture": [
+     1.899999976158142,
+     1.7100000381469727
+    ],
+    "bas": [
+     1.7300000190734863,
+     1.6799999475479126
+    ],
+    "haut": [
+     2.190000057220459,
+     1.7549999952316284
+    ]
+   },
+   "alertes": [
+    "montee rapide sans catalyseur identifie (RVOL eleve)"
+   ],
+   "gap_pct": 39.31,
+   "rvol": 12.09,
+   "rvol_pre_tendance": 239.32,
+   "atr_pct": 21.8
+  },
+  {
+   "date": "2026-09-23",
+   "ticker": "WHLR",
+   "classe": "PUMP_RISK",
+   "resultat": "juste",
+   "variation_pct": -0.1,
+   "fenetre": {
+    "ouverture": [
+     5.204999923706055,
+     4.300000190734863,
+     4.860000133514404
+    ],
+    "cloture": [
+     5.440000057220459,
+     3.740000009536743,
+     5.199999809265137
+    ],
+    "bas": [
+     4.75,
+     2.8989999294281006,
+     4.381999969482422
+    ],
+    "haut": [
+     8.710000038146973,
+     4.679999828338623,
+     5.440000057220459
+    ]
+   },
+   "alertes": [
+    "montee rapide sans catalyseur identifie (RVOL eleve)"
+   ],
+   "gap_pct": 178.34,
+   "rvol": 493.55,
+   "rvol_pre_tendance": 10082.63,
+   "atr_pct": 24.3
+  },
+  {
+   "date": "2026-07-10",
+   "ticker": "ZBAO",
+   "classe": "PUMP_RISK",
+   "resultat": "juste",
+   "variation_pct": -43.07,
+   "fenetre": {
+    "ouverture": [
+     0.5270000100135803,
+     0.3160000145435333,
+     0.257999986410141
+    ],
+    "cloture": [
+     0.42399999499320984,
+     0.28999999165534973,
+     0.30000001192092896
+    ],
+    "bas": [
+     0.382999986410141,
+     0.25200000405311584,
+     0.24300000071525574
+    ],
+    "haut": [
+     0.578000009059906,
+     0.3330000042915344,
+     0.3100000023841858
+    ]
+   },
+   "alertes": [
+    "montee rapide sans catalyseur identifie (RVOL eleve)"
+   ],
+   "gap_pct": 78.04,
+   "rvol": 1718.17,
+   "rvol_pre_tendance": 1755.73,
+   "atr_pct": 28.4
+  },
+  {
+   "date": "2026-07-31",
+   "ticker": "ZBAO",
+   "classe": "PUMP_RISK",
+   "resultat": "juste",
+   "variation_pct": -8.27,
+   "fenetre": {
+    "ouverture": [
+     0.27799999713897705,
+     0.22100000083446503,
+     0.23499999940395355
+    ],
+    "cloture": [
+     0.20000000298023224,
+     0.2549999952316284,
+     0.2549999952316284
+    ],
+    "bas": [
+     0.18400000035762787,
+     0.2199999988079071,
+     0.22499999403953552
+    ],
+    "haut": [
+     0.3529999852180481,
+     0.36800000071525574,
+     0.28600001335144043
+    ]
+   },
+   "alertes": [
+    "montee rapide sans catalyseur identifie (RVOL eleve)"
+   ],
+   "gap_pct": 60.69,
+   "rvol": 125.08,
+   "rvol_pre_tendance": 1764.9,
+   "atr_pct": 35.79
+  },
+  {
+   "date": "2026-08-03",
+   "ticker": "ZBAO",
+   "classe": "PUMP_RISK",
+   "resultat": "faux",
+   "variation_pct": 3.17,
+   "fenetre": {
+    "ouverture": [
+     0.22100000083446503,
+     0.23499999940395355,
+     0.24799999594688416
+    ],
+    "cloture": [
+     0.2549999952316284,
+     0.2549999952316284,
+     0.2280000001192093
+    ],
+    "bas": [
+     0.2199999988079071,
+     0.22499999403953552,
+     0.22499999403953552
+    ],
+    "haut": [
+     0.36800000071525574,
+     0.28600001335144043,
+     0.25
+    ]
+   },
+   "alertes": [
+    "montee rapide sans catalyseur identifie (RVOL eleve)"
+   ],
+   "gap_pct": 10.5,
+   "rvol": 64.02,
+   "rvol_pre_tendance": 916.4,
+   "atr_pct": 30.9
+  },
+  {
+   "date": "2025-09-12",
+   "ticker": "ZONE",
+   "classe": "PUMP_RISK",
+   "resultat": "juste",
+   "variation_pct": -38.01,
+   "fenetre": {
+    "ouverture": [
+     4.420000076293945,
+     3.5899999141693115,
+     2.9600000381469727
+    ],
+    "cloture": [
+     3.799999952316284,
+     2.680000066757202,
+     2.740000009536743
+    ],
+    "bas": [
+     3.6500000953674316,
+     2.6500000953674316,
+     2.6449999809265137
+    ],
+    "haut": [
+     4.639999866485596,
+     3.7699999809265137,
+     3.0
+    ]
+   },
+   "alertes": [
+    "montee rapide sans catalyseur identifie (RVOL eleve)",
+    "repasse sous la cloture de la veille (-4.5 %): le gap est efface, tout acheteur du jour est en perte"
+   ],
+   "gap_pct": 11.06,
+   "rvol": 18.21,
+   "rvol_pre_tendance": 121.43,
+   "atr_pct": 32.55
+  },
+  {
+   "date": "2025-09-16",
+   "ticker": "ZONE",
+   "classe": "PUMP_RISK",
+   "resultat": "juste",
+   "variation_pct": -12.16,
+   "fenetre": {
+    "ouverture": [
+     2.9600000381469727,
+     2.7200000286102295,
+     2.7100000381469727
+    ],
+    "cloture": [
+     2.740000009536743,
+     2.619999885559082,
+     2.5999999046325684
+    ],
+    "bas": [
+     2.6449999809265137,
+     2.559999942779541,
+     2.549999952316284
+    ],
+    "haut": [
+     3.0,
+     2.890000104904175,
+     2.8399999141693115
+    ]
+   },
+   "alertes": [
+    "montee rapide sans catalyseur identifie (RVOL eleve)"
+   ],
+   "gap_pct": 10.45,
+   "rvol": 9.03,
+   "rvol_pre_tendance": 102.81,
+   "atr_pct": 40.88
+  },
+  {
+   "date": "2025-09-24",
+   "ticker": "ZONE",
+   "classe": "PUMP_RISK",
+   "resultat": "juste",
+   "variation_pct": -12.5,
+   "fenetre": {
+    "ouverture": [
+     2.319999933242798,
+     2.0899999141693115,
+     2.0999999046325684
+    ],
+    "cloture": [
+     2.380000114440918,
+     2.119999885559082,
+     2.0299999713897705
+    ],
+    "bas": [
+     2.0999999046325684,
+     1.9800000190734863,
+     1.9600000381469727
+    ],
+    "haut": [
+     2.450000047683716,
+     2.2699999809265137,
+     2.190000057220459
+    ]
+   },
+   "alertes": [
+    "montee rapide sans catalyseur identifie (RVOL eleve)"
+   ],
+   "gap_pct": 17.17,
+   "rvol": 13.75,
+   "rvol_pre_tendance": 972.73,
+   "atr_pct": 27.82
+  },
+  {
+   "date": "2025-10-07",
+   "ticker": "ZONE",
+   "classe": "PUMP_RISK",
+   "resultat": "juste",
+   "variation_pct": -16.8,
+   "fenetre": {
+    "ouverture": [
+     2.5,
+     2.0999999046325684,
+     2.0399999618530273
+    ],
+    "cloture": [
+     2.059999942779541,
+     2.0399999618530273,
+     2.0799999237060547
+    ],
+    "bas": [
+     1.7699999809265137,
+     1.9700000286102295,
+     2.0280001163482666
+    ],
+    "haut": [
+     2.5299999713897705,
+     2.1500000953674316,
+     2.1050000190734863
+    ]
+   },
+   "alertes": [
+    "montee rapide sans catalyseur identifie (RVOL eleve)",
+    "repasse sous la cloture de la veille (-8.4 %): le gap est efface, tout acheteur du jour est en perte"
+   ],
+   "gap_pct": 11.11,
+   "rvol": 2.41,
+   "rvol_pre_tendance": 115.26,
+   "atr_pct": 14.2
+  },
+  {
+   "date": "2025-11-19",
+   "ticker": "ZONE",
+   "classe": "FADE",
+   "resultat": "juste",
+   "variation_pct": 2.23,
+   "fenetre": {
+    "ouverture": [
+     0.3580000102519989,
+     0.36000001430511475,
+     0.30000001192092896
+    ],
+    "cloture": [
+     0.3659999966621399,
+     0.296999990940094,
+     0.3140000104904175
+    ],
+    "bas": [
+     0.328000009059906,
+     0.29600000381469727,
+     0.25600001215934753
+    ],
+    "haut": [
+     0.3709999918937683,
+     0.38600000739097595,
+     0.33000001311302185
+    ]
+   },
+   "alertes": [],
+   "gap_pct": 5.29,
+   "rvol": 3.17,
+   "rvol_pre_tendance": 3.63,
+   "atr_pct": 39.62
+  },
+  {
+   "date": "2025-11-24",
+   "ticker": "ZONE",
+   "classe": "FADE",
+   "resultat": "juste",
+   "variation_pct": 13.64,
+   "fenetre": {
+    "ouverture": [
+     0.33000001311302185,
+     0.3619999885559082,
+     0.3700000047683716
+    ],
+    "cloture": [
+     0.375,
+     0.36800000071525574,
+     0.3580000102519989
+    ],
+    "bas": [
+     0.30399999022483826,
+     0.34700000286102295,
+     0.3330000042915344
+    ],
+    "haut": [
+     0.40799999237060547,
+     0.3790000081062317,
+     0.3700000047683716
+    ]
+   },
+   "alertes": [
+    "montee rapide sans catalyseur identifie (RVOL eleve)"
+   ],
+   "gap_pct": 5.1,
+   "rvol": 1.8,
+   "rvol_pre_tendance": 5.6,
+   "atr_pct": 35.01
+  },
+  {
+   "date": "2025-12-08",
+   "ticker": "ZONE",
+   "classe": "FADE",
+   "resultat": "juste",
+   "variation_pct": -3.33,
+   "fenetre": {
+    "ouverture": [
+     0.33000001311302185,
+     0.3059999942779541,
+     0.35600000619888306
+    ],
+    "cloture": [
+     0.3190000057220459,
+     0.3569999933242798,
+     0.35499998927116394
+    ],
+    "bas": [
+     0.29100000858306885,
+     0.30000001192092896,
+     0.328000009059906
+    ],
+    "haut": [
+     0.33000001311302185,
+     0.3700000047683716,
+     0.36000001430511475
+    ]
+   },
+   "alertes": [],
+   "gap_pct": 10.74,
+   "rvol": 0.7,
+   "rvol_pre_tendance": 2.92,
+   "atr_pct": 16.39
+  },
+  {
+   "date": "2026-01-02",
+   "ticker": "ZONE",
+   "classe": "FADE",
+   "resultat": "juste",
+   "variation_pct": 14.96,
+   "fenetre": {
+    "ouverture": [
+     0.27399998903274536,
+     0.3199999928474426,
+     0.36000001430511475
+    ],
+    "cloture": [
+     0.3149999976158142,
+     0.3499999940395355,
+     0.3400000035762787
+    ],
+    "bas": [
+     0.27000001072883606,
+     0.3059999942779541,
+     0.33000001311302185
+    ],
+    "haut": [
+     0.31700000166893005,
+     0.36000001430511475,
+     0.3619999885559082
+    ]
+   },
+   "alertes": [],
+   "gap_pct": 5.38,
+   "rvol": 1.26,
+   "rvol_pre_tendance": 1.46,
+   "atr_pct": 10.09
+  },
+  {
+   "date": "2026-02-13",
+   "ticker": "ZONE",
+   "classe": "FADE",
+   "resultat": "juste",
+   "variation_pct": -1.52,
+   "fenetre": {
+    "ouverture": [
+     0.2639999985694885,
+     0.27000001072883606,
+     0.27000001072883606
+    ],
+    "cloture": [
+     0.25999999046325684,
+     0.2680000066757202,
+     0.2619999945163727
+    ],
+    "bas": [
+     0.23999999463558197,
+     0.24500000476837158,
+     0.2549999952316284
+    ],
+    "haut": [
+     0.2759999930858612,
+     0.2720000147819519,
+     0.2800000011920929
+    ]
+   },
+   "alertes": [],
+   "gap_pct": 12.34,
+   "rvol": 0.6,
+   "rvol_pre_tendance": 0.3,
+   "atr_pct": 15.38
+  },
+  {
+   "date": "2026-03-06",
+   "ticker": "ZONE",
+   "classe": "FADE",
+   "resultat": "juste",
+   "variation_pct": -14.0,
+   "fenetre": {
+    "ouverture": [
+     0.3499999940395355,
+     0.30300000309944153,
+     0.3050000071525574
+    ],
+    "cloture": [
+     0.3009999990463257,
+     0.3140000104904175,
+     0.328000009059906
+    ],
+    "bas": [
+     0.2879999876022339,
+     0.2800000011920929,
+     0.30399999022483826
+    ],
+    "haut": [
+     0.3499999940395355,
+     0.32100000977516174,
+     0.3330000042915344
+    ]
+   },
+   "alertes": [
+    "repasse sous la cloture de la veille (-5.9 %): le gap est efface, tout acheteur du jour est en perte"
+   ],
+   "gap_pct": 9.38,
+   "rvol": 1.58,
+   "rvol_pre_tendance": 1.41,
+   "atr_pct": 14.29
+  },
+  {
+   "date": "2026-03-11",
+   "ticker": "ZONE",
+   "classe": "FADE",
+   "resultat": "juste",
+   "variation_pct": -8.79,
+   "fenetre": {
+    "ouverture": [
+     0.36399999260902405,
+     0.3400000035762787,
+     0.35199999809265137
+    ],
+    "cloture": [
+     0.3319999873638153,
+     0.34599998593330383,
+     0.34200000762939453
+    ],
+    "bas": [
+     0.31200000643730164,
+     0.33000001311302185,
+     0.335999995470047
+    ],
+    "haut": [
+     0.4699999988079071,
+     0.3799999952316284,
+     0.375
+    ]
+   },
+   "alertes": [],
+   "gap_pct": 10.98,
+   "rvol": 1.48,
+   "rvol_pre_tendance": 1.65,
+   "atr_pct": 16.37
+  },
+  {
+   "date": "2026-03-27",
+   "ticker": "ZONE",
+   "classe": "FADE",
+   "resultat": "juste",
+   "variation_pct": -6.92,
+   "fenetre": {
+    "ouverture": [
+     0.38999998569488525,
+     0.3630000054836273,
+     0.3580000102519989
+    ],
+    "cloture": [
+     0.3630000054836273,
+     0.3580000102519989,
+     0.35600000619888306
+    ],
+    "bas": [
+     0.36000001430511475,
+     0.34299999475479126,
+     0.35499998927116394
+    ],
+    "haut": [
+     0.38999998569488525,
+     0.3779999911785126,
+     0.3919999897480011
+    ]
+   },
+   "alertes": [
+    "repasse sous la cloture de la veille (-1.9 %): le gap est efface, tout acheteur du jour est en perte"
+   ],
+   "gap_pct": 5.41,
+   "rvol": 0.44,
+   "rvol_pre_tendance": 0.65,
+   "atr_pct": 14.95
+  },
+  {
+   "date": "2026-04-08",
+   "ticker": "ZONE",
+   "classe": "FADE",
+   "resultat": "juste",
+   "variation_pct": -6.58,
+   "fenetre": {
+    "ouverture": [
+     0.36500000953674316,
+     0.3400000035762787,
+     0.3370000123977661
+    ],
+    "cloture": [
+     0.3409999907016754,
+     0.3370000123977661,
+     0.33000001311302185
+    ],
+    "bas": [
+     0.335999995470047,
+     0.32600000500679016,
+     0.3190000057220459
+    ],
+    "haut": [
+     0.36500000953674316,
+     0.35100001096725464,
+     0.3409999907016754
+    ]
+   },
+   "alertes": [],
+   "gap_pct": 7.04,
+   "rvol": 0.96,
+   "rvol_pre_tendance": 0.75,
+   "atr_pct": 13.13
+  },
+  {
+   "date": "2026-06-08",
+   "ticker": "ZONE",
+   "classe": "FADE",
+   "resultat": "juste",
+   "variation_pct": -13.43,
+   "fenetre": {
+    "ouverture": [
+     0.699999988079071,
+     0.6060000061988831,
+     0.6439999938011169
+    ],
+    "cloture": [
+     0.6060000061988831,
+     0.625,
+     0.6359999775886536
+    ],
+    "bas": [
+     0.5699999928474426,
+     0.5699999928474426,
+     0.6200000047683716
+    ],
+    "haut": [
+     0.699999988079071,
+     0.6499999761581421,
+     0.6980000138282776
+    ]
+   },
+   "alertes": [],
+   "gap_pct": 16.28,
+   "rvol": 1.06,
+   "rvol_pre_tendance": 2.28,
+   "atr_pct": 18.86
+  },
+  {
+   "date": "2026-07-30",
+   "ticker": "ZONE",
+   "classe": "PUMP_RISK",
+   "resultat": "juste",
+   "variation_pct": -9.0,
+   "fenetre": {
+    "ouverture": [
+     0.4000000059604645,
+     0.3540000021457672,
+     0.3700000047683716
+    ],
+    "cloture": [
+     0.3479999899864197,
+     0.36000001430511475,
+     0.36399999260902405
+    ],
+    "bas": [
+     0.3149999976158142,
+     0.3100000023841858,
+     0.3499999940395355
+    ],
+    "haut": [
+     0.4399999976158142,
+     0.38999998569488525,
+     0.38199999928474426
+    ]
+   },
+   "alertes": [
+    "montee rapide sans catalyseur identifie (RVOL eleve)"
+   ],
+   "gap_pct": 24.22,
+   "rvol": 12.64,
+   "rvol_pre_tendance": 6.41,
+   "atr_pct": 30.91
+  },
+  {
+   "date": "2026-08-07",
+   "ticker": "ZONE",
+   "classe": "FADE",
+   "resultat": "juste",
+   "variation_pct": -10.1,
+   "fenetre": {
+    "ouverture": [
+     0.4059999883174896,
+     0.35100001096725464,
+     0.21899999678134918
+    ],
+    "cloture": [
+     0.36500000953674316,
+     0.3490000069141388,
+     0.15800000727176666
+    ],
+    "bas": [
+     0.3499999940395355,
+     0.3319999873638153,
+     0.1459999978542328
+    ],
+    "haut": [
+     0.4300000071525574,
+     0.38199999928474426,
+     0.2199999988079071
+    ]
+   },
+   "alertes": [
+    "repasse sous la cloture de la veille (-2.7 %): le gap est efface, tout acheteur du jour est en perte"
+   ],
+   "gap_pct": 8.27,
+   "rvol": 1.55,
+   "rvol_pre_tendance": 1.32,
+   "atr_pct": 26.07
+  },
+  {
+   "date": "2026-09-17",
+   "ticker": "ZONE",
+   "classe": "FADE",
+   "resultat": "juste",
+   "variation_pct": -4.0,
+   "fenetre": {
+    "ouverture": [
+     0.15000000596046448,
+     0.15000000596046448,
+     0.14300000667572021
+    ],
+    "cloture": [
+     0.14399999380111694,
+     0.13600000739097595,
+     0.13199999928474426
+    ],
+    "bas": [
+     0.1420000046491623,
+     0.13300000131130219,
+     0.12999999523162842
+    ],
+    "haut": [
+     0.15299999713897705,
+     0.15199999511241913,
+     0.14300000667572021
+    ]
+   },
+   "alertes": [],
+   "gap_pct": 7.91,
+   "rvol": 1.11,
+   "rvol_pre_tendance": 2.17,
+   "atr_pct": 8.78
+  },
+  {
+   "date": "2026-09-21",
+   "ticker": "ZONE",
+   "classe": "FADE",
+   "resultat": "juste",
+   "variation_pct": -7.69,
+   "fenetre": {
+    "ouverture": [
+     0.14300000667572021,
+     0.14000000059604645,
+     0.1599999964237213
+    ],
+    "cloture": [
+     0.13199999928474426,
+     0.13600000739097595,
+     0.14499999582767487
+    ],
+    "bas": [
+     0.12999999523162842,
+     0.13600000739097595,
+     0.13899999856948853
+    ],
+    "haut": [
+     0.14300000667572021,
+     0.15199999511241913,
+     0.1599999964237213
+    ]
+   },
+   "alertes": [
+    "repasse sous la cloture de la veille (-2.9 %): le gap est efface, tout acheteur du jour est en perte"
+   ],
+   "gap_pct": 5.15,
+   "rvol": 1.25,
+   "rvol_pre_tendance": 2.4,
+   "atr_pct": 9.96
+  },
+  {
+   "date": "2026-09-22",
+   "ticker": "ZONE",
+   "classe": "FADE",
+   "resultat": "juste",
+   "variation_pct": -2.86,
+   "fenetre": {
+    "ouverture": [
+     0.14000000059604645,
+     0.1599999964237213,
+     0.14100000262260437
+    ],
+    "cloture": [
+     0.13600000739097595,
+     0.14499999582767487,
+     0.13300000131130219
+    ],
+    "bas": [
+     0.13600000739097595,
+     0.13899999856948853,
+     0.13300000131130219
+    ],
+    "haut": [
+     0.15199999511241913,
+     0.1599999964237213,
+     0.1420000046491623
+    ]
+   },
+   "alertes": [],
+   "gap_pct": 6.06,
+   "rvol": 2.29,
+   "rvol_pre_tendance": 4.67,
+   "atr_pct": 9.93
+  },
+  {
+   "date": "2026-09-23",
+   "ticker": "ZONE",
+   "classe": "PUMP_RISK",
+   "resultat": "juste",
+   "variation_pct": -18.75,
+   "fenetre": {
+    "ouverture": [
+     0.1599999964237213,
+     0.14100000262260437,
+     0.13600000739097595
+    ],
+    "cloture": [
+     0.14499999582767487,
+     0.13300000131130219,
+     0.12999999523162842
+    ],
+    "bas": [
+     0.13899999856948853,
+     0.13300000131130219,
+     0.12800000607967377
+    ],
+    "haut": [
+     0.1599999964237213,
+     0.1420000046491623,
+     0.13600000739097595
+    ]
+   },
+   "alertes": [
+    "montee rapide sans catalyseur identifie (RVOL eleve)"
+   ],
+   "gap_pct": 17.65,
+   "rvol": 8.45,
+   "rvol_pre_tendance": 17.73,
+   "atr_pct": 10.1
+  }
+ ]
+}

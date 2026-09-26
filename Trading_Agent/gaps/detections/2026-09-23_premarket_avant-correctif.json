@@ -1,0 +1,286 @@
+{
+ "date": "2026-09-23T07:07:56.104408-04:00",
+ "mode": "premarket",
+ "fenetre_au_scan": "premarket",
+ "min_gap": 5,
+ "verdicts": [
+  {
+   "ticker": "IPDN",
+   "classe": "FADE",
+   "horizon": "jour, souvent la premiere heure",
+   "sortie": "comblement du gap, ou fin de la premiere heure",
+   "motifs": [
+    "pas de catalyseur haussier verifie"
+   ],
+   "alertes": [
+    "nano cap (3 M$), facile a manipuler",
+    "low float (0.4 M), mouvements violents"
+   ],
+   "inconnues": [
+    "catalyseur non verifie (EDGAR / news)",
+    "tenue a 30 min inconnue (mesurable seulement apres l'ouverture)"
+   ],
+   "comblement_attendu_pct": null
+  },
+  {
+   "ticker": "VTGN",
+   "classe": "FADE",
+   "horizon": "jour, souvent la premiere heure",
+   "sortie": "comblement du gap, ou fin de la premiere heure",
+   "motifs": [
+    "pas de catalyseur haussier verifie",
+    "RVOL 0.8 < 3"
+   ],
+   "alertes": [
+    "nano cap (11 M$), facile a manipuler"
+   ],
+   "inconnues": [
+    "catalyseur non verifie (EDGAR / news)",
+    "tenue a 30 min inconnue (mesurable seulement apres l'ouverture)"
+   ],
+   "comblement_attendu_pct": null
+  },
+  {
+   "ticker": "CAPS",
+   "classe": "FADE",
+   "horizon": "jour, souvent la premiere heure",
+   "sortie": "comblement du gap, ou fin de la premiere heure",
+   "motifs": [
+    "pas de catalyseur haussier verifie",
+    "RVOL 1.0 < 3"
+   ],
+   "alertes": [
+    "nano cap (4 M$), facile a manipuler",
+    "low float (11.1 M), mouvements violents"
+   ],
+   "inconnues": [
+    "catalyseur non verifie (EDGAR / news)",
+    "tenue a 30 min inconnue (mesurable seulement apres l'ouverture)"
+   ],
+   "comblement_attendu_pct": null
+  },
+  {
+   "ticker": "EDVA",
+   "classe": "FADE",
+   "horizon": "jour, souvent la premiere heure",
+   "sortie": "comblement du gap, ou fin de la premiere heure",
+   "motifs": [
+    "pas de catalyseur haussier verifie",
+    "RVOL 1.9 < 3"
+   ],
+   "alertes": [
+    "nano cap (2 M$), facile a manipuler",
+    "low float (6.3 M), mouvements violents"
+   ],
+   "inconnues": [
+    "catalyseur non verifie (EDGAR / news)",
+    "tenue a 30 min inconnue (mesurable seulement apres l'ouverture)"
+   ],
+   "comblement_attendu_pct": null
+  },
+  {
+   "ticker": "ZONE",
+   "classe": "FADE",
+   "horizon": "jour, souvent la premiere heure",
+   "sortie": "comblement du gap, ou fin de la premiere heure",
+   "motifs": [
+    "pas de catalyseur haussier verifie",
+    "RVOL 2.3 < 3"
+   ],
+   "alertes": [],
+   "inconnues": [
+    "catalyseur non verifie (EDGAR / news)",
+    "tenue a 30 min inconnue (mesurable seulement apres l'ouverture)"
+   ],
+   "comblement_attendu_pct": null
+  },
+  {
+   "ticker": "WHLR",
+   "classe": "PUMP_RISK",
+   "horizon": "aucun",
+   "sortie": "ne pas entrer; si deja en position, sortir",
+   "motifs": [
+    "3 signal(aux) de manipulation presents"
+   ],
+   "alertes": [
+    "montee rapide sans catalyseur identifie (RVOL eleve)",
+    "nano cap (1 M$), facile a manipuler",
+    "low float (0.1 M), mouvements violents"
+   ],
+   "inconnues": [
+    "catalyseur non verifie (EDGAR / news)",
+    "tenue a 30 min inconnue (mesurable seulement apres l'ouverture)"
+   ],
+   "comblement_attendu_pct": null
+  },
+  {
+   "ticker": "GRML",
+   "classe": "PUMP_RISK",
+   "horizon": "aucun",
+   "sortie": "ne pas entrer; si deja en position, sortir",
+   "motifs": [
+    "3 signal(aux) de manipulation presents"
+   ],
+   "alertes": [
+    "montee rapide sans catalyseur identifie (RVOL eleve)",
+    "nano cap (45 M$), facile a manipuler",
+    "low float (2.6 M), mouvements violents"
+   ],
+   "inconnues": [
+    "catalyseur non verifie (EDGAR / news)",
+    "tenue a 30 min inconnue (mesurable seulement apres l'ouverture)"
+   ],
+   "comblement_attendu_pct": null
+  },
+  {
+   "ticker": "TNMG",
+   "classe": "PUMP_RISK",
+   "horizon": "aucun",
+   "sortie": "ne pas entrer; si deja en position, sortir",
+   "motifs": [
+    "3 signal(aux) de manipulation presents"
+   ],
+   "alertes": [
+    "nano cap (24 M$), facile a manipuler",
+    "low float (0.2 M), mouvements violents",
+    "cours sous le VWAP (-5.7 %), pression vendeuse"
+   ],
+   "inconnues": [
+    "catalyseur non verifie (EDGAR / news)",
+    "tenue a 30 min inconnue (mesurable seulement apres l'ouverture)"
+   ],
+   "comblement_attendu_pct": null
+  },
+  {
+   "ticker": "CDT",
+   "classe": "PUMP_RISK",
+   "horizon": "aucun",
+   "sortie": "ne pas entrer; si deja en position, sortir",
+   "motifs": [
+    "4 signal(aux) de manipulation presents"
+   ],
+   "alertes": [
+    "montee rapide sans catalyseur identifie (RVOL eleve)",
+    "nano cap (2 M$), facile a manipuler",
+    "low float (0.3 M), mouvements violents",
+    "cours sous le VWAP (-11.9 %), pression vendeuse"
+   ],
+   "inconnues": [
+    "catalyseur non verifie (EDGAR / news)",
+    "tenue a 30 min inconnue (mesurable seulement apres l'ouverture)"
+   ],
+   "comblement_attendu_pct": null
+  },
+  {
+   "ticker": "CTNT",
+   "classe": "PUMP_RISK",
+   "horizon": "aucun",
+   "sortie": "ne pas entrer; si deja en position, sortir",
+   "motifs": [
+    "4 signal(aux) de manipulation presents"
+   ],
+   "alertes": [
+    "montee rapide sans catalyseur identifie (RVOL eleve)",
+    "nano cap (0 M$), facile a manipuler",
+    "low float (1.1 M), mouvements violents",
+    "cours sous le VWAP (-13.6 %), pression vendeuse"
+   ],
+   "inconnues": [
+    "catalyseur non verifie (EDGAR / news)",
+    "tenue a 30 min inconnue (mesurable seulement apres l'ouverture)"
+   ],
+   "comblement_attendu_pct": null
+  },
+  {
+   "ticker": "DCOY",
+   "classe": "INSUFFISANT",
+   "horizon": "aucun",
+   "sortie": "ne pas entrer",
+   "motifs": [
+    "volume moyen 23,000 < 100,000 (plancher structurel: sortie de position incertaine)"
+   ],
+   "alertes": [
+    "nano cap (2 M$), facile a manipuler",
+    "low float (0.6 M), mouvements violents"
+   ],
+   "inconnues": [
+    "catalyseur non verifie (EDGAR / news)",
+    "tenue a 30 min inconnue (mesurable seulement apres l'ouverture)"
+   ],
+   "comblement_attendu_pct": null
+  },
+  {
+   "ticker": "BFRG",
+   "classe": "INSUFFISANT",
+   "horizon": "aucun",
+   "sortie": "ne pas entrer",
+   "motifs": [
+    "volume moyen 86,550 < 100,000 (plancher structurel: sortie de position incertaine)"
+   ],
+   "alertes": [
+    "nano cap (11 M$), facile a manipuler",
+    "low float (16.1 M), mouvements violents"
+   ],
+   "inconnues": [
+    "catalyseur non verifie (EDGAR / news)",
+    "tenue a 30 min inconnue (mesurable seulement apres l'ouverture)"
+   ],
+   "comblement_attendu_pct": null
+  },
+  {
+   "ticker": "HAO",
+   "classe": "INSUFFISANT",
+   "horizon": "aucun",
+   "sortie": "ne pas entrer",
+   "motifs": [
+    "volume moyen 54,650 < 100,000 (plancher structurel: sortie de position incertaine)"
+   ],
+   "alertes": [
+    "nano cap (1 M$), facile a manipuler",
+    "low float (0.0 M), mouvements violents"
+   ],
+   "inconnues": [
+    "catalyseur non verifie (EDGAR / news)",
+    "tenue a 30 min inconnue (mesurable seulement apres l'ouverture)"
+   ],
+   "comblement_attendu_pct": null
+  },
+  {
+   "ticker": "SQFT",
+   "classe": "INSUFFISANT",
+   "horizon": "aucun",
+   "sortie": "ne pas entrer",
+   "motifs": [
+    "volume moyen 7,350 < 100,000 (plancher structurel: sortie de position incertaine)"
+   ],
+   "alertes": [
+    "nano cap (2 M$), facile a manipuler",
+    "low float (1.0 M), mouvements violents"
+   ],
+   "inconnues": [
+    "catalyseur non verifie (EDGAR / news)",
+    "tenue a 30 min inconnue (mesurable seulement apres l'ouverture)"
+   ],
+   "comblement_attendu_pct": null
+  },
+  {
+   "ticker": "WAFU",
+   "classe": "INSUFFISANT",
+   "horizon": "aucun",
+   "sortie": "ne pas entrer",
+   "motifs": [
+    "volume moyen 35,350 < 100,000 (plancher structurel: sortie de position incertaine)"
+   ],
+   "alertes": [
+    "montee rapide sans catalyseur identifie (RVOL eleve)",
+    "nano cap (6 M$), facile a manipuler",
+    "low float (1.3 M), mouvements violents"
+   ],
+   "inconnues": [
+    "catalyseur non verifie (EDGAR / news)",
+    "tenue a 30 min inconnue (mesurable seulement apres l'ouverture)"
+   ],
+   "comblement_attendu_pct": null
+  }
+ ]
+}

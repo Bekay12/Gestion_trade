@@ -1,0 +1,43 @@
+{
+  "currency": "USD par action",
+  "opening_liquidity": 17.901,
+  "horizon_start": 2026,
+  "horizon_end": 2031,
+  "schedule_years": [2026, 2027, 2028, 2029, 2030, 2031],
+  "sensitivity_horizons": [2027, 2029, 2031],
+  "revenue_base": 192.648,
+  "earnings_base": 3.79,
+  "hurdle": 0.0576,
+  "hurdle_source": "Taux du revolver Bank of America au 31.01.2026, 10-K FY2026 p. 33",
+  "revenue_scenarios": [
+    {"label": "CA FY26 maintenu", "revenue": 192.648},
+    {"label": "CA S1 FY27 annualise", "revenue": 195.2},
+    {"label": "CA FY25 (avant pivot)", "revenue": 167.211}
+  ],
+  "options": {
+    "P": {
+      "name": "Pessimiste : retour a la consommation de tresorerie, aucune distribution",
+      "investment": {"2026": 10.22},
+      "earnings_uplift": 0.0,
+      "uplift_start": 2027,
+      "terminal_value": 12.62,
+      "remarks": {"2026": "entree au cours du 24.09.2026"}
+    },
+    "B": {
+      "name": "Base : flux S1 FY27 hors remboursement de droits, annualise",
+      "investment": {"2026": 10.22},
+      "earnings_uplift": 0.38,
+      "uplift_start": 2027,
+      "terminal_value": 12.62,
+      "remarks": {"2026": "entree au cours du 24.09.2026"}
+    },
+    "O": {
+      "name": "Optimiste : rythme du S1 FY27 tenu, remboursements inclus",
+      "investment": {"2026": 10.22},
+      "earnings_uplift": 0.81,
+      "uplift_start": 2027,
+      "terminal_value": 12.62,
+      "remarks": {"2026": "entree au cours du 24.09.2026"}
+    }
+  }
+}

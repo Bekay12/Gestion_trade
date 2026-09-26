@@ -1,0 +1,26 @@
+{
+ "url": "https://academygermain.com/actualites/meme-avec-un-bon-catalyseur-le-prix-a-le-dernier-mot-apus-pfsa-et-vbio-24-septembre-2026",
+ "titre": "Même avec un bon catalyseur, le prix a le dernier mot : APUS, PFSA et VBIO — 24 septembre 2026",
+ "date": "2026-09-24",
+ "lignes": [
+  {
+   "ticker": "APUS",
+   "societe": "Apimeds Pharmaceuticals US · États-Unis · non-ADR",
+   "catalyseur": "🟠 Accord technologique signé (MindWave / AQUAE), sans montant · low float",
+   "resultat": "+729,63 $"
+  },
+  {
+   "ticker": "PFSA",
+   "societe": "Profusa · États-Unis · non-ADR",
+   "catalyseur": "🟠 Certification ISO 13485 (étape vers le marquage CE) · nano-cap",
+   "resultat": "+465,37 $"
+  },
+  {
+   "ticker": "VBIO",
+   "societe": "Valion Bio · États-Unis · non-ADR",
+   "catalyseur": "🟠 Actualité biotech récente · retour sous la clôture de la veille",
+   "resultat": "+946,67 $"
+  }
+ ],
+ "anomalies": []
+}

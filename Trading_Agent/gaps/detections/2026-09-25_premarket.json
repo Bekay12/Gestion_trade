@@ -1,0 +1,232 @@
+{
+ "date": "2026-09-25T07:19:11.949003-04:00",
+ "mode": "premarket",
+ "fenetre_au_scan": "premarket",
+ "min_gap": 5,
+ "verdicts": [
+  {
+   "ticker": "GETY",
+   "classe": "FADE",
+   "horizon": "jour, souvent la premiere heure",
+   "sortie": "comblement du gap, ou fin de la premiere heure",
+   "motifs": [
+    "pas de catalyseur haussier verifie",
+    "cours sous le VWAP",
+    "comblement attendu 78 % le jour meme"
+   ],
+   "alertes": [
+    "montee rapide sans catalyseur identifie (RVOL eleve)",
+    "cours sous le VWAP (-10.1 %), pression vendeuse"
+   ],
+   "inconnues": [
+    "catalyseur non verifie (EDGAR / news)",
+    "tenue a 30 min inconnue (mesurable seulement apres l'ouverture)"
+   ],
+   "comblement_attendu_pct": 78
+  },
+  {
+   "ticker": "CTNT",
+   "classe": "PUMP_RISK",
+   "horizon": "aucun",
+   "sortie": "ne pas entrer; si deja en position, sortir",
+   "motifs": [
+    "3 signal(aux) de manipulation presents"
+   ],
+   "alertes": [
+    "montee rapide sans catalyseur identifie (RVOL eleve)",
+    "nano cap (0 M$), facile a manipuler",
+    "low float (1.1 M), mouvements violents"
+   ],
+   "inconnues": [
+    "catalyseur non verifie (EDGAR / news)",
+    "tenue a 30 min inconnue (mesurable seulement apres l'ouverture)"
+   ],
+   "comblement_attendu_pct": 78
+  },
+  {
+   "ticker": "DCX",
+   "classe": "PUMP_RISK",
+   "horizon": "aucun",
+   "sortie": "ne pas entrer; si deja en position, sortir",
+   "motifs": [
+    "3 signal(aux) de manipulation presents"
+   ],
+   "alertes": [
+    "montee rapide sans catalyseur identifie (RVOL eleve)",
+    "nano cap (23 M$), facile a manipuler",
+    "cours sous le VWAP (-16.2 %), pression vendeuse"
+   ],
+   "inconnues": [
+    "catalyseur non verifie (EDGAR / news)",
+    "tenue a 30 min inconnue (mesurable seulement apres l'ouverture)"
+   ],
+   "comblement_attendu_pct": 78
+  },
+  {
+   "ticker": "GRML",
+   "classe": "PUMP_RISK",
+   "horizon": "aucun",
+   "sortie": "ne pas entrer; si deja en position, sortir",
+   "motifs": [
+    "2 signal(aux) de manipulation presents"
+   ],
+   "alertes": [
+    "montee rapide sans catalyseur identifie (RVOL eleve)",
+    "low float (2.6 M), mouvements violents"
+   ],
+   "inconnues": [
+    "catalyseur non verifie (EDGAR / news)",
+    "tenue a 30 min inconnue (mesurable seulement apres l'ouverture)"
+   ],
+   "comblement_attendu_pct": 25
+  },
+  {
+   "ticker": "SUGP",
+   "classe": "PUMP_RISK",
+   "horizon": "aucun",
+   "sortie": "ne pas entrer; si deja en position, sortir",
+   "motifs": [
+    "3 signal(aux) de manipulation presents"
+   ],
+   "alertes": [
+    "montee rapide sans catalyseur identifie (RVOL eleve)",
+    "nano cap (1 M$), facile a manipuler",
+    "low float (0.4 M), mouvements violents"
+   ],
+   "inconnues": [
+    "catalyseur non verifie (EDGAR / news)",
+    "tenue a 30 min inconnue (mesurable seulement apres l'ouverture)"
+   ],
+   "comblement_attendu_pct": 8
+  },
+  {
+   "ticker": "ONCO",
+   "classe": "PUMP_RISK",
+   "horizon": "aucun",
+   "sortie": "ne pas entrer; si deja en position, sortir",
+   "motifs": [
+    "3 signal(aux) de manipulation presents"
+   ],
+   "alertes": [
+    "montee rapide sans catalyseur identifie (RVOL eleve)",
+    "nano cap (4 M$), facile a manipuler",
+    "low float (3.9 M), mouvements violents"
+   ],
+   "inconnues": [
+    "catalyseur non verifie (EDGAR / news)",
+    "tenue a 30 min inconnue (mesurable seulement apres l'ouverture)"
+   ],
+   "comblement_attendu_pct": 8
+  },
+  {
+   "ticker": "SDEV",
+   "classe": "PUMP_RISK",
+   "horizon": "aucun",
+   "sortie": "ne pas entrer; si deja en position, sortir",
+   "motifs": [
+    "1 signal(aux) de manipulation presents"
+   ],
+   "alertes": [
+    "montee rapide sans catalyseur identifie (RVOL eleve)"
+   ],
+   "inconnues": [
+    "catalyseur non verifie (EDGAR / news)",
+    "tenue a 30 min inconnue (mesurable seulement apres l'ouverture)"
+   ],
+   "comblement_attendu_pct": 8
+  },
+  {
+   "ticker": "GLND",
+   "classe": "PUMP_RISK",
+   "horizon": "aucun",
+   "sortie": "ne pas entrer; si deja en position, sortir",
+   "motifs": [
+    "1 signal(aux) de manipulation presents"
+   ],
+   "alertes": [
+    "montee rapide sans catalyseur identifie (RVOL eleve)"
+   ],
+   "inconnues": [
+    "catalyseur non verifie (EDGAR / news)",
+    "short interest inconnu",
+    "tenue a 30 min inconnue (mesurable seulement apres l'ouverture)"
+   ],
+   "comblement_attendu_pct": 8
+  },
+  {
+   "ticker": "BENF",
+   "classe": "INSUFFISANT",
+   "horizon": "aucun",
+   "sortie": "ne pas entrer",
+   "motifs": [
+    "volume moyen 61,250 < 100,000 (plancher structurel: sortie de position incertaine)"
+   ],
+   "alertes": [
+    "montee rapide sans catalyseur identifie (RVOL eleve)",
+    "nano cap (22 M$), facile a manipuler",
+    "low float (1.5 M), mouvements violents"
+   ],
+   "inconnues": [
+    "catalyseur non verifie (EDGAR / news)",
+    "tenue a 30 min inconnue (mesurable seulement apres l'ouverture)"
+   ],
+   "comblement_attendu_pct": 78
+  },
+  {
+   "ticker": "INLF",
+   "classe": "INSUFFISANT",
+   "horizon": "aucun",
+   "sortie": "ne pas entrer",
+   "motifs": [
+    "volume moyen 28,700 < 100,000 (plancher structurel: sortie de position incertaine)"
+   ],
+   "alertes": [
+    "montee rapide sans catalyseur identifie (RVOL eleve)",
+    "nano cap (3 M$), facile a manipuler",
+    "low float (0.0 M), mouvements violents"
+   ],
+   "inconnues": [
+    "catalyseur non verifie (EDGAR / news)",
+    "tenue a 30 min inconnue (mesurable seulement apres l'ouverture)"
+   ],
+   "comblement_attendu_pct": 8
+  },
+  {
+   "ticker": "IFBD",
+   "classe": "INSUFFISANT",
+   "horizon": "aucun",
+   "sortie": "ne pas entrer",
+   "motifs": [
+    "volume moyen 2,300 < 100,000 (plancher structurel: sortie de position incertaine)"
+   ],
+   "alertes": [
+    "montee rapide sans catalyseur identifie (RVOL eleve)",
+    "nano cap (9 M$), facile a manipuler",
+    "low float (8.2 M), mouvements violents"
+   ],
+   "inconnues": [
+    "catalyseur non verifie (EDGAR / news)",
+    "tenue a 30 min inconnue (mesurable seulement apres l'ouverture)"
+   ],
+   "comblement_attendu_pct": 8
+  },
+  {
+   "ticker": "FTHM",
+   "classe": "INSUFFISANT",
+   "horizon": "aucun",
+   "sortie": "ne pas entrer",
+   "motifs": [
+    "volume moyen 57,350 < 100,000 (plancher structurel: sortie de position incertaine)"
+   ],
+   "alertes": [
+    "montee rapide sans catalyseur identifie (RVOL eleve)",
+    "nano cap (18 M$), facile a manipuler"
+   ],
+   "inconnues": [
+    "catalyseur non verifie (EDGAR / news)",
+    "tenue a 30 min inconnue (mesurable seulement apres l'ouverture)"
+   ],
+   "comblement_attendu_pct": 8
+  }
+ ]
+}
