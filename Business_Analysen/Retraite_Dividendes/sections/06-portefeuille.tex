@@ -1,0 +1,395 @@
+\section{Ton ETF maison}\label{sec:portefeuille}
+% Chapitre 6 (tache 10, passage chapitre 06). Figures: fig_aufteilungen (deux
+% figures: capital et revenu), fig_anzahl_titel, fig_sektoren, fig_laender,
+% fig_rendite_wachstum (nuage de points ecrit ici, hors \linienfigur/\balkenfigur),
+% fig_div_beispiele; tableau data/tab_portefeuille.tex. Aucun chiffre tape: macros de
+% data/kennzahlen.tex (kapitel_6 et _macros_redaction_kapitel_6 dans
+% scripts/rechnung_retraite.py). Les seuils de la methode sont lus dans
+% scripts/portefeuille_exemple.py (_regles_selection), jamais recopies.
+% Decision (tache 10): fig_aufteilungen reste calculee a \SparquoteZwanzig % d'epargne,
+% taux commun aux cinq strategies; le texte et les legendes le disent, et les ages au
+% taux de reference viennent des macros du chapitre 5 (tab:age-depart-strategies).
+
+\noindent\textbf{Portefeuille construit par r\`egles pour illustrer la m\'ethode, pas une
+recommandation d'achat.} Ce chapitre r\'epond \`a la question~: quelle part de ton capital confier \`a
+ton ETF maison, combien de titres y mettre et comment les choisir~? Le
+chapitre~\ref{sec:accumulation} s'est conclu sur un constat d\'efavorable~: \`a
+\SparquoteZwanzig~\% d'\'epargne, aucune strat\'egie de dividendes n'atteint l'objectif, et \`a
+\ReferenzSparquote~\% la r\'epartition de base n'y parvient qu'\`a l'\^age l\'egal. Ce chapitre ouvre
+la bo\^ite de l'ETF maison, dont le rendement de \RenditeDivMaison~\% et la r\'epartition par pays ont
+nourri tous les calculs pr\'ec\'edents. La section~\ref{sec:porte-repartitions} compare les trois
+r\'epartitions entre ETF maison et ETF monde, la section~\ref{sec:porte-diversification} mesure ce
+que la diversification apporte selon le nombre de titres, et la section~\ref{sec:porte-methode}
+d\'ecrit la m\'ethode de s\'election et ses rel\^achements. Les titres retenus, leurs secteurs et leurs
+pays sont pr\'esent\'es \`a la section~\ref{sec:porte-titres}, leur rendement face \`a la croissance
+de leur dividende \`a la section~\ref{sec:porte-rendement}, et l'historique r\'eel de deux dividendes
+\`a la section~\ref{sec:porte-exemples}. La section~\ref{sec:porte-biais} d\'eclare les biais de
+l'exercice.
+
+\subsection{Quelle part confier \`a l'ETF maison~?}\label{sec:porte-repartitions}
+
+Le plan compare trois r\'epartitions de l'\'epargne~: moiti\'e dans l'ETF maison et moiti\'e dans un
+ETF monde distribuant, la r\'epartition de base \ReferenzStrategie{}, et tout dans l'ETF maison. Les
+deux strat\'egies de r\'ef\'erence en ETF monde, avec retrait de \TauxRetrait~\% ou en part
+distribuante, compl\`etent la comparaison.
+
+\annahme{M\^emes hypoth\`eses que le chapitre~\ref{sec:accumulation}~: rendement r\'eel total de
+\RenditeReal~\% par an pour les deux ETF (\RenditeReelleConvention), dont \RenditeDivMaison~\% de
+dividende pour l'ETF maison et \RenditeDivEtf~\% pour l'ETF monde. L'ETF maison n'est donc pas suppos\'e
+battre le march\'e~: son dividende cro\^it de \CroissanceModeleMaison~\% par an en termes r\'eels dans
+le mod\`ele, bien moins que la croissance pass\'ee de ses titres (section~\ref{sec:porte-rendement}).
+Taux d'\'epargne commun de \SparquoteZwanzig~\% du salaire net pour les cinq strat\'egies, et non le
+taux de \ReferenzSparquote~\% du sc\'enario de base, capital de d\'epart de \KapitalDepartMitte~€,
+comparaison \`a la derni\`ere ann\'ee de l'horizon, \AnneeHorizonFin. \HypotheseUmschichtung.}
+
+Ce taux commun de \SparquoteZwanzig~\% est un choix. Au taux du sc\'enario de base, les trois
+r\'epartitions atteignent toutes l'objectif et le tableau~\ref{tab:age-depart-strategies} donne
+d\'ej\`a leurs \^ages~: \AlterMaisonFuenfzigDreissig~ans pour la moiti\'e en maison,
+\AlterYannBasis~ans pour la r\'epartition \ReferenzStrategie{} et \AlterMaisonHundertDreissig~ans pour
+tout en maison. \`A \SparquoteZwanzig~\%, aucune ne l'atteint, et comparer le capital et le revenu
+r\'eunis \`a la fin de l'horizon montre ce que l'\^age seul ne dit pas. La
+figure~\ref{fig:capital-selon-repartition} donne ce capital.
+
+% Ordre des etiquettes = ordre des lignes de data/fig_aufteilungen.csv (MaisonFuenfzig,
+% MaisonSiebzig, MaisonHundert, EtfReferenz, EtfUmschichtung).
+\balkenfigur{fig_aufteilungen}[ylabel={Capital en \AnneeHorizonFin{} (millions d'euros de 2026)},
+  y filter/.expression={y/1e6}, ymin=0, enlarge y limits={upper, value=0.2}, bar width=22pt,
+  xticklabels={{Moiti\'e en maison},{70~\% en maison},{Tout en maison},{ETF, retrait \TauxRetrait~\%},
+    {ETF distribuant}},
+  nodes near coords, every node near coord/.append style={font=\scriptsize,
+    /pgf/number format/fixed, /pgf/number format/fixed zerofill, /pgf/number format/precision=2}]%
+  {strategie}{kapital_xlv}%
+  {Capital r\'euni en \AnneeHorizonFin{} selon la strat\'egie, \`a \SparquoteZwanzig~\% d'\'epargne
+  (et non au taux de \ReferenzSparquote~\% du sc\'enario de base), capital de d\'epart de
+  \KapitalDepartMitte~€, euros de 2026.\label{fig:capital-selon-repartition}}
+
+Ce graphique montre que plus la part en maison est grande, plus le capital final est bas~: la
+moiti\'e en maison r\'eunit \KapitalAufteilungMaisonFuenfzig~€, la r\'epartition \ReferenzStrategie{}
+\KapitalHorizonZwanzig~€ et tout en maison \KapitalAufteilungMaisonHundert~€~; la moiti\'e en maison
+d\'epasse ainsi tout en maison de \KapitalAufteilungEcartProzent~\%. C'est le co\^ut fiscal du
+chapitre~\ref{sec:fiscalite}~: les dividendes d'actions d\'etenues en direct sont impos\'es chaque
+ann\'ee sans exon\'eration partielle, et l'imp\^ot pay\'e pendant l'accumulation ne capitalise plus.
+L'ETF distribuant affiche le capital le plus \'elev\'e, \KapitalAufteilungEtfUmschichtung~€, mais la
+section~\ref{sec:fisc-kumuliert} a signal\'e que le mod\`ele sous-estime son imp\^ot~; cet \'ecart ne
+doit pas \^etre lu comme un avantage. La figure~\ref{fig:revenu-selon-repartition} traduit ces
+capitaux en revenu net.
+
+\balkenfigur{fig_aufteilungen}[ylabel={Revenu net en \AnneeHorizonFin{} (euros de 2026 par mois)},
+  ymin=0, enlarge y limits={upper, value=0.15}, bar width=22pt, scaled y ticks=false,
+  extra y ticks={\ZielMonatNombre}, extra y tick labels={},
+  extra y tick style={grid=major, major grid style={black, dashed}},
+  xticklabels={{Moiti\'e en maison},{70~\% en maison},{Tout en maison},{ETF, retrait \TauxRetrait~\%},
+    {ETF distribuant}},
+  nodes near coords, every node near coord/.append style={font=\scriptsize, anchor=north,
+    /pgf/number format/fixed, /pgf/number format/precision=0}]%
+  {strategie}{netto_monat_xlv}%
+  {Revenu net mensuel soutenable en \AnneeHorizonFin{} selon la strat\'egie, apr\`es imp\^ot et
+  assurance maladie, \`a \SparquoteZwanzig~\% d'\'epargne (euros de 2026). La ligne en tirets marque
+  l'objectif de \ZielMonat~€.\label{fig:revenu-selon-repartition}}
+
+Ce graphique montre qu'\`a \SparquoteZwanzig~\% d'\'epargne, les trois r\'epartitions restent sous la
+ligne de l'objectif en \AnneeHorizonFin~: \RevenuAufteilungMaisonFuenfzig~€ par mois pour la moiti\'e
+en maison (\RevenuAufteilungMaisonFuenfzigPartCible~\% de la cible), \RevenuHorizonZwanzig~€ pour la
+r\'epartition \ReferenzStrategie{} (\RevenuHorizonZwanzigPartCible~\%) et \RevenuAufteilungMaisonHundert~€
+pour tout en maison (\RevenuAufteilungMaisonHundertPartCible~\%). L'ordre s'inverse par rapport au
+capital~: tout en maison verse \RevenuAufteilungEcartProzent~\% de plus que la moiti\'e, parce que
+l'ETF maison distribue \RenditeDivMaison~\% contre \RenditeDivEtf~\% pour l'ETF monde, et ce surcro\^it
+de dividende l'emporte sur l'imp\^ot plus lourd. La r\'ef\'erence en ETF avec retrait de
+\TauxRetrait~\% change d'\'echelle~: elle a atteint l'objectif \`a \AlterEtfReferenzZwanzig~ans et
+permettrait en \AnneeHorizonFin{} de retirer \RevenuAufteilungEtfReferenz~€ nets par mois,
+\RevenuAufteilungEtfReferenzMultiple~fois la cible, avec un capital du m\^eme ordre que celui des
+r\'epartitions en dividendes. \bk{La part confi\'ee \`a l'ETF maison ne d\'eplace le revenu que de
+\RevenuAufteilungEcartProzent~\% au plus~; c'est la r\`egle de revenu, dividendes seuls ou retrait de
+\TauxRetrait~\%, qui d\'ecide de l'essentiel.}
+
+\subsection{Combien de titres faut-il~?}\label{sec:porte-diversification}
+
+Un ETF maison n'a d'int\'er\^et que s'il r\'epartit le risque. La
+figure~\ref{fig:risque-nombre-titres} mesure, sur les titres du portefeuille-exemple eux-m\^emes, la
+fluctuation d'un portefeuille selon le nombre de titres qu'il contient.
+
+\annahme{Rendements mensuels des cours, hors dividendes, de \DonneesDebut{} \`a \DonneesFin{},
+t\'el\'echarg\'es une seule fois pour la s\'election. Pour chaque nombre de titres $n$,
+\TiragesDiversification{} portefeuilles \'equipond\'er\'es de $n$ titres sont tir\'es au hasard parmi les
+\NombreTitres{} titres retenus (graine fixe), et l'\'ecart-type annualis\'e de leur rendement est
+moyenn\'e. Aucune valeur n'est reprise de la litt\'erature.}
+
+\linienfigur{fig_anzahl_titel}[xlabel={Nombre de titres dans le portefeuille},
+  ylabel={\'Ecart-type annualis\'e du rendement (\%)}, y filter/.expression={y*1e2},
+  legend pos=north east, legend cell align=left, legend style={fill=white}]%
+  {n}{risiko}%
+  {{Portefeuille \'equipond\'er\'e}}%
+  {Fluctuation annuelle d'un portefeuille \'equipond\'er\'e selon le nombre de titres tir\'es parmi
+  les \NombreTitres{} titres du portefeuille-exemple (rendements mensuels des cours,
+  \DonneesDebut--\DonneesFin).\label{fig:risque-nombre-titres}}
+
+Ce graphique montre que l'\'ecart-type passe de \RisqueUnTitre~\% pour un titre seul \`a
+\RisqueTousTitres~\% pour les \NombreTitres{} titres r\'eunis, soit \RisqueReductionProzent~\% de
+fluctuation en moins. L'essentiel du gain vient des premiers titres~: \`a \TitresNeufDixiemes~titres,
+neuf dixi\`emes de cette baisse sont d\'ej\`a acquis. Le reste, environ \RisqueTousTitres~\%, ne
+dispara\^it pas en ajoutant des titres semblables~: c'est le risque commun au march\'e, que la
+diversification ne supprime pas. Cette mesure a deux limites. Elle porte sur des titres d\'ej\`a
+choisis pour leur r\'egularit\'e, donc plus homog\`enes que le march\'e, et elle ne couvre que
+\RegleHistoriqueAns{} ann\'ees, qui commencent apr\`es la crise financi\`ere de 2008. Un ETF monde
+r\'epartit ce m\^eme risque sur un bien plus grand nombre de titres, et un d\'etracteur de la
+strat\'egie des dividendes lui reproche justement ses d\'efauts de
+diversification\QP{finanznachrichten_irrweg}.
+
+\subsection{La m\'ethode de s\'election}\label{sec:porte-methode}
+
+La s\'election applique des r\`egles chiffr\'ees fix\'ees avant de regarder le r\'esultat, sans choix
+titre par titre. L'univers de d\'epart r\'eunit \UniversTitres{} titres~: \UniversAristocrates{}
+aristocrates du dividende am\'ericains, \UniversDax{} valeurs du DAX et \UniversEurostoxx{} valeurs de
+l'EURO STOXX~50 qui ne sont pas d\'ej\`a dans le DAX\footnote{Listes des membres lues sur Wikip\'edia
+(source secondaire)~: \href{https://en.wikipedia.org/wiki/S\%26P_500_Dividend_Aristocrats}{\IndiceActionsUs{}
+Dividend Aristocrats}, \href{https://en.wikipedia.org/wiki/DAX}{DAX} et
+\href{https://en.wikipedia.org/wiki/EURO_STOXX_50}{EURO STOXX~50}, consult\'ees le
+\DateDonneesPortefeuille.}. Cours et dividendes mensuels couvrent \RegleHistoriqueAns~ans et
+proviennent d'un seul t\'el\'echargement group\'e\footnote{Yahoo Finance, cours et dividendes mensuels
+et donn\'ees de soci\'et\'e (secteur, taux de distribution, flux de tr\'esorerie libre), lus par la
+biblioth\`eque yfinance le \DateDonneesPortefeuille{},
+\href{https://finance.yahoo.com}{finance.yahoo.com} (source secondaire).}.
+
+\annahme{Rendement du dividende sur les douze derniers mois au cours du jour, taux de distribution,
+flux de tr\'esorerie libre et secteur tels que publi\'es le \DateDonneesPortefeuille~; un titre sans
+donn\'ee de taux de distribution ou de flux de tr\'esorerie est \'ecart\'e. Une baisse du dividende est
+une baisse annuelle de plus de \RegleBaisseSeuil~\%.}
+
+Un titre est retenu s'il a vers\'e au moins \RegleDividendesMin~dividendes sur la p\'eriode, si son
+rendement se situe entre \RegleRendementMin{} et \RegleRendementMax~\%, si son dividende n'a pas
+baiss\'e sur les \RegleAnneesCroissance{} derni\`eres ann\'ees et s'il a cr\^u d'au moins
+\RegleCroissanceMin~\% par an sur la m\^eme p\'eriode. Il faut encore que la soci\'et\'e distribue au plus
+\ReglePayoutMax~\% de son b\'en\'efice et que son flux de tr\'esorerie libre couvre au moins
+\RegleCouvertureFcf~fois les dividendes vers\'es. Le rendement minimal \'ecarte les titres qui ne
+paient presque rien, le maximum ceux dont le rendement \'elev\'e signale souvent un dividende menac\'e
+(section~\ref{sec:capital-rendement}), et les deux derniers crit\`eres v\'erifient que le dividende
+est pay\'e par l'activit\'e plut\^ot que par la dette. Les titres qui passent sont class\'es par un
+score, moyenne de leur rang en rendement net pour un r\'esident allemand et de leur rang en
+croissance du dividende, puis retenus dans cet ordre, \`a raison de \RegleSecteurMax~titres au plus
+par secteur.
+
+La m\'ethode visait \NombreTitresVise~titres~; elle en retient \NombreTitres. L'entonnoir explique
+pourquoi. Sur les \UniversTitres{} titres de d\'epart, \UniversSansHistorique{} n'ont pas assez de
+dividendes dans les donn\'ees, \UniversFiltreRendement{} passent le filtre du rendement et de
+l'absence de baisse, et \NombreTitres{} seulement franchissent les crit\`eres de croissance, de
+distribution, de couverture et de secteur. Deux rel\^achements ont \'et\'e essay\'es, un seul \`a la
+fois~: une croissance d'au moins \RegleCroissanceRelache~\% au lieu de \RegleCroissanceMin~\%, puis
+un taux de distribution d'au plus \ReglePayoutRelache~\% au lieu de \ReglePayoutMax~\%. Ils donnent
+respectivement \PalierCroissanceTitres{} et \PalierPayoutTitres{} titres, pas un de plus. Des
+\TitresEcartesFin{} titres \'ecart\'es au dernier filtre, \TitresEcartesCroissanceOk{} avaient pourtant
+une croissance suffisante et \TitresEcartesSansRecul{} n'avaient pas \RegleAnneesCroissance~ans de
+cotation~: ce sont donc surtout le taux de distribution, la couverture par le flux de tr\'esorerie ou
+le plafond par secteur qui les ont exclus. Les donn\'ees conserv\'ees ne disent pas lequel de ces
+trois crit\`eres a jou\'e pour chaque titre~; on sait seulement que \SecteursAuPlafond{} secteurs,
+\SecteursAuPlafondNoms, atteignent le plafond de \RegleSecteurMax~titres.
+
+\bk{Il manque donc \NombreTitresManquants{} titres, et ce document les laisse manquer plut\^ot que
+d'assouplir les r\`egles qui font la m\'ethode.} Admettre un dividende d\'ej\`a baiss\'e ou un
+rendement hors de la fourchette changerait la nature du portefeuille pour atteindre un nombre rond.
+La figure~\ref{fig:risque-nombre-titres} montre d'ailleurs que \NombreTitres{} titres donnent
+presque toute la diversification que ces titres peuvent offrir. Le score, lui, a \'et\'e calcul\'e
+avec la retenue am\'ericaine sans formulaire W-8BEN, alors que ce document suppose ce formulaire
+d\'epos\'e (section~\ref{sec:fisc-quellensteuer})~; comme moins de \NombreTitresVise{} titres ont pass\'e
+les filtres, il n'a d\'epartag\'e que les titres des secteurs au plafond.
+
+\subsection{Les titres retenus}\label{sec:porte-titres}
+
+Le tableau~\ref{tab:titres-portefeuille-exemple} donne les \NombreTitres{} titres retenus, dans
+l'ordre du score. Le rendement net y est celui d'un r\'esident allemand apr\`es retenue \`a la source
+et imp\^ot allemand, avant assurance maladie et sans forfait d'\'epargnant.
+
+\annahme{\HypotheseUsFormulaire\QH{quellensteuer}~; retenue fran\c{c}aise au taux standard, comme au
+chapitre~\ref{sec:fiscalite}. La croissance est le taux annuel moyen du dividende sur
+\RegleAnneesCroissance~ans, en monnaie de cotation et en termes nominaux.}
+
+\begin{table}[htbp]
+  \centering\small
+  \caption{Les \NombreTitres{} titres du portefeuille-exemple, class\'es par score d\'ecroissant~:
+  rendement brut sur douze mois, rendement net pour un r\'esident allemand, croissance annuelle du
+  dividende sur \RegleAnneesCroissance~ans et taux de distribution (donn\'ees du
+  \DateDonneesPortefeuille).}\label{tab:titres-portefeuille-exemple}
+  \begin{tabularx}{\linewidth}{>{\bfseries}l l X *{4}{r}}
+    \toprule
+    \rowcolor[gray]{0.9}
+    \textbf{Titre} & \textbf{Pays} & \textbf{Secteur} & \textbf{Rendement} & \textbf{Net}
+      & \textbf{Croissance} & \textbf{Distribution} \\
+    \midrule
+    \tabellenkoerper{data/tab_portefeuille}
+    \bottomrule
+  \end{tabularx}
+\end{table}
+
+Ce tableau montre des rendements bruts de \RenditeTitreMin~\% (\RenditeTitreMinTicker) \`a
+\RenditeTitreMax~\% (\RenditeTitreMaxTicker), avec une m\'ediane de \RenditeDivMaison~\%, celle qui
+alimente tout le plan. Apr\`es retenue et imp\^ot, la m\'ediane nette tombe \`a \RenditeNetteMediane~\%~:
+avec le formulaire W-8BEN, le pays compte peu, puisqu'il reste \NettoUs~€ pour cent euros bruts
+am\'ericains, \NettoDe~€ pour des allemands et \NettoFr~€ pour des fran\c{c}ais
+(chapitre~\ref{sec:fiscalite}). Le taux de distribution m\'edian est de \PayoutMedian~\%~: la plupart
+des soci\'et\'es gardent une marge pour maintenir leur dividende lors d'une mauvaise ann\'ee.
+
+La figure~\ref{fig:secteurs-portefeuille-exemple} r\'epartit les titres par secteur, chaque titre
+pesant \PoidsParTitre~\% du portefeuille.
+
+\balkenfigur{fig_sektoren}[ylabel={Part des titres (\%)}, y filter/.expression={y*1e2}, ymin=0,
+  enlarge y limits={upper, value=0.2}, bar width=18pt,
+  nodes near coords, every node near coord/.append style={font=\scriptsize,
+    /pgf/number format/fixed, /pgf/number format/fixed zerofill, /pgf/number format/precision=1}]%
+  {libelle}{anteil}%
+  {R\'epartition sectorielle des \NombreTitres{} titres du portefeuille-exemple, en part du nombre
+  de titres (\'equipond\'eration).\label{fig:secteurs-portefeuille-exemple}}
+
+Ce graphique montre \SecteursNombre{} secteurs, dont \SecteursAuPlafondNoms{} au plafond de
+\RegleSecteurMax~titres, soit \SecteurPartMax~\% chacun~; le plus petit p\`ese \SecteurPartMin~\%. Le
+plafond par secteur a donc jou\'e son r\^ole~: sans lui, les secteurs les plus r\'eguliers auraient
+pris davantage de place. Aucun titre des services aux collectivit\'es, de l'immobilier ou de la
+communication n'est retenu, bien que les services aux collectivit\'es soient un secteur classique des
+portefeuilles de dividendes. La figure~\ref{fig:pays-portefeuille-exemple} donne la r\'epartition par
+pays.
+
+% Les rotations TikZ s'additionnent: rotate=-35 annule le rotate=35 par defaut de
+% \balkenfigur (etiquettes de pays courtes, laissees horizontales).
+\balkenfigur{fig_laender}[ylabel={Part des titres (\%)}, y filter/.expression={y*1e2}, ymin=0,
+  enlarge y limits={upper, value=0.2}, bar width=30pt, x tick label style={rotate=-35, anchor=north},
+  nodes near coords, every node near coord/.append style={font=\scriptsize,
+    /pgf/number format/fixed, /pgf/number format/fixed zerofill, /pgf/number format/precision=1}]%
+  {libelle}{anteil}%
+  {R\'epartition par pays de domiciliation des \NombreTitres{} titres du portefeuille-exemple, en part
+  du nombre de titres.\label{fig:pays-portefeuille-exemple}}
+
+Ce graphique montre que \PartUs~\% des titres sont am\'ericains, \PartDe~\% allemands et
+\PartFr~\% fran\c{c}ais~: \PortefeuillePays{} pays seulement, alors que l'univers en comptait
+\UniversPays. C'est cette r\'epartition qui fixe les retenues \`a la source de la cascade du
+chapitre~\ref{sec:depart}. Un portefeuille aussi concentr\'e d\'epend des r\`egles fiscales et de la
+conjoncture de trois pays, ce qu'un ETF monde dilue.
+
+\subsection{Rendement ou croissance du dividende}\label{sec:porte-rendement}
+
+Un dividende peut \^etre \'elev\'e aujourd'hui ou cro\^itre vite, rarement les deux \`a la fois. La
+figure~\ref{fig:rendement-contre-croissance} place chaque titre retenu selon ces deux grandeurs.
+
+\begin{figure}[htbp]
+  \centering
+  \begin{tikzpicture}
+    \begin{axis}[retraite, width=0.95\linewidth,
+      xlabel={Rendement brut du dividende sur douze mois (\%)},
+      ylabel={Croissance annuelle du dividende sur \RegleAnneesCroissance~ans (\%)},
+      x filter/.expression={x*1e2}, y filter/.expression={y*1e2},
+      scatter, only marks, scatter src=explicit symbolic,
+      scatter/classes={US={mark=*, blue}, DE={mark=square*, red}, FR={mark=triangle*, black}},
+      legend pos=north east, legend cell align=left, legend style={fill=white}]
+      % Classes dans l'ordre de la legende; un pays absent de scatter/classes ferait
+      % echouer la compilation (portefeuille actuel: US, DE, FR seulement).
+      \addplot table[x=rendite, y=wachstum, meta=land]{data/fig_rendite_wachstum.csv};
+      \legend{\'Etats-Unis, Allemagne, France}
+    \end{axis}
+  \end{tikzpicture}
+  \caption{Rendement brut du dividende et croissance annuelle moyenne du dividende sur
+  \RegleAnneesCroissance~ans (nominale, en monnaie de cotation) pour chacun des \NombreTitres{}
+  titres du portefeuille-exemple, par pays.}\label{fig:rendement-contre-croissance}
+\end{figure}
+
+Ce graphique montre que les titres \`a rendement \'elev\'e ont en g\'en\'eral cru moins vite~: le
+coefficient de corr\'elation entre les deux grandeurs vaut \CorrelationRendementCroissance, une
+relation n\'egative mais faible. La croissance va de \CroissanceTitreMin~\% par an
+(\CroissanceTitreMinTicker) \`a \CroissanceTitreMax~\% (\CroissanceTitreMaxTicker), avec une m\'ediane
+de \CroissanceMediane~\%. Les titres europ\'eens ont un rendement m\'edian de
+\RenditeMedianeEurope~\% contre \RenditeMedianeUs~\% pour les am\'ericains, pour une croissance
+m\'ediane voisine (\CroissanceMedianeEurope{} contre \CroissanceMedianeUs~\%).
+
+\bk{Il serait tentant de projeter cette croissance pass\'ee dans l'avenir~; le mod\`ele s'en garde.} Ces
+taux sont nominaux et mesur\'es sur des titres choisis justement parce que leur dividende a bien
+progress\'e~: les prolonger reviendrait \`a supposer que les gagnants d'hier restent les gagnants de
+demain. Le plan retient pour l'ETF maison une croissance r\'eelle de \CroissanceModeleMaison~\% par
+an, celle qui laisse son rendement total au niveau du march\'e. La presse sp\'ecialis\'ee rappelle \`a
+juste titre que des titres de qualit\'e portent la croissance d'un portefeuille \`a long
+terme\QP{boerseonline_fire_portfolio}~; cela ne dispense pas de ce r\'ealisme.
+
+\subsection{Deux dividendes r\'eels}\label{sec:porte-exemples}
+
+La figure~\ref{fig:deux-dividendes-reels} suit ann\'ee apr\`es ann\'ee deux dividendes r\'eels~: celui
+du titre retenu dont le dividende a mont\'e le plus longtemps sans interruption, et celui du titre de
+tout l'univers qui a subi la plus forte baisse.
+
+\annahme{Dividendes annuels par action, en monnaie de cotation, ramen\'es aux prix de 2026 avec
+l'inflation allemande publi\'ee de 2019 \`a 2025\QH{inflation_destatis_2019_2025} et
+\InflationZiel~\% par an hors de cette p\'eriode\QH{inflation_ziel}. Seules les ann\'ees compl\`etes
+des donn\'ees sont prises en compte.}
+
+\linienfigur{fig_div_beispiele}[xlabel={Ann\'ee}, ylabel={Dividende par action (prix de 2026)},
+  xticklabel style={/pgf/number format/set thousands separator={}}, ymin=0,
+  every axis plot post/.append style={mark=*, mark size=1.5pt},
+  legend pos=north west, legend cell align=left, legend style={fill=white}]%
+  {jahr}{titre_hausse,titre_baisse}%
+  {{\BeispielHausseTicker},{\BeispielBaisse}}%
+  {Dividende annuel r\'eel par action de \BeispielHausseTicker{}, titre retenu \`a la plus longue
+  hausse continue, et de \BeispielBaisse, titre de l'univers \`a la plus forte baisse, en monnaie de
+  cotation aux prix de 2026.\label{fig:deux-dividendes-reels}}
+
+Ce graphique montre deux trajectoires oppos\'ees. Le dividende de \BeispielHausse{}
+(\BeispielHausseTicker) a augment\'e chaque ann\'ee de \BeispielHausseDebut{} \`a \BeispielHausseFin,
+soit \BeispielHausseHausses{} hausses d'affil\'ee et \BeispielHausseReelTotal~\% de pouvoir d'achat en
+plus. M\^eme ce dividende exemplaire a pein\'e face \`a l'inflation~: en \BeispielHausseReelMinAnnee,
+sa hausse de \BeispielHausseNominalMinAnnee~\% a \`a peine couvert une inflation de
+\BeispielHausseInflationMinAnnee~\%, et sa progression r\'eelle n'a \'et\'e que de
+\BeispielHausseReelMin~\%. La fen\^etre des donn\'ees commence en \DonneesDebut~; la s\'erie de hausses
+peut \^etre plus longue, ce que ce document n'affirme pas faute de donn\'ees.
+
+Le dividende de \BeispielBaisse, valeur du \BeispielBaisseIndice, a \'et\'e supprim\'e en
+\BeispielBaisseAnnee{} (baisse de \BeispielBaisseProzent~\%), puis coup\'e de nouveau en
+\BeispielBaisseAutreAnnee{} (\BeispielBaisseAutreProzent~\%). Sur les \BeispielBaisseAnneesSansBaisse{}
+ann\'ees de donn\'ees qui pr\'ec\`edent la suppression, il n'avait jamais baiss\'e de plus de
+\RegleBaisseSeuil~\%~: le crit\`ere \enquote{aucune baisse} ne l'aurait pas \'ecart\'e la veille de la
+coupure. En \BeispielBaisseDerniereAnnee, il reste \BeispielBaisseEcartFinProzent~\%
+\BeispielBaisseEcartFinSens{} son niveau r\'eel de \BeispielBaisseAnneeAvant. Ce titre
+\BeispielBaisseStatut{} du portefeuille-exemple~: la r\`egle l'\'ecarte aujourd'hui, parce qu'elle
+regarde en arri\`ere et voit la baisse. \bk{Aucune r\`egle fond\'ee sur le pass\'e ne prot\`ege d'une
+coupure future~; seule la diversification en limite l'effet.} Le chapitre~\ref{sec:risques} montre que de telles
+baisses ont frapp\'e l'ensemble du march\'e pendant les crises.
+
+\subsection{Les biais de ce portefeuille}\label{sec:porte-biais}
+
+Ce portefeuille-exemple porte quatre biais qu'il faut conna\^itre avant d'en tirer quoi que ce
+soit.
+
+Le premier est le biais du survivant. L'univers est compos\'e des membres actuels des indices,
+c'est-\`a-dire des entreprises qui ont surv\'ecu et prosp\'er\'e. La liste des aristocrates du dividende
+ne retient par d\'efinition que des soci\'et\'es qui augmentent leur dividende depuis des d\'ecennies~;
+celles qui l'ont coup\'e en sont sorties et n'apparaissent pas dans l'univers. Leur historique est
+donc flatteur par construction, et le titre en hausse continue de la
+figure~\ref{fig:deux-dividendes-reels} en est un produit direct.
+
+Le deuxi\`eme est l'emploi de donn\'ees courantes pour juger le pass\'e. Le rendement, le taux de
+distribution, le flux de tr\'esorerie libre et le secteur sont ceux du \DateDonneesPortefeuille, et la
+croissance est mesur\'ee sur les \RegleAnneesCroissance{} ann\'ees qui pr\'ec\`edent. Un investisseur
+qui aurait appliqu\'e les m\^emes r\`egles en \DonneesDebut{} aurait choisi d'autres titres, et ce
+document ne mesure pas comment ceux-l\`a se seraient comport\'es~: il n'existe aucun test historique
+de la m\'ethode, et rien ne montre qu'elle bat un ETF monde.
+
+Le troisi\`eme est l'univers limit\'e. Les \'Etats-Unis n'y sont repr\'esent\'es que par leurs
+aristocrates du dividende, l'Europe par les grandes valeurs du DAX et de l'EURO STOXX~50~; ni le
+Royaume-Uni, ni la Suisse, ni le Japon, ni les pays \'emergents, ni les moyennes capitalisations n'y
+figurent. Le portefeuille ne compte finalement que \PortefeuillePays{} pays.
+
+Le quatri\`eme est la courte p\'eriode des donn\'ees. \RegleHistoriqueAns{} ann\'ees de cours, de
+\DonneesDebut{} \`a \DonneesFin, ne contiennent pas la crise financi\`ere de 2008~; la mesure du risque de la figure~\ref{fig:risque-nombre-titres} et
+les croissances du tableau~\ref{tab:titres-portefeuille-exemple} en h\'eritent.
+
+\bk{Retiens de ce chapitre qu'un ETF maison de \NombreTitres{} titres choisis par r\`egles
+diversifie l'essentiel du risque propre \`a chaque titre, mais que la part que tu lui confies ne
+d\'ecide pas de la date de ta retraite~: \`a \SparquoteZwanzig~\% d'\'epargne, aucune r\'epartition
+n'atteint l'objectif, et la r\`egle des dividendes seuls reste en retrait du retrait de
+\TauxRetrait~\% sur un ETF monde.} La m\'ethode de s\'election se r\'ep\`ete chaque ann\'ee avec des
+donn\'ees fra\^iches~; les \NombreTitres{} titres de ce chapitre n'en sont qu'une photographie. Le
+chapitre~\ref{sec:risques} met cette strat\'egie \`a l'\'epreuve de l'histoire~: baisses de dividendes pendant les
+crises, inflation et ordre des rendements.
+
+\Yannbox{\AnneeYannBasis}{Yann a vers\'e chaque mois la part maison de son \'epargne, selon la
+r\'epartition \ReferenzStrategie, \`a parts \'egales dans les \NombreTitres{} titres de son ETF maison,
+soit \PoidsParTitre~\% par titre~; ses titres sont pour \PartUs~\% am\'ericains, \PartDe~\% allemands et
+\PartFr~\% fran\c{c}ais. Ce nombre de titres ram\`ene la fluctuation annuelle de son ETF maison de
+\RisqueUnTitre~\% pour un titre seul \`a \RisqueTousTitres~\%. Si l'un de ses titres supprimait son
+dividende comme \BeispielBaisse{} en \BeispielBaisseAnnee, ses dividendes maison baisseraient
+d'environ \PoidsParTitre~\%, \`a rendement \'egal entre titres. S'il n'avait \'epargn\'e que
+\SparquoteZwanzig~\% de son salaire, tout placer en maison lui aurait vers\'e
+\RevenuAufteilungMaisonHundert~€ nets par mois en \AnneeHorizonFin, contre \RevenuHorizonZwanzig~€
+avec la r\'epartition \ReferenzStrategie~: deux montants sous sa cible de \ZielMonat~€.}

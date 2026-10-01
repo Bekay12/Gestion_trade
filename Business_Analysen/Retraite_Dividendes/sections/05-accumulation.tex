@@ -1,0 +1,369 @@
+\section{La phase d'accumulation}\label{sec:accumulation}
+% Chapitre 5 (tache 10, passage chapitres 04-05). Figures: fig_gehalt,
+% fig_jahre_sparquote, fig_kapital_zeit, fig_zinseszins, fig_sparbedarf,
+% fig_start_verzoegerung (voir docs/figures.md). Aucun chiffre tape: macros de
+% data/kennzahlen.tex (kapitel_5 et _macros_redaction_kapitel_5 dans
+% scripts/rechnung_retraite.py). Controle croise (specification, section 8):
+% l'age de base est \AlterYannBasis et l'annee \AnneeYannBasis (scenario de
+% reference \ReferenzStrategie a \ReferenzSparquote %, revision du 30.09.2026),
+% les memes macros que le resume; ce chapitre ne les recalcule jamais. Controle du
+% salaire net: docs/salaire_controle.md (valeurs publiees reprises en constante
+% SALAIRE_CONTROLE du script, avec leur source).
+
+Ce chapitre r\'epond \`a la question~: \`a quel \^age ton \'epargne atteint-elle le capital du
+chapitre~\ref{sec:capital}, selon la part de ton salaire que tu mets de c\^ot\'e et la strat\'egie que
+tu choisis~? Le chapitre pr\'ec\'edent a fix\'e le capital \`a r\'eunir~; celui-ci le construit ann\'ee
+apr\`es ann\'ee. La section~\ref{sec:accu-salaire} \'etablit ton salaire et le contr\^ole sur une table
+publi\'ee, la section~\ref{sec:accu-taux} en tire ton \'epargne mensuelle, et la
+section~\ref{sec:accu-age} donne l'\^age de d\'epart de chaque strat\'egie, y compris les combinaisons
+qui n'aboutissent pas. Les sections suivantes mesurent l'effet du capital de d\'epart
+(section~\ref{sec:accu-depart}), la part des int\'er\^ets compos\'es (section~\ref{sec:accu-interets}),
+l'\'epargne qu'exigerait un d\'epart \`a 40, 45 ou 50~ans (section~\ref{sec:accu-besoin}) et le prix
+d'un d\'emarrage plus tardif (section~\ref{sec:accu-retard}).
+
+\subsection{Ton salaire d'ing\'enieur et son contr\^ole}\label{sec:accu-salaire}
+
+Ton salaire r\'eel apr\`es le master n'est pas connu~; le plan le remplace par une r\'ef\'erence
+publi\'ee et le suit sur toute ta carri\`ere.
+
+\annahme{Salaire brut d'entr\'ee de \GehaltBrutEntree~€ par an, m\'ediane des ing\'enieurs de moins
+d'un an d'exp\'erience\QH{einstiegsgehalt_brutto}, faute de grille Jungheinrich ou IG~Metall
+exploitable. Progression r\'eelle de \GehaltWachstum~\% par an, d\'eduite de l'\'ecart entre
+salaires d'entr\'ee et salaires apr\`es vingt-cinq ans d'exp\'erience dans la m\^eme
+source\QH{gehaltssteigerung_real}~; c'est une coupe transversale, pas une carri\`ere observ\'ee, et le
+plan la prolonge au-del\`a de ces vingt-cinq ans. Tout est en euros de 2026, avec le bar\`eme 2026
+appliqu\'e chaque ann\'ee.}
+
+\annahme{Salaire net approch\'e~: brut moins la part salariale des cotisations
+sociales\QH{sv_arbeitnehmer}, moins l'imp\^ot sur le revenu du bar\`eme de 2026 sur un revenu
+imposable r\'eduit du forfait de frais professionnels de \FraisProfessionnels~€, moins la
+contribution de solidarit\'e~; classe d'imp\^ot~I, sans enfant, sans imp\^ot d'\'Eglise. Le mod\`ele
+applique la contribution de solidarit\'e en entier d\`es que l'imp\^ot d\'epasse son seuil, sans la
+zone de transition pr\'evue par la loi.}
+
+La figure~\ref{fig:salaire-brut-net} montre la trajectoire qui en r\'esulte.
+
+\linienfigur{fig_gehalt}[width=0.95\linewidth, xlabel={Ann\'ee}, ylabel={Salaire annuel (euros de 2026)},
+  xticklabel style={/pgf/number format/set thousands separator={}}, scaled y ticks=false,
+  yticklabel style={/pgf/number format/fixed}, legend pos=north west, legend cell align=left, legend style={fill=white}]%
+  {jahr}{brutto,netto}%
+  {{Brut},{Net}}%
+  {Salaire annuel brut et net simul\'e, de la premi\`ere ann\'ee d'emploi \`a la fin de l'horizon du
+  plan (euros de 2026).\label{fig:salaire-brut-net}}
+
+Ce graphique montre un salaire net d'entr\'ee de \GehaltNetEntree~€ par an, soit
+\GehaltNetEntreeMois~€ par mois et \GehaltNetPart~\% du brut, qui monte jusqu'\`a \GehaltNetFin~€ nets
+pour \GehaltBrutFin~€ bruts en \AnneeHorizonFin. L'\'ecart entre les deux courbes s'\'elargit avec le
+salaire, parce que l'imp\^ot est progressif. Le petit creux de la courbe nette en \GehaltCreuxAnnee{}
+est un artefact du mod\`ele, d\^u \`a la contribution de solidarit\'e appliqu\'ee d'un coup~; il ne
+change rien d'appr\'eciable au r\'esultat.
+
+Ce calcul approch\'e a \'et\'e contr\^ol\'e une fois contre une table brut-net publi\'ee, sans retoucher
+le mod\`ele pour la rejoindre\footnote{Deutschland-Rechner, \enquote{Brutto-Netto-Tabelle 2026}, classe
+d'imp\^ot~I, assurance maladie publique au taux compl\'ementaire moyen, sans enfant, sans imp\^ot
+d'\'Eglise, \href{https://www.deutschland-rechner.de/brutto-netto-tabelle}{deutschland-rechner.de},
+consult\'e le 30~septembre 2026 (source secondaire).}. La table ne donne que des paliers ronds~; le
+tableau~\ref{tab:controle-salaire-net} compare les deux paliers qui encadrent ton salaire d'entr\'ee.
+
+\begin{table}[htbp]
+  \centering\small
+  \caption{Salaire net annuel publi\'e et calcul\'e par le mod\`ele, pour les deux paliers de la table
+  qui encadrent le salaire d'entr\'ee (euros de 2026).}\label{tab:controle-salaire-net}
+  \begin{tabular}{>{\bfseries}l r r r}
+    \toprule
+    \rowcolor[gray]{0.9}
+    \textbf{Brut annuel} & \textbf{Net publi\'e} & \textbf{Net calcul\'e} & \textbf{\'Ecart relatif} \\
+    \midrule
+    \SalaireControleBrutBas~€ & \SalaireControlePublieBas~€ & \SalaireControleCalculeBas~€ & \SalaireControleEcartBas~\% \\
+    \SalaireControleBrutHaut~€ & \SalaireControlePublieHaut~€ & \SalaireControleCalculeHaut~€ & \SalaireControleEcartHaut~\% \\
+    \bottomrule
+  \end{tabular}
+\end{table}
+
+Ce tableau montre un \'ecart de \SalaireControleEcartBas~\% et \SalaireControleEcartHaut~\%, bien sous
+le seuil de \SalaireControleSeuil~\% fix\'e \`a l'avance. L'\'ecart va toujours dans le m\^eme sens~:
+le mod\`ele est un peu plus g\'en\'ereux que la table, probablement parce que celle-ci suit la retenue
+mensuelle sur salaire avec son propre forfait de pr\'evoyance, alors que le mod\`ele applique le bar\`eme
+annuel \`a un revenu imposable simplifi\'e. Le d\'etail du contr\^ole est dans le fichier
+\texttt{docs/salaire\_controle.md} du projet.
+
+\subsection{Ton taux d'\'epargne}\label{sec:accu-taux}
+
+\annahme{\'Epargne \`a partir de septembre 2027, \'egale \`a un pourcentage fixe du salaire net
+(\SparquoteZehn, \SparquoteZwanzig, \SparquoteDreissig{} ou \SparquoteFuenfzig~\%), jamais moins de
+\EpargneMinimum~€ par mois, et qui suit donc la hausse du salaire. Le mod\`ele compte la premi\`ere
+ann\'ee enti\`ere, ce qui avance l\'eg\`erement le calendrier. Rendement r\'eel total de
+\RenditeReal~\% par an pour les deux poches (chapitre~\ref{sec:depart}), constant chaque ann\'ee~;
+dividendes de l'ETF maison impos\'es chaque ann\'ee et r\'einvestis nets, ETF monde capitalisant
+impos\'e par la Vorabpauschale, pas de r\'e\'equilibrage entre les poches, ni frais de gestion ni frais
+de courtage. \HypotheseBasculeReference. Le plafond annuel de la Vorabpauschale (Basisertrag) est
+calcul\'e ici en euros r\'eels plut\^ot qu'en euros nominaux comme le pr\'evoit le droit, et elle n'est
+plus mod\'elis\'ee apr\`es le d\'epart en retraite pour la r\'ef\'erence en retrait de \TauxRetrait~\%~:
+les deux favorisent l\'eg\`erement l'ETF. Objectif atteint \`a la premi\`ere fin d'ann\'ee o\`u le revenu net de l'ann\'ee suivante
+atteint \ZielMonat~€ par mois en euros de 2026.}
+
+La premi\`ere ann\'ee, ces taux correspondent \`a \EpargneMoisZehn~€, \EpargneMoisZwanzig~€,
+\EpargneMoisDreissig~€ et \EpargneMoisFuenfzig~€ par mois. D\`es le taux le plus bas, tu d\'epasses
+donc le minimum de \EpargneMinimum~€ que tu t'es fix\'e, qui ne joue aucun r\^ole dans les calculs qui
+suivent. Un rendement constant chaque ann\'ee est une simplification forte~: il ignore les krachs et
+leur ordre, que le chapitre~\ref{sec:risques} r\'eintroduit par le rejeu historique et le tirage Monte Carlo.
+
+\subsection{\^Age de d\'epart par strat\'egie et par taux}\label{sec:accu-age}
+
+\annahme{Horizon de calcul de \HorizonJahre~ans, de 2027 \`a \AnneeHorizonFin, soit jusqu'\`a
+\AlterHorizon~ans pour toi, avec le capital de d\'epart de \KapitalDepartMitte~€. \enquote{Non atteint}
+signifie que l'objectif n'est pas atteint avant \AlterHorizon~ans. L'ETF distribuant vit de ses seuls
+dividendes~; \HypotheseUmschichtung.}
+
+Le tableau~\ref{tab:age-depart-strategies} croise les cinq strat\'egies du plan avec les quatre taux
+d'\'epargne. C'est le r\'esultat central du document, et il est moins favorable que ce que l'on
+esp\`ere en commen\c{c}ant un tel plan.
+
+\begin{table}[htbp]
+  \centering\small
+  \caption{\^Age auquel l'objectif de \ZielMonat~€ nets par mois est atteint, selon la strat\'egie et
+  le taux d'\'epargne (capital de d\'epart de \KapitalDepartMitte~€, euros de
+  2026).}\label{tab:age-depart-strategies}
+  \begin{tabularx}{\linewidth}{>{\bfseries}l *{5}{>{\centering\arraybackslash}X}}
+    \toprule
+    \rowcolor[gray]{0.9}
+    \textbf{Taux d'\'epargne} & \textbf{Moiti\'e en maison} & \textbf{70~\% en maison}
+      & \textbf{Tout en maison} & \textbf{ETF, retrait \TauxRetrait~\%} & \textbf{ETF distribuant} \\
+    \midrule
+    \SparquoteZehn~\% & \AlterMaisonFuenfzigZehn & \AlterMaisonSiebzigZehn & \AlterMaisonHundertZehn
+      & \AlterEtfReferenzZehn & \AlterEtfUmschichtungZehn \\
+    \SparquoteZwanzig~\% & \AlterMaisonFuenfzigZwanzig & \AlterMaisonSiebzigZwanzig
+      & \AlterMaisonHundertZwanzig & \AlterEtfReferenzZwanzig & \AlterEtfUmschichtungZwanzig \\
+    \SparquoteDreissig~\% & \AlterMaisonFuenfzigDreissig & \AlterMaisonSiebzigDreissig
+      & \AlterMaisonHundertDreissig & \AlterEtfReferenzDreissig & \AlterEtfUmschichtungDreissig \\
+    \SparquoteFuenfzig~\% & \AlterMaisonFuenfzigFuenfzig & \AlterMaisonSiebzigFuenfzig
+      & \AlterMaisonHundertFuenfzig & \AlterEtfReferenzFuenfzig & \AlterEtfUmschichtungFuenfzig \\
+    \bottomrule
+  \end{tabularx}
+\end{table}
+
+Ce tableau se lit ligne par ligne. \`A \SparquoteZehn~\% d'\'epargne, aucune strat\'egie de dividendes
+n'atteint l'objectif avant \AlterHorizon~ans~; seule la r\'ef\'erence y parvient, \`a
+\AlterEtfReferenzZehn~ans. \`A \SparquoteZwanzig~\%, le constat reste le m\^eme~: \bk{aucune des trois
+r\'epartitions en dividendes ni l'ETF distribuant n'atteint l'objectif dans l'horizon}. La
+r\'epartition \ReferenzStrategie{} plafonne en \AnneeHorizonFin{} \`a \RevenuHorizonZwanzig~€ nets par
+mois, \RevenuHorizonZwanzigPartCible~\% de la cible, alors que la r\'ef\'erence en ETF avec retrait de
+\TauxRetrait~\% atteint l'objectif \`a \AlterEtfReferenzZwanzig~ans. C'est le r\'esultat le plus
+d\'efavorable du document pour la th\`ese des dividendes, et c'est la raison pour laquelle le
+sc\'enario de base \'epargne \ReferenzSparquote~\% et non \SparquoteZwanzig~\%.
+
+\`A \ReferenzSparquote~\%, la r\'epartition \ReferenzStrategie{} atteint l'objectif \`a
+\AlterYannBasis~ans, en \AnneeYannBasis, soit l'\^age l\'egal de la retraite, fix\'e \`a
+\AgeLegal~ans\QH{regelaltersgrenze}~: \bk{au taux du sc\'enario de base, la strat\'egie des dividendes
+ne t'offre aucune retraite anticip\'ee}. Au m\^eme taux, la r\'ef\'erence part \`a
+\AlterEtfBasis~ans, \EcartAgeEtfMaisonBasis~ans plus t\^ot. C'est la traduction en \^age de l'\'ecart
+de capital du chapitre~\ref{sec:capital}. Pour partir avant l'\^age l\'egal avec la r\'epartition
+\ReferenzStrategie{}, il faut \'epargner au moins \QuoteAnticipeeMaisonSiebzig~\% de ton salaire net,
+ce qui donne un d\'epart \`a \AlterAnticipeeMaisonSiebzig~ans sur la grille de la
+figure~\ref{fig:annees-selon-epargne}, et \SparquoteFuenfzig~\% pour partir \`a
+\AlterMaisonSiebzigFuenfzig~ans. Tout placer en maison ne fait gagner qu'une ann\'ee \`a
+\SparquoteDreissig~\% (\AlterMaisonHundertDreissig~ans). L'autre voie est de changer de strat\'egie~:
+la r\'ef\'erence en ETF part avant l'\^age l\'egal d\`es \QuoteAnticipeeEtfReferenz~\% d'\'epargne,
+\`a \AlterAnticipeeEtfReferenz~ans.
+
+La figure~\ref{fig:annees-selon-epargne} affine le tableau en faisant varier le taux d'\'epargne par
+pas de cinq points~; une courbe absente \`a gauche signale un objectif non atteint dans l'horizon.
+
+\linienfigur{fig_jahre_sparquote}[xlabel={Taux d'\'epargne (\% du salaire net)},
+  ylabel={Ann\'ees d'\'epargne jusqu'\`a l'objectif},
+  x filter/.expression={x*1e2}, unbounded coords=jump,
+  table/empty cells with={nan}, legend pos=north east, legend cell align=left, legend style={fill=white}]%
+  {quote}{maison50,maison70,\ColonneToutMaison,etf_ref}%
+  {{Moiti\'e en maison},{70~\% en maison},{Tout en maison},{ETF, retrait \TauxRetrait~\%}}%
+  {Nombre d'ann\'ees d'\'epargne, en comptant 2027, n\'ecessaires pour atteindre l'objectif selon le
+  taux d'\'epargne, par strat\'egie (capital de d\'epart de \KapitalDepartMitte~€, horizon de
+  \HorizonJahre~ans).\label{fig:annees-selon-epargne}}
+
+Ce graphique montre le taux d'\'epargne minimal de chaque strat\'egie dans l'horizon~:
+\QuoteMinEtfReferenz~\% pour la r\'ef\'erence, contre \QuoteMinMaisonFuenfzig{}, \QuoteMinMaisonSiebzig{}
+et \QuoteMinMaisonHundert~\% pour la moiti\'e, 70~\% et la totalit\'e en maison. \`A ce taux minimal,
+les strat\'egies de dividendes n'atteignent l'objectif qu'au bout de l'horizon ou presque, apr\`es
+l'\^age l\'egal. Au-del\`a, chaque point d'\'epargne
+suppl\'ementaire raccourcit de moins en moins la dur\'ee, parce que l'\'epargne vers\'ee compte de moins
+en moins face aux gains du capital d\'ej\`a accumul\'e.
+
+La figure~\ref{fig:capital-dans-temps} suit le capital de la r\'epartition de base ann\'ee par ann\'ee,
+pour les quatre taux, face au capital requis du chapitre~\ref{sec:capital}.
+
+\linienfigur{fig_kapital_zeit}[xlabel={Ann\'ee}, ylabel={Capital (millions d'euros de 2026)},
+  xticklabel style={/pgf/number format/set thousands separator={}},
+  y filter/.expression={y/1e6}, cycle list={{blue},{red},{brown},{black},{gray, dashed}},
+  legend cell align=left, legend style={at={(0.5,-0.22)}, anchor=north, legend columns=3}]%
+  {jahr}{q10,q20,q30,q50,ziel_kapital}%
+  {{\'Epargne \SparquoteZehn~\%},{\'Epargne \SparquoteZwanzig~\%},{\'Epargne \SparquoteDreissig~\%},
+   {\'Epargne \SparquoteFuenfzig~\%},{Capital requis du chapitre~\ref{sec:capital}}}%
+  {Capital de la r\'epartition \ReferenzStrategie{} au fil des ann\'ees selon le taux d'\'epargne, et capital
+  requis aux r\`egles de 2026 (euros de 2026).\label{fig:capital-dans-temps}}
+
+Ce graphique montre qu'en \AnneeHorizonFin, le capital atteint \KapitalHorizonZehn~€ \`a
+\SparquoteZehn~\% d'\'epargne, \KapitalHorizonZwanzig~€ \`a \SparquoteZwanzig~\%,
+\KapitalHorizonDreissig~€ \`a \SparquoteDreissig~\% et \KapitalHorizonFuenfzig~€ \`a
+\SparquoteFuenfzig~\%. Les courbes \`a \SparquoteZehn{} et \SparquoteZwanzig~\% ne croisent jamais la
+ligne du capital requis, ce qui est le \enquote{non atteint} du tableau~\ref{tab:age-depart-strategies}.
+La courbe du sc\'enario de base, \`a \ReferenzSparquote~\%, la franchit en \AnneeYannBasis{} avec
+\KapitalYannBasis~€, soit \KapitalYannEcartCibleProzent~\% \KapitalYannSensCible{} capital du
+chapitre~\ref{sec:capital}~: l'objectif se mesure en fin d'ann\'ee, et la derni\`ere ann\'ee d'\'epargne
+fait passer le capital d'un peu moins \`a un peu plus que ce montant. Celle \`a \SparquoteFuenfzig~\%
+la franchit d\`es \AnneeCroisementFuenfzig.
+
+La simulation et le chapitre~\ref{sec:capital} visent le m\^eme capital parce qu'ils appliquent les
+m\^emes seuils d'assurance maladie. Le plafond de l'assiette est revaloris\'e chaque ann\'ee avec les
+salaires\QH{kv_schwellen_dynamisierung}~; le mod\`ele le tient donc constant en euros de 2026, et la
+cotisation maladie et d\'ependance maximale vaut encore \KvPvMaxMoisObjectif~€ par mois en
+\AnneeYannBasis, comme aujourd'hui. L'inflation n'all\`ege donc pas cette cotisation avec le temps.
+\bk{Rien ne garantit toutefois que ce plafond suivra exactement les salaires.} Une r\'eforme qui le
+rel\`everait alourdirait la cotisation et repousserait l'objectif~; \`a l'inverse, la
+G\"unstigerpr\"ufung, que le plan n'int\`egre pas, all\'egerait l'imp\^ot. Les deux effets ne se
+compensent pas n\'ecessairement~; retiens surtout qu'au taux du sc\'enario de base, le plan atteint
+l'objectif \`a l'\^age l\'egal et n'a aucune marge pour partir plus t\^ot.
+
+\subsection{Et avec \ZielNiedrigMonat~€ par mois~?}\label{sec:accu-ziel-niedrig}
+
+\'Epargner la moiti\'e de ton salaire, c'est vivre avec l'autre moiti\'e~: une cible plus basse que
+\ZielMonat~€ par mois est donc tout aussi pertinente \`a examiner. Le
+tableau~\ref{tab:age-depart-ziel-niedrig} reprend exactement le tableau~\ref{tab:age-depart-strategies},
+mais pour un objectif de \ZielNiedrigMonat~€ nets par mois.
+
+\begin{table}[htbp]
+  \centering\small
+  \caption{\^Age auquel l'objectif de \ZielNiedrigMonat~€ nets par mois est atteint selon la
+  strat\'egie et le taux d'\'epargne, et \'epargne mensuelle de la premi\`ere ann\'ee (capital de
+  d\'epart de \KapitalDepartMitte~€, euros de 2026).}\label{tab:age-depart-ziel-niedrig}
+  \begin{tabularx}{\linewidth}{>{\bfseries}l *{4}{>{\centering\arraybackslash}X}}
+    \toprule
+    \rowcolor[gray]{0.9}
+    & \SparquoteZehn~\% & \SparquoteZwanzig~\% & \SparquoteDreissig~\% & \SparquoteFuenfzig~\% \\
+    \midrule
+    \tabellenkoerper{data/tab_ziel_niedrig}
+    \bottomrule
+  \end{tabularx}
+\end{table}
+
+La figure~\ref{fig:alter-ziel-vergleich} compare les deux cibles sur la m\^eme grille de taux
+d'\'epargne, pour la r\'epartition \ReferenzStrategie{} et pour la r\'ef\'erence en ETF.
+
+\linienfigur{fig_alter_ziel_vergleich}[xlabel={Taux d'\'epargne (\% du salaire net)},
+  ylabel={\^Age d'atteinte de l'objectif (ans)},
+  x filter/.expression={x*1e2}, unbounded coords=jump,
+  table/empty cells with={nan}, legend pos=north east, legend cell align=left, legend style={fill=white}]%
+  {quote}{maison70_ziel_haut,maison70_ziel_bas,etf_ziel_haut,etf_ziel_bas}%
+  {{\ReferenzStrategie, \ZielMonat~€},{\ReferenzStrategie, \ZielNiedrigMonat~€},
+   {ETF retrait \TauxRetrait~\%, \ZielMonat~€},{ETF retrait \TauxRetrait~\%, \ZielNiedrigMonat~€}}%
+  {\^Age d'atteinte de l'objectif selon le taux d'\'epargne, pour \ZielMonat~€ et
+  \ZielNiedrigMonat~€ nets par mois (capital de d\'epart de \KapitalDepartMitte~€, horizon de
+  \HorizonJahre~ans).\label{fig:alter-ziel-vergleich}}
+
+Baisser la cible \`a \ZielNiedrigMonat~€ rapproche le d\'epart de quelques ann\'ees \`a chaque taux
+d'\'epargne, mais ne change rien \`a l'ordre des strat\'egies~: l'ETF avec retrait de
+\TauxRetrait~\% reste le plus rapide, et il franchit l'\^age l\'egal \`a
+\AlterEtfReferenzDreissigNiedrig~ans au taux de r\'ef\'erence de \ReferenzSparquote~\%, contre
+\AlterMaisonSiebzigDreissigNiedrig~ans pour la r\'epartition \ReferenzStrategie{}. Le capital \`a
+r\'eunir baisse dans les m\^emes proportions que la cible~: \KapitalNiedrigMaisonSiebzig~€ pour
+\ReferenzStrategie{} et \KapitalNiedrigEtf~€ pour l'ETF seul, \`a comparer au capital du
+chapitre~\ref{sec:capital} pour \ZielMonat~€ par mois.
+
+\subsection{Le capital de d\'epart}\label{sec:accu-depart}
+
+Ton capital de d\'epart se situe entre \KapitalDepartNiedrig~€ et \KapitalDepartHoch~€~; tous les
+calculs pr\'ec\'edents retiennent le milieu, \KapitalDepartMitte~€. Pour le sc\'enario de base, ce
+choix ne change pas l'\^age de d\'epart~: avec \KapitalDepartNiedrig~€, l'objectif est atteint \`a
+\AlterBasisDepartNiedrig~ans, et avec \KapitalDepartHoch~€ \`a \AlterBasisDepartHoch~ans, comme avec
+le milieu de la fourchette. L'\'ecart ne se voit qu'en fin d'horizon de calcul~: en \AnneeHorizonFin,
+le capital atteint \KapitalHorizonDepartNiedrig~€ dans le premier cas et \KapitalHorizonDepartHoch~€
+dans le second, soit \RevenuHorizonDepartNiedrig~€ et \RevenuHorizonDepartHoch~€ nets par mois.
+Quelques milliers d'euros vers\'es en 2027 p\`esent donc peu face \`a trente ann\'ees et plus
+d'\'epargne~; le taux d'\'epargne et la strat\'egie d\'ecident de l'issue, pas le capital de d\'epart.
+
+\subsection{La part des int\'er\^ets compos\'es}\label{sec:accu-interets}
+
+Dans le sc\'enario de base, l'essentiel du capital final ne vient pas de ton \'epargne. La
+figure~\ref{fig:versements-contre-gains} s\'epare ce que tu as vers\'e de ce que le capital a
+rapport\'e.
+
+\linienfigur{fig_zinseszins}[xlabel={Ann\'ee}, ylabel={Montant cumul\'e (millions d'euros de 2026)},
+  xticklabel style={/pgf/number format/set thousands separator={}},
+  y filter/.expression={y/1e6}, legend pos=north west, legend cell align=left, legend style={fill=white}]%
+  {jahr}{eingezahlt,gewinn}%
+  {{Versements cumul\'es, capital de d\'epart compris},{Gains cumul\'es}}%
+  {Versements cumul\'es et gains accumul\'es dans le sc\'enario de base (r\'epartition
+  \ReferenzStrategie, \ReferenzSparquote~\% d'\'epargne, euros de 2026).\label{fig:versements-contre-gains}}
+
+Ce graphique montre que les gains d\'epassent les versements \`a partir de \ZinsAnneeBascule. En
+\AnneeYannBasis, sur un capital de \KapitalYannBasis~€, tu n'as vers\'e que \ZinsVersements~€~; les
+\ZinsGains~€ restants, soit \ZinsPartGains~\% du capital, viennent des dividendes r\'einvestis et de la
+hausse des cours, apr\`es imp\^ot. La courbe des gains s'acc\'el\`ere dans les derni\`eres ann\'ees,
+quand le capital accumul\'e rapporte chaque ann\'ee plus que l'\'epargne vers\'ee. C'est ce qui rend
+les premi\`eres ann\'ees d'\'epargne si pr\'ecieuses, et c'est aussi ce qui rend le r\'esultat si
+sensible au rendement r\'eel suppos\'e~: la plus grande partie du capital d\'epend d'un rendement que
+personne ne garantit.
+
+\subsection{L'\'epargne n\'ecessaire pour partir \`a 40, 45 ou 50~ans}\label{sec:accu-besoin}
+
+La question peut \^etre retourn\'ee~: combien faudrait-il \'epargner chaque mois pour partir \`a un
+\^age choisi~? La figure~\ref{fig:epargne-selon-age} donne la r\'eponse pour la r\'epartition de base,
+avec une \'epargne constante en euros de 2026.
+
+\linienfigur{fig_sparbedarf}[xlabel={\^Age de d\'epart vis\'e (ans)},
+  width=0.95\linewidth, ylabel={\'Epargne mensuelle (euros de 2026)}, ybar, bar width=28pt, xtick=data,
+  enlarge x limits=0.3, ymin=0, enlarge y limits={upper, value=0.2}, scaled y ticks=false,
+  nodes near coords, every node near coord/.append style={font=\scriptsize,
+    /pgf/number format/fixed, /pgf/number format/precision=0}, legend pos=north east, legend cell align=left, legend style={fill=white}]%
+  {alter}{monatlich}%
+  {{\'Epargne mensuelle constante}}%
+  {\'Epargne mensuelle constante n\'ecessaire pour atteindre l'objectif \`a l'\^age vis\'e,
+  r\'epartition \ReferenzStrategie{} (capital de d\'epart de \KapitalDepartMitte~€, euros de
+  2026).\label{fig:epargne-selon-age}}
+
+Ce graphique montre qu'un d\'epart \`a 50~ans demande \SparbedarfCinquante~€ d'\'epargne par mois, soit
+\SparbedarfCinquantePartNet~\% de ton salaire net d'entr\'ee. Pour 45~ans, il faudrait
+\SparbedarfQuaranteCinq~€ par mois, \SparbedarfQuaranteCinqPartNet~\% de ce salaire, et pour 40~ans
+\SparbedarfQuarante~€, \SparbedarfQuarantePartNet~\%. \bk{Aucun de ces trois \^ages n'est \`a port\'ee
+d'un salaire d'ing\'enieur seul}~: m\^eme le d\'epart \`a 50~ans exige plus que la totalit\'e de ton
+salaire net de d\'ebut de carri\`ere. Ils supposeraient un revenu nettement plus \'elev\'e, un
+h\'eritage, ou une autre strat\'egie de revenu que les dividendes seuls.
+
+\subsection{Commencer plus t\^ot ou plus tard}\label{sec:accu-retard}
+
+La figure~\ref{fig:effet-depart-decale} d\'ecale d'un bloc le d\'ebut de ta vie active et de ton
+\'epargne, toutes les autres hypoth\`eses restant celles du sc\'enario de base.
+
+\linienfigur{fig_start_verzoegerung}[xlabel={D\'ecalage du d\'ebut de l'\'epargne (ann\'ees, n\'egatif
+  si plus t\^ot)}, ylabel={\^Age d'atteinte de l'objectif (ans)}, xtick=data, legend pos=north west, legend cell align=left, legend style={fill=white}]%
+  {verzoegerung_jahre}{ziel_alter}%
+  {{\^Age d'atteinte}}%
+  {\^Age auquel l'objectif est atteint quand l'\'epargne commence plus t\^ot ou plus tard que
+  septembre 2027 (r\'epartition \ReferenzStrategie, \ReferenzSparquote~\% d'\'epargne, capital de
+  d\'epart de \KapitalDepartMitte~€).\label{fig:effet-depart-decale}}
+
+Ce graphique montre une droite de pente \VerzoegerungPente~: chaque ann\'ee de retard repousse ton
+d\'epart d'une ann\'ee enti\`ere. Commencer \VerzoegerungAnsAvance~ans plus t\^ot aurait permis de
+partir \`a \VerzoegerungAlterAvance~ans, commencer \VerzoegerungAnsRetard~ans plus tard repousse le
+d\'epart \`a \VerzoegerungAlterRetard~ans. Le d\'ecalage vers le pass\'e n'est plus possible pour toi,
+puisque ton master se termine en 2027~; il mesure ce que vaut une ann\'ee d'\'epargne. Le d\'ecalage
+vers l'avenir, lui, est un risque r\'eel~: une ann\'ee de c\'esure, un emploi trouv\'e tard ou une
+premi\`ere ann\'ee sans \'epargne co\^utent chacun une ann\'ee de retraite.
+
+\bk{Retiens de ce chapitre qu'avec un salaire d'ing\'enieur, la strat\'egie des dividendes seuls
+n'atteint jamais l'objectif \`a \SparquoteZwanzig~\% d'\'epargne, qu'\`a \ReferenzSparquote~\% elle ne
+m\`ene qu'\`a l'\^age l\'egal, et qu'il faut environ \QuoteAnticipeeMaisonSiebzig~\% pour partir plus
+t\^ot.} La r\'ef\'erence en ETF avec retrait de \TauxRetrait~\% part \EcartAgeEtfMaisonBasis~ans plus
+t\^ot au taux du sc\'enario de base, et atteint l'objectif d\`es \SparquoteZwanzig~\%, \`a
+\AlterEtfReferenzZwanzig~ans. Le chapitre~\ref{sec:portefeuille} examine l'ETF maison lui-m\^eme~: comment choisir ses
+titres, et ce que change la r\'epartition entre ETF maison et ETF monde.
+
+\Yannbox{\AnneeYannBasis}{En \'epargnant \ReferenzSparquote~\% de son salaire net, soit
+\EpargneMoisBasis~€ par mois la premi\`ere ann\'ee, avec la r\'epartition \ReferenzStrategie{} et
+\KapitalDepartMitte~€ de d\'epart, Yann atteint son objectif en \AnneeYannBasis, \`a
+\AlterYannBasis~ans, l'\^age l\'egal de \AgeLegal~ans~: pas de retraite anticip\'ee. Sur les
+\KapitalYannBasis~€ r\'eunis, il n'a vers\'e que \ZinsVersements~€~; les \ZinsGains~€ restants sont des
+gains. Avec \KapitalDepartNiedrig~€ ou \KapitalDepartHoch~€ de d\'epart, l'\^age ne changerait pas.
+\`A \SparquoteZwanzig~\% d'\'epargne, ses dividendes ne lui verseraient que \RevenuHorizonZwanzig~€
+nets par mois en \AnneeHorizonFin. Pour partir plus t\^ot, il lui faudrait \'epargner
+\QuoteAnticipeeMaisonSiebzig~\% (d\'epart \`a \AlterAnticipeeMaisonSiebzig~ans), ou passer \`a un ETF
+monde avec un retrait de \TauxRetrait~\%~: \`a \AlterEtfBasis~ans au m\^eme taux d'\'epargne, et \`a
+\AlterEtfReferenzZwanzig~ans d\'ej\`a avec \SparquoteZwanzig~\%.}

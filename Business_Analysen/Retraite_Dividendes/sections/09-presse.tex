@@ -1,0 +1,296 @@
+\section{Ce que disent les magazines et la recherche}\label{sec:presse}
+% Chapitre 9 (tache 10, passage chapitres 09-10). Presse: citations uniquement via le
+% tableau genere \tabellenkoerper{data/tab_presse} (citations verifiees mot pour mot par
+% scripts/presse.py contre refs/presse/<id>.md); la prose paraphrase, elle ne recopie
+% aucune citation. Chaque id de data/presse.json est cite une seule fois par \QP dans ce
+% chapitre. Comptes de la presse: _macros_redaction_kapitel_9_10 (rechnung_retraite.py),
+% qui leve une erreur si les citations sur la fiscalite cessent d'etre toutes "contra".
+% Recherche: data/literatur.bib reste vide (Scopus sans cle, Semantic Scholar HTTP 429 le
+% 30.09.2026, deux essais); aucune reference citee de memoire (voir LUECKEN.md).
+% Phrases liees aux donnees actuelles (a relire si presse.json change): "corpus domine par
+% les arguments favorables", "les objections se concentrent sur l'impot et la phase de
+% retrait", colonne "Accord" du tableau tab:accord-presse-document.
+
+Ce chapitre r\'epond \`a la question~: que disent la presse sp\'ecialis\'ee allemande et la recherche
+de la retraite par les dividendes, et les r\'esultats de ce document leur donnent-ils raison~? Le
+chapitre~\ref{sec:retraite} s'est conclu sur trois constats~: pas de phase pont au sc\'enario de base,
+une r\'eserve d'un an qui apporte l'essentiel de la protection mesurable, et une r\`egle des
+\TauxRetrait~\% qui, rejou\'ee sur l'histoire am\'ericaine, tient plus souvent que le revenu de
+dividendes avec moins de capital. La section~\ref{sec:presse-corpus} d\'ecrit les articles lus et la
+fa\c{c}on dont leurs citations ont \'et\'e v\'erifi\'ees. Les sections~\ref{sec:presse-sans-vendre}
+\`a~\ref{sec:presse-epargne} confrontent leurs arguments, th\`eme par th\`eme, aux chiffres des
+chapitres pr\'ec\'edents, et la section~\ref{sec:presse-bilan} r\'esume ces accords et d\'esaccords
+dans un tableau. La section~\ref{sec:presse-recherche} dit ce qu'il en est de la recherche
+acad\'emique.
+
+\subsection{Ce qui a \'et\'e lu, et comment}\label{sec:presse-corpus}
+
+\annahme{Corpus de presse~: \PresseCitations{} citations tir\'ees de \PresseArticles{} articles de
+\PressePublications{} publications allemandes, magazines financiers, sites sp\'ecialis\'es et blogs de
+la communaut\'e FIRE (ind\'ependance financi\`ere, retraite anticip\'ee), consult\'es le
+\PresseDateConsultation. Une citation n'est retenue que si elle figure mot pour mot dans le texte
+t\'el\'echarg\'e de la page~; le script qui le v\'erifie \'ecarte toute citation introuvable. La
+position de chaque citation (\enquote{pro}, \enquote{contra} ou \enquote{neutre} envers la strat\'egie
+des dividendes) et son th\`eme ont \'et\'e attribu\'es \`a la collecte, avant la r\'edaction de ce
+chapitre. Ce sont des sources secondaires~: elles expriment une opinion, et ce plan n'en reprend
+aucune valeur dans ses calculs.}
+
+Le tableau~\ref{tab:citations-presse-verifiees} reproduit ces citations dans leur langue d'origine,
+abr\'eg\'ees par des points de suspension quand elles sont longues~; chaque article est r\'ef\'erenc\'e
+en note \`a sa premi\`ere mention dans ce chapitre, et en annexe. Le corpus compte \PressePro{}
+citations favorables, \PresseContra{} d\'efavorables et \PresseNeutre{} neutre. Ce d\'ecompte n'est pas
+un vote de la presse allemande~: il refl\`ete ce qui \'etait lisible la nuit de la collecte. Deux
+sources pr\'evues, Finanztest et le Handelsblatt, n'ont renvoy\'e qu'une page de navigation ou un court
+chapeau derri\`ere leur acc\`es payant, et un troisi\`eme magazine n'\'etait pas accessible \`a l'outil de
+recherche~; un second blog FIRE les remplace en partie. Les \'etiquettes, enfin, sont discutables par
+endroits. La phrase de Finanztip class\'ee \enquote{pro} sous le th\`eme des ETF distribuants
+recommande en r\'ealit\'e les ETF capitalisants pour constituer un patrimoine, ce qui d\'ecrit la
+r\'ef\'erence de ce plan plut\^ot que la strat\'egie des dividendes, et la phrase de B\"orse Online sur
+les actions \`a dividendes porte le m\^eme th\`eme sans parler d'ETF. \bk{Ce chapitre juge donc chaque
+citation sur son texte, pas sur son \'etiquette.}
+
+{\footnotesize
+\renewcommand{\_}{\textunderscore\allowbreak}
+\setlength{\LTpre}{\medskipamount}\setlength{\LTpost}{\medskipamount}
+\begin{longtable}{>{\bfseries\raggedright\arraybackslash}p{0.22\linewidth}
+  >{\raggedright\arraybackslash}p{0.08\linewidth} >{\raggedright\arraybackslash}p{0.15\linewidth}
+  >{\raggedright\arraybackslash}p{0.44\linewidth}}
+  \caption{Citations de presse v\'erifi\'ees mot pour mot dans le texte t\'el\'echarg\'e des articles,
+  avec la position et le th\`eme attribu\'es \`a la collecte (sources secondaires, consult\'ees le
+  \PresseDateConsultation).}\label{tab:citations-presse-verifiees}\\
+  \toprule
+  \rowcolor[gray]{0.9}
+  \textbf{Source} & \textbf{Position} & \textbf{Th\`eme (code)} & \textbf{Citation (extrait)} \\
+  \midrule
+  \endfirsthead
+  \toprule
+  \rowcolor[gray]{0.9}
+  \textbf{Source} & \textbf{Position} & \textbf{Th\`eme (code)} & \textbf{Citation (extrait)} \\
+  \midrule
+  \endhead
+  \bottomrule
+  \endlastfoot
+  \tabellenkoerper{data/tab_presse}
+\end{longtable}}
+
+Ce tableau montre un corpus domin\'e par les arguments favorables, \PressePro{} citations sur
+\PresseCitations, mais o\`u les objections se concentrent sur deux sujets pr\'ecis~: l'imp\^ot et la
+phase de retrait. Les sections suivantes reprennent ces arguments un par un.
+
+\subsection{Vivre sans rien vendre}\label{sec:presse-sans-vendre}
+
+L'argument le plus fr\'equent du corpus est aussi le plus simple~: les dividendes arrivent sur le
+compte sans qu'il faille vendre de parts, et surtout pas en pleine baisse des cours. B\"orse Online
+le pr\'esente comme l'avantage technique des actions \`a dividendes\QP{boerseonline_fire_portfolio},
+getmad.de comme un moyen de couvrir une partie des d\'epenses de la phase de retrait\QP{getmad_fire},
+et justETF y ajoute deux effets~: il serait plus facile de garder son calme en crise, et le risque de
+s\'equence comme le risque de faillite seraient r\'eduits au minimum, puisque le capital reste
+investi\QP{justetf_entnahmestrategien}.
+
+Ce document donne raison \`a la moiti\'e de cet argument. Le capital n'est jamais vendu, il ne peut
+donc pas s'\'epuiser. Mais le revenu suit le dividende~: celui de l'indice \IndiceActionsUs{} a perdu
+\GroessterEinbruch~\% de sa valeur r\'eelle de \GroessterEinbruchDebut{} \`a \GroessterEinbruchJahr, et
+encore \EinbruchRecent~\% de \EinbruchRecentDebut{} \`a \EinbruchRecentFin{}
+(section~\ref{sec:risques-baisses}). Un choc de $-$20~points sur la croissance du dividende la
+premi\`ere ann\'ee de retraite fait tomber la r\'eussite du mod\`ele sans imp\^ot de
+\ErfolgsquoteBasis{} \`a \McErfolgChocMoinsVingt~\% (section~\ref{sec:risques-sequence})~: le risque
+de s\'equence ne dispara\^it pas, il passe du capital au revenu. Sur les m\^emes d\'eparts historiques,
+enfin, la r\`egle des \TauxRetrait~\%, qui vend des parts chaque ann\'ee, tient dans
+\RetraitHistMemesDepartsProzent~\% des cas, contre \RueckspielTenusProzent~\% pour le revenu de
+dividendes (section~\ref{sec:retraite-quatre}).
+
+L'effet psychologique, en revanche, est r\'eel, et ce document ne le mesure pas. Ne pas avoir \`a
+d\'ecider de vendre au pire moment a de la valeur pour qui craint de paniquer. FinanzNachrichten.de
+r\'esume le d\'esaccord en une phrase~: la strat\'egie des dividendes serait un outil psychologique
+plut\^ot qu'une strat\'egie math\'ematiquement sup\'erieure\QP{finanznachrichten_irrweg}. Les chiffres
+de ce plan vont dans ce sens~; \bk{c'est \`a toi de dire combien ce confort vaut pour toi, en capital
+et en ann\'ees de travail.}
+
+\subsection{Le prix de ce confort~: imp\^ot, capital et \^age}\label{sec:presse-prix}
+
+Les \PresseCitationsFiscalite{} citations du corpus qui portent sur l'imp\^ot sont toutes
+d\'efavorables \`a la strat\'egie des dividendes, et c'est le point o\`u ce document leur donne le plus
+nettement raison. justETF rappelle que tout le dividende vers\'e subit l'imp\^ot sur les revenus du
+capital, la contribution de solidarit\'e et, le cas \'ech\'eant, l'imp\^ot d'\'Eglise~; getmad.de, que
+cet imp\^ot abaisse le taux de retrait effectif~; B\"orse Online range la fiscalit\'e allemande parmi
+les obstacles \`a la constitution d'un patrimoine, \`a c\^ot\'e du co\^ut de la vie et des
+loyers\QP{boerseonline_fire_traum}.
+
+Le chapitre~\ref{sec:fiscalite} chiffre cet \'ecart~: sur cent euros de dividende brut, il te reste
+\NettoDe~€ pour une action allemande et \NettoUs~€ pour une action am\'ericaine, contre \NettoEtf~€
+pour un ETF actions, et l'assurance maladie volontaire prend en plus \KvPvAnteilBrut~\% du revenu brut
+dont tu as besoin. Le chapitre~\ref{sec:capital} en tire la cons\'equence~: \`a revenu net \'egal, la
+r\'epartition \ReferenzStrategie{} demande \KapitalMaisonSiebzig~€ de capital, soit
+\KapitalDifferenzSiebzigProzent~\% de plus que les \KapitalEtfReferenz~€ d'un ETF monde avec retrait de
+\TauxRetrait~\%. Le chapitre~\ref{sec:accumulation} traduit cet \'ecart en ann\'ees~: au taux
+d'\'epargne de base, la r\'ef\'erence atteint l'objectif \EcartAgeEtfMaisonBasis~ans plus t\^ot.
+
+FinanzNachrichten.de ajoute que le confort mental se paie en diversification et en rendement, et
+d\'econseille l'approche pour la phase de retrait. Sur la diversification, le
+chapitre~\ref{sec:portefeuille} lui donne en partie raison~: un ETF maison de \NombreTitres{} titres
+supprime l'essentiel du risque propre \`a chaque titre, mais il ne couvre que \PortefeuillePays{} pays,
+et rien ne montre que sa m\'ethode bat un ETF monde. Sur la phase de retrait, le test historique de la
+section~\ref{sec:retraite-quatre} va dans le m\^eme sens, avec une nuance d\'ej\`a dite~: un revenu de
+dividendes qui baisse reste un revenu, alors qu'un capital \'epuis\'e ne verse plus rien.
+
+\subsection{Combien retirer chaque ann\'ee~?}\label{sec:presse-retrait}
+
+Deux articles parlent du taux de retrait, avec des conseils oppos\'es. B\"orse Online pr\'esente la
+r\`egle des quatre pour cent comme une formule empirique, prudente au regard de rendements historiques
+avant imp\^ot de huit pour cent et plus sur les grands indices d'actions. Finanztip conseille au
+contraire de ne retirer chaque ann\'ee qu'un \`a trois pour cent du capital r\'euni au d\'epart en
+retraite\QP{finanztip_geldanlage}.
+
+Les donn\'ees am\'ericaines de ce document donnent plut\^ot raison au second. Un retrait de
+\TauxRetrait~\% du capital initial, ajust\'e de l'inflation, a tenu \RetraitHistAnsVierzig~ans dans
+\RetraitHistReussiteVierzig~\% des d\'eparts depuis \RetraitHistPremierVierzig, mais il a \'epuis\'e le
+capital des retraites commenc\'ees en \RetraitHistEchecsListeVierzig~; \`a \TauxRetraitPrudent~\%,
+aucun d\'epart n'a \'echou\'e (section~\ref{sec:retraite-quatre}). La formule n'est donc pas prudente
+dans tous les cas, et le chiffre de huit pour cent qu'invoque B\"orse Online n'est pas comparable \`a
+ceux de ce plan~: c'est un rendement avant imp\^ot et avant inflation, alors que ce document raisonne en
+rendement r\'eel, \RenditeReal~\% par an. Ce taux est l'un des deux \'ecarts assum\'es au plan~: c'est
+le \RenditeReelleConvention{} des rendements annuels, parce que seule la moyenne g\'eom\'etrique d\'ecrit
+ce que devient un capital apr\`es des d\'ecennies de hausses et de krachs (chapitre~\ref{sec:depart}).
+Le test historique ignore de plus l'imp\^ot allemand et les frais, qui ne peuvent qu'abaisser ces taux
+de r\'eussite.
+
+La prudence de Finanztip a un prix~: \`a \TauxRetraitPrudent~\%, l'ETF monde demande
+\KapitalEtfPrudent~€ au lieu de \KapitalEtfReferenz~€. \bk{Elle reste pourtant moins ch\`ere que la
+strat\'egie des dividendes seuls, qui demande \KapitalMaisonSiebzig~€ dans la r\'epartition de base.}
+
+\subsection{Qualit\'e, diversification et secteurs}\label{sec:presse-selection}
+
+Sur le choix des titres, la presse est plus nuanc\'ee que sur la retraite elle-m\^eme. B\"orse Online
+d\'econseille de se fier au seul rendement du dividende et recommande de fixer d'abord un m\'elange
+d'actions, d'ETF et \'eventuellement d'obligations, puis de chercher la qualit\'e, des mod\`eles
+d'affaires conservateurs et de vraies valeurs de rendement. justETF signale, pour les investisseurs
+prudents, les entreprises qui ont maintenu ou relev\'e leur dividende pendant de nombreuses ann\'ees,
+les aristocrates du dividende, et rappelle qu'un ETF distribuant dispense de choisir soi-m\^eme les
+titres\QP{justetf_ausschuettend}.
+
+La m\'ethode du chapitre~\ref{sec:portefeuille} suit ces conseils~: elle borne le rendement entre
+\RegleRendementMin{} et \RegleRendementMax~\%, limite le taux de distribution \`a \ReglePayoutMax~\% du
+b\'en\'efice, exige un dividende sans baisse sur \RegleAnneesCroissance~ans, puise une partie de son
+univers dans les aristocrates du dividende am\'ericains et garde une part d'ETF monde. Le m\^eme
+chapitre en montre les limites~: le crit\`ere de r\'egularit\'e regarde en arri\`ere et n'aurait pas
+\'ecart\'e \BeispielBaisse{} la veille de la suppression de son dividende en \BeispielBaisseAnnee, un
+univers d'aristocrates porte par construction un biais du survivant, et aucun test historique ne
+montre que la m\'ethode fait mieux qu'un ETF monde (section~\ref{sec:porte-biais}).
+
+Le blog Dividende statt Rente affirme que les entreprises \`a haut dividende fluctuent moins et
+r\'esistent mieux aux crises\QP{dividende_statt_rente}. Ce document ne compare pas la fluctuation de
+leurs cours \`a celle du march\'e et ne peut ni confirmer ni infirmer cette premi\`ere moiti\'e de la
+phrase~; il montre en revanche que leur dividende, lui, n'est pas \`a l'abri des crises
+(section~\ref{sec:risques-baisses}). Extra-Magazin observe enfin que, dans le DAX, ce sont surtout les
+valeurs financi\`eres qui augmentent nettement leurs distributions\QP{extraetf_dividendenboom}. C'est
+le constat d'une p\'eriode, pas une r\`egle de construction~: la m\'ethode du
+chapitre~\ref{sec:portefeuille} limite chaque secteur \`a \RegleSecteurMax~titres, pour qu'aucun ne
+domine l'ETF maison, quelle que soit la mode du moment.
+
+\subsection{\'Epargner, investir en actions, battre l'inflation}\label{sec:presse-epargne}
+
+Le dernier groupe de citations porte moins sur les dividendes que sur l'\'epargne elle-m\^eme, et c'est
+l\`a que la presse et ce document s'accordent le mieux. Extra-Magazin rappelle que l'on n'atteint pas
+les objectifs du mouvement FIRE en laissant son argent sur un compte d'\'epargne dont les int\'er\^ets
+ne compensent pas l'inflation\QP{extraetf_fire}. Finanztip juge une forte part d'actions importante
+pour la retraite, les ETF actions adapt\'es comme source de rendement au-dessus de l'inflation, et
+les ETF capitalisants particuli\`erement adapt\'es \`a la constitution d'un
+patrimoine\QP{finanztip_thesaurierend}~; cette derni\`ere phrase d\'ecrit exactement la r\'ef\'erence de
+ce plan. L'inflation n'a rien d'abstrait~: la section~\ref{sec:risques-inflation} a montr\'e ce que
+la pouss\'ee de \InflationPicAnnee{} fait \`a un revenu qui n'est pas index\'e.
+
+Deux arguments favorables aux dividendes restent \`a nuancer. Dividende statt Rente pr\'esente les
+dividendes comme une alternative aux obligations tant que les taux d'int\'er\^et restent bas~; cet
+argument d\'epend de l'\'epoque o\`u il a \'et\'e \'ecrit, et ce plan, qui ne contient aucune obligation,
+ne permet pas de le v\'erifier. justETF affirme qu'investir en actions et en obligations en encaissant
+dividendes et int\'er\^ets peut te faire atteindre ton objectif. Ce document confirme que c'est
+possible, mais pas t\^ot~: au taux de base, la strat\'egie des dividendes atteint l'objectif \`a
+\AlterYannBasis~ans, l'\^age l\'egal, et \`a \SparquoteZwanzig~\% d'\'epargne elle ne l'atteint jamais
+(section~\ref{sec:accu-age}). \bk{Aucun article du corpus ne chiffre un \^age de d\'epart~; c'est
+pourtant la seule question qui compte pour toi.}
+
+\subsection{Accords et d\'esaccords}\label{sec:presse-bilan}
+
+Le tableau~\ref{tab:accord-presse-document} met en regard, th\`eme par th\`eme, ce qu'affirme le
+corpus et ce que montrent les calculs de ce document. La derni\`ere colonne ne juge pas la qualit\'e des
+articles~; elle dit seulement si les chiffres de ce plan vont dans leur sens.
+
+\begin{table}[!tb]
+  \centering\small
+  \caption{Arguments du corpus de presse face aux r\'esultats de ce document (r\`egles de 2026, euros
+  de 2026, sc\'enario de base \ReferenzStrategie{} \`a \ReferenzSparquote~\% d'\'epargne).}
+  \label{tab:accord-presse-document}
+  \begin{tabularx}{\linewidth}{>{\bfseries\raggedright\arraybackslash}p{0.16\linewidth}
+    >{\raggedright\arraybackslash}X >{\raggedright\arraybackslash}X
+    >{\raggedright\arraybackslash}p{0.13\linewidth}}
+    \toprule
+    \rowcolor[gray]{0.9}
+    \textbf{Th\`eme} & \textbf{Ce qu'affirme le corpus} & \textbf{Ce que montre ce document}
+      & \textbf{Accord} \\
+    \midrule
+    Vivre sans vendre & Capital intact, calme en crise, risque de s\'equence minimal
+      & Capital intact, mais revenu expos\'e~: dividende r\'eel de l'indice en baisse de
+      \GroessterEinbruch~\% (section~\ref{sec:risques-baisses}) & En partie \\
+    Imp\^ot & Tout le dividende est impos\'e (\PresseCitationsFiscalite{} citations, toutes
+      d\'efavorables) & \NettoEtf~€ nets pour cent euros d'ETF, \NettoDe~€ pour une action
+      allemande (chapitre~\ref{sec:fiscalite}) & Oui \\
+    Capital et \^age & Confort pay\'e en rendement et en diversification
+      & \KapitalDifferenzSiebzigProzent~\% de capital en plus, objectif atteint
+      \EcartAgeEtfMaisonBasis~ans plus tard (chapitres~\ref{sec:capital}
+      et~\ref{sec:accumulation}) & Oui \\
+    Taux de retrait & \TauxRetrait~\% prudent (B\"orse Online), un \`a trois pour cent (Finanztip)
+      & \TauxRetrait~\%~: \RetraitHistReussiteVierzig~\% de r\'eussite sur \RetraitHistAnsVierzig~ans~;
+      \TauxRetraitPrudent~\%~: \RetraitHistReussitePrudentVierzig~\% (section~\ref{sec:retraite-quatre})
+      & Plut\^ot Finanztip \\
+    Choix des titres & Qualit\'e, aristocrates, pas le seul rendement
+      & R\`egles conformes, mais biais du survivant et aucun test historique
+      (section~\ref{sec:porte-biais}) & En partie \\
+    Stabilit\'e en crise & Moins de fluctuations, meilleure r\'esistance
+      & Fluctuation des cours non mesur\'ee~; dividendes coup\'es en crise
+      (section~\ref{sec:risques-baisses}) & Non d\'emontr\'e \\
+    Actions et inflation & L'\'epargne sur compte ne suffit pas, forte part d'actions
+      & Plan fond\'e sur un rendement r\'eel de \RenditeReal~\% par an en actions
+      (chapitre~\ref{sec:depart}) & Oui \\
+    \bottomrule
+  \end{tabularx}
+\end{table}
+
+Ce tableau montre que ce document rejoint la presse sur l'\'epargne, les actions et l'imp\^ot, et
+qu'il s'en \'ecarte sur ce qu'elle pr\'esente comme la force des dividendes~: un revenu stable et
+s\^ur. Les d\'esaccords portent tous sur ce m\^eme point, que les chapitres~\ref{sec:risques}
+et~\ref{sec:retraite} montrent moins solide que ne le dit le corpus.
+
+\subsection{Et la recherche~?}\label{sec:presse-recherche}
+
+Les \'etudes acad\'emiques pr\'evues pour ce chapitre, sur les taux de retrait soutenables, le risque
+de s\'equence, la diversification selon le nombre de titres, la performance des strat\'egies \`a haut
+dividende et la pr\'ef\'erence des investisseurs pour les dividendes, n'ont pas pu \^etre v\'erifi\'ees,
+la base Scopus \'etant inaccessible et l'interface publique de Semantic Scholar ayant refus\'e les
+requ\^etes lors de deux essais le 30~septembre~2026, si bien que ce chapitre ne cite aucune \'etude
+plut\^ot que d'en citer de m\'emoire.
+
+Une partie de ces questions trouve malgr\'e tout une r\'eponse dans les calculs de ce document, avec
+leurs limites. Le taux de retrait et le risque de s\'equence sont test\'es sur l'histoire de
+l'\IndiceActionsUs{} depuis \ShillerDebut{} (chapitres~\ref{sec:risques} et~\ref{sec:retraite}), mais
+sur ce seul march\'e et sans imp\^ot. La diversification selon le nombre de titres est mesur\'ee sur les
+\NombreTitres{} titres du portefeuille-exemple et sur \RegleHistoriqueAns~ans de cours seulement
+(section~\ref{sec:porte-diversification}). La performance compar\'ee des strat\'egies \`a haut dividende
+et la pr\'ef\'erence des investisseurs pour les dividendes ne sont pas trait\'ees. \bk{Confronter ces
+r\'esultats \`a des \'etudes publi\'ees et v\'erifi\'ees reste \`a faire~; c'est la lacune la plus
+importante de ce chapitre.}
+
+\bk{Retiens de ce chapitre que la presse vante surtout le confort de vivre sans rien vendre, et que
+ce document confirme ce confort mais en chiffre le prix~: \KapitalDifferenzSiebzigProzent~\% de
+capital en plus, \EcartAgeEtfMaisonBasis~ans de travail en plus au taux de base, et un revenu qui
+baisse avec le dividende dans les crises.} Sur l'imp\^ot et sur l'int\'er\^et d'investir en actions, la
+presse et ce document disent la m\^eme chose. Le chapitre~\ref{sec:plan} traduit l'ensemble de ces
+r\'esultats en un plan d'action dat\'e.
+
+\Yannbox{\AnneeYannBasis}{Si Yann suit l'argument le plus r\'epandu de la presse, vivre des dividendes
+sans rien vendre, il doit r\'eunir \KapitalMaisonSiebzig~€ avec la r\'epartition \ReferenzStrategie{}
+et ne s'arr\^ete qu'en \AnneeYannBasis, \`a \AlterYannBasis~ans. S'il suit les critiques, un ETF monde
+avec un retrait de \TauxRetrait~\% par an, \KapitalEtfReferenz~€ suffisent, r\'eunis d\`es
+\AnneeEtfBasis, \`a \AlterEtfBasis~ans, avec la m\^eme \'epargne. M\^eme avec la prudence de Finanztip,
+\TauxRetraitPrudent~\% de retrait, il lui faudrait \KapitalEtfPrudent~€, moins que pour les dividendes
+seuls. Sur ses dividendes, il paierait l'imp\^ot sur tout le montant vers\'e~: pour cent euros bruts
+d'une action allemande, il garderait \NettoDe~€, contre \NettoEtf~€ pour un ETF actions.}

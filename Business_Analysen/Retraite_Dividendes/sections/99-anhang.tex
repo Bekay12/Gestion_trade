@@ -1,0 +1,181 @@
+\section{Annexes}\label{sec:annexes}
+% Annexes (tache 10, passage resume, titre et annexes). Aucun chiffre tape: les deux
+% tableaux d'hypotheses sont des corps generes par scripts/rechnung_retraite.py
+% (annexe_hypotheses: data/tab_hypotheses_sources.tex depuis data/quellen.json,
+% data/tab_hypotheses_modele.tex en macros de data/kennzahlen.tex); les listes de
+% sources sont data/quellen_annexe.tex et data/presse_annexe.tex (quellen_tex,
+% presse_notes_tex). La section "Donnees non disponibles" resume LUECKEN.md.
+% La bibliographie n'est composee que si data/literatur.bib contient au moins une
+% entree (\NombreReferencesAcademiques, compte par le script): sinon une phrase le dit,
+% au lieu d'un titre "References" suivi d'une liste vide.
+
+Cette annexe r\'epond \`a la question~: sur quelles hypoth\`eses et sur quelles sources reposent les
+calculs de ce document, et qu'est-ce qu'il n'a pas pu \'etablir~? La
+section~\ref{sec:annexe-hypotheses} r\'eunit les hypoth\`eses d\'eclar\'ees, la
+section~\ref{sec:annexe-lacunes} les donn\'ees cherch\'ees sans succ\`es et ce qui les remplace, la
+section~\ref{sec:annexe-perimetre} ce qui reste hors du plan, et la section~\ref{sec:annexe-sources}
+la liste compl\`ete des sources cit\'ees en note.
+
+\subsection{Hypoth\`eses d\'eclar\'ees}\label{sec:annexe-hypotheses}
+
+Toutes les valeurs l\'egales, sociales et de march\'e du plan viennent d'un seul fichier de donn\'ees,
+dont chaque entr\'ee porte sa source et sa date de consultation. Le
+tableau~\ref{tab:hypotheses-sourcees} en donne les \NombreHypothesesSourcees{} entr\'ees, dont
+\NombreHypothesesPrimaires{} reposent sur une source primaire (loi, administration, organisme
+public)~; les autres sont des sources secondaires, signal\'ees comme telles. Chaque ligne renvoie \`a la
+section qui emploie la valeur et, par un lien, \`a sa source compl\`ete de la
+section~\ref{sec:annexe-sources}.
+
+{\footnotesize
+\setlength{\LTpre}{\medskipamount}\setlength{\LTpost}{\medskipamount}
+\begin{longtable}{>{\bfseries\raggedright\arraybackslash}p{0.35\linewidth}
+  >{\raggedright\arraybackslash}p{0.34\linewidth} >{\centering\arraybackslash}p{0.09\linewidth}
+  >{\raggedright\arraybackslash}p{0.11\linewidth}}
+  \caption{Hypoth\`eses sourc\'ees du plan, avec la valeur retenue, la section qui l'emploie et le type
+  de source (lien vers la source compl\`ete en annexe).}\label{tab:hypotheses-sourcees}\\
+  \toprule
+  \rowcolor[gray]{0.9}
+  \textbf{Hypoth\`ese} & \textbf{Valeur retenue} & \textbf{Section} & \textbf{Source} \\
+  \midrule
+  \endfirsthead
+  \toprule
+  \rowcolor[gray]{0.9}
+  \textbf{Hypoth\`ese} & \textbf{Valeur retenue} & \textbf{Section} & \textbf{Source} \\
+  \midrule
+  \endhead
+  \bottomrule
+  \endlastfoot
+  \tabellenkoerper{data/tab_hypotheses_sources}
+\end{longtable}}
+
+% Phrase liee aux donnees actuelles (a relire si quellen.json change): les sources
+% secondaires sont einstiegsgehalt_brutto, gehaltssteigerung_real, etf_welt_rendite_div.
+Ce tableau montre que l'essentiel du calcul repose sur des textes de loi et des publications
+officielles de 2026~; les \NombreHypothesesSecondaires{} sources secondaires portent sur le salaire
+d'entr\'ee, sa progression et le rendement de distribution de l'ETF monde, des valeurs dont la
+section~\ref{sec:annexe-lacunes} explique l'origine. Ces valeurs sont fig\'ees \`a leur niveau de 2026 pendant tout le plan, comme le pose
+l'hypoth\`ese d'ouverture du chapitre~\ref{sec:fiscalite}.
+
+Le reste du mod\`ele repose sur des conventions propres \`a ce document, qu'aucune source ne fixe. Le
+tableau~\ref{tab:conventions-modele} les r\'eunit, avec les deux \'ecarts assum\'es au plan de d\'epart~:
+le rendement r\'eel du march\'e pris comme moyenne g\'eom\'etrique et non comme m\'ediane, et le
+formulaire W-8BEN suppos\'e d\'epos\'e.
+
+\begin{table}[!tb]
+  \centering\small
+  \caption{Conventions du mod\`ele, non sourc\'ees, avec la section qui les introduit (euros de
+  2026).}\label{tab:conventions-modele}
+  \begin{tabularx}{\linewidth}{>{\bfseries\raggedright\arraybackslash}p{0.3\linewidth}
+    >{\raggedright\arraybackslash}X >{\centering\arraybackslash}p{0.09\linewidth}}
+    \toprule
+    \rowcolor[gray]{0.9}
+    \textbf{Convention} & \textbf{Valeur retenue} & \textbf{Section} \\
+    \midrule
+    \tabellenkoerper{data/tab_hypotheses_modele}
+    \bottomrule
+  \end{tabularx}
+\end{table}
+
+Ce tableau montre les choix qui p\`esent le plus sur la date de ton d\'epart~: la cible, le taux
+d'\'epargne, le rendement r\'eel du march\'e et la croissance du dividende de l'ETF maison. La
+derni\`ere est l'hypoth\`ese la plus favorable du plan, puisqu'elle d\'epasse nettement la croissance
+pass\'ee du dividende de l'indice am\'ericain (section~\ref{sec:risques-histoire}). Chaque convention
+se modifie en un seul endroit du script de calcul, et le document se recalcule en entier.
+
+\subsection{Donn\'ees non disponibles}\label{sec:annexe-lacunes}
+
+Plusieurs donn\'ees ont \'et\'e cherch\'ees sans \^etre trouv\'ees sous la forme voulue~; le journal
+d\'etaill\'e des recherches est le fichier \texttt{LUECKEN.md} du projet. Pour quatre valeurs, un
+repli document\'e remplace la source id\'eale. Le texte du courrier du minist\`ere des
+Finances qui fixe le Basiszins de 2026 n'a pas pu \^etre lu directement~; sa valeur de \Basiszins~\%
+est confirm\'ee par deux comptes rendus ind\'ependants du m\^eme courrier. Aucune grille de salaire
+propre \`a Jungheinrich ou \`a la convention collective de la m\'etallurgie n'a \'et\'e trouv\'ee pour un
+ing\'enieur dipl\^om\'e en 2026~: le salaire d'entr\'ee de \GehaltBrutEntree~€ est la m\'ediane d'un
+rapport de salaires priv\'e, et sa progression r\'eelle de \GehaltWachstum~\% par an est d\'eduite
+d'une comparaison entre niveaux d'exp\'erience, pas d'une carri\`ere observ\'ee. La table officielle des
+retenues \`a la source imputables est celle de 2025, l'\'edition de 2026 n'\'etant pas encore parue~;
+les taux ne changent qu'avec les conventions fiscales. Enfin, le plus grand ETF monde est capitalisant
+et ne publie aucun rendement de distribution~: le plan garde un repli de \RenditeDivEtf~\%, alors que
+la part distribuante consult\'ee affichait moins (section~\ref{sec:capital-methode}).
+
+Deux points restent \`a trancher. Pour l'inflation allemande de \InflationPicAnnee, Destatis annon\c{c}ait
+d'abord \InflationPicProvisoire~\%, puis ses communiqu\'es ult\'erieurs citent \InflationPicRevisee~\%,
+vraisemblablement apr\`es un changement d'ann\'ee de base de l'indice des prix~; le
+chapitre~\ref{sec:risques} cite les deux et sa figure suit la s\'erie r\'evis\'ee. Par ailleurs,
+plusieurs r\`egles sont employ\'ees sans entr\'ee sourc\'ee dans le fichier de donn\'ees~: les taux de
+\KistAcht{} et \KistNeun~\% de l'imp\^ot d'\'Eglise, l'imputation des retenues et la d\'eduction des
+cotisations dans la G\"unstigerpr\"ufung, le forfait de frais professionnels du salaire net et la table
+brut-net du contr\^ole de salaire, cit\'ee en note manuelle. Elles sont signal\'ees \`a leur place et
+restent \`a sourcer.
+
+La litt\'erature acad\'emique pr\'evue au chapitre~\ref{sec:presse} n'a pas pu \^etre v\'erifi\'ee. La
+base Scopus est rest\'ee inaccessible, faute de cl\'e d'acc\`es et de r\'eseau universitaire, et
+l'interface publique de Semantic Scholar a refus\'e presque toutes les requ\^etes lors de deux essais
+le 30~septembre~2026, les rares r\'eponses \'etant hors sujet. Aucune \'etude n'est donc cit\'ee, et
+aucune ne l'est de m\'emoire~; la section~\ref{sec:annexe-references} en tient compte. C\^ot\'e presse,
+Finanztest et le Handelsblatt n'ont livr\'e qu'une page de navigation ou un court chapeau derri\`ere
+leur acc\`es payant, un troisi\`eme magazine \'etait ferm\'e \`a l'outil de recherche et un blog
+sp\'ecialis\'e n'a pas pu \^etre joint~; deux blogs de la communaut\'e FIRE les remplacent en partie.
+
+Le portefeuille-exemple compte \NombreTitres{} titres et non les \NombreTitresVise{} pr\'evus~: les
+r\`egles de s\'election n'en laissent pas passer davantage, m\^eme rel\^ach\'ees une \`a une, et le
+document garde les r\`egles plut\^ot que le nombre rond (section~\ref{sec:porte-methode}). Les donn\'ees
+conserv\'ees ne disent pas quel crit\`ere a \'ecart\'e chacun des \TitresEcartesFin{} titres rejet\'es
+au dernier filtre. Le nom d'une soci\'et\'e arrivait tronqu\'e des donn\'ees de march\'e~; le calcul le
+coupe proprement \`a la premi\`ere virgule plut\^ot que de le compl\'eter de m\'emoire.
+
+Certains leviers, enfin, ne sont pas mod\'elis\'es, et ce choix est d\'elib\'er\'e. La
+G\"unstigerpr\"ufung vaudrait environ \GuenstigerEconomieMois~€ par mois \`a la retraite, mais le plan
+garde le taux forfaitaire~: ses capitaux sont prudents sur ce point
+(section~\ref{sec:fisc-guenstiger}). La rente l\'egale n'est pas d\'eduite de la cible, l'imp\^ot et
+l'assurance maladie des retrait\'es ne sont pas calcul\'es, et aucun frais de gestion ou de courtage
+n'est compt\'e (chapitre~\ref{sec:retraite}). Les simulations historiques ne portent que sur le
+march\'e am\'ericain, et le cas d'un capital de d\'epart enti\`erement plac\'e en r\'eserve d'urgence
+n'est pas recalcul\'e (section~\ref{sec:plan-premiers}).
+
+\subsection{Hors p\'erim\`etre}\label{sec:annexe-perimetre}
+
+Startups (Companisto), trading intraday et paris sur titres isol\'es~: hors p\'erim\`etre, aucun calcul.
+
+\subsection{Sources}\label{sec:annexe-sources}
+
+Les sources sont class\'ees en deux listes, chaque entr\'ee portant l'identifiant employ\'e par le
+calcul, l'adresse compl\`ete et la date de consultation~; les notes de bas de page n'en affichent que
+le domaine. La premi\`ere liste r\'eunit les textes de loi, les publications officielles et les donn\'ees
+de march\'e, avec, pour certaines, la remarque laiss\'ee lors de la collecte~; la seconde r\'eunit les
+articles de presse du chapitre~\ref{sec:presse}, consult\'es le \PresseDateConsultation.
+
+% Coupure des URL longues des deux listes: url.sty ne coupe par defaut qu'apres "/" et
+% ".", et les adresses de ces listes contiennent de longs segments avec "_" ou "-"
+% (Overfull jusqu'a 360 pt constate). \AnnexeCoupuresUrl autorise la coupure apres
+% chaque lettre, "_" et "-", localement dans le groupe de chaque liste (preambule
+% inchange, notes de bas de page non concernees: elles n'affichent que le domaine).
+\newcommand{\AnnexeCoupuresUrl}{%
+  \def\UrlBreaks{\do\.\do\/\do\_\do\-\do\=\do\?\do\&%
+    \do\a\do\b\do\c\do\d\do\e\do\f\do\g\do\h\do\i\do\j\do\k\do\l\do\m\do\n\do\o\do\p\do\q\do\r\do\s\do\t\do\u\do\v\do\w\do\x\do\y\do\z%
+    \do\A\do\B\do\C\do\D\do\E\do\F\do\G\do\H\do\I\do\J\do\K\do\L\do\M\do\N\do\O\do\P\do\Q\do\R\do\S\do\T\do\U\do\V\do\W\do\X\do\Y\do\Z}%
+  \Urlmuskip=0mu plus 1mu\relax}
+
+\subsubsection{Sources officielles, donn\'ees et r\'ef\'erences secondaires}\label{sec:annexe-sources-officielles}
+
+{\small\raggedright\AnnexeCoupuresUrl\input{data/quellen_annexe}\par}
+
+\subsubsection{Presse sp\'ecialis\'ee}\label{sec:annexe-sources-presse}
+
+{\small\raggedright\AnnexeCoupuresUrl\input{data/presse_annexe}\par}
+
+\ifnum\NombreReferencesAcademiques>0
+  % Au moins une reference verifiee dans data/literatur.bib: bibliographie composee comme
+  % sous-section non numerotee de l'annexe (option KOMA "leveldown").
+  \KOMAoptions{bibliography=leveldown}
+  \phantomsection\label{sec:annexe-references}
+  \bibliographystyle{plain}
+  \bibliography{data/literatur}
+\else
+  \subsection{R\'ef\'erences acad\'emiques}\label{sec:annexe-references}
+
+  Aucune r\'ef\'erence acad\'emique n'a pu \^etre v\'erifi\'ee pour cette version du document (voir la
+  section~\ref{sec:annexe-lacunes})~; cette liste reste donc vide plut\^ot que de citer une \'etude de
+  m\'emoire. Elle se remplira d'elle-m\^eme d\`es que des r\'ef\'erences v\'erifi\'ees seront ajout\'ees
+  au fichier bibliographique du projet.
+\fi

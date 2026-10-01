@@ -1,0 +1,252 @@
+% ===================================================================
+% preamble.tex - Preambule du rapport "Retraite par les dividendes"
+% Reprise de Business_Analysen/Neste/preamble.tex (tache 10, passage
+% infrastructure): langue francaise, macros specifiques a Neste retirees
+% (kurzGB*, tag*, tableaux et figure Neste), mecanique de citation
+% generique conservee (\Q, \QL, \QR, \QI, \QW), macros de figure pgfplots
+% et de citation par cle JSON (\QH, \QP) ajoutees pour ce projet.
+% ===================================================================
+\usepackage[T1]{fontenc}
+\usepackage[utf8]{inputenc}
+\usepackage{lmodern}
+\usepackage[french]{babel}
+% babel-french rend « : ; ! ? » actifs (espace fine automatique avant ces
+% signes) - casse la syntaxe TikZ/pgfplots, qui utilise ";" comme
+% terminateur de commande (\addplot ... ;) et ":" dans plusieurs cles.
+% Desactive globalement (perte de l'espace fine automatique devant ces
+% quatre signes en prose, negligeable ici). DOIT passer par
+% \AtBeginDocument: un \shorthandoff{} place directement ici, avant
+% \begin{document}, est silencieusement annule par le \selectlanguage{french}
+% que babel declenche a \begin{document} (bascule de langue, pas au
+% chargement du paquet) - piege confirme par un test de compilation reel de
+% \linienfigur/\balkenfigur sur deux CSV (tache 10): un \shorthandoff{} nu
+% ici laisse pdflatex echouer avec "Runaway argument? File ended while
+% scanning use of \pgfplots@addplotimpl@table@fromfile" des le premier
+% \addplot table{...} employe DANS une macro (\newcommand), alors que le
+% meme code tape directement dans le corps du document compile; place apres
+% \begin{document} (ou via \AtBeginDocument, meme effet, ordre des hooks),
+% le \shorthandoff{} tient et les deux macros de figure compilent.
+\AtBeginDocument{\shorthandoff{:;!?}}
+\usepackage{csquotes}
+% patch sans "footnote": microtype ne peut pas poser son patch de note de
+% bas de page si footmisc (para) a deja remplace l'appareil de notes.
+\usepackage[patch={item,toc,eqnum}]{microtype}
+\usepackage{xcolor}
+\usepackage{amsmath}
+\usepackage{amssymb}
+\usepackage{booktabs}
+\usepackage{longtable}
+\usepackage{array}
+% \rowcolor[gray]{0.9} pour la ligne d'en-tete des tableaux (regle des flottants:
+% premiere ligne grisee a 10 %). Charge apres array, dont il etend les colonnes.
+\usepackage{colortbl}
+\usepackage{tabularx}
+\usepackage{siunitx}
+\usepackage{graphicx}
+\usepackage{tikz}
+\usepackage{placeins}
+\usepackage{needspace}
+\usepackage{pgfplots}
+\usepackage{pgfplotstable}
+\usepackage[hidelinks]{hyperref}
+\usepackage{url}
+% xparse: argument optionnel des macros de figure (\linienfigur, \balkenfigur),
+% correctif infrastructure tache 10 - voir plus bas.
+\usepackage{xparse}
+
+\areaset[current]{463.07pt}{636.6pt}
+
+% Interdire veuves et orphelins (regle typographique heritee des rapports
+% precedents, valable aussi en francais).
+\clubpenalty=10000
+\widowpenalty=10000
+\displaywidowpenalty=10000
+
+% Appareil de notes de bas de page a plat: toutes les notes d'une page dans
+% un seul paragraphe continu. Le mode a deux colonnes (dblfnote) boucle avec
+% pgfplots et hyperref dans la routine de sortie (heritee des rapports
+% precedents).
+\usepackage[para]{footmisc}
+
+\usepackage[automark]{scrlayer-scrpage}
+\pagestyle{scrheadings}
+\renewcommand{\sectionmark}[1]{\markright{\thesection\quad #1}}
+\clearpairofpagestyles
+\setkomafont{pagehead}{\normalfont\small}
+\ihead{\rightmark}
+\ohead{Retraite par les dividendes}
+\KOMAoptions{headsepline=true}
+\cfoot*{\pagemark}
+
+\setcounter{tocdepth}{2}
+
+\pgfplotsset{compat=1.18}
+% Pas de usepgfplotslibrary{dateplot}: tous les CSV de figures de ce projet
+% portent une colonne "jahr" (annee entiere), jamais une date ISO; la
+% bibliotheque dateplot n'a donc aucun usage ici (decision tache 10).
+\pgfplotsset{/pgf/number format/use comma, /pgf/number format/1000 sep={\,}}
+% Separateur de colonne par defaut pour toute lecture de table pgfplots
+% (\addplot table[...] et \pgfplotstableread).
+\pgfplotsset{table/col sep=comma}
+
+% --- Format des nombres: virgule decimale francaise ----------------------
+\sisetup{
+  output-decimal-marker = {,},
+  group-separator       = {\,},
+  group-minimum-digits  = 4,
+  % Sans group-digits=integer, siunitx groupe aussi les decimales:
+  % 43.4679 deviendrait "43,467\,9" au lieu de "43,4679".
+  group-digits          = integer,
+  detect-weight         = true,
+  detect-family         = true
+}
+
+% =====================================================================
+% Figures pgfplots: style commun et deux macros generiques.
+% pgfplots 1.18.1 est installee sur cette machine (verifie via
+% kpsewhich/pgfplots.revision.tex). La cle "symbolic x coords from table"
+% suggeree par le brief de la tache 10 N'EXISTE PAS dans cette version
+% (absente de pgfplots.code.tex, verifie par grep; ni dans aucune version
+% documentee de pgfplots - vraisemblablement une confusion avec
+% "xticklabels from table", qui existe bel et bien). \balkenfigur utilise
+% donc directement le REPLI que le brief prevoit pour ce cas: lire le CSV
+% avec \pgfplotstableread, positionner les barres par index de ligne
+% (x expr=\coordindex) et poser les etiquettes de graduation avec
+% "xticklabels from table". Confirme par une compilation reelle sur
+% data/fig_laender.csv (tache 10, voir aussi task-10-report.md).
+% =====================================================================
+\pgfplotsset{retraite/.style={
+  width=\linewidth, height=6cm, grid=major, grid style={gray!20},
+  tick label style={font=\footnotesize}, label style={font=\footnotesize},
+  legend style={font=\footnotesize, draw=none, fill=none},
+  /pgf/number format/use comma, /pgf/number format/1000 sep={\,}}}
+
+% \linienfigur{fichier}[cles pgfplots]{colonne x}{liste colonnes y}{liste legende}{caption+label}
+% fichier: nom du CSV dans data/ (sans extension). colonne x: nom de colonne.
+% liste colonnes y et liste legende: listes separees par des virgules, dans
+% le MEME ORDRE (ex. {brutto,netto}{Brut,Net}). caption+label: texte de
+% \caption, \label{fig:...} a la fin (convention code-style.md), ex.
+% "Salaire brut et net simule au fil des annees.\label{fig:salaire}".
+%
+% [cles pgfplots] (correctif infrastructure, tache 10, ARGUMENT OPTIONNEL,
+% retro-compatible: un appel a 5 arguments obligatoires comme avant, sans
+% [...], continue de compiler a l'identique): liste de cles pgfplots
+% standard, ex. [xlabel={Ann\'ee}, ylabel={Cible mensuelle (euros nominaux)}].
+% Appliquees APRES le style "retraite" et apres le xlabel par defaut
+% (#2, nom brut de colonne), donc une cle repetee ici l'emporte - remplace
+% le contournement "{\pgfplotsset{every axis post/.append style={...}}}
+% \linienfigur{...}}" utilise par les chapitres 2-3 avant ce correctif.
+% Place APRES {fichier} (pas avant, malgre la convention LaTeX habituelle du
+% "\sqrt[n]{x}"): {fichier} reste ainsi colle au nom de macro sur la MEME
+% ligne source meme quand le bloc d'options s'etend sur plusieurs lignes,
+% ce dont depend scripts/check_literals.py (l'exemption du nom de CSV, qui
+% contient souvent un nombre, ex. fig_x_250, marche ligne par ligne).
+\NewDocumentCommand{\linienfigur}{m O{} m m m m}{%
+\begin{figure}[htbp]\centering\begin{tikzpicture}\begin{axis}[retraite, xlabel={#3}, #2]
+\foreach \y in {#4}{\addplot+[thick, mark=none] table[x=#3, y=\y, col sep=comma]{data/#1.csv};}
+\legend{#5}\end{axis}\end{tikzpicture}\caption{#6}\end{figure}}
+
+% \balkenfigur{fichier}[cles pgfplots]{colonne x (etiquettes)}{colonne y}{caption+label}
+% fichier/colonne x/colonne y/caption+label: memes conventions que
+% \linienfigur. Barres positionnees par index de ligne (x expr=\coordindex,
+% axe numerique). [cles pgfplots]: meme argument optionnel que \linienfigur
+% (ex. [ylabel={Montant annuel (euros de 2026)}, bar width=22pt]), place
+% APRES {fichier} pour la meme raison (voir commentaire de \linienfigur).
+%
+% Etiquettes de graduation (correctif infrastructure, tache 10): posees par
+% "xticklabels from table" (repli du brief, la cle "symbolic x coords from
+% table" n'existant pas dans pgfplots 1.18.1, voir commentaire au-dessus) sur
+% la colonne "#3_disp", PAS #3 directement. #3_disp est ecrite par
+% scripts/rechnung_retraite.py (schreiben()) pour toute colonne texte: son
+% contenu est echappe pour LaTeX (escapieren()), de sorte qu'une valeur de
+% colonne contenant un underscore (ex. "brut_necessaire", "capital_10000")
+% compile toujours SANS INTERVENTION DE LA REDACTION (l'underscore, catcode 8
+% hors mode mathematique, ferait planter LaTeX si on le lisait tel quel).
+% Pour des etiquettes plus lisibles que la colonne brute echappee (ex.
+% "Dividende brut" plutot que "brut\_necessaire"), passer une cle
+% "xticklabels={...}" explicite dans [cles pgfplots]: appliquee APRES la
+% valeur par defaut ci-dessous, elle la remplace (meme mecanique que pour
+% \linienfigur) - c'est la voie normale pour les etiquettes en prose.
+\NewDocumentCommand{\balkenfigur}{m O{} m m m}{%
+\begin{figure}[htbp]\centering\begin{tikzpicture}
+\pgfplotstableread{data/#1.csv}\balkendaten
+\begin{axis}[retraite, ybar, xtick=data,
+  xticklabels from table={\balkendaten}{#3_disp},
+  x tick label style={rotate=35, anchor=east}, #2]
+\addplot table[x expr=\coordindex, y=#4]{\balkendaten};\end{axis}\end{tikzpicture}
+\caption{#5}\end{figure}}
+
+% --- Citation de documents (mecanique generique, conservee de Neste) -----
+% \Q{Dokument}{Seite}: note avec titre court (saut vers le repertoire des
+% sources) et page IMPRIMEE. Le titre court \kurz<Dokument> doit etre
+% defini par qui appelle \Q (aucun \kurz* predefini ici: ce projet source
+% l'essentiel de ses valeurs via data/quellen.json et \QH, voir plus bas;
+% \Q reste disponible pour une citation ponctuelle d'un document de refs/
+% sans entree quellen.json, par exemple le classeur Shiller).
+% \QL{Schluessel}{Dokument}{Seite}: note avec marque; \QR{Schluessel}: la
+% MEME note re-referencee (seulement si meme page imprimee, verifie par
+% scripts/check_footnote_groups.py). \QI: reference dans le texte, pour une
+% cellule de tableau ou une note de bas de page se perdrait dans un flottant.
+\definecolor{quellenlink}{RGB}{20,60,120}
+\newcommand{\quellensprung}[2]{\hyperref[#1]{\textcolor{quellenlink}{#2}}}
+\newcommand{\Q}[2]{\footnote{\quellensprung{quelle:#1}{\csname kurz#1\endcsname}, p.~#2.}}
+\newcommand{\QL}[3]{\footnote{\label{fn:#1}\quellensprung{quelle:#2}{\csname kurz#2\endcsname}, p.~#3.}}
+\newcommand{\QR}[1]{\textsuperscript{\ref{fn:#1}}}
+\newcommand{\QI}[2]{{\scriptsize[\csname tag#1\endcsname\ p.\,#2]}}
+\newcommand{\QW}[3]{\footnote{\quellensprung{#2}{#1} (consult\'e le #3).}}
+
+% --- Citation par cle JSON (data/quellen.json, data/presse.json) ---------
+% \QH{cle}: note de bas de page complete (titre/organisme, reference ou
+% page si presente, URL, date de consultation) pour une entree de
+% data/quellen.json. Generee par scripts/rechnung_retraite.py
+% (quellen_tex()) dans data/quellen.tex (macro \QHfn@<cle>, \input dans
+% analyse.tex) et data/quellen_annexe.tex (liste labellisee
+% \label{src:<cle>}, destinee a l'annexe "Sources"). Usage:
+%   Le taux reduit est de \KvSatzReduit~\%\QH{kv_satz_ermaessigt}.
+% \QHtexte{cle} donne seulement le texte de la note (sans \footnote), pour
+% ancrer soi-meme une citation qui revient sur la meme page imprimee:
+%   \footnote{\label{fn:monancre}\QHtexte{cle}} ... plus loin ... \QR{monancre}
+% (verifie alors par scripts/check_footnote_groups.py comme un \QL/\QR).
+\newcommand{\QHtexte}[1]{\csname QHfn@#1\endcsname}
+\newcommand{\QH}[1]{\footnote{\QHtexte{#1}}}
+% \QP{id}: meme mecanique pour une source de presse (data/presse.json),
+% dedupliquee par id de source (plusieurs citations du tableau
+% data/tab_presse.tex, chapitre 9, peuvent partager le meme id). Le corps
+% de note reprend quelle/titel/url/abgerufen, jamais la citation elle-meme
+% (celle-ci reste dans le tableau, pas dans la note).
+\newcommand{\QPtexte}[1]{\csname QPfn@#1\endcsname}
+\newcommand{\QP}[1]{\footnote{\QPtexte{#1}}}
+
+% --- Unites: les macros de data/kennzahlen.tex sont deja mises en forme --
+\newcommand{\Mio}[2]{#1\,Mio.\,#2}
+\newcommand{\je}[2]{#1\,#2}
+\newcommand{\Pz}[1]{#1\,\%}
+
+% --- Trois couleurs, trois responsabilites --------------------------------
+% Noir: faits et calculs sources. Bleu: appreciation du redacteur.
+% Rouge: verdict/recommandation.
+\definecolor{vdrot}{RGB}{155,25,30}
+\newcommand{\vd}[1]{{\color{vdrot}#1}}
+\definecolor{bkblau}{RGB}{20,60,150}
+\newcommand{\bk}[1]{{\color{bkblau}#1}}
+
+% --- Corps de tableau genere, sans \relax accroche ------------------------
+\makeatletter
+\newcommand{\tabellenkoerper}[1]{\@@input #1.tex }
+\makeatother
+
+\newcommand{\annahme}[1]{%
+  \par\medskip\noindent\fbox{\parbox{0.97\linewidth}{\small\textbf{Hypoth\`ese~:} #1}}\par\medskip}
+
+% --- Encadre "Yann en <annee>": un exemple chiffre par chapitre ----------
+% \Yannbox{annee}{texte}: annee est TOUJOURS une macro (ex. \AnneeYannBasis),
+% jamais un chiffre tape a la main (regle du depot, verifiee par
+% scripts/check_literals.py, les annees restant autorisees telles quelles);
+% texte ne doit lui aussi contenir que des macros de data/kennzahlen.tex et
+% des annees.
+\definecolor{yanncadre}{RGB}{20,110,80}
+\newcommand{\Yannbox}[2]{%
+  \par\medskip\noindent
+  {\color{yanncadre}\rule{0.97\linewidth}{0.6pt}}\par\nobreak
+  \noindent\parbox{0.97\linewidth}{\small\textbf{\color{yanncadre}Yann en #1.} #2}%
+  \par\nobreak\noindent{\color{yanncadre}\rule{0.97\linewidth}{0.6pt}}\par\medskip}

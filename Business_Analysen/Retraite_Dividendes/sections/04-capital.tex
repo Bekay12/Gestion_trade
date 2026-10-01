@@ -1,0 +1,158 @@
+\section{Combien de capital faut-il~?}\label{sec:capital}
+% Chapitre 4 (tache 10, passage chapitres 04-05). Figures: fig_kapital_rendite,
+% fig_div_vs_4 (voir docs/figures.md). Aucun chiffre tape: macros de
+% data/kennzahlen.tex, generees par scripts/rechnung_retraite.py (kapitel_4).
+% Controle croise (specification, section 8): le capital requis de la
+% strategie de base est \KapitalMaisonSiebzig et celui de la reference
+% \KapitalEtfReferenz, les memes macros que le resume reprendra; ce chapitre ne
+% les recalcule jamais. Titres d'axes, echelle en millions (y filter) et
+% pourcentages (x filter) passes par l'argument optionnel des macros de figure.
+
+Ce chapitre r\'epond \`a la question~: quel capital, en euros de 2026, faut-il avoir r\'euni le jour
+du d\'epart pour qu'il te reste \ZielMonat~€ par mois apr\`es retenues, imp\^ot et assurance maladie~?
+Le chapitre~\ref{sec:fiscalite} a donn\'e ce qu'il reste de cent euros de dividende selon leur
+provenance~; il suffit maintenant de remonter du revenu net au capital. La
+section~\ref{sec:capital-methode} pose le calcul, la section~\ref{sec:capital-rendement} montre qu'il
+d\'epend d'abord du rendement du dividende, et la section~\ref{sec:capital-regle} compare la strat\'egie
+des dividendes seuls avec un retrait de \TauxRetrait~\% par an sur un ETF monde.
+
+\subsection{Du revenu net au capital}\label{sec:capital-methode}
+
+Deux fa\c{c}ons de vivre de son capital sont compar\'ees. Dans la premi\`ere, qui est la th\`ese de ce
+plan, tu ne vends jamais rien et tu vis des dividendes vers\'es par ton ETF maison et, selon la
+r\'epartition, par un ETF monde distribuant. Dans la seconde, la r\'ef\'erence, tu d\'etiens un ETF
+monde capitalisant et tu vends chaque ann\'ee des parts pour \TauxRetrait~\% de la valeur du
+portefeuille, la \enquote{r\`egle des \TauxRetrait~\%} que la presse sp\'ecialis\'ee pr\'esente comme
+une formule empirique de retrait durable\QP{boerseonline_fire_traum}.
+
+\annahme{Rendement brut du dividende de \RenditeDivMaison~\% pour l'ETF maison (m\'ediane du
+portefeuille-exemple du chapitre~\ref{sec:portefeuille}) et de \RenditeDivEtf~\% pour l'ETF monde
+distribuant\QH{etf_welt_rendite_div}. Cette seconde valeur est un repli~: le plus grand ETF monde est
+capitalisant et ne publie aucun rendement de distribution, et la part distribuante consult\'ee affiche
+moins. Si le vrai rendement est plus bas, les r\'epartitions qui gardent une part d'ETF demandent
+encore plus de capital que ce qui suit.}
+
+\annahme{R\`egles fiscales et sociales de 2026, appliqu\'ees \`a leur niveau de 2026 et sans dimension
+temporelle~: le capital de ce chapitre est celui qu'il faudrait si tu partais aujourd'hui. Imp\^ot au
+taux forfaitaire, sans la G\"unstigerpr\"ufung de la section~\ref{sec:fisc-guenstiger}, ce qui rend
+ces montants prudents. Les seuils de l'assurance maladie \'etant tenus constants en euros de 2026
+(chapitre~\ref{sec:fiscalite}), ce capital vaut aussi pour un d\'epart lointain, \`a l'\'erosion du
+forfait d'\'epargnant pr\`es, n\'egligeable \`a ce niveau de revenu. Pour la r\'ef\'erence, tout le retrait est trait\'e comme une plus-value
+imposable, cas le plus d\'efavorable, avec l'exon\'eration partielle des ETF sur l'imp\^ot et sur
+l'assiette de la cotisation maladie.}
+
+Pour une strat\'egie de dividendes, le capital n\'ecessaire s'obtient par
+l'\'equation~\eqref{eq:capital-dividendes-brut}, qui divise le dividende brut annuel dont tu as besoin
+par le rendement brut moyen du portefeuille.
+\begin{equation}
+  K = \frac{B}{m\,r_M + (1-m)\,r_E} \text{,} \label{eq:capital-dividendes-brut}
+\end{equation}
+o\`u $K$ est le capital en euros de 2026, $B$ le dividende brut annuel qui laisse \ZielJahr~€ apr\`es
+retenues, imp\^ot et cotisations, $m$ la part du capital plac\'ee dans l'ETF maison, $r_M$ le rendement
+brut de l'ETF maison et $r_E$ celui de l'ETF monde distribuant. Le brut $B$ d\'epend lui-m\^eme de
+$m$, puisque l'ETF est moins impos\'e qu'une action d\'etenue en direct~; le mod\`ele r\'esout donc les
+deux ensemble. Pour un portefeuille enti\`erement en maison, $B$ est le brut de la cascade du
+chapitre~\ref{sec:depart}, \BruttoNoetig~€, ce qui donne \KapitalMaisonHundert~€.
+
+Pour la r\'ef\'erence, l'\'equation~\eqref{eq:capital-retrait-etf} remplace le rendement du dividende
+par le taux de retrait.
+\begin{equation}
+  K = \frac{W}{\tau} \text{,} \label{eq:capital-retrait-etf}
+\end{equation}
+o\`u $W$ est le retrait brut annuel qui laisse \ZielJahr~€ apr\`es imp\^ot et cotisations, soit
+\RetraitBrutEtf~€, et $\tau$ le taux de retrait de \TauxRetrait~\%. Le capital de la r\'ef\'erence vaut
+ainsi \KapitalEtfReferenz~€. Les deux \'equations ont la m\^eme forme~; ce qui les s\'epare, c'est que
+$\tau$ est nettement plus \'elev\'e que les rendements $r_M$ et $r_E$, et que l'ETF est moins
+impos\'e.
+
+\subsection{Le rendement du dividende d\'ecide de tout}\label{sec:capital-rendement}
+
+L'\'equation~\eqref{eq:capital-dividendes-brut} montre que le capital varie comme l'inverse du
+rendement. La figure~\ref{fig:capital-selon-rendement} fait varier le rendement brut de l'ETF maison
+de \RenditeGrilleBas~\% \`a \RenditeGrilleHaut~\%, le rendement de l'ETF monde restant fix\'e \`a
+\RenditeDivEtf~\%.
+
+\linienfigur{fig_kapital_rendite}[xlabel={Rendement brut du dividende de l'ETF maison (\%)},
+  ylabel={Capital requis (millions d'euros de 2026)},
+  x filter/.expression={x*1e2}, y filter/.expression={y/1e6}, xtick=data,
+  legend pos=north east, legend cell align=left, legend style={fill=white}]%
+  {rendite}{maison50,maison70,\ColonneToutMaison}%
+  {{Moiti\'e en maison},{70~\% en maison},{Tout en maison}}%
+  {Capital requis pour \ZielMonat~€ nets par mois de dividendes seuls, selon le rendement brut de
+  l'ETF maison, pour trois r\'epartitions entre ETF maison et ETF monde distribuant (r\`egles de 2026,
+  euros de 2026).\label{fig:capital-selon-rendement}}
+
+Ce graphique montre que, pour un portefeuille enti\`erement en maison, le capital requis passe de
+\KapitalMaisonHundertRenditeBas~€ \`a un rendement de \RenditeGrilleBas~\% \`a
+\KapitalMaisonHundertRenditeHaut~€ \`a \RenditeGrilleHaut~\%~: tripler le rendement divise presque le
+capital par trois. Au bas de la grille, les trois courbes se rejoignent, car l'ETF monde, moins
+impos\'e, compense alors un rendement \`a peine plus faible. Plus le rendement de l'ETF maison
+monte, plus la part en maison r\'eduit le capital.
+
+Il faut lire cette figure avec prudence. Un rendement \'elev\'e n'\'economise du capital que s'il dure~:
+le chapitre~\ref{sec:risques} montre que des dividendes ont d\'ej\`a baiss\'e fortement pendant des crises, et un
+rendement tr\`es sup\'erieur \`a celui du march\'e signale souvent un dividende que le march\'e juge
+fragile. Pour que le portefeuille enti\`erement en maison demande le m\^eme capital que la r\'ef\'erence,
+il faudrait un rendement brut durable d'environ \RenditeEquilibreEtf~\%, contre \RenditeDivMaison~\%
+pour le portefeuille-exemple.
+
+\subsection{Dividendes seuls contre r\`egle des \TauxRetrait~\%}\label{sec:capital-regle}
+
+La figure~\ref{fig:dividendes-contre-retrait} r\'eunit les quatre strat\'egies au rendement de
+r\'ef\'erence~: trois r\'epartitions qui ne vivent que des dividendes, et l'ETF monde avec un retrait
+de \TauxRetrait~\% par an.
+
+% Ordre des etiquettes = ordre des lignes de data/fig_div_vs_4.csv (MaisonFuenfzig,
+% MaisonSiebzig, MaisonHundert, EtfReferenz).
+\balkenfigur{fig_div_vs_4}[ylabel={Capital requis (millions d'euros de 2026)},
+  y filter/.expression={y/1e6}, ymin=0, enlarge y limits={upper, value=0.2}, bar width=24pt,
+  xticklabels={{Moiti\'e en maison},{70~\% en maison},{Tout en maison},{ETF, retrait \TauxRetrait~\%}},
+  nodes near coords, every node near coord/.append style={font=\scriptsize,
+    /pgf/number format/fixed, /pgf/number format/fixed zerofill, /pgf/number format/precision=2}]%
+  {strategie}{kapital}%
+  {Capital requis pour \ZielMonat~€ nets par mois~: dividendes seuls selon la r\'epartition, contre
+  retrait de \TauxRetrait~\% par an sur un ETF monde capitalisant (r\`egles de 2026, euros de
+  2026).\label{fig:dividendes-contre-retrait}}
+
+Ce graphique montre le r\'esultat le moins favorable \`a la th\`ese de ce plan~: vivre des seuls
+dividendes demande beaucoup plus de capital qu'un retrait de \TauxRetrait~\%. La r\'epartition du
+sc\'enario de base, \ReferenzStrategie{} entre ETF maison et ETF monde, exige \KapitalMaisonSiebzig~€, soit \KapitalDifferenzSiebzigEuro~€ ou
+\KapitalDifferenzSiebzigProzent~\% de plus que les \KapitalEtfReferenz~€ de la r\'ef\'erence. M\^eme
+la r\'epartition la plus favorable, tout en maison avec \KapitalMaisonHundert~€, reste
+\KapitalDifferenzProzent~\% au-dessus, et la moiti\'e en maison monte \`a \KapitalMaisonFuenfzig~€.
+Exprim\'e en ann\'ees de d\'epenses, le capital de base repr\'esente \MultipleMaisonSiebzig~fois tes
+\ZielJahr~€ annuels, contre \MultipleEtfReferenz~fois pour la r\'ef\'erence.
+
+L'\'ecart a deux causes, d\'ej\`a visibles dans les \'equations~\eqref{eq:capital-dividendes-brut}
+et~\eqref{eq:capital-retrait-etf}. La premi\`ere est le taux~: un retrait de \TauxRetrait~\% sort
+chaque ann\'ee davantage du portefeuille qu'un dividende de \RenditeDivMaison~\%, parce qu'il puise
+aussi dans la hausse des cours. La seconde est l'imp\^ot~: le chapitre~\ref{sec:fiscalite} a montr\'e
+qu'un euro retir\'e d'un ETF actions co\^ute moins d'imp\^ot et de cotisation maladie qu'un euro de
+dividende d'action d\'etenue en direct.
+
+\bk{Cette comparaison ne dit pas que la r\`egle des \TauxRetrait~\% est sans risque.} Elle vend des
+parts chaque ann\'ee, y compris apr\`es une chute des cours, et c'est une r\`egle empirique, pas une
+garantie. Finanztip, plus prudent, conseille de retirer chaque ann\'ee d'un \`a trois pour cent du
+capital r\'euni au d\'epart en retraite\QP{finanztip_geldanlage}. \`A \TauxRetraitPrudent~\%, la r\'ef\'erence demanderait
+\KapitalEtfPrudent~€, et le portefeuille enti\`erement en maison ne la d\'epasserait plus que de
+\KapitalDifferenzPrudentProzent~\%. L'argument en faveur des dividendes est que le capital reste
+investi et qu'aucune part n'est vendue en pleine crise\QP{justetf_entnahmestrategien}~; l'argument
+contraire, que ce confort est surtout psychologique et se paie en diversification et en
+rendement\QP{finanznachrichten_irrweg}. La section~\ref{sec:retraite-quatre} met ces deux positions \`a
+l'\'epreuve de l'histoire, et le chapitre~\ref{sec:presse} les confronte \`a la presse.
+
+\bk{Retiens de ce chapitre que le capital d\'epend d'abord du rendement du dividende, et que la
+strat\'egie des dividendes seuls co\^ute, \`a revenu net \'egal, \KapitalDifferenzSiebzigEuro~€ de
+capital de plus que la r\'ef\'erence dans la r\'epartition de base.} Le chapitre~\ref{sec:accumulation}
+calcule \`a quel \^age ton \'epargne atteint ce capital, strat\'egie par strat\'egie, et traduit cet
+\'ecart en ann\'ees~: \`a \SparquoteZwanzig~\% d'\'epargne, la r\'ef\'erence atteint l'objectif \`a
+\AlterEtfReferenzZwanzig~ans alors que la r\'epartition de base ne l'atteint jamais dans l'horizon de
+calcul.
+
+\Yannbox{\AnneeYannBasis}{Pour vivre de ses seuls dividendes avec la r\'epartition \ReferenzStrategie{}
+entre ETF maison et ETF monde, Yann doit r\'eunir \KapitalMaisonSiebzig~€ en euros de 2026, soit
+\MultipleMaisonSiebzig~ans de d\'epenses. Avec un ETF monde et un retrait de \TauxRetrait~\% par an,
+\KapitalEtfReferenz~€ suffiraient. En \'epargnant \ReferenzSparquote~\% de son salaire, il franchit
+le premier montant en \AnneeYannBasis, avec \KapitalYannBasis~€, soit \KapitalYannEcartCibleProzent~\%
+\KapitalYannSensCible{} capital requis~: l'objectif se mesure en fin d'ann\'ee, et la derni\`ere
+ann\'ee d'\'epargne fait passer le capital d'un peu moins \`a un peu plus que ce montant.}

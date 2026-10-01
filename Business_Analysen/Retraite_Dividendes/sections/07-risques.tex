@@ -1,0 +1,388 @@
+\section{Ce qui peut mal tourner}\label{sec:risques}
+% Chapitre 7 (tache 10, passage chapitre 07). Figures: fig_shiller_div, fig_einbrueche,
+% fig_rueckspiel (colonnes ans_tenu/ans_echec/ans_non_juge ajoutees par kapitel_7),
+% fig_mc_faecher (colonnes seuil_mc/capital_requis ajoutees par kapitel_7), fig_mc_erfolg,
+% fig_inflation_2022. Tableau tab:projection-contre-simulation ecrit ici. Aucun chiffre
+% tape: macros de data/kennzahlen.tex (kapitel_7 et _macros_redaction_kapitel_7 dans
+% scripts/rechnung_retraite.py). Le seuil de revenu, la longueur des blocs et le nombre
+% de trajectoires sont lus dans scripts/montecarlo.py et scripts/histoire.py.
+% fig_puffer (reserve de 0 a 3 ans) appartient au chapitre 8: ce chapitre ne cite que
+% \ErfolgsquoteBasis et \ErfolgsquoteMitPuffer, issus du MEME calcul.
+
+Ce chapitre r\'epond \`a la question~: que devient ton plan si les dividendes baissent, si les
+march\'es ne livrent pas leur moyenne dans l'ordre esp\'er\'e ou si les prix montent plus vite que
+pr\'evu~? Le chapitre~\ref{sec:portefeuille} s'est conclu sur un ETF maison qui diversifie l'essentiel
+du risque propre \`a chaque titre, mais pas le risque commun \`a tout le march\'e. C'est ce risque
+commun que ce chapitre mesure, en rempla\c{c}ant le rendement constant des chapitres~\ref{sec:capital}
+et~\ref{sec:accumulation} par l'histoire r\'eelle. La section~\ref{sec:risques-histoire} suit le
+dividende r\'eel du march\'e am\'ericain depuis \ShillerDebut{} et le compare \`a l'hypoth\`ese de
+croissance du plan, et la section~\ref{sec:risques-baisses} date ses baisses pendant les crises. La
+section~\ref{sec:risques-modeles} d\'ecrit le mod\`ele simplifi\'e qu'emploient les sections
+suivantes, qu'il ne faut pas confondre avec la projection des chapitres pr\'ec\'edents. Le rejeu de
+l'histoire ann\'ee par ann\'ee (section~\ref{sec:risques-rejeu}), le tirage Monte Carlo
+(section~\ref{sec:risques-montecarlo}) et le choc de la premi\`ere ann\'ee de retraite
+(section~\ref{sec:risques-sequence}) mesurent ensuite la tenue du revenu, puis la
+section~\ref{sec:risques-reserve} chiffre l'effet d'une r\'eserve de liquidit\'es. La
+section~\ref{sec:risques-inflation} traite enfin de l'inflation de 2022.
+
+\subsection{Le dividende r\'eel du march\'e am\'ericain depuis \ShillerDebut}\label{sec:risques-histoire}
+
+La seule s\'erie publique de dividendes qui couvre plus d'un si\`ecle est celle de l'indice
+\IndiceActionsUs{}, tenue par Robert Shiller. La figure~\ref{fig:dividende-reel-indice} en donne le
+dividende annuel, corrig\'e de l'inflation.
+
+\annahme{Donn\'ees mensuelles de Robert Shiller\QH{shiller_url}~: cours, dividende et indice des prix
+am\'ericains de l'\IndiceActionsUs{}, de \ShillerDebut{} \`a \ShillerFin. Le dividende annuel est la
+moyenne des taux annualis\'es publi\'es chaque mois, ramen\'ee aux prix de \ShillerFin{} avec l'indice
+des prix am\'ericain. \textbf{Limite d\'eclar\'ee~: march\'e am\'ericain seul.} Aucune s\'erie aussi
+longue n'existe dans ce document pour l'Allemagne, la France ou ton ETF maison, et tout ce chapitre en
+h\'erite.}
+
+\linienfigur{fig_shiller_div}[xlabel={Ann\'ee},
+  ylabel={Dividende r\'eel (dollars de \ShillerFin{} par unit\'e d'indice)},
+  xticklabel style={/pgf/number format/set thousands separator={}}, ymin=0,
+  legend pos=north west, legend cell align=left, legend style={fill=white}]%
+  {jahr}{div_real}%
+  {{Dividende annuel de l'\IndiceActionsUs}}%
+  {Dividende annuel r\'eel de l'indice \IndiceActionsUs{} de \ShillerDebut{} \`a \ShillerFin, en
+  dollars de \ShillerFin{} par unit\'e d'indice (donn\'ees de Robert Shiller, march\'e am\'ericain
+  seul).\label{fig:dividende-reel-indice}}
+
+Ce graphique montre que le dividende r\'eel de l'indice a \'et\'e multipli\'e par \ShillerDivMultiple{}
+entre \ShillerDebut{} et \ShillerFin, soit une croissance de \ShillerDivCroissance~\% par an au-del\`a
+de l'inflation. Cette progression n'a rien de r\'egulier~: de longs paliers et plusieurs chutes
+s'intercalent entre les phases de hausse, et la section~\ref{sec:risques-baisses} les date. Sur la
+derni\`ere ann\'ee de la s\'erie, \ShillerFin, le dividende r\'eel a encore progress\'e de
+\ShillerDivCroissanceDerniere~\% malgr\'e la pouss\'ee d'inflation am\'ericaine.
+
+Cette croissance historique est \`a comparer \`a celle que suppose le plan. Le mod\`ele des
+chapitres~\ref{sec:capital} \`a~\ref{sec:portefeuille} fait cro\^itre le dividende de l'ETF maison de
+\CroissanceModeleMaison~\% par an en termes r\'eels, ce qui garde son rendement total au niveau du
+march\'e, \RenditeReal~\%. Or, sur la fen\^etre \FenetreMarcheDebut--\FenetreMarcheFin{} qui fixe ce
+rendement, le dividende de l'indice n'a cr\^u que de \ShillerDivCroissanceFenetre~\% par an. Le reste du
+rendement est venu d'une hausse des cours plus rapide que celle des dividendes~: le rendement du
+dividende de l'indice est pass\'e de \ShillerRendementDebutFenetre~\% en \FenetreMarcheDebut{} \`a
+\ShillerRendementFinFenetre~\% en \FenetreMarcheFin. \`A valorisation constante, le rendement total
+d'une action vaut \`a peu pr\`es son rendement du dividende plus la croissance de ce dividende~; avec
+\RenditeDivMaison~\% de rendement et la croissance historique de \ShillerDivCroissanceFenetre~\%, on
+reste loin des \RenditeReal~\% du plan. \bk{Le plan suppose donc que ton dividende croisse
+\CroissanceModeleRapport{} fois plus vite que celui du march\'e am\'ericain depuis
+\FenetreMarcheDebut.} C'est une hypoth\`ese favorable~: si ton dividende ne suit que le rythme pass\'e
+de l'indice, l'objectif s'\'eloigne, et les \^ages du chapitre~\ref{sec:accumulation} reculent.
+
+\subsection{Les baisses pendant les crises}\label{sec:risques-baisses}
+
+Un revenu de dividendes ne s'effondre pas en un jour comme le cours d'une action lors d'un krach, mais
+il peut baisser fortement et longtemps. La figure~\ref{fig:baisses-dividende-crises} recense les
+baisses du dividende r\'eel de l'indice.
+
+\annahme{Une baisse est compt\'ee d\`es que le dividende r\'eel annuel recule d'au moins
+\SeuilBaisseHistorique~\% sous son dernier sommet~; l'\'episode va de l'ann\'ee du sommet \`a celle du
+creux. La baisse est r\'eelle~: elle peut venir d'une coupe du dividende en dollars comme d'une
+inflation plus rapide que lui.}
+
+\balkenfigur{fig_einbrueche}[ylabel={Baisse du dividende r\'eel depuis le sommet (\%)},
+  ymax=0, enlarge y limits={lower, value=0.2}, bar width=18pt,
+  nodes near coords, every node near coord/.append style={font=\scriptsize,
+    /pgf/number format/fixed, /pgf/number format/fixed zerofill, /pgf/number format/precision=1}]%
+  {episode}{rueckgang_prozent}%
+  {Baisses du dividende r\'eel de l'indice \IndiceActionsUs{} d'au moins \SeuilBaisseHistorique~\%
+  sous le sommet pr\'ec\'edent, de \ShillerDebut{} \`a \ShillerFin, par \'episode (ann\'ee du sommet et
+  ann\'ee du creux).\label{fig:baisses-dividende-crises}}
+
+Ce graphique montre \NombreBaisses{} \'episodes de baisse en un si\`ecle et demi. La pire,
+\GroessterEinbruch~\%, court de \GroessterEinbruchDebut{} \`a \GroessterEinbruchJahr, autour de la
+Premi\`ere Guerre mondiale~; la suivante, \BaisseLongue~\%, de \BaisseLongueDebut{} \`a
+\BaisseLongueFin, couvre la Grande D\'epression et la Seconde Guerre mondiale. La crise financi\`ere a
+co\^ut\'e \EinbruchRecent~\% de \EinbruchRecentDebut{} \`a \EinbruchRecentFin. La d\'ecennie
+d'inflation, de \EinbruchInflationDebut{} \`a \EinbruchInflationFin, a co\^ut\'e \EinbruchInflation~\%,
+surtout parce que les prix montaient plus vite que les dividendes.
+
+La profondeur ne dit pas tout~; la dur\'ee compte autant pour qui vit de ce revenu. Apr\`es le sommet
+de \GroessterEinbruchDebut, le dividende r\'eel n'a retrouv\'e son niveau qu'en
+\GroessterEinbruchRetour, \GroessterEinbruchSousSommetAns~ans plus tard. Apr\`es celui de
+\BaisseLongueDebut, il a fallu \BaisseLongueAns~ans, jusqu'en \BaisseLongueRetour. La baisse de
+\EinbruchRecentDebut{} a \'et\'e rattrap\'ee en \EinbruchRecentRetour. Une partie de la presse
+sp\'ecialis\'ee pr\'esente les entreprises qui versent des dividendes comme plus stables en p\'eriode
+de crise\QP{dividende_statt_rente}~; l'histoire de l'indice montre que leur dividende, lui, n'est pas
+\`a l'abri. \bk{Ces baisses sont celles d'un large indice~: un ETF maison de \NombreTitres{} titres peut
+faire pire,} comme l'a montr\'e la suppression du dividende de \BeispielBaisse{} au
+chapitre~\ref{sec:portefeuille}.
+
+\subsection{Deux mod\`eles \`a ne pas confondre}\label{sec:risques-modeles}
+
+Les sections suivantes emploient un autre mod\`ele que la projection des
+chapitres~\ref{sec:capital} et~\ref{sec:accumulation}. Ce mod\`ele est volontairement simple~: il
+rejoue l'histoire du march\'e am\'ericain avec ton plan d'\'epargne, mais sans imp\^ot ni assurance
+maladie, avec un rendement du dividende fixe et une r\`egle de r\'eussite qui lui est propre. Le
+tableau~\ref{tab:projection-contre-simulation} met les deux mod\`eles c\^ote \`a c\^ote.
+
+\begin{table}[!tb]
+  \centering\small
+  \caption{Ce qui distingue la projection des chapitres~\ref{sec:capital} et~\ref{sec:accumulation}
+  du rejeu historique et du Monte Carlo de ce chapitre (euros de 2026).}\label{tab:projection-contre-simulation}
+  \begin{tabularx}{\linewidth}{>{\bfseries\raggedright\arraybackslash}p{0.2\linewidth}
+    *{2}{>{\raggedright\arraybackslash}X}}
+    \toprule
+    \rowcolor[gray]{0.9}
+    \textbf{Param\`etre} & \textbf{Projection (chapitres~\ref{sec:capital} et~\ref{sec:accumulation})}
+      & \textbf{Rejeu et Monte Carlo (ce chapitre)} \\
+    \midrule
+    Rendement du march\'e & Constant, \RenditeReal~\% r\'eel par an (\FenetreMarcheDebut--\FenetreMarcheFin)
+      & Rendements r\'eels annuels de l'\IndiceActionsUs, \ShillerDebut--\ShillerFin{} (moyenne compos\'ee
+      \McRenditeHistorique~\%)~: dans l'ordre historique pour le rejeu, par blocs de \McBloc~ans tir\'es
+      au hasard pour le Monte Carlo \\
+    Imp\^ot et assurance maladie & R\`egles de 2026 (chapitre~\ref{sec:fiscalite})
+      & Aucun~: l'objectif est compar\'e au dividende brut \\
+    Rendement du dividende & \RenditeDivMaison~\% pour l'ETF maison et \RenditeDivEtf~\% pour l'ETF
+      monde, selon la r\'epartition \ReferenzStrategie
+      & \RenditeDivMaison~\% sur tout le capital, fixe \\
+    \'Epargne & \ReferenzSparquote~\% du salaire net, capital de d\'epart de \KapitalDepartMitte~€
+      & M\^eme plan d'\'epargne, sans capital de d\'epart, arr\^et\'e d\`es l'objectif \\
+    Objectif atteint & Revenu net d'au moins \ZielMonat~€ par mois
+      & Capital fois \RenditeDivMaison~\% d'au moins \ZielJahr~€, soit un capital de \McKapitalSeuil~€ \\
+    Revenu \`a la retraite & Non simul\'e~: le capital du chapitre~\ref{sec:capital} suppose un dividende
+      qui garde sa valeur r\'eelle
+      & Part de l'objectif exact, puis suit chaque ann\'ee la croissance r\'eelle du dividende de
+      l'indice~; le capital n'est jamais vendu \\
+    R\'eussite & Non mesur\'ee
+      & Revenu d'au moins \SeuilReussite~\% de l'objectif chaque ann\'ee pendant \McRenteAns~ans \\
+    R\'eserve & Aucune
+      & Aucune, sauf dans la variante de la section~\ref{sec:risques-reserve} \\
+    \bottomrule
+  \end{tabularx}
+\end{table}
+
+Ce tableau montre que le mod\`ele de ce chapitre est bien plus indulgent que la projection sur un
+point d\'ecisif~: il ignore l'imp\^ot et l'assurance maladie. Il juge l'objectif atteint d\`es que le
+capital vaut \McKapitalSeuil~€, soit \McKapitalSeuilPartProzent~\% des \KapitalRequisReference~€ que le
+chapitre~\ref{sec:capital} demande pour la r\'epartition \ReferenzStrategie. Il atteint donc
+l'objectif beaucoup plus t\^ot~: \`a \McAgeObjectifMedian~ans pour la trajectoire m\'ediane du Monte
+Carlo, contre \AlterYannBasis~ans dans la projection. \bk{Ne lis jamais un \^age ou un capital de ce
+chapitre comme le tien~; ce sont ceux de la projection du chapitre~\ref{sec:accumulation}.} Ce que ce
+mod\`ele mesure, c'est autre chose~: la probabilit\'e que le dividende d'un grand march\'e tienne
+pendant toute une retraite, et la fa\c{c}on dont cette probabilit\'e change avec un choc ou une
+r\'eserve. Pour cette question, l'imp\^ot joue peu, puisqu'il pr\'el\`eve \`a peu pr\`es la m\^eme part
+d'un dividende haut ou bas.
+
+Deux autres limites comptent. Le mod\`ele applique le rendement de l'ETF maison \`a tout le capital et
+fait \'evoluer ton revenu comme le dividende de l'indice am\'ericain~; la r\'epartition
+\ReferenzStrategie{} n'y entre que par le plan d'\'epargne, et ni l'ETF monde ni tes titres europ\'eens
+n'y figurent. Il ne rejoue pas non plus la r\'ef\'erence en ETF avec retrait de \TauxRetrait~\%~: ce rejeu, et la
+comparaison des deux strat\'egies sur les m\^emes ann\'ees de d\'epart, font l'objet de la
+section~\ref{sec:retraite-quatre}.
+
+\subsection{Rejouer l'histoire ann\'ee par ann\'ee}\label{sec:risques-rejeu}
+
+Le rejeu pose une question simple~: si tu avais commenc\'e ton plan une ann\'ee donn\'ee du pass\'e,
+comment l'histoire l'aurait-elle trait\'e~? La figure~\ref{fig:rejeu-annee-depart} r\'epond pour
+chaque ann\'ee de d\'epart de la s\'erie.
+
+\annahme{Pour chaque ann\'ee de d\'epart de \RueckspielPremier{} \`a \RueckspielDernier, ton plan
+d'\'epargne \`a \ReferenzSparquote~\% re\c{c}oit les rendements r\'eels de l'indice dans l'ordre
+historique jusqu'\`a l'objectif au sens du tableau~\ref{tab:projection-contre-simulation}. Le revenu
+suit ensuite le dividende r\'eel de l'indice pendant \McRenteAns~ans~; une seule ann\'ee sous
+\SeuilReussite~\% de l'objectif compte comme un \'echec, sans r\'eserve. Un d\'epart dont l'objectif
+ou la retraite d\'epasse \ShillerFin{} n'est pas jug\'e.}
+
+% Trois classes de points: une colonne jumelle de jahre_bis_ziel par issue (kapitel_7);
+% les cellules vides sont lues comme nan et ecartees du nuage.
+\linienfigur{fig_rueckspiel}[xlabel={Ann\'ee de d\'epart du plan d'\'epargne},
+  ylabel={Ann\'ees d'\'epargne jusqu'\`a l'objectif},
+  xticklabel style={/pgf/number format/set thousands separator={}},
+  table/empty cells with={nan}, unbounded coords=discard,
+  cycle list={{blue},{red},{gray}}, every axis plot post/.append style={only marks, mark=*,
+    mark size=1.3pt},
+  legend cell align=left, legend style={at={(0.5,-0.22)}, anchor=north, legend columns=3,
+    /tikz/every even column/.append style={column sep=0.5cm}}]%
+  {start}{ans_tenu,ans_echec,ans_non_juge}%
+  {{Revenu tenu},{Revenu tomb\'e sous le seuil},{Retraite non observable jusqu'au bout}}%
+  {Rejeu historique du plan d'\'epargne \`a \ReferenzSparquote~\% par ann\'ee de d\'epart~: nombre
+  d'ann\'ees jusqu'\`a l'objectif du mod\`ele sans imp\^ot et issue de la retraite de \McRenteAns~ans
+  (indice \IndiceActionsUs, \ShillerDebut--\ShillerFin).\label{fig:rejeu-annee-depart}}
+
+Ce graphique montre que sur \RueckspielDebuts{} ann\'ees de d\'epart, \RueckspielAtteints{}
+atteignent l'objectif du mod\`ele avant la fin des donn\'ees, en \RueckspielAnsMin{} \`a
+\RueckspielAnsMax~ans d'\'epargne selon l'ann\'ee, avec une m\'ediane de \RueckspielAnsMedian~ans. Les
+d\'eparts post\'erieurs \`a \RueckspielDernierAtteint{} n'ont pas encore eu le temps d'y arriver. Pour
+\RueckspielJuges{} d\'eparts, jusqu'\`a celui de \RueckspielDernierJuge, l'histoire couvre aussi les
+\McRenteAns~ans de retraite~: \RueckspielTenus{} tiennent leur revenu au-dessus du seuil, soit
+\RueckspielTenusProzent~\%, et \RueckspielEchecs{} \'echouent. \bk{Les \RueckspielEchecs{} \'echecs
+ont tous la m\^eme cause~: le revenu passe sous le seuil pendant l'une des
+\RueckspielEchecsNombreEpisodes{} baisses de \RueckspielEchecsEpisodes{} de la
+figure~\ref{fig:baisses-dividende-crises}.} Ce sont des retraites commenc\'ees avant ou pendant ces
+baisses, dont le revenu n'avait pas encore assez progress\'e pour amortir le choc.
+
+Dans ce mod\`ele, un krach pendant l'\'epargne ne fait qu'allonger la dur\'ee d'\'epargne, de
+\RueckspielAnsMin{} \`a \RueckspielAnsMax~ans selon l'ann\'ee de d\'epart~; c'est la baisse du dividende
+une fois \`a la retraite qui fait \'echouer le plan. Il faut lire ce pourcentage avec prudence. Les
+\RueckspielJuges{} d\'eparts jug\'es ne sont pas autant d'exp\'eriences ind\'ependantes~: deux ann\'ees
+voisines partagent presque toute leur histoire, et la p\'eriode \ShillerDebut--\ShillerFin{} ne
+contient qu'une poign\'ee de retraites de \McRenteAns~ans sans chevauchement. Le tirage Monte Carlo
+sert \`a d\'epasser cette limite.
+
+\subsection{Des milliers d'histoires tir\'ees au hasard}\label{sec:risques-montecarlo}
+
+Le Monte Carlo fabrique des histoires qui n'ont pas eu lieu mais qui auraient pu avoir lieu, en
+recombinant des morceaux de l'histoire r\'eelle. La figure~\ref{fig:eventail-monte-carlo} montre
+l'\'eventail du capital qui en r\'esulte.
+
+\annahme{\McTrajectoires{} trajectoires de \McDureeAns~ans, chacune form\'ee de blocs de \McBloc~ann\'ees
+cons\'ecutives tir\'es au hasard dans la s\'erie \ShillerDebut--\ShillerFin. Un bloc garde
+l'encha\^inement r\'eel d'une crise et de sa reprise~; un tirage ann\'ee par ann\'ee le d\'etruirait.
+Graine fixe, donc r\'esultats reproductibles. M\^emes r\`egles d'objectif et de r\'eussite que le rejeu
+(tableau~\ref{tab:projection-contre-simulation}). Le capital n'est jamais retir\'e~: apr\`es
+l'objectif, il continue de cro\^itre dividendes r\'einvestis, ce que tu ne feras pas en vivant de ces
+dividendes.}
+
+\linienfigur{fig_mc_faecher}[xlabel={Ann\'ee}, ylabel={Capital (millions d'euros de 2026)},
+  xticklabel style={/pgf/number format/set thousands separator={}}, xmax=\AnneeHorizonFin,
+  y filter/.expression={y/1e6}, ymin=0,
+  cycle list={{blue!50},{blue, very thick},{blue!50},{red, dashed},{black, dashed}},
+  legend pos=north west, legend cell align=left, legend style={fill=white}]%
+  {jahr}{p10,p50,p90,seuil_mc,capital_requis}%
+  {{\McCentileBas\textsuperscript{e} centile},{M\'ediane},{\McCentileHaut\textsuperscript{e} centile},
+   {Seuil du Monte Carlo (sans imp\^ot)},{Capital requis du chapitre~\ref{sec:capital} (avec imp\^ot)}}%
+  {\'Eventail Monte Carlo du capital du plan d'\'epargne \`a \ReferenzSparquote~\% jusqu'en
+  \AnneeHorizonFin~: m\'ediane et centiles des \McTrajectoires{} trajectoires, face au seuil du mod\`ele
+  sans imp\^ot et au capital requis de la r\'epartition \ReferenzStrategie{} (euros de
+  2026).\label{fig:eventail-monte-carlo}}
+
+Ce graphique montre qu'en \AnneeHorizonFin{} le capital m\'edian atteint \McCapitalHorizonMedian~€,
+mais qu'une trajectoire sur dix reste sous \McCapitalHorizonBas~€ et qu'une sur dix d\'epasse
+\McCapitalHorizonHaut~€~: \McEventailRapport{} fois plus, pour la m\^eme \'epargne. Seul le hasard des
+rendements tir\'es s\'epare ces trajectoires. La m\'ediane franchit le seuil sans imp\^ot en
+\McAnneeObjectifMedian, soit \`a \McAgeObjectifMedian~ans, et huit trajectoires sur dix le franchissent
+entre \McAnneeObjectifBas{} et \McAnneeObjectifHaut. La ligne du capital requis avec imp\^ot, bien plus
+haute, rappelle pourquoi ces dates ne sont pas les tiennes. Apr\`es l'objectif, les courbes montent
+encore parce que le mod\`ele ne retire rien~; seule la partie avant l'objectif d\'ecrit un capital que
+tu poss\'ederais.
+
+Sur ces trajectoires, \bk{le revenu tient au-dessus de \SeuilReussite~\% de l'objectif pendant
+\McRenteAns~ans dans \ErfolgsquoteBasis~\% des cas, sans r\'eserve}, un r\'esultat proche des
+\RueckspielTenusProzent~\% du rejeu. Ce taux compte aussi des trajectoires qui n'atteignent l'objectif
+qu'apr\`es \AnneeHorizonFin, parfois des d\'ecennies plus tard~: si l'on exige l'objectif dans
+l'horizon de ton plan, il tombe \`a \McErfolgDansHorizon~\%, \McErfolgEcartHorizon~points de moins. La
+dur\'ee de la retraite joue peu~: la r\'eussite vaut \McErfolgCourt~\% sur \McRenteAnsCourt~ans et
+\McErfolgLong~\% sur \McRenteAnsLong~ans, ce qui signifie que la plupart des \'echecs surviennent dans
+les \McRenteAnsCourt{} premi\`eres ann\'ees. Le Monte Carlo ne tire que dans l'histoire am\'ericaine,
+comme le rejeu~: il ne dit rien d'un march\'e europ\'een, dont le dividende peut \^etre plus
+irr\'egulier.
+
+\subsection{Le choc de la premi\`ere ann\'ee de retraite}\label{sec:risques-sequence}
+
+Le rejeu a montr\'e que les \'echecs viennent des baisses qui frappent pendant la retraite, avant que
+le revenu ait pu progresser. La figure~\ref{fig:reussite-choc-dividende} provoque d\'elib\'er\'ement
+une telle baisse, ou une hausse, la premi\`ere ann\'ee.
+
+\annahme{\HypotheseDivSchock. Grille de $-$\ChocGrilleMax{} \`a $+$\ChocGrilleMax~points par pas de
+\ChocGrillePas~points, sur les m\^emes trajectoires que la figure~\ref{fig:eventail-monte-carlo}, pour
+des retraites de \McRenteAnsCourt, \McRenteAns{} et \McRenteAnsLong~ans, sans r\'eserve.}
+
+\linienfigur{fig_mc_erfolg}[xlabel={Choc sur la croissance r\'eelle du dividende la premi\`ere ann\'ee
+  (points de pourcentage)}, ylabel={Probabilit\'e de r\'eussite (\%)},
+  x filter/.expression={x*1e2}, y filter/.expression={y*1e2}, ymin=0,
+  every axis plot post/.append style={mark=*, mark size=1.2pt},
+  legend pos=south east, legend cell align=left, legend style={fill=white}]%
+  {div_schock}{erfolg_30,erfolg_40,erfolg_50}%
+  {{Retraite de \McRenteAnsCourt~ans},{Retraite de \McRenteAns~ans},{Retraite de \McRenteAnsLong~ans}}%
+  {Probabilit\'e que le revenu reste au-dessus de \SeuilReussite~\% de l'objectif pendant toute la
+  retraite, selon un choc sur la croissance r\'eelle du dividende la premi\`ere ann\'ee de retraite
+  (Monte Carlo sans imp\^ot, \McTrajectoires{} trajectoires).\label{fig:reussite-choc-dividende}}
+
+Ce graphique montre que la r\'eussite d\'epend fortement de la premi\`ere ann\'ee. Sans choc, elle vaut
+\ErfolgsquoteBasis~\% pour une retraite de \McRenteAns~ans. Un choc de $-$10~points la ram\`ene \`a
+\McErfolgChocMoinsDix~\%, un choc de $-$20~points \`a \McErfolgChocMoinsVingt~\%, et un choc de
+$-$\ChocGrilleMax~points \`a \McErfolgChocMin~\%. \`A l'inverse, une premi\`ere ann\'ee favorable de
+$+$\ChocGrilleMax~points la porte \`a \McErfolgChocMax~\%. \bk{Un choc de $-$20~points, moins que la
+baisse de la crise financi\`ere (\EinbruchRecent~\%, \'etal\'ee de \EinbruchRecentDebut{} \`a
+\EinbruchRecentFin), r\'eduit d\'ej\`a tes chances de plus de moiti\'e s'il tombe la premi\`ere ann\'ee
+de ta retraite.} La raison est m\'ecanique~: la r\`egle tol\`ere une baisse de revenu jusqu'au seuil de
+\SeuilReussite~\%, et un tel choc consomme d'un coup presque toute cette marge. Les trois courbes
+restent proches, ce qui confirme que la dur\'ee de la retraite compte moins que son d\'ebut.
+
+Ce choc sert aussi \`a approcher ce que l'histoire am\'ericaine ne contient pas~: une coupe plus
+brutale sur un portefeuille plus concentr\'e que l'indice, comme celles que peut subir un ETF maison de
+\NombreTitres{} titres. Le mod\`ele ne le teste qu'\`a la premi\`ere ann\'ee de retraite~; il ne dit
+pas ce que le m\^eme choc ferait dix ans plus tard.
+
+\subsection{La r\'eserve de liquidit\'es}\label{sec:risques-reserve}
+
+Le rem\`ede classique au risque du d\'ebut de retraite est une r\'eserve en liquidit\'es, dans laquelle
+tu puises quand le dividende baisse au lieu de r\'eduire tes d\'epenses.
+
+\annahme{R\'eserve de \PufferJahreMit~ans d'objectif, soit \PufferMontantMit~€, d\'etenue en
+liquidit\'es au d\'epart en retraite, sans int\'er\^et ni imp\^ot. Elle ne comble que ce qui manque
+pour remonter au seuil de \SeuilReussite~\% de l'objectif, jamais l'\'ecart restant jusqu'\`a
+l'objectif, et n'est jamais reconstitu\'ee.}
+
+Sur les m\^emes trajectoires, cette r\'eserve fait passer la r\'eussite de \ErfolgsquoteBasis~\% \`a
+\ErfolgsquoteMitPuffer~\%. C'est l'effet le plus fort de ce chapitre~: \PufferJahreMit~ann\'ees de
+d\'epenses mises de c\^ot\'e suffisent \`a traverser la plupart des baisses qui font \'echouer le plan
+sans r\'eserve. Ce confort a un prix. Les \PufferMontantMit~€ repr\'esentent
+\PufferPartCapitalProzent~\% du capital requis de la r\'epartition \ReferenzStrategie{} et ne sont pas
+compt\'es dans les capitaux du chapitre~\ref{sec:capital}~: il faut les \'epargner en plus, et ils ne
+rapportent rien. La simulation suppose en outre que tu acceptes de vivre avec \SeuilReussite~\% de ta
+cible pendant une baisse, la r\'eserve servant seulement \`a ne pas descendre plus bas~; si tu la
+puisais pour garder ton niveau de vie entier, elle s'\'epuiserait plus vite. La
+section~\ref{sec:retraite-reserve} montre l'effet de la r\'eserve selon sa taille.
+
+\subsection{L'inflation de 2022 et la rente non index\'ee}\label{sec:risques-inflation}
+
+La cible de ce plan est fix\'ee en euros de 2026~: chaque ann\'ee, ton revenu doit suivre les prix. Un
+revenu fix\'e une fois pour toutes en euros courants, comme une rente priv\'ee non revaloris\'ee, ne le
+fait pas. La figure~\ref{fig:inflation-rente-fixe} en montre le co\^ut sur les derni\`eres ann\'ees.
+
+\annahme{Inflation annuelle allemande publi\'ee par Destatis de \InflationSerieDebut{} \`a
+\InflationSerieFin\QH{inflation_destatis_2019_2025}. Pour \InflationPicAnnee, Destatis annon\c{c}ait
+d'abord \InflationPicProvisoire~\%\QH{inflation_2022_de}, et ses communiqu\'es ult\'erieurs citent
+\InflationPicRevisee~\%~; la figure retient la s\'erie r\'evis\'ee. Rente fixe de \ZielMonat~€ par mois
+\`a partir de \InflationSerieDebut, jamais revaloris\'ee, compar\'ee \`a un revenu qui suit les prix.}
+
+\linienfigur{fig_inflation_2022}[xlabel={Ann\'ee},
+  ylabel={Pouvoir d'achat mensuel (euros de \InflationSerieDebut)},
+  xticklabel style={/pgf/number format/set thousands separator={}}, scaled y ticks=false,
+  width=0.95\linewidth, xtick=data,
+  every axis plot post/.append style={mark=*, mark size=1.5pt},
+  legend pos=south west, legend cell align=left, legend style={fill=white}]%
+  {jahr}{indexiert,nicht_indexiert}%
+  {{Revenu qui suit les prix},{Rente fixe non index\'ee}}%
+  {Pouvoir d'achat d'un revenu de \ZielMonat~€ par mois \`a partir de \InflationSerieDebut, selon qu'il
+  suit les prix ou reste fixe en euros courants (inflation allemande publi\'ee par Destatis, euros de
+  \InflationSerieDebut).\label{fig:inflation-rente-fixe}}
+
+Ce graphique montre qu'une rente fixe de \ZielMonat~€ ne valait plus que \RenteNonIndexeeFin~€ en
+\InflationSerieFin, soit \RentePerteMois~€ par mois ou \RentePerteProzent~\% de pouvoir d'achat en
+moins, apr\`es une hausse des prix de \PrixHausseCumulee~\%. Plus de la moiti\'e de cette hausse est
+venue de \InflationPicAnnee{} et de 2023. Une inflation calme finit par co\^uter autant~: \`a
+\InflationZiel~\% par an, l'objectif de la Banque centrale europ\'eenne\QH{inflation_ziel}, une rente
+fixe perd la moiti\'e de sa valeur en \RenteMoitieAns~ans, et apr\`es \McRenteAns~ans de retraite
+\ZielMonat~€ n'en valent plus que \RenteApresRetraite~€.
+
+Les dividendes ne sont index\'es par aucun contrat. Sur longue p\'eriode, celui de l'indice am\'ericain a
+battu l'inflation (section~\ref{sec:risques-histoire}), et il a encore progress\'e en termes r\'eels en
+\ShillerFin. Mais pendant la d\'ecennie d'inflation de \EinbruchInflationDebut{} \`a
+\EinbruchInflationFin, il a perdu \EinbruchInflation~\% de son pouvoir d'achat, et des retraites
+commenc\'ees au d\'ebut de cette d\'ecennie ont \'echou\'e dans le rejeu. Toute part fixe en euros dans
+tes revenus futurs subit l'inflation en entier~; la part en dividendes la subit quand les entreprises
+ne suivent pas les prix.
+
+\bk{Retiens de ce chapitre que le dividende d'un grand march\'e a d\'ej\`a perdu jusqu'\`a
+\GroessterEinbruch~\% de sa valeur r\'eelle et est rest\'e jusqu'\`a \BaisseLongueAns~ans sous son
+sommet, que le vrai danger est une baisse au d\'ebut de la retraite, et qu'une r\'eserve de
+\PufferJahreMit~ans de d\'epenses en prot\`ege dans la plupart des cas.} Dans le mod\`ele sans imp\^ot de
+ce chapitre, ton revenu tient \McRenteAns~ans dans \ErfolgsquoteBasis~\% des cas sans r\'eserve et dans
+\ErfolgsquoteMitPuffer~\% avec~; ces taux mesurent la solidit\'e du dividende, pas la date de ton
+d\'epart. S'y ajoute l'hypoth\`ese favorable d'un dividende qui cro\^it bien plus vite que par le
+pass\'e. Le chapitre~\ref{sec:retraite} passe \`a la retraite elle-m\^eme~: la p\'eriode avant la rente l\'egale, le
+montant de cette rente et la taille de la r\'eserve.
+
+\Yannbox{\AnneeYannBasis}{Dans la projection, Yann atteint son objectif en \AnneeYannBasis, \`a
+\AlterYannBasis~ans, avec \BruttoNoetigMois~€ de dividendes bruts par mois. Si ses dividendes
+subissaient la pire baisse de l'histoire de l'\IndiceActionsUs, \GroessterEinbruch~\% comme de
+\GroessterEinbruchDebut{} \`a \GroessterEinbruchJahr, ils tomberaient \`a \YannBrutApresPireBaisse~€
+bruts par mois, et l'indice a mis \GroessterEinbruchSousSommetAns~ans \`a retrouver son sommet. Dans la
+simulation sans imp\^ot, son revenu tient \McRenteAns~ans dans \ErfolgsquoteBasis~\% des cas, et dans
+\ErfolgsquoteMitPuffer~\% s'il garde \PufferMontantMit~€ de r\'eserve, \PufferJahreMit~ans de d\'epenses
+\`a \'epargner en plus. Si une partie de ses revenus \'etait fixe en euros, une inflation comme celle de
+\InflationSerieDebut{} \`a \InflationSerieFin{} lui en retirerait \RentePerteProzent~\%.}

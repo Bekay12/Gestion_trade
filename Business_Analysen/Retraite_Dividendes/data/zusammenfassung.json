@@ -1,0 +1,34 @@
+{
+ "alter": {
+  "MaisonFuenfzig": {
+   "Zehn": null,
+   "Zwanzig": null,
+   "Dreissig": 67,
+   "Fuenfzig": 61
+  },
+  "MaisonSiebzig": {
+   "Zehn": null,
+   "Zwanzig": null,
+   "Dreissig": 67,
+   "Fuenfzig": 60
+  },
+  "MaisonHundert": {
+   "Zehn": null,
+   "Zwanzig": null,
+   "Dreissig": 66,
+   "Fuenfzig": 59
+  },
+  "EtfReferenz": {
+   "Zehn": 69,
+   "Zwanzig": 60,
+   "Dreissig": 55,
+   "Fuenfzig": 49
+  },
+  "EtfUmschichtung": {
+   "Zehn": null,
+   "Zwanzig": null,
+   "Dreissig": 68,
+   "Fuenfzig": 61
+  }
+ }
+}

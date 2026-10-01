@@ -1,0 +1,9 @@
+kategorie,anteil,libelle,kategorie_disp,libelle_disp
+Basic Materials,0.08695652173913043,Matériaux de base,Basic Materials,Matériaux de base
+Consumer Cyclical,0.08695652173913043,Consommation cyclique,Consumer Cyclical,Consommation cyclique
+Consumer Defensive,0.21739130434782608,Consommation de base,Consumer Defensive,Consommation de base
+Energy,0.08695652173913043,Énergie,Energy,Énergie
+Financial Services,0.08695652173913043,Services financiers,Financial Services,Services financiers
+Healthcare,0.13043478260869565,Santé,Healthcare,Santé
+Industrials,0.21739130434782608,Industrie,Industrials,Industrie
+Technology,0.08695652173913043,Technologie,Technology,Technologie

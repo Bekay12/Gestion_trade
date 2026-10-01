@@ -1,0 +1,129 @@
+\section{Point de d\'epart et cible}\label{sec:depart}
+% Chapitre 2 (tache 10, passage chapitres 02-03). Figures: fig_ziel_nominal,
+% fig_kaskade (voir docs/figures.md). Aucun chiffre tape: macros de
+% data/kennzahlen.tex, generees par scripts/rechnung_retraite.py.
+% Titres d'axes et etiquettes de barres passes par l'argument optionnel de
+% \linienfigur/\balkenfigur (correctif infrastructure, tache 10, second
+% passage): remplace le contournement "every axis post" du premier passage.
+
+Ce chapitre r\'epond \`a deux questions pr\'ealables \`a tout calcul~: d'o\`u pars-tu, et combien de
+dividendes bruts faut-il encaisser pour qu'il te reste \ZielMonat~€ par mois \`a d\'epenser~? La
+section~\ref{sec:depart-profil} fixe ton point de d\'epart, la section~\ref{sec:depart-cible} exprime
+la cible en euros constants puis en euros nominaux, et la section~\ref{sec:depart-cascade} descend du
+dividende brut au montant disponible.
+
+\subsection{Ton point de d\'epart}\label{sec:depart-profil}
+
+Tu es n\'e en 2001, tu termines ton master en ao\^ut 2027 apr\`es ton stage chez Jungheinrich, et tu
+vis en Allemagne, o\`u tu resteras r\'esident fiscal pendant la vie active comme \`a la retraite. Tu es
+c\'elibataire, sans enfant et sans bien immobilier, et tu acceptes un risque \'elev\'e sur tes
+placements. Ton \'epargne commence en septembre 2027, avec au moins \EpargneMinimum~€ par mois quoi
+qu'il arrive, puis un taux d'\'epargne de \SparquoteZehn{}, \SparquoteZwanzig{}, \SparquoteDreissig{} ou
+\SparquoteFuenfzig~\% de ton salaire net~; le chapitre~\ref{sec:accumulation} construit ce salaire \`a partir d'une
+r\'ef\'erence publi\'ee et calcule l'\^age de d\'epart qui en r\'esulte.
+
+Ton capital de d\'epart exact n'est pas connu \`a ce jour. Le plan travaille donc sur une fourchette
+de \KapitalDepartNiedrig~€ \`a \KapitalDepartHoch~€ et retient son milieu, \KapitalDepartMitte~€, pour
+le sc\'enario de base. Cette incertitude p\`ese peu face au capital \`a r\'eunir~: le chapitre~\ref{sec:capital} chiffre
+\`a \KapitalEtfReferenz~€ celui de la seule strat\'egie de r\'ef\'erence en ETF, et le chapitre~\ref{sec:accumulation}
+montre que les deux bornes de la fourchette donnent le m\^eme \^age de d\'epart. Les
+startups, le trading intraday et les paris sur des titres isol\'es restent hors du calcul, comme le
+rappelle l'annexe (section~\ref{sec:annexe-perimetre}).
+
+Le sc\'enario de base, auquel renvoient tous les encadr\'es \enquote{Yann}, combine ce capital de
+d\'epart, la r\'epartition \ReferenzStrategie{} entre ETF maison et ETF monde, et une \'epargne de
+\ReferenzSparquote~\% du salaire net. Ce taux n'a pas \'et\'e choisi par confort~: \`a
+\SparquoteZwanzig~\%, la m\^eme strat\'egie de dividendes n'atteint jamais l'objectif dans l'horizon de
+calcul, alors qu'un ETF monde avec un retrait de \TauxRetrait~\% par an y parvient \`a
+\AlterEtfReferenzZwanzig~ans. Le chapitre~\ref{sec:accumulation} d\'etaille ce r\'esultat, le plus d\'efavorable du
+document pour la th\`ese des dividendes.
+
+\subsection{La cible, en euros constants puis nominaux}\label{sec:depart-cible}
+
+L'objectif est de disposer de \ZielMonat~€ par mois, soit \ZielJahr~€ par an, en pouvoir d'achat de
+2026, apr\`es imp\^ot et apr\`es cotisations d'assurance maladie et d\'ependance. Tout le document
+raisonne en euros de 2026, que l'on appelle euros constants~: un montant de \ZielMonat~€ en 2050
+d\'esigne ce que \ZielMonat~€ ach\`etent aujourd'hui, et non la somme inscrite ce jour-l\`a sur ton
+relev\'e. Ce choix rend comparables des montants s\'epar\'es par plusieurs d\'ecennies, mais il exige
+deux hypoth\`eses explicites, l'une sur l'inflation et l'autre sur le rendement r\'eel du march\'e.
+
+\annahme{Inflation de \InflationZiel~\% par an sur toute la dur\'ee du plan, soit l'objectif de
+stabilit\'e des prix de la Banque centrale europ\'eenne\QH{inflation_ziel}. Les variantes \`a
+\InflationBas~\% et \InflationHaut~\% de la figure~\ref{fig:cible-euros-nominaux} servent seulement
+\`a mesurer la sensibilit\'e de la conversion en euros nominaux.}
+
+\annahme{Rendement r\'eel du march\'e d'actions de \RenditeReal~\% par an, calcul\'e sur les
+donn\'ees de Robert Shiller pour l'indice \IndiceActionsUs\QH{shiller_url}~: \RenditeReelleConvention. Le plan
+initial pr\'evoyait la m\'ediane des rendements r\'eels annuels, qui vaut \RenditeReelleMediane~\%
+sur la m\^eme p\'eriode. Cet \'ecart au plan est assum\'e~: une m\'ediane de rendements annuels
+n'est pas un taux de capitalisation, car elle ignore l'effet multiplicatif des ann\'ees de krach, et
+l'appliquer sur plusieurs d\'ecennies surestimerait fortement le capital accumul\'e.}
+
+Pour lire un article de presse ou un relev\'e de courtier dans vingt ans, il faudra faire le chemin
+inverse et convertir les euros nominaux de l'\'epoque en euros de 2026. La
+figure~\ref{fig:cible-euros-nominaux} montre ce que devient la cible mensuelle sous trois hypoth\`eses
+d'inflation.
+
+\linienfigur{fig_ziel_nominal}[xlabel={Ann\'ee}, ylabel={Cible mensuelle (euros nominaux)},
+  xticklabel style={/pgf/number format/set thousands separator={}}, scaled y ticks=false,
+  legend pos=north west]%
+  {jahr}{inflation_1,inflation_2,inflation_3}%
+  {{Inflation \InflationBas~\%},{Inflation \InflationZiel~\%},{Inflation \InflationHaut~\%}}%
+  {Cible de \ZielMonat~€ par mois en euros de 2026, convertie en euros nominaux de chaque ann\'ee
+  sous trois hypoth\`eses d'inflation.\label{fig:cible-euros-nominaux}}
+
+Ce graphique montre qu'\`a l'inflation cible de \InflationZiel~\%, les \ZielMonat~€ d'aujourd'hui
+correspondent \`a \ZielNominalXLIV~€ par mois en 2044 et \`a \ZielNominalLX~€ en 2060. Si l'inflation
+tenait \InflationHaut~\% par an, il faudrait \ZielNominalLXHaut~€ nominaux en 2060, et
+\ZielNominalLXBas~€ seulement \`a \InflationBas~\%. L'\'ecart entre les deux courbes extr\^emes montre
+qu'un objectif fix\'e en euros nominaux, sans r\'ef\'erence \`a une ann\'ee de prix, ne veut rien
+dire \`a cet horizon.
+
+\subsection{Du dividende brut au montant disponible}\label{sec:depart-cascade}
+
+Un dividende brut n'arrive jamais entier sur ton compte. L'\'Etat de la soci\'et\'e peut en retenir
+une partie \`a la source, le fisc allemand pr\'el\`eve ensuite son imp\^ot, et la caisse d'assurance
+maladie calcule ses cotisations sur le dividende brut. Le chapitre~\ref{sec:fiscalite} d\'etaille
+chacune de ces \'etapes~; il suffit ici d'en voir l'ordre de grandeur.
+
+\annahme{Cascade calcul\'ee avec les r\`egles fiscales et sociales de 2026, en euros de 2026, pour un
+revenu venant uniquement d'actions d\'etenues en direct, avec la r\'epartition par pays du
+portefeuille-exemple du chapitre~\ref{sec:portefeuille}~: \PartUs~\% de dividendes am\'ericains, \PartDe~\% allemands et
+\PartFr~\% fran\c{c}ais. \HypotheseUsFormulaire. Imp\^ot au taux forfaitaire, sans la
+G\"unstigerpr\"ufung discut\'ee au chapitre~\ref{sec:fiscalite}.}
+
+Sous ces hypoth\`eses, il faut \BruttoNoetig~€ de dividendes bruts par an, soit \BruttoNoetigMois~€
+par mois, pour qu'il reste \ZielJahr~€ disponibles. La figure~\ref{fig:cascade-brut-disponible}
+d\'ecompose le passage de l'un \`a l'autre.
+
+% Ordre des etiquettes = ordre des lignes de data/fig_kaskade.csv (brut_necessaire,
+% retenues_etrangeres, impot_allemand, kv_pv, disponible): la colonne "posten" porte
+% des "_" (compile desormais sans risque via "posten_disp", voir preamble.tex), mais
+% des libelles francais restent plus lisibles, d'ou la liste explicite ci-dessous.
+\balkenfigur{fig_kaskade}[ylabel={Montant annuel (euros de 2026)},
+  scaled y ticks=false, bar width=22pt, enlarge y limits=0.25,
+  xticklabels={{Dividende brut},{Retenues \'etrang\`eres},{Imp\^ot allemand},{Maladie et d\'ependance},{Disponible}},
+  nodes near coords, every node near coord/.append style={font=\scriptsize,
+    /pgf/number format/fixed, /pgf/number format/precision=0}]%
+  {posten}{betrag}%
+  {Du dividende brut n\'ecessaire au montant disponible, sur une ann\'ee de retraite (r\`egles de
+  2026, euros de 2026, actions en direct).\label{fig:cascade-brut-disponible}}
+
+Ce graphique montre que sur \BruttoNoetig~€ de dividendes bruts, il ne reste que \ZielJahr~€, soit
+\PartDisponible~\% du brut. Les retenues \'etrang\`eres prennent \RetenuesEtrangeres~€, l'imp\^ot
+allemand \ImpotAllemand~€, et l'assurance maladie et d\'ependance \KvPvAnnuel~€, soit
+\KvPvAnteilBrut~\% du brut~: ce dernier poste, rarement cit\'e dans les articles sur la rente par
+dividendes, p\`ese plus lourd que l'imp\^ot allemand lui-m\^eme. Il serait encore plus \'elev\'e sans
+le plafond de cotisation, que ton revenu brut mensuel d\'epasse d\'ej\`a.
+
+\bk{Retiens de ce chapitre qu'il faut raisonner en brut pour dimensionner le capital, et en euros de
+2026 pour comparer des ann\'ees entre elles~; un calcul fait sur le net ou en euros nominaux sous-estime
+le capital n\'ecessaire.} Le chapitre~\ref{sec:fiscalite} explique d'o\`u vient chaque poste de cette
+cascade, et ce qui change quand le dividende vient d'un autre pays ou d'un ETF.
+
+\Yannbox{\AnneeYannBasis}{Dans le sc\'enario de base (\KapitalDepartMitte~€ de d\'epart, r\'epartition
+\ReferenzStrategie{} entre ETF maison et ETF monde, \ReferenzSparquote~\% d'\'epargne), Yann atteint son
+objectif \`a \AlterYannBasis~ans, l'\^age l\'egal de la retraite~: il ne part pas plus t\^ot que la
+loi ne le permet d\'ej\`a. Ses \ZielMonat~€ de 2026 valent alors \ZielNominalBasis~€ nominaux par
+mois. Son capital de \KapitalYannBasis~€, exprim\'e en euros de 2026, lui verse \RevenuNetYannBasis~€
+nets par mois, toujours en euros de 2026.}

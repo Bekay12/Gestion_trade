@@ -1,0 +1,21 @@
+% Page de titre (tache 10, passage resume, titre et annexes). Aucun chiffre tape: la cible
+% est la macro \ZielMonat de data/kennzahlen.tex, la date vient de \today (date de
+% compilation, formatee en francais par babel), les annees seules sont tolerees.
+% L'avertissement "pas un conseil en investissement reglemente" est exige en premiere
+% page par la specification (section 1).
+\begin{titlepage}
+  \centering
+  \vspace*{0.2\textheight}
+  {\LARGE\bfseries Retraite anticip\'ee par les dividendes~:\par
+  \medskip plan pour Yann\par}
+  \vspace{2em}
+  {\large Vivre de \ZielMonat~€ nets par mois, en euros de 2026~:\par
+  \`a quel \^age, avec quelle \'epargne~?\par}
+  \vspace{3em}
+  {\large \today\par}
+  \vfill
+  {\small Document de travail, calculs reproductibles par \texttt{./build.sh}.\par}
+  \medskip
+  {\small Ce document n'est pas un conseil en investissement r\'eglement\'e~; chaque point fiscal
+  est \`a faire valider par un conseiller fiscal.\par}
+\end{titlepage}

@@ -1,0 +1,27 @@
+% genere par scripts/rechnung_retraite.py (annexe_hypotheses) - ne pas modifier a la main
+Taux de l'imp\^ot sur les revenus du capital (Abgeltungsteuer)\newline{\scriptsize\normalfont\texttt{abgeltungsteuer\_satz}} & 25~\% & \ref{sec:fisc-abgeltung} & \hyperref[src:abgeltungsteuer_satz]{primaire} \\
+Contribution de solidarit\'e, en part de l'imp\^ot\newline{\scriptsize\normalfont\texttt{soli\_satz}} & 5{,}5~\% & \ref{sec:fisc-abgeltung} & \hyperref[src:soli_satz]{primaire} \\
+Forfait d'\'epargnant, personne seule\newline{\scriptsize\normalfont\texttt{sparerpauschbetrag}} & 1\,000~€ par an & \ref{sec:fisc-abgeltung} & \hyperref[src:sparerpauschbetrag]{primaire} \\
+Exon\'eration partielle d'un ETF actions\newline{\scriptsize\normalfont\texttt{teilfreistellung\_aktienfonds}} & 30~\% & \ref{sec:fisc-teilfreistellung} & \hyperref[src:teilfreistellung_aktienfonds]{primaire} \\
+Basiszins 2026 (Vorabpauschale)\newline{\scriptsize\normalfont\texttt{basiszins\_2026}} & 3{,}2~\% & \ref{sec:fisc-teilfreistellung} & \hyperref[src:basiszins_2026]{secondaire} \\
+Retenues \`a la source par pays\newline{\scriptsize\normalfont\texttt{quellensteuer}} & États-Unis 30~\% (15~\% avec W-8BEN), Suisse 35~\%, France 12{,}8~\%, Pays-Bas 15~\%, Royaume-Uni 0~\%~; table de 14 pays & \ref{sec:fisc-quellensteuer} & \hyperref[src:quellensteuer]{primaire} \\
+Bar\`eme 2026 de l'imp\^ot sur le revenu\newline{\scriptsize\normalfont\texttt{est\_tarif\_2026}} & 5 zones, exon\'eration jusqu'\`a 12\,348~€, taux marginal maximal 45~\% & \ref{sec:fisc-guenstiger} & \hyperref[src:est_tarif_2026]{primaire} \\
+Seuil d'exon\'eration de la contribution de solidarit\'e\newline{\scriptsize\normalfont\texttt{soli\_freigrenze\_2026}} & 20\,350~€ d'imp\^ot par an & \ref{sec:fisc-guenstiger} & \hyperref[src:soli_freigrenze_2026]{primaire} \\
+Taux r\'eduit de l'assurance maladie\newline{\scriptsize\normalfont\texttt{kv\_satz\_ermaessigt}} & 14{,}0~\% & \ref{sec:fisc-kv} & \hyperref[src:kv_satz_ermaessigt]{primaire} \\
+Cotisation compl\'ementaire moyenne 2026\newline{\scriptsize\normalfont\texttt{kv\_zusatzbeitrag\_2026}} & 2{,}9~\% & \ref{sec:fisc-kv} & \hyperref[src:kv_zusatzbeitrag_2026]{primaire} \\
+Assurance d\'ependance, sans enfant\newline{\scriptsize\normalfont\texttt{pv\_satz\_kinderlos\_2026}} & 4{,}2~\% & \ref{sec:fisc-kv} & \hyperref[src:pv_satz_kinderlos_2026]{primaire} \\
+Plancher de l'assiette maladie\newline{\scriptsize\normalfont\texttt{kv\_mindestbemessung\_monat\_2026}} & 1\,318~€ par mois & \ref{sec:fisc-kv} & \hyperref[src:kv_mindestbemessung_monat_2026]{primaire} \\
+Plafond de l'assiette maladie\newline{\scriptsize\normalfont\texttt{kv\_bbg\_monat\_2026}} & 5\,812{,}50~€ par mois & \ref{sec:fisc-kv} & \hyperref[src:kv_bbg_monat_2026]{primaire} \\
+Plancher et plafond maladie revaloris\'es avec les salaires\newline{\scriptsize\normalfont\texttt{kv\_schwellen\_dynamisierung}} & oui & \ref{sec:fisc-kv} & \hyperref[src:kv_schwellen_dynamisierung]{primaire} \\
+Exon\'eration partielle des ETF dans l'assiette maladie\newline{\scriptsize\normalfont\texttt{kv\_teilfreistellung\_etf}} & oui & \ref{sec:fisc-kv} & \hyperref[src:kv_teilfreistellung_etf]{primaire} \\
+Inflation retenue (objectif de la BCE)\newline{\scriptsize\normalfont\texttt{inflation\_ziel}} & 2{,}0~\% & \ref{sec:depart-cible} & \hyperref[src:inflation_ziel]{primaire} \\
+S\'erie de march\'e am\'ericaine (cours, dividendes, prix)\newline{\scriptsize\normalfont\texttt{shiller\_url}} & donn\'ees mensuelles de Robert Shiller & \ref{sec:risques-histoire} & \hyperref[src:shiller_url]{primaire} \\
+Rendement de distribution de l'ETF monde (repli)\newline{\scriptsize\normalfont\texttt{etf\_welt\_rendite\_div}} & 1{,}8~\% & \ref{sec:capital-methode} & \hyperref[src:etf_welt_rendite_div]{secondaire} \\
+Cotisations salariales et plafonds 2026\newline{\scriptsize\normalfont\texttt{sv\_arbeitnehmer}} & part salariale retraite 9{,}3~\%, ch\^omage 1{,}3~\%~; plafonds 101\,400~€ (retraite) et 69\,750~€ (maladie) par an & \ref{sec:accu-salaire} & \hyperref[src:sv_arbeitnehmer]{primaire} \\
+Salaire brut d'entr\'ee d'un ing\'enieur\newline{\scriptsize\normalfont\texttt{einstiegsgehalt\_brutto}} & 59\,250~€ par an & \ref{sec:accu-salaire} & \hyperref[src:einstiegsgehalt_brutto]{secondaire} \\
+Progression r\'eelle du salaire\newline{\scriptsize\normalfont\texttt{gehaltssteigerung\_real}} & 1{,}8~\% par an & \ref{sec:accu-salaire} & \hyperref[src:gehaltssteigerung_real]{secondaire} \\
+Inflation allemande 2022, annonce provisoire\newline{\scriptsize\normalfont\texttt{inflation\_2022\_de}} & 7{,}9~\% & \ref{sec:risques-inflation} & \hyperref[src:inflation_2022_de]{primaire} \\
+Inflation allemande annuelle\newline{\scriptsize\normalfont\texttt{inflation\_destatis\_2019\_2025}} & 2019 \`a 2025~: de 0{,}5~\% (2020) \`a 6{,}9~\% (2022), s\'erie r\'evis\'ee & \ref{sec:risques-inflation} & \hyperref[src:inflation_destatis_2019_2025]{primaire} \\
+Salaire moyen 2026 (points de rente)\newline{\scriptsize\normalfont\texttt{durchschnittsentgelt\_2026}} & 51\,944~€ par an & \ref{sec:retraite-rente} & \hyperref[src:durchschnittsentgelt_2026]{primaire} \\
+Valeur du point de rente\newline{\scriptsize\normalfont\texttt{rentenwert\_2026}} & 42{,}52~€ par mois & \ref{sec:retraite-rente} & \hyperref[src:rentenwert_2026]{primaire} \\
+\^Age l\'egal de la retraite\newline{\scriptsize\normalfont\texttt{regelaltersgrenze}} & 67~ans & \ref{sec:retraite-rente} & \hyperref[src:regelaltersgrenze]{primaire} \\

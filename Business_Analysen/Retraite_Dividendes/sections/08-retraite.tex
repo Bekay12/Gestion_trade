@@ -1,0 +1,333 @@
+\section{La retraite elle-m\^eme}\label{sec:retraite}
+% Chapitre 8 (tache 10, passage chapitre 08). Figures: fig_rente_alter, fig_bruecke,
+% fig_bruecke_anticipee (nouvelle: depart anticipe au taux d'epargne BRUECKE_QUOTE_NOM),
+% fig_puffer (MEME calcul Monte Carlo que \ErfolgsquoteBasis/\ErfolgsquoteMitPuffer du
+% chapitre 7), fig_regle_quatre_histoire (nouvelle: test historique du retrait de
+% TAUX_RETRAIT). Tableau tab:retrait-contre-dividendes ecrit ici. Aucun chiffre tape:
+% macros de data/kennzahlen.tex (kapitel_8 et _macros_redaction_kapitel_8 dans
+% scripts/rechnung_retraite.py). La comparaison du tableau porte sur les MEMES annees de
+% depart en retraite que le rejeu du chapitre 7 (cache _RUECKSPIEL, aucun second rejeu).
+
+Ce chapitre r\'epond \`a la question~: une fois l'objectif atteint, de quoi vis-tu jusqu'\`a
+l'\^age l\'egal, que t'apporte ensuite la rente l\'egale, quelle r\'eserve faut-il garder et selon
+quelle r\`egle puiser dans ton capital~? Le chapitre~\ref{sec:risques} s'est conclu sur une r\'eserve
+de liquidit\'es qui prot\`ege ton revenu dans la plupart des baisses du dividende, et sur un mod\`ele
+qui mesure la solidit\'e de ce dividende, pas la date de ton d\'epart. Ce chapitre revient \`a ton
+calendrier. La section~\ref{sec:retraite-rente} estime ta rente l\'egale selon l'\^age auquel tu
+cesses de travailler, et la section~\ref{sec:retraite-pont} en d\'eduit la phase pont, les ann\'ees qui
+s\'eparent ton d\'epart du versement de cette rente. La section~\ref{sec:retraite-reserve} chiffre la
+taille de la r\'eserve, la section~\ref{sec:retraite-quatre} soumet la r\`egle des \TauxRetrait~\% \`a
+l'histoire comme le chapitre~\ref{sec:risques} l'a fait pour les dividendes, et la
+section~\ref{sec:retraite-regles} en tire tes r\`egles de retrait.
+
+\subsection{La rente l\'egale selon l'\^age o\`u tu arr\^etes}\label{sec:retraite-rente}
+
+Tout ce plan vise un revenu tir\'e de ton capital. Tu cotises pourtant \`a l'assurance pension
+l\'egale d\`es ton premier emploi, et cette rente te sera vers\'ee \`a partir de l'\^age l\'egal, que
+tu travailles encore ou non \`a ce moment-l\`a.
+
+\annahme{Rente l\'egale estim\'ee par points~: chaque ann\'ee de travail rapporte ton salaire brut
+divis\'e par le salaire moyen de 2026, \Durchschnittsentgelt~€\QH{durchschnittsentgelt_2026}, et
+chaque point vaut \Rentenwert~€ de rente mensuelle\QH{rentenwert_2026}. Ton salaire ne compte que
+jusqu'au plafond de cotisation de l'assurance pension, \BbgRvJahr~€ par an\QH{sv_arbeitnehmer}, que
+ton salaire atteint \`a \AgePlafondRv~ans. Salaire du chapitre~\ref{sec:accumulation}, carri\`ere
+continue depuis \AgeDebutCotisation~ans, sans ch\^omage ni interruption. Ces valeurs de 2026 sont
+tenues constantes en euros de 2026, comme les seuils de l'assurance maladie~: le plan suppose que la
+valeur du point garde son pouvoir d'achat, ce que rien ne garantit dans une population qui
+vieillit. Rente vers\'ee \`a partir de l'\^age l\'egal de \AgeLegal~ans\QH{regelaltersgrenze}, sans
+abattement~; le plan ne mod\'elise aucun d\'epart anticip\'e de la rente elle-m\^eme.}
+
+L'\'equation~\eqref{eq:rente-points-legale} r\'esume ce calcul pour un arr\^et du travail \`a
+l'\^age~$a$~; elle additionne les points de chaque ann\'ee travaill\'ee.
+\begin{equation}
+  R(a) = V \sum_{t=a_0}^{a-1} \frac{\min(S_t,\,P)}{D} \text{,} \label{eq:rente-points-legale}
+\end{equation}
+o\`u $R(a)$ est la rente brute mensuelle vers\'ee \`a partir de \AgeLegal~ans, $a_0$ l'\^age de ton
+premier emploi, \AgeDebutCotisation~ans, $S_t$ ton salaire brut annuel \`a l'\^age~$t$, $P$ le
+plafond de cotisation, $D$ le salaire moyen et $V$ la valeur du point. Ta premi\`ere ann\'ee de
+travail rapporte \PointsEntree~point, une ann\'ee au plafond \PointsPlafond~point~; aucune ann\'ee ne
+peut rapporter davantage, quel que soit ton salaire. La figure~\ref{fig:rente-selon-arret} applique
+l'\'equation \`a chaque \^age d'arr\^et de \RenteAgeMinGraphique{} \`a \AgeLegal~ans.
+
+\linienfigur{fig_rente_alter}[width=0.95\linewidth, xlabel={\^Age auquel tu arr\^etes de travailler (ans)},
+  ylabel={Rente l\'egale brute (euros de 2026 par mois)}, scaled y ticks=false, ymin=0,
+  legend pos=north west, legend cell align=left, legend style={fill=white}]%
+  {ausstiegsalter}{rente_monat}%
+  {{Rente brute vers\'ee d\`es \AgeLegal~ans}}%
+  {Rente l\'egale mensuelle brute vers\'ee \`a partir de \AgeLegal~ans selon l'\^age auquel tu arr\^etes
+  de travailler (carri\`ere continue depuis \AgeDebutCotisation~ans, valeurs de 2026, euros de
+  2026).\label{fig:rente-selon-arret}}
+
+Ce graphique montre qu'en travaillant jusqu'\`a \AgeLegal~ans, tu toucherais \RenteBeiZielalter~€
+bruts par mois, soit \RenteLegalePartCible~\% de ta cible de \ZielMonat~€. Un arr\^et \`a 60~ans la
+ram\`ene \`a \RenteArretSechzig~€, \`a 50~ans \`a \RenteArretFuenfzig~€ et \`a 40~ans \`a
+\RenteArretVierzig~€. La pente de la courbe augmente avec ton salaire jusqu'\`a \AgePlafondRv~ans,
+puis reste constante~: au-del\`a du plafond, chaque ann\'ee de travail ajoute la m\^eme rente,
+\RenteDerniereAnnee~€ par mois pour la derni\`ere. \bk{Chaque ann\'ee de retraite anticip\'ee te
+co\^ute donc de la rente \`a vie, en plus des ann\'ees de pont \`a financer.}
+
+Ces montants sont bruts. La rente est soumise \`a l'imp\^ot sur le revenu et aux cotisations
+d'assurance maladie des retrait\'es, que ce plan ne calcule pas~; elle n'est donc pas directement
+comparable aux \ZielMonat~€ nets de ta cible, mais elle en couvre une grande partie d\`es que ta
+carri\`ere est compl\`ete.
+
+\subsection{La phase pont jusqu'\`a l'\^age l\'egal}\label{sec:retraite-pont}
+
+La phase pont est la p\'eriode entre le jour o\`u tu cesses de travailler et celui o\`u ta rente
+l\'egale commence~: pendant ces ann\'ees, ton capital doit te faire vivre seul.
+
+\annahme{Pendant le pont, ton revenu est le dividende net de l'ann\'ee o\`u tu atteins l'objectif,
+qui garde ensuite sa valeur r\'eelle, comme au chapitre~\ref{sec:capital}. Tu es alors assur\'e
+volontaire, et ce revenu est d\'ej\`a net de la cotisation maladie du chapitre~\ref{sec:fiscalite}. Le
+plan garde les m\^emes r\`egles apr\`es \AgeLegal~ans~; l'assurance maladie des retrait\'es ob\'eit \`a
+d'autres r\`egles, qu'il n'int\`egre pas et que tu devras faire v\'erifier.}
+
+Dans le sc\'enario de base, le pont dure \BrueckeJahre~ann\'ee~: tu atteins l'objectif \`a
+\AlterYannBasis~ans, qui est l'\^age l\'egal. La figure~\ref{fig:pont-scenario-base} montre les deux
+revenus qui en r\'esultent.
+
+\linienfigur{fig_bruecke}[width=0.95\linewidth, xlabel={Ton \^age (ans)}, ylabel={Revenu mensuel (euros de 2026)},
+  scaled y ticks=false, ymin=0, enlarge y limits={upper, value=0.2},
+  cycle list={{blue, thick},{red, thick, dashed}},
+  legend pos=south east, legend cell align=left, legend style={fill=white}]%
+  {alter}{dividende,rente}%
+  {{Dividendes nets},{Rente l\'egale brute}}%
+  {Revenu mensuel du sc\'enario de base \`a partir de l'objectif, atteint \`a \AlterYannBasis~ans~:
+  dividendes nets et rente l\'egale brute, sans phase pont (r\'epartition \ReferenzStrategie,
+  \ReferenzSparquote~\% d'\'epargne, euros de 2026).\label{fig:pont-scenario-base}}
+
+Ce graphique montre deux revenus qui commencent la m\^eme ann\'ee, \`a \AlterYannBasis~ans~:
+\RevenuNetYannBasis~€ nets de dividendes et \RenteBeiZielalter~€ bruts de rente l\'egale. \bk{Le
+sc\'enario de base fait donc travailler ton capital pour un revenu que ta rente couvre d\'ej\`a en
+grande partie.} La cible de ce plan ne compte pas la rente~: le capital du chapitre~\ref{sec:capital}
+est dimensionn\'e comme si elle n'existait pas. Ce choix est prudent, parce qu'il te rend
+ind\'ependant du niveau futur des rentes, mais il a un prix~: pass\'e \AgeLegal~ans, tu disposerais de
+bien plus que ta cible, et une partie de l'\'epargne de tes ann\'ees de travail n'aurait servi qu'\`a
+ce surplus. Un plan qui compterait la rente demanderait \`a ton capital de couvrir toute la cible
+jusqu'\`a l'\^age l\'egal, puis seulement l'\'ecart avec la rente nette~; ce document ne le calcule
+pas, et c'est une piste \`a chiffrer avec un conseiller.
+
+Le pont n'existe que si tu pars plus t\^ot. Au chapitre~\ref{sec:accumulation}, un taux d'\'epargne de
+\SparquoteFuenfzig~\% avec la r\'epartition \ReferenzStrategie{} atteint l'objectif \`a
+\AlterMaisonSiebzigFuenfzig~ans, en \BrueckeAnneeDebutFuenfzig, avec un capital de
+\KapitalBrueckeFuenfzig~€. La figure~\ref{fig:pont-depart-anticipe} montre le revenu qui en r\'esulte.
+
+\linienfigur{fig_bruecke_anticipee}[xlabel={Ton \^age (ans)}, ylabel={Revenu mensuel (euros de 2026)},
+  scaled y ticks=false, ymin=0, enlarge y limits={upper, value=0.25},
+  cycle list={{blue, thick},{red, thick, dashed},{black, dotted}},
+  every axis plot post/.append style={const plot},
+  legend pos=south east, legend cell align=left, legend style={fill=white}]%
+  {alter}{dividende,rente,cible}%
+  {{Dividendes nets},{Rente l\'egale brute},{Cible de \ZielMonat~€}}%
+  {Revenu mensuel apr\`es un d\'epart anticip\'e \`a \AlterMaisonSiebzigFuenfzig~ans~: dividendes nets
+  seuls pendant le pont, puis rente l\'egale brute \`a partir de \AgeLegal~ans (r\'epartition
+  \ReferenzStrategie, \SparquoteFuenfzig~\% d'\'epargne, euros de 2026).\label{fig:pont-depart-anticipe}}
+
+Ce graphique montre un pont de \BrueckeJahreFuenfzig~ans, de \AlterMaisonSiebzigFuenfzig{} \`a
+\AgeLegal~ans, pendant lequel tes dividendes, \RevenuNetBrueckeFuenfzig~€ nets par mois, sont ton
+seul revenu et d\'epassent \`a peine la cible. La rente arrive en \BrueckeAnneeRente, mais elle ne
+vaut que \RenteBrueckeFuenfzig~€ bruts, \RenteBrueckePerteMois~€ de moins que si tu avais travaill\'e
+jusqu'\`a \AgeLegal~ans, soit \RenteBrueckePerteProzent~\% de moins, et cela pour le reste de ta vie.
+Ici, le pont n'exige aucun capital suppl\'ementaire, puisque les dividendes couvrent seuls la cible
+d\`es le d\'epart~; son co\^ut est cette rente r\'eduite. Son risque est ailleurs~: une baisse du
+dividende dans les premi\`eres ann\'ees de retraite, la plus dangereuse selon la
+section~\ref{sec:risques-sequence}, tomberait pendant le pont, quand tu n'as aucun autre revenu. Au
+taux d'\'epargne minimal qui permet de partir avant l'\^age l\'egal, \QuoteAnticipeeMaisonSiebzig~\%,
+tu partirais \`a \AlterAnticipeeMaisonSiebzig~ans~: le pont ne durerait que
+\BrueckeJahreAnticipee~ans, et ta rente vaudrait \RenteBrueckeAnticipee~€ bruts.
+
+\subsection{Quelle r\'eserve de liquidit\'es~?}\label{sec:retraite-reserve}
+
+La section~\ref{sec:risques-reserve} a montr\'e qu'une r\'eserve de \PufferJahreMit~ans de d\'epenses
+fait passer la r\'eussite du mod\`ele sans imp\^ot de \ErfolgsquoteBasis~\% \`a
+\ErfolgsquoteMitPuffer~\%. Reste \`a savoir quelle taille lui donner. La
+figure~\ref{fig:reussite-selon-reserve} la fait varier de z\'ero \`a \PufferJahreMax~ans, sur les m\^emes
+trajectoires et avec les m\^emes r\`egles que le Monte Carlo du chapitre~\ref{sec:risques}
+(tableau~\ref{tab:projection-contre-simulation}).
+
+\annahme{R\'eserve mesur\'ee en ann\'ees de cible, \ZielJahr~€ chacune, constitu\'ee au d\'epart en
+retraite et jamais reconstitu\'ee. Elle ne comble que ce qui manque pour remonter au seuil de
+\SeuilReussite~\% de la cible. Le mod\`ele lui garde sa valeur r\'eelle, ce qui suppose un placement
+dont l'int\'er\^et compense au moins l'inflation~: un compte non r\'emun\'er\'e perdrait chaque ann\'ee
+du pouvoir d'achat. Mod\`ele sans imp\^ot, march\'e am\'ericain seul, retraite de \McRenteAns~ans.}
+
+\linienfigur{fig_puffer}[xlabel={R\'eserve de liquidit\'es (ann\'ees de d\'epenses)},
+  ylabel={Probabilit\'e de r\'eussite (\%)}, y filter/.expression={y*1e2}, xtick=data, ymin=0,
+  enlarge y limits={upper, value=0.15}, enlarge x limits=0.1,
+  every axis plot post/.append style={mark=*, mark size=1.8pt},
+  nodes near coords, every node near coord/.append style={font=\scriptsize, anchor=south east,
+    /pgf/number format/fixed, /pgf/number format/fixed zerofill, /pgf/number format/precision=1},
+  legend pos=south east, legend cell align=left, legend style={fill=white}]%
+  {puffer_jahre}{erfolgsquote}%
+  {{R\'eussite sur \McRenteAns~ans}}%
+  {Probabilit\'e que le revenu reste au-dessus de \SeuilReussite~\% de la cible pendant \McRenteAns~ans
+  de retraite, selon la taille de la r\'eserve de liquidit\'es (Monte Carlo sans imp\^ot du
+  chapitre~\ref{sec:risques}, \McTrajectoires{} trajectoires).\label{fig:reussite-selon-reserve}}
+
+Ce graphique montre des gains d\'ecroissants. La premi\`ere ann\'ee de r\'eserve ajoute
+\PufferGainEins~points de r\'eussite, de \ErfolgsquoteBasis{} \`a \ErfolgsquotePufferEins~\%, la
+deuxi\`eme \PufferGainMit~points, jusqu'\`a \ErfolgsquoteMitPuffer~\%, et la troisi\`eme
+\PufferGainMax~points, jusqu'\`a \ErfolgsquotePufferMax~\%. Chaque ann\'ee co\^ute pourtant autant \`a
+\'epargner, \ZielJahr~€, soit \PufferMontantMax~€ pour \PufferJahreMax~ans, en plus du capital du
+chapitre~\ref{sec:capital}. \bk{Une ann\'ee de d\'epenses en r\'eserve apporte l'essentiel de la
+protection~; au-del\`a, chaque euro mis de c\^ot\'e prot\`ege de moins en moins.} Ces taux sont ceux du
+mod\`ele sans imp\^ot, qui ne dit rien de ta date de d\'epart~; c'est l'\'ecart entre eux qui compte.
+La r\'eserve sert surtout pendant le pont~: \`a partir de \AgeLegal~ans, ta rente, qui ne d\'epend
+d'aucun march\'e, joue en partie le m\^eme r\^ole.
+
+\subsection{La r\`egle des \TauxRetrait~\% \`a l'\'epreuve de l'histoire}\label{sec:retraite-quatre}
+
+Le chapitre~\ref{sec:capital} a oppos\'e deux fa\c{c}ons de vivre de ton capital, et le
+chapitre~\ref{sec:risques} n'a rejou\'e que la premi\`ere. Cette section rejoue la seconde~: un ETF
+actions dont tu retires chaque ann\'ee \TauxRetrait~\% du capital de d\'epart, un montant ensuite
+constant en pouvoir d'achat, quels que soient les march\'es.
+
+\annahme{Donn\'ees de Robert Shiller\QH{shiller_url}~: rendement r\'eel total de
+l'\IndiceActionsUs{}, dividendes r\'einvestis, jusqu'en \ShillerFin. Pour chaque ann\'ee de d\'epart,
+tu retires en d\'ebut d'ann\'ee \TauxRetrait~\% du capital initial, ajust\'es de l'inflation, puis le
+capital restant re\c{c}oit le rendement r\'eel de l'ann\'ee. Le capital tient s'il couvre tous les
+retraits pendant \RetraitHistAnsDreissig{} ou \RetraitHistAnsVierzig~ans~; d\'eparts de
+\RetraitHistPremierDreissig{} \`a \RetraitHistDernierDreissig{} pour \RetraitHistAnsDreissig~ans, et
+jusqu'en \RetraitHistDernierVierzig{} pour \RetraitHistAnsVierzig~ans. L'imp\^ot sur les parts vendues
+est pay\'e sur le retrait lui-m\^eme, comme au chapitre~\ref{sec:capital}. \textbf{Limites
+d\'eclar\'ees~: march\'e am\'ericain seul, portefeuille enti\`erement en actions, sans frais ni imp\^ot
+pr\'elev\'e sur le capital.} Les frais d'un ETF et l'imp\^ot annuel de la Vorabpauschale retirent
+chaque ann\'ee une petite part du capital, ce qui ne peut qu'abaisser les taux qui suivent.}
+
+\linienfigur{fig_regle_quatre_histoire}[xlabel={Ann\'ee de d\'epart en retraite},
+  ylabel={Capital r\'eel final (multiple du capital initial)},
+  xticklabel style={/pgf/number format/set thousands separator={}},
+  table/empty cells with={nan}, unbounded coords=discard, ymin=0,
+  cycle list={{blue},{red}}, every axis plot post/.append style={only marks, mark=*,
+    mark size=1.1pt},
+  legend cell align=left, legend style={at={(0.5,-0.22)}, anchor=north, legend columns=2,
+    /tikz/every even column/.append style={column sep=0.5cm}}]%
+  {start}{fin_dreissig,fin_vierzig}%
+  {{Apr\`es \RetraitHistAnsDreissig~ans de retraits},{Apr\`es \RetraitHistAnsVierzig~ans de retraits}}%
+  {Capital r\'eel restant apr\`es \RetraitHistAnsDreissig{} et \RetraitHistAnsVierzig~ans de retraits de
+  \TauxRetrait~\% du capital initial, selon l'ann\'ee de d\'epart~; z\'ero signifie un capital
+  \'epuis\'e avant la fin (indice \IndiceActionsUs, sans frais, march\'e am\'ericain
+  seul).\label{fig:regle-retrait-histoire}}
+
+% Phrases liees aux donnees actuelles (a relire si la serie change): "autour de 1929",
+% "fin des annees 1960 et debut des annees 1970", "aucun depart n'echoue" au taux prudent.
+Ce graphique montre que, sur \RetraitHistAnsDreissig~ans, le capital tient pour
+\RetraitHistTenusDreissig{} des \RetraitHistDebutsDreissig{} ann\'ees de d\'epart, soit
+\RetraitHistReussiteDreissig~\%, et s'\'epuise pour les d\'eparts de \RetraitHistEchecsListeDreissig.
+Sur \RetraitHistAnsVierzig~ans, il tient pour \RetraitHistTenusVierzig{} d\'eparts sur
+\RetraitHistDebutsVierzig, soit \RetraitHistReussiteVierzig~\%, et s'\'epuise pour ceux de
+\RetraitHistEchecsListeVierzig. Le pire d\'epart est \RetraitHistPireDebutVierzig~: le capital n'a
+couvert que \RetraitHistPireDureeVierzig~ann\'ees de retraits. Les \'echecs se concentrent sur des
+retraites commenc\'ees juste avant une longue p\'eriode de rendements r\'eels faibles, autour de 1929
+et surtout \`a la fin des ann\'ees 1960 et au d\'ebut des ann\'ees 1970, au seuil de la d\'ecennie
+d'inflation (section~\ref{sec:risques-baisses}).
+
+Dans le cas m\'edian, au contraire, le capital r\'eel final vaut \RetraitHistFinMedianeFoisDreissig{}
+fois le capital de d\'epart apr\`es \RetraitHistAnsDreissig~ans, et \RetraitHistFinMedianeFoisVierzig{}
+fois apr\`es \RetraitHistAnsVierzig~ans~: la r\`egle est pens\'ee pour les pires s\'equences, et dans
+la plupart des histoires elle laisse un gros capital inutilis\'e. Au taux prudent de
+\TauxRetraitPrudent~\% du chapitre~\ref{sec:capital}, aucun d\'epart n'\'echoue~: la r\'eussite vaut
+\RetraitHistReussitePrudentVierzig~\% sur \RetraitHistAnsVierzig~ans, et dans le pire cas il reste
+encore \RetraitHistPrudentFinMinVierzig~\% du capital initial. Ce taux demande cependant
+\KapitalEtfPrudent~€ de capital au lieu de \KapitalEtfReferenz~€.
+
+Ce test ne r\'epond pas \`a la m\^eme question que le rejeu des dividendes de la
+section~\ref{sec:risques-rejeu}. La r\`egle des \TauxRetrait~\% ne baisse jamais ton revenu~; elle
+\'echoue quand le capital est vide, et cet \'echec est d\'efinitif. La strat\'egie des dividendes ne
+vend jamais rien~; elle \'echoue d\`es que son revenu passe une seule ann\'ee sous \SeuilReussite~\% de
+l'objectif, mais le capital reste, et le revenu peut remonter. Le
+tableau~\ref{tab:retrait-contre-dividendes} compare pourtant les deux issues sur les m\^emes
+\RetraitHistMemesDepartsJuges{} d\'eparts jug\'es que le rejeu, avec une retraite de
+\RetraitHistAnsVierzig~ans qui commence l'ann\'ee suivant l'objectif.
+
+\begin{table}[!tb]
+  \centering\small
+  \caption{Issue des \RetraitHistMemesDepartsJuges{} d\'eparts jug\'es du rejeu du
+  chapitre~\ref{sec:risques}~: revenu de dividendes contre r\`egle des \TauxRetrait~\% sur les m\^emes
+  retraites de \RetraitHistAnsVierzig~ans (indice \IndiceActionsUs, sans imp\^ot, nombre de
+  d\'eparts).}\label{tab:retrait-contre-dividendes}
+  \begin{tabularx}{\linewidth}{>{\bfseries}l *{3}{>{\centering\arraybackslash}X}}
+    \toprule
+    \rowcolor[gray]{0.9}
+    \textbf{Revenu de dividendes} & \textbf{R\`egle des \TauxRetrait~\%~: le capital tient}
+      & \textbf{R\`egle des \TauxRetrait~\%~: capital \'epuis\'e} & \textbf{Total} \\
+    \midrule
+    Tenu toute la retraite & \RetraitHistLesDeuxTiennent & \RetraitHistSeulDividendeTient
+      & \RueckspielTenus \\
+    Pass\'e sous le seuil & \RetraitHistSeulRetraitTient & \RetraitHistAucunNeTient & \RueckspielEchecs \\
+    Total & \RetraitHistMemesDepartsTenus & \RetraitHistMemesDepartsEchecs & \RetraitHistMemesDepartsJuges \\
+    \bottomrule
+  \end{tabularx}
+\end{table}
+
+Ce tableau montre que, sur ces d\'eparts, la r\`egle des \TauxRetrait~\% tient dans
+\RetraitHistMemesDepartsTenus{} cas, soit \RetraitHistMemesDepartsProzent~\%, contre
+\RueckspielTenus{} cas, \RueckspielTenusProzent~\%, pour le revenu de dividendes. Les deux
+\'echouent ensemble pour les retraites commenc\'ees en \RetraitHistAnneesAucun. Le revenu de
+dividendes tient seul pour celles de \RetraitHistAnneesSeulDividende, quand les rendements r\'eels du
+march\'e ont \'et\'e trop faibles pour le capital sans que le dividende passe sous le seuil. La r\`egle
+tient seule pour celles de \RetraitHistAnneesSeulRetrait, o\`u le dividende est pass\'e sous le seuil
+sans que le capital s'\'epuise. \bk{Sur ce test historique, la r\`egle des \TauxRetrait~\% ne fait pas
+moins bien que les dividendes seuls~: elle tient plus souvent, avec moins de capital
+(chapitre~\ref{sec:capital}).} La presse sp\'ecialis\'ee pr\'esente parfois la strat\'egie des
+dividendes comme celle qui r\'eduit au minimum le risque de s\'equence et de
+faillite\QP{justetf_entnahmestrategien}~; c'est vrai pour la faillite, puisque le capital n'est jamais
+vendu, mais pas pour le revenu, que la s\'equence des rendements frappe \`a travers le dividende
+lui-m\^eme.
+
+Deux prudences s'imposent. Les \RetraitHistMemesDepartsJuges{} d\'eparts ne correspondent qu'\`a
+\RetraitHistMemesDepartsAnnees{} ann\'ees de retraite distinctes, qui se chevauchent largement~: ces
+pourcentages d\'ecrivent une poign\'ee d'histoires, pas des dizaines d'exp\'eriences ind\'ependantes.
+Et l'\'echec n'a pas la m\^eme gravit\'e des deux c\^ot\'es~: un revenu de dividendes pass\'e sous le
+seuil reste un revenu, avec tout le capital derri\`ere lui, alors qu'un capital \'epuis\'e ne verse plus
+rien. Les deux tests partagent enfin les m\^emes limites~: march\'e am\'ericain seul, sans frais, et
+sans la fiscalit\'e allemande, qui abaisse le taux de retrait effectif\QP{getmad_fire}.
+
+\subsection{Tes r\`egles de retrait}\label{sec:retraite-regles}
+
+Ces r\'esultats se traduisent en quelques r\`egles, \`a fixer avant le d\'epart pour ne pas avoir \`a
+les inventer pendant une crise.
+
+Si tu suis la strat\'egie des dividendes, tu vis des dividendes nets de l'ann\'ee et tu ne vends
+aucune part. Quand le dividende baisse, tu acceptes de r\'eduire tes d\'epenses jusqu'\`a
+\SeuilReussite~\% de ta cible, et tu ne puises dans la r\'eserve que pour ne pas descendre plus
+bas~: c'est la r\`egle que simule le chapitre~\ref{sec:risques}, et la seule dont ce document mesure
+l'effet. Le mod\`ele ne reconstitue jamais la r\'eserve~; la remplir de nouveau les bonnes ann\'ees
+est une pr\'ecaution de bon sens, que le calcul ne chiffre pas.
+
+Si tu suis la r\'ef\'erence en ETF, tu retires chaque ann\'ee le m\^eme montant r\'eel,
+\TauxRetrait~\% du capital de d\'epart ajust\'es de l'inflation, sans le relever apr\`es une bonne
+ann\'ee ni le couper apr\`es une mauvaise~: c'est la r\`egle test\'ee dans la
+section~\ref{sec:retraite-quatre}. Pour \ZielMonat~€ nets par mois, ce retrait vaut
+\RetraitBrutEtf~€ bruts par an, imp\^ot et cotisation maladie compris (chapitre~\ref{sec:capital}).
+Si une crise survient dans les premi\`eres ann\'ees, la tentation de tout vendre ou d'abandonner la
+r\`egle sera forte~; sur l'histoire am\'ericaine, la tenir a suffi dans \RetraitHistReussiteVierzig~\%
+des d\'eparts sur \RetraitHistAnsVierzig~ans.
+
+Dans les deux cas, ta rente l\'egale change la donne \`a \AgeLegal~ans~: elle couvre alors une grande
+partie de ta cible et ne d\'epend d'aucun march\'e. Tu pourras r\'eduire ce que tu tires de ton
+capital, ou garder ce revenu comme marge contre une baisse future du niveau des rentes. Le plan ne
+chiffre pas cette seconde phase~; il faudra la recalculer quelques ann\'ees avant l'\^age l\'egal,
+avec le relev\'e de carri\`ere que t'enverra l'assurance pension.
+
+\bk{Retiens de ce chapitre qu'au sc\'enario de base il n'y a pas de pont, puisque l'objectif tombe \`a
+l'\^age l\'egal, et que ta rente l\'egale, \RenteBeiZielalter~€ bruts par mois, s'ajoute alors \`a des
+dividendes d\'ej\`a suffisants. Un d\'epart \`a \AlterMaisonSiebzigFuenfzig~ans demande
+\SparquoteFuenfzig~\% d'\'epargne et r\'eduit cette rente de \RenteBrueckePerteProzent~\% \`a vie.}
+Une ann\'ee de d\'epenses en r\'eserve apporte l'essentiel de la protection mesurable. Enfin, rejou\'ee
+sur l'histoire am\'ericaine, la r\`egle des \TauxRetrait~\% tient \RetraitHistAnsVierzig~ans dans
+\RetraitHistReussiteVierzig~\% des d\'eparts~; sur les \RetraitHistMemesDepartsJuges{} d\'eparts du
+rejeu des dividendes, elle tient dans \RetraitHistMemesDepartsProzent~\% des cas, contre
+\RueckspielTenusProzent~\% pour le revenu de dividendes, et avec moins de capital. Le chapitre~\ref{sec:presse} confronte ces r\'esultats \`a ce qu'\'ecrivent
+les magazines et la recherche.
+
+\Yannbox{\AnneeYannBasis}{En \AnneeYannBasis, \`a \AlterYannBasis~ans, Yann arr\^ete de travailler
+l'ann\'ee m\^eme o\`u sa rente l\'egale commence~: pas de pont. Ses dividendes lui versent
+\RevenuNetYannBasis~€ nets par mois et sa rente \RenteBeiZielalter~€ bruts. S'il avait \'epargn\'e
+\SparquoteFuenfzig~\% de son salaire, il serait parti en \BrueckeAnneeDebutFuenfzig, \`a
+\AlterMaisonSiebzigFuenfzig~ans, aurait v\'ecu \BrueckeJahreFuenfzig~ans de ses seuls dividendes,
+\RevenuNetBrueckeFuenfzig~€ nets par mois, puis touch\'e \RenteBrueckeFuenfzig~€ bruts de rente, soit
+\RenteBrueckePerteMois~€ de moins. Une r\'eserve d'un an, \ZielJahr~€, porterait la r\'eussite du
+mod\`ele sans imp\^ot de \ErfolgsquoteBasis~\% \`a \ErfolgsquotePufferEins~\%. Avec un ETF monde et un
+retrait de \TauxRetrait~\%, son capital aurait tenu \RetraitHistAnsVierzig~ans dans
+\RetraitHistReussiteVierzig~\% des d\'eparts historiques de l'\IndiceActionsUs.}

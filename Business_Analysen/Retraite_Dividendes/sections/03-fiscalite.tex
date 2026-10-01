@@ -1,0 +1,215 @@
+\section{Du dividende brut \`a ton compte en Allemagne}\label{sec:fiscalite}
+% Chapitre 3 (tache 10, passage chapitres 02-03). Figures: fig_steuer_100,
+% fig_steuer_kumuliert (voir docs/figures.md). Aucun chiffre tape: macros de
+% data/kennzahlen.tex. Chaque cle de data/quellen.json n'est citee qu'une fois
+% dans ce chapitre (pas de note en double sur une meme page imprimee,
+% scripts/check_footnote_pages.py). Titres d'axes et etiquettes passes par
+% l'argument optionnel de \linienfigur/\balkenfigur (correctif infrastructure,
+% tache 10, second passage), comme au chapitre 2.
+
+Ce chapitre r\'epond \`a la question~: sur cent euros de dividende brut, combien arrivent vraiment sur
+ton compte en Allemagne, selon le pays qui verse le dividende, selon que tu d\'etiens une action ou un
+ETF, et que reste-t-il une fois l'assurance maladie pay\'ee~? Il d\'etaille les postes de la cascade du
+chapitre~\ref{sec:depart}~: l'imp\^ot allemand (section~\ref{sec:fisc-abgeltung}), l'avantage des ETF
+(section~\ref{sec:fisc-teilfreistellung}), les retenues \'etrang\`eres
+(section~\ref{sec:fisc-quellensteuer}), l'imp\^ot d'\'Eglise (section~\ref{sec:fisc-kirchensteuer}),
+l'option pour le bar\`eme progressif (section~\ref{sec:fisc-guenstiger}) et l'assurance maladie
+(section~\ref{sec:fisc-kv}), puis chiffre le co\^ut fiscal cumul\'e de chaque placement
+(section~\ref{sec:fisc-kumuliert}).
+
+\bk{Ce chapitre d\'ecrit les r\`egles de 2026 telles que le mod\`ele les applique. Chaque point est \`a
+faire valider par un conseiller fiscal avant d'engager de l'argent~; ce document n'est pas un conseil
+fiscal.}
+
+\annahme{R\`egles fiscales et sociales de 2026 fig\'ees pendant tout le plan~: les taux et le
+forfait d'\'epargnant restent \`a leur niveau nominal de 2026, que la loi fixe en euros. En euros
+constants, le forfait d'\'epargnant perd donc chaque ann\'ee un peu de sa valeur, ce que le mod\`ele
+reproduit. Le plancher et le plafond de l'assiette de l'assurance maladie et d\'ependance suivent une
+autre r\`egle~: la loi les revalorise chaque ann\'ee avec les salaires\QH{kv_schwellen_dynamisierung},
+et le mod\`ele les tient donc constants en euros de 2026, ce qui revient \`a supposer que les salaires
+progressent au moins comme les prix. Aucune r\'eforme future n'est anticip\'ee.}
+
+\subsection{Abgeltungsteuer, Soli et Sparerpauschbetrag}\label{sec:fisc-abgeltung}
+
+En Allemagne, les dividendes d'un particulier sont impos\'es \`a part de ses autres revenus, au taux
+forfaitaire de \AbgeltungSatz~\% (Abgeltungsteuer)\QH{abgeltungsteuer_satz}, auquel s'ajoute la
+contribution de solidarit\'e (Solidarit\"atszuschlag) de \SoliSatz~\% de cet imp\^ot\QH{soli_satz}. Le
+pr\'el\`evement total atteint ainsi \SteuerSatzGesamt~\% du dividende. Chaque ann\'ee, les premiers
+\Sparerpauschbetrag~€ de revenus de capitaux d'une personne seule restent exon\'er\'es
+(Sparerpauschbetrag)\QH{sparerpauschbetrag}. Ce forfait compte pendant les premi\`eres ann\'ees
+d'\'epargne, o\`u il couvre une bonne partie des dividendes, mais il ne p\`ese presque rien face aux
+\BruttoNoetig~€ bruts annuels de la retraite vis\'ee. Au-del\`a du forfait, cent euros de dividende
+allemand te laissent \NettoDe~€.
+
+\subsection{Teilfreistellung~: pourquoi l'ETF est moins impos\'e}\label{sec:fisc-teilfreistellung}
+
+Un fonds d'actions, et donc un ETF actions, b\'en\'eficie d'une exon\'eration partielle
+(Teilfreistellung)~: \Teilfreistellung~\% de ses distributions et de ses plus-values sont exon\'er\'es
+pour un particulier\QH{teilfreistellung_aktienfonds}. Cette r\`egle compense l'imp\^ot que le fonds
+paie d\'ej\`a \`a l'int\'erieur, et les retenues \'etrang\`eres subies par le fonds sont d\'ej\`a
+d\'eduites du rendement qu'il distribue. Sur cent euros distribu\'es par un ETF actions, il te reste
+\NettoEtf~€. Un ETF capitalisant ne distribue rien, mais il est impos\'e chaque ann\'ee sur un montant
+forfaitaire (Vorabpauschale) calcul\'e \`a partir d'un taux de r\'ef\'erence publi\'e par le
+minist\`ere des Finances, le Basiszins, de \Basiszins~\% pour 2026\QH{basiszins_2026}~; la m\^eme
+exon\'eration partielle s'y applique.
+
+La cons\'equence est d\'efavorable \`a la th\`ese de ce plan, et il faut la dire d\`es maintenant~: \`a
+dividende \'egal, une action d\'etenue en direct est plus lourdement impos\'ee en Allemagne qu'un ETF
+d'actions. L'ETF maison du chapitre~\ref{sec:portefeuille} est un ensemble d'actions en direct, sans exon\'eration
+partielle.
+
+\subsection{Retenues \`a la source par pays et formulaire W-8BEN}\label{sec:fisc-quellensteuer}
+
+Quand la soci\'et\'e est \'etrang\`ere, son pays retient d'abord un imp\^ot \`a la source.
+L'Allemagne l'impute ensuite sur son propre imp\^ot, jusqu'au taux pr\'evu par la convention fiscale
+entre les deux pays~; ce qui d\'epasse ce taux est perdu, sauf demande de remboursement aupr\`es du pays
+d'origine\QH{quellensteuer}. Les \'Etats-Unis retiennent \QstUsStandard~\% sans formalit\'e, mais
+seulement \QstUsFormulaire~\% si ton courtier dispose du formulaire W-8BEN, et ces \QstUsFormulaire~\%
+sont enti\`erement imputables.
+
+\annahme{\HypotheseUsFormulaire. C'est un \'ecart assum\'e au plan, qui partait du taux sans
+formulaire~: le d\'ep\^ot est une d\'emarche unique, \`a v\'erifier \`a l'ouverture du compte, et sans
+lui le d\'ecompte ci-dessous serait nettement plus mauvais pour les dividendes am\'ericains. La Suisse
+et la France gardent leur retenue standard, sans remboursement.}
+
+Avec le formulaire, cent euros de dividende am\'ericain te laissent \NettoUs~€, un peu plus qu'un
+dividende allemand~: la retenue am\'ericaine r\'eduit l'imp\^ot allemand, et la contribution de
+solidarit\'e ne porte que sur ce qui reste d'imp\^ot allemand. Sans formulaire, il ne reste que
+\NettoUsSansFormulaire~€. La Suisse retient \QstCh~\%, dont seuls \QstChAnrechenbar~\% sont imputables
+en Allemagne~: sans remboursement demand\'e en Suisse, il te reste \NettoCh~€, et \NettoChRemboursement~€
+avec. La France retient \QstFr~\%, d\'ej\`a sous le taux de la convention et enti\`erement imputable,
+d'o\`u \NettoFr~€ avec ou sans formulaire. Les Pays-Bas retiennent \QstNl~\% (\NettoNl~€ nets) et le
+Royaume-Uni \QstGb~\% (\NettoGb~€, comme un dividende allemand). La figure~\ref{fig:net-cent-euros}
+r\'esume ces cas.
+
+% Ordre des etiquettes = ordre des lignes de data/fig_steuer_100.csv (DE, US,
+% US_sans_w8ben, CH, CH_avec_remboursement, FR, FR_avec_formulaire, NL, GB, ETF,
+% DE_kirchensteuer_8, DE_kirchensteuer_9).
+\balkenfigur{fig_steuer_100}[ylabel={Net pour cent euros bruts (€)},
+  ymin=0, enlarge y limits={upper, value=0.25}, bar width=11pt,
+  xticklabels={{Allemagne},{\'Etats-Unis, W-8BEN},{\'Etats-Unis sans W-8BEN},{Suisse},
+    {Suisse, rembours\'ee},{France},{France, formulaire},{Pays-Bas},{Royaume-Uni},{ETF actions},
+    {Allemagne, \'Eglise \KistAcht~\%},{Allemagne, \'Eglise \KistNeun~\%}},
+  nodes near coords, every node near coord/.append style={font=\tiny, rotate=90, anchor=west,
+    /pgf/number format/fixed, /pgf/number format/fixed zerofill, /pgf/number format/precision=2}]{art}{netto}%
+  {Montant net qui te reste pour cent euros de dividende brut, selon le pays de la soci\'et\'e ou
+  l'enveloppe, au-del\`a du forfait d'\'epargnant (r\`egles de 2026, sans assurance
+  maladie).\label{fig:net-cent-euros}}
+
+Ce graphique montre que l'ETF actions laisse le plus, \NettoEtf~€ pour cent euros bruts, alors que les
+actions en direct laissent entre \NettoCh~€ (Suisse sans remboursement) et \NettoUs~€ (\'Etats-Unis
+avec formulaire, Pays-Bas). Les deux barres les plus coûteuses sont des oublis administratifs~: le
+formulaire W-8BEN non d\'epos\'e (\NettoUsSansFormulaire~€) et le remboursement suisse non demand\'e.
+Il faut toutefois comparer ce qui est comparable~: l'ETF monde distribue environ \RenditeDivEtf~\% de sa
+valeur par an, contre \RenditeDivMaison~\% pour le portefeuille-exemple, et le chapitre~\ref{sec:capital} en tire le
+capital n\'ecessaire pour chaque strat\'egie.
+
+\subsection{Imp\^ot d'\'Eglise~: une variante}\label{sec:fisc-kirchensteuer}
+
+\annahme{Pas d'imp\^ot d'\'Eglise (Kirchensteuer) dans le sc\'enario de base~; tu n'es pas suppos\'e
+membre d'une \'Eglise qui le pr\'el\`eve. La variante le chiffre \`a \KistAcht~\% et \`a \KistNeun~\%
+de l'imp\^ot, les deux taux possibles selon le Land de r\'esidence, \`a confirmer par toi.}
+
+Si tu le paies, l'imp\^ot d'\'Eglise s'ajoute \`a l'Abgeltungsteuer, qui baisse l\'eg\`erement en
+contrepartie, car la loi tient compte de sa d\'eductibilit\'e dans la formule du taux forfaitaire.
+Cent euros de dividende allemand te laissent alors \NettoDeKistAcht~€ au taux de \KistAcht~\% et
+\NettoDeKistNeun~€ au taux de \KistNeun~\%, au lieu de \NettoDe~€. \`A la retraite, le dividende brut
+annuel n\'ecessaire passe de \BruttoNoetig~€ \`a \BruttoNoetigKistAcht~€ ou \BruttoNoetigKistNeun~€~:
+l'\'ecart reste faible devant les autres postes de la cascade.
+
+\subsection{G\"unstigerpr\"ufung~: le bar\`eme progressif sur demande}\label{sec:fisc-guenstiger}
+
+Sur demande dans ta d\'eclaration de revenus, le fisc compare l'imp\^ot forfaitaire avec l'imp\^ot
+que donnerait le bar\`eme progressif ordinaire sur tes revenus de capitaux, et retient le plus faible
+(G\"unstigerpr\"ufung, \S~32d EStG, d\'ej\`a cit\'e plus haut). Pendant ta vie active, ton salaire
+place tes revenus dans une tranche o\`u cette option ne sert \`a rien. \`A la retraite, si tu vis de
+tes seuls dividendes, la situation change~: le bar\`eme s'applique \`a tout le dividende, tes
+cotisations d'assurance maladie et d\'ependance deviennent d\'eductibles, et l'imp\^ot restant peut
+tomber sous le seuil de la contribution de solidarit\'e.
+
+\annahme{Calcul simplifi\'e, fait uniquement pour la cascade du chapitre~\ref{sec:depart}~: aucun
+autre revenu, bar\`eme 2026 de l'imp\^ot sur le revenu\QH{est_tarif_2026}, cotisations maladie et
+d\'ependance enti\`erement d\'eductibles, retenues \'etrang\`eres imput\'ees pays par pays dans la
+limite de l'imp\^ot allemand correspondant, contribution de solidarit\'e nulle tant que l'imp\^ot reste
+sous \SoliFreigrenze~€\QH{soli_freigrenze_2026}. Ce point est \`a faire valider par un conseiller.}
+
+Pour les \BruttoNoetig~€ bruts de la cascade, le revenu imposable au bar\`eme tombe \`a
+\GuenstigerRevenuImposable~€, et l'imp\^ot allemand apr\`es imputation des retenues \'etrang\`eres
+n'est plus que de \GuenstigerImpotTarif~€, contre \ImpotAllemand~€ au taux forfaitaire. L'option vaut
+donc environ \GuenstigerEconomieAn~€ par an, soit \GuenstigerEconomieMois~€ par mois. Le reste du
+document garde volontairement le taux forfaitaire~: les capitaux des chapitres~\ref{sec:capital} et~\ref{sec:accumulation} sont donc
+prudents sur ce point. \bk{Ne compte pas sur ce gain pour dimensionner ton plan~: il dispara\^it en
+partie d\`es que ta rente l\'egale s'ajoute \`a tes revenus imposables, et il d\'epend d'un bar\`eme
+qui aura chang\'e d'ici ta retraite.}
+
+\subsection{Assurance maladie et d\'ependance volontaire}\label{sec:fisc-kv}
+
+\annahme{Avant la rente l\'egale, tu restes affili\'e \`a l'assurance maladie publique (GKV) comme
+membre volontaire, sans indemnit\'es journali\`eres (taux r\'eduit), sans enfant et avec la
+cotisation compl\'ementaire moyenne de 2026. L'acc\`es \`a l'assurance des retrait\'es n'est pas
+suppos\'e acquis.}
+
+Un membre volontaire cotise sur l'ensemble de ses revenus, dividendes compris\QH{kv_teilfreistellung_etf}.
+Le taux r\'eduit est de \KvSatz~\%\QH{kv_satz_ermaessigt}, la cotisation compl\'ementaire moyenne de
+\KvZusatz~\%\QH{kv_zusatzbeitrag_2026}, et l'assurance d\'ependance d'une personne sans enfant de
+\PvSatz~\%\QH{pv_satz_kinderlos_2026}, soit \KvPvSatz~\% au total. L'assiette est born\'ee des deux
+c\^ot\'es. En bas, elle ne descend jamais sous \KvMindestMonat~€ par
+mois\QH{kv_mindestbemessung_monat_2026}, ce qui fait une cotisation minimale de \KvPvMinMonat~€ par
+mois m\^eme avec peu de revenus. En haut, elle s'arr\^ete \`a \KvBbgMonat~€ par
+mois\QH{kv_bbg_monat_2026}, ce qui plafonne la cotisation \`a \KvPvMaxMonat~€ par mois. Comme ces deux
+seuils sont revaloris\'es chaque ann\'ee (hypoth\`ese en t\^ete de chapitre), la cotisation maximale
+reste de \KvPvMaxMonat~€ par mois en euros de 2026 \`a toutes les dates du plan~: l'inflation ne
+l'all\`ege pas.
+
+Avec \BruttoNoetigMois~€ de dividendes bruts par mois, tu d\'epasses ce plafond~: la cotisation est
+au maximum, soit \KvPvAnnuel~€ par an, et chaque euro de dividende au-del\`a du plafond n'en supporte
+plus. Pour les revenus de fonds, l'exon\'eration partielle des ETF s'applique aussi \`a l'assiette de
+la cotisation, alors que les dividendes d'actions en direct y entrent en entier~: c'est le deuxi\`eme
+avantage de l'ETF, dans la m\^eme source que ci-dessus.
+
+\subsection{Co\^ut fiscal cumul\'e sur dix-huit ans}\label{sec:fisc-kumuliert}
+
+Les sections pr\'ec\'edentes comparent les placements sur un seul dividende. La
+figure~\ref{fig:impot-cumule-strategies} les compare sur toute une phase d'\'epargne.
+
+\annahme{\'Epargne de \SparquoteZwanzig~\% du salaire net, \KapitalDepartMitte~€ de d\'epart, de 2027
+\`a 2044, avec le rendement r\'eel du chapitre~\ref{sec:depart}. Ce taux commun sert seulement \`a
+comparer les placements entre eux~; ce n'est pas celui du sc\'enario de base, qui \'epargne
+\ReferenzSparquote~\%. Trois placements compar\'es~: tout en actions en direct (ETF maison seul), ETF
+monde capitalisant (la r\'ef\'erence) et ETF monde distribuant. \HypotheseUmschichtung.}
+
+\linienfigur{fig_steuer_kumuliert}[xlabel={Ann\'ee}, ylabel={Imp\^ots cumul\'es (euros de 2026)},
+  xticklabel style={/pgf/number format/set thousands separator={}}, scaled y ticks=false,
+  legend pos=north west]%
+  {jahr}{maison,etf_thes,etf_aus}%
+  {{Actions en direct},{ETF capitalisant},{ETF distribuant}}%
+  {Imp\^ots cumul\'es pendant l'accumulation, retenues \'etrang\`eres comprises, selon le placement
+  (\SparquoteZwanzig~\% d'\'epargne, euros de 2026).\label{fig:impot-cumule-strategies}}
+
+Ce graphique montre qu'apr\`es dix-huit ans d'\'epargne, les actions en direct ont co\^ut\'e
+\SteuerKumMaison~€ d'imp\^ots, retenues \'etrang\`eres comprises, contre \SteuerKumEtfThes~€ pour l'ETF capitalisant et \SteuerKumEtfAus~€
+pour l'ETF distribuant~; l'\'ecart entre les actions en direct et la r\'ef\'erence atteint
+\SteuerDifferenzAchtzehn~€. Les courbes des ETF restent \`a z\'ero les premi\`eres ann\'ees, parce que
+leur montant imposable tient dans le forfait d'\'epargnant, alors que les actions en direct le
+d\'epassent vite en distribuant \RenditeDivMaison~\% par an sans exon\'eration partielle.
+
+Une limite du mod\`ele joue en faveur de l'ETF distribuant~: il ne calcule pas le compl\'ement de
+Vorabpauschale d\^u quand la distribution, ici \RenditeDivEtf~\%, reste sous le rendement de base
+d\'eriv\'e du Basiszins. L'\'ecart entre les deux courbes d'ETF ne doit donc pas \^etre lu comme un
+avantage du distribuant. L'\'ecart avec les actions en direct, lui, est bien r\'eel, et il ne mesure
+qu'une partie du co\^ut~: chaque euro d'imp\^ot pay\'e pendant l'\'epargne cesse de capitaliser, ce
+que les projections des chapitres~\ref{sec:capital} et~\ref{sec:accumulation} prennent en compte.
+
+\bk{En r\'esum\'e, la fiscalit\'e allemande favorise l'ETF sur trois points (exon\'eration partielle
+de l'imp\^ot, exon\'eration partielle de l'assiette maladie, report de l'imp\^ot pour le capitalisant)
+et p\'enalise deux oublis faciles \`a \'eviter (formulaire W-8BEN et remboursement suisse).} Le
+chapitre~\ref{sec:capital} part de ces montants nets pour calculer le capital n\'ecessaire \`a chaque strat\'egie.
+
+\Yannbox{\AnneeYannBasis}{Avant sa retraite, un regard en arri\`ere sur ses dix-huit premi\`eres
+ann\'ees d'\'epargne montre ce que l'imp\^ot lui a d\'ej\`a co\^ut\'e en chemin~: entre 2027 et 2044, s'il n'avait d\'etenu que des actions en direct en
+\'epargnant \SparquoteZwanzig~\% de son salaire, Yann aurait d\'ej\`a vers\'e \SteuerKumMaison~€ d'imp\^ots, retenues \'etrang\`eres comprises (euros de 2026), contre \SteuerKumEtfThes~€ avec
+un ETF capitalisant. \`A la retraite, si tout son revenu venait d'actions en direct, chaque ann\'ee de
+\BruttoNoetig~€ de dividendes bruts lui co\^uterait, aux r\`egles de 2026, \RetenuesEtrangeres~€ de
+retenues \'etrang\`eres, \ImpotAllemand~€ d'imp\^ot allemand et \KvPvAnnuel~€ de cotisations maladie
+et d\'ependance. En demandant la G\"unstigerpr\"ufung, il garderait environ \GuenstigerEconomieMois~€
+de plus par mois.}

@@ -1,0 +1,16 @@
+% genere par scripts/rechnung_retraite.py (annexe_hypotheses) - ne pas modifier a la main
+Cible & \ZielMonat~€ nets par mois, en euros de 2026 & \ref{sec:depart-cible} \\
+Horizon de calcul & \HorizonJahre~ans, de 2027 \`a \AnneeHorizonFin & \ref{sec:accu-age} \\
+Capital de d\'epart & \KapitalDepartNiedrig{} \`a \KapitalDepartHoch~€, milieu \KapitalDepartMitte~€ & \ref{sec:depart-profil} \\
+Taux d'\'epargne compar\'es & \SparquoteZehn, \SparquoteZwanzig, \SparquoteDreissig{} et \SparquoteFuenfzig~\% du salaire net & \ref{sec:accu-taux} \\
+Sc\'enario de base & r\'epartition \ReferenzStrategie, \ReferenzSparquote~\% d'\'epargne & \ref{sec:depart-profil} \\
+Rendement r\'eel du march\'e (\'ecart au plan) & \RenditeReal~\% par an, moyenne g\'eom\'etrique \FenetreMarcheDebut--\FenetreMarcheFin{} (m\'ediane~: \RenditeReelleMediane~\%) & \ref{sec:depart-cible} \\
+Rendement du dividende de l'ETF maison & \RenditeDivMaison~\% (m\'ediane du portefeuille-exemple) & \ref{sec:capital-methode} \\
+Croissance r\'eelle du dividende maison & \CroissanceModeleMaison~\% par an (indice historique~: \ShillerDivCroissanceFenetre~\%) & \ref{sec:risques-histoire} \\
+Retenue am\'ericaine (\'ecart au plan) & \QstUsFormulaire~\%, formulaire W-8BEN suppos\'e d\'epos\'e & \ref{sec:fisc-quellensteuer} \\
+R\`egles fiscales et sociales & celles de 2026, fig\'ees, taux forfaitaire, sans G\"unstigerpr\"ufung ni imp\^ot d'\'Eglise & \ref{sec:fiscalite} \\
+Taux de retrait de la r\'ef\'erence & \TauxRetrait~\% (variante prudente \TauxRetraitPrudent~\%) & \ref{sec:capital-regle} \\
+R\'eussite d'une retraite simul\'ee & revenu d'au moins \SeuilReussite~\% de la cible pendant \McRenteAns~ans & \ref{sec:risques-modeles} \\
+Monte Carlo & \McTrajectoires{} trajectoires, blocs de \McBloc~ans, graine fixe & \ref{sec:risques-montecarlo} \\
+R\'eserve de retraite simul\'ee & \PufferJahreMit~ans de cible, \PufferMontantMit~€ & \ref{sec:risques-reserve} \\
+R\'eserve d'urgence & \ReserveUrgenceMois~salaires nets, \ReserveUrgence~€ & \ref{sec:plan-premiers} \\

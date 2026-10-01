@@ -1,0 +1,266 @@
+{
+  "abgeltungsteuer_satz": {
+    "wert": 0.25,
+    "einheit": "Anteil",
+    "quelle": "§32d Abs. 1 EStG",
+    "url": "https://www.gesetze-im-internet.de/estg/__32d.html",
+    "abgerufen": "2026-09-29",
+    "primaer": true
+  },
+  "soli_satz": {
+    "wert": 0.055,
+    "einheit": "Anteil an der Steuer",
+    "quelle": "§4 SolzG 1995",
+    "url": "https://www.gesetze-im-internet.de/solzg_1995/__4.html",
+    "abgerufen": "2026-09-29",
+    "primaer": true
+  },
+  "sparerpauschbetrag": {
+    "wert": 1000,
+    "einheit": "EUR/Jahr (Einzelveranlagung)",
+    "quelle": "§20 Abs. 9 EStG, seit 2023",
+    "url": "https://www.gesetze-im-internet.de/estg/__20.html",
+    "abgerufen": "2026-09-29",
+    "primaer": true,
+    "hinweis": "2000 EUR bei Zusammenveranlagung"
+  },
+  "teilfreistellung_aktienfonds": {
+    "wert": 0.30,
+    "einheit": "Anteil steuerfrei",
+    "quelle": "§20 InvStG (Aktienfonds, natürliche Person im Privatvermögen)",
+    "url": "https://www.gesetze-im-internet.de/invstg_2018/__20.html",
+    "abgerufen": "2026-09-29",
+    "primaer": true
+  },
+  "basiszins_2026": {
+    "wert": 0.032,
+    "einheit": "Anteil",
+    "quelle": "BMF-Schreiben vom 13.01.2026, Basiszins zur Berechnung der Vorabpauschale zum 2. Januar 2026",
+    "url": "https://www.bundesfinanzministerium.de/Content/DE/Downloads/BMF_Schreiben/Steuerarten/Investmentsteuer/2026-01-13-basiszins-berechnung-vorabpauschale.html",
+    "abgerufen": "2026-09-29",
+    "seite": "IV C 1 - S 1980/00230/012/001",
+    "primaer": false,
+    "hinweis": "Zugriff auf das BMF-Schreiben selbst lieferte keinen lesbaren Zahlenwert; Wert per WebFetch aus dem Stollfuss- und Ecovis-Bericht über das gleiche Schreiben bestaetigt (Basiszins 3,20 %). Sekundaerbestaetigung, siehe LUECKEN.md."
+  },
+  "kv_satz_ermaessigt": {
+    "wert": 0.14,
+    "einheit": "Anteil",
+    "quelle": "§243 SGB V; bestaetigt im GKV-Spitzenverband-Faktenblatt 'Rechengroessen und Grenzwerte im Versicherungs- und Beitragsrecht fuer das Jahr 2026' (1. Januar 2026)",
+    "url": "https://www.gkv-spitzenverband.de/media/dokumente/presse/zahlen_und_grafiken/20260101_Faktenblatt_Rechengroessen_Beitragsrecht.pdf",
+    "abgerufen": "2026-09-29",
+    "seite": "Beitragssaetze, S. 1",
+    "primaer": true,
+    "hinweis": "PDF gespeichert unter refs/gkv-spitzenverband-rechengroessen-2026.pdf"
+  },
+  "kv_zusatzbeitrag_2026": {
+    "wert": 0.029,
+    "einheit": "Anteil (durchschnittlicher Zusatzbeitragssatz)",
+    "quelle": "GKV-Spitzenverband-Faktenblatt 'Rechengroessen und Grenzwerte im Versicherungs- und Beitragsrecht fuer das Jahr 2026', Beitragssaetze",
+    "url": "https://www.gkv-spitzenverband.de/media/dokumente/presse/zahlen_und_grafiken/20260101_Faktenblatt_Rechengroessen_Beitragsrecht.pdf",
+    "abgerufen": "2026-09-29",
+    "seite": "Beitragssaetze, S. 1",
+    "primaer": true,
+    "hinweis": "PDF gespeichert unter refs/gkv-spitzenverband-rechengroessen-2026.pdf; vom Bundesgesundheitsministerium fuer 2026 festgelegter Schaetzerkreis-Wert"
+  },
+  "pv_satz_kinderlos_2026": {
+    "wert": 0.042,
+    "einheit": "Anteil (voller Beitragssatz PV inkl. Kinderlosenzuschlag, ohne Aufteilung Arbeitgeber/Arbeitnehmer)",
+    "quelle": "GKV-Spitzenverband-Faktenblatt 'Rechengroessen und Grenzwerte im Versicherungs- und Beitragsrecht fuer das Jahr 2026', Beitragssaetze (3,6 % + 0,6 % Zuschlag fuer Kinderlose)",
+    "url": "https://www.gkv-spitzenverband.de/media/dokumente/presse/zahlen_und_grafiken/20260101_Faktenblatt_Rechengroessen_Beitragsrecht.pdf",
+    "abgerufen": "2026-09-29",
+    "seite": "Beitragssaetze, S. 1",
+    "primaer": true,
+    "hinweis": "Fuer freiwillig Versicherte traegt der Versicherte den vollen Satz allein, daher hier 0,042 statt der Arbeitnehmerhaelfte"
+  },
+  "kv_mindestbemessung_monat_2026": {
+    "wert": 1318.33,
+    "einheit": "EUR/Monat",
+    "quelle": "GKV-Spitzenverband-Faktenblatt 'Rechengroessen und Grenzwerte im Versicherungs- und Beitragsrecht fuer das Jahr 2026', Freiwillige Versicherung in der Krankenversicherung, Mindestbemessungsgrundlage",
+    "url": "https://www.gkv-spitzenverband.de/media/dokumente/presse/zahlen_und_grafiken/20260101_Faktenblatt_Rechengroessen_Beitragsrecht.pdf",
+    "abgerufen": "2026-09-29",
+    "seite": "S. 1",
+    "primaer": true
+  },
+  "kv_bbg_monat_2026": {
+    "wert": 5812.50,
+    "einheit": "EUR/Monat",
+    "quelle": "GKV-Spitzenverband-Faktenblatt 'Rechengroessen und Grenzwerte im Versicherungs- und Beitragsrecht fuer das Jahr 2026', Beitragsbemessungsgrenzen Kranken- und Pflegeversicherung",
+    "url": "https://www.gkv-spitzenverband.de/media/dokumente/presse/zahlen_und_grafiken/20260101_Faktenblatt_Rechengroessen_Beitragsrecht.pdf",
+    "abgerufen": "2026-09-29",
+    "seite": "S. 1",
+    "primaer": true
+  },
+  "kv_schwellen_dynamisierung": {
+    "wert": true,
+    "einheit": "boolesch (Mindestbemessungsgrundlage und Beitragsbemessungsgrenze GKV/PV werden jaehrlich mit den Loehnen dynamisiert, nicht in nominal EUR eingefroren: ja/nein)",
+    "quelle": "§223 Abs. 4 SGB V: 'Die Beitragsbemessungsgrenze im Jahr 2027 entspricht der um 3 600 Euro erhoehten Jahresarbeitsentgeltgrenze nach § 6 Absatz 7 [SGB V] ... Die Bundesregierung setzt die Beitragsbemessungsgrenze in der Rechtsverordnung nach § 160 des Sechsten Buches gesondert fest.' §6 Abs. 6 Satz 2 SGB V (Jahresarbeitsentgeltgrenze, via Abs. 7 referenziert): 'Sie aendert sich zum 1. Januar eines jeden Jahres in dem Verhaeltnis, in dem die Bruttoloehne und -gehaelter je Arbeitnehmer ... im vergangenen Kalenderjahr zu den entsprechenden Bruttoloehnen und -gehaeltern im vorvergangenen Kalenderjahr stehen', d.h. eine jaehrliche Lohn-Indexierung, keine feste nominale Grenze. Die Mindestbemessungsgrundlage fuer freiwillig Versicherte ist ein Bruchteil der Bezugsgroesse (§18 SGB IV): 'das Durchschnittsentgelt der gesetzlichen Rentenversicherung im vorvergangenen Kalenderjahr, aufgerundet auf den naechsthoeheren, durch 420 teilbaren Betrag', ebenfalls jaehrlich per Sozialversicherungs-Rechengroessenverordnung festgesetzt.",
+    "url": "https://www.gesetze-im-internet.de/sgb_5/__223.html",
+    "abgerufen": "2026-09-30",
+    "primaer": true,
+    "hinweis": "Weitere Fundstellen: §6 SGB V (https://www.gesetze-im-internet.de/sgb_5/__6.html, Abs. 6-7) und §18 SGB IV (https://www.gesetze-im-internet.de/sgb_4/__18.html), alle per curl am 2026-09-30 wortgetreu abgerufen. Modellkonvention (scripts/projection.py, _saetze_real): da Loehne mindestens so stark wie Preise wachsen und das reale Lohnwachstum im Modell separat (salaire.py) abgebildet wird, werden Mindestbemessung und BBG in scripts/projection.py KONSTANT in Euros 2026 (real) gehalten (konservativ-neutrale Wahl, keine explizite Lohnwachstumsannahme fuer die Schwellen selbst) - anders als der Sparerpauschbetrag (§20 Abs. 9 EStG), der ein fester NOMINALER Betrag ist und sich nur per Gesetzesaenderung veraendert, daher im Modell real dekumuliert (deflatiert) wird. Korrigiert eine fruehere Fehlimplementierung, die Mindestbemessung/BBG faelschlich wie den Sparerpauschbetrag deflatierte (Maximalbeitrag faellt dadurch nominal-eingefroren von ca. 1226 auf 513 EUR/Monat bis 2071, was jede Dividendenstrategie zu guenstig aussehen liess)."
+  },
+  "kv_teilfreistellung_etf": {
+    "wert": true,
+    "einheit": "boolesch (Teilfreistellung InvStG in der GKV-Beitragsbemessung beruecksichtigt: ja/nein)",
+    "quelle": "GKV-Spitzenverband, 'Katalog von Einnahmen und deren beitragsrechtliche Bewertung nach § 240 SGB V', Stand 26.05.2026, Zeile 'Investmenterträge': '§ 16 InvStG | ja, unter Beruecksichtigung der §§ 20 und 56 Abs. 6 InvStG'. Die separate Zeile 'Kapitalvermoegen, Einkuenfte aus -' (individuelle Aktiendividenden, kein Fondsvehikel) traegt keinen solchen Verweis auf §20 InvStG.",
+    "url": "https://www.gkv-spitzenverband.de/media/dokumente/krankenversicherung_1/grundprinzipien_1/finanzierung/beitragsbemessung/2026-05-26_Katalog_Einnahmen_beitragsrechtliche_Bewertung_240_SGB_V_BF.pdf",
+    "abgerufen": "2026-09-30",
+    "seite": "15 von 30, Zeile 'Investmenterträge'",
+    "primaer": true,
+    "hinweis": "Text per pdftotext -layout selbst extrahiert und gegenkontrolliert (nicht nur ueber eine KI-Zusammenfassung des Fetch-Tools uebernommen, da eine erste WebSearch-Zusammenfassung und eine erste WebFetch-Zusammenfassung sich widersprachen). Gilt nur fuer Fondsertraege (§16 InvStG, deckt sowohl Ausschuettung als auch Vorabpauschale ab); individuelle Aktiendividenden (Poche maison) erhalten keine Teilfreistellung, weder steuerlich noch in der GKV-Basis."
+  },
+  "inflation_ziel": {
+    "wert": 0.02,
+    "einheit": "Anteil, mittelfristig",
+    "quelle": "EZB, geldpolitische Strategie, Preisstabilitaetsziel von 2 % (HVPI)",
+    "url": "https://www.ecb.europa.eu/mopo/strategy/pricestab/html/index.de.html",
+    "abgerufen": "2026-09-29",
+    "primaer": true
+  },
+  "inflation_2022_de": {
+    "wert": 0.079,
+    "einheit": "Anteil, Jahresdurchschnitt VPI ggue. Vorjahr",
+    "quelle": "Statistisches Bundesamt (Destatis), Pressemitteilung Nr. 022 vom 17.01.2023, 'Inflationsrate im Jahr 2022 bei +7,9 %'",
+    "url": "https://www.destatis.de/DE/Presse/Pressemitteilungen/2023/01/PD23_022_611.html",
+    "abgerufen": "2026-09-29",
+    "primaer": true
+  },
+  "einstiegsgehalt_brutto": {
+    "wert": 59250,
+    "einheit": "EUR/Jahr brutto",
+    "quelle": "StepStone Gehaltsreport 2026, Medianwert Ingenieurinnen/Ingenieure mit unter einem Jahr Berufserfahrung (Datenbasis Jan. 2022 - Nov. 2025)",
+    "url": "https://www.stepstone.de/e-recruiting/hr-wissen/gehalt/gehaltsreport-deutschlands-gehaelter-im-fokus/",
+    "abgerufen": "2026-09-29",
+    "primaer": false,
+    "hinweis": "Sekundaerquelle (Personaldienstleister-Report), keine unternehmensspezifische Jungheinrich/IG-Metall-Kueste-Eingruppierung gefunden, siehe LUECKEN.md"
+  },
+  "gehaltssteigerung_real": {
+    "wert": 0.018,
+    "einheit": "Anteil pro Jahr",
+    "quelle": "Abgeleitet aus StepStone Gehaltsreport 2026 (Querschnitt nach Berufserfahrung: Einstieg 59.250 EUR vs. 25 Jahre Berufserfahrung 93.250 EUR, impliziert ca. 1,8 %/Jahr Wachstumsrate)",
+    "url": "https://www.stepstone.de/e-recruiting/hr-wissen/gehalt/gehaltsreport-deutschlands-gehaelter-im-fokus/",
+    "abgerufen": "2026-09-29",
+    "primaer": false,
+    "hinweis": "Kein direkter Destatis-Verdiensterhebungs-Zeitreihenwert zur uber die Karriere gemittelten realen Steigerung gefunden; Querschnittsdaten nach Erfahrungsjahren als Naeherung verwendet, siehe LUECKEN.md"
+  },
+  "rentenwert_2026": {
+    "wert": 42.52,
+    "einheit": "EUR (aktueller Rentenwert, ab 1.7.2026)",
+    "quelle": "Deutsche Rentenversicherung, Pressemitteilung 'Bundeskabinett beschliesst Rentenanpassung 2026' (29.04.2026), Anstieg von 40,79 auf 42,52 EUR",
+    "url": "https://www.deutsche-rentenversicherung.de/DRV/DE/Ueber-uns-und-Presse/Presse/Meldungen/2026/260429-rentenanpassung-2026-bundeskabinett.html",
+    "abgerufen": "2026-09-29",
+    "primaer": true
+  },
+  "regelaltersgrenze": {
+    "wert": 67,
+    "einheit": "Jahre",
+    "quelle": "§35 SGB VI, Regelaltersgrenze fuer Jahrgaenge ab 1964",
+    "url": "https://www.deutsche-rentenversicherung.de/DRV/DE/Experten/Arbeitgeber-und-Steuerberater/summa-summarum/Lexikon/R/regelaltersgrenze",
+    "abgerufen": "2026-09-29",
+    "primaer": true
+  },
+  "durchschnittsentgelt_2026": {
+    "wert": 51944,
+    "einheit": "EUR/Jahr (vorlaeufiges Durchschnittsentgelt)",
+    "quelle": "§3 Abs. 2 Sozialversicherungsrechengroessen-Verordnung 2026 (SVBezGrV 2026)",
+    "url": "https://www.gesetze-im-internet.de/svbezgrv_2026/__3.html",
+    "abgerufen": "2026-09-29",
+    "primaer": true
+  },
+  "est_tarif_2026": {
+    "wert": {
+      "zonen": [
+        [12348, "null", 0, 0, 0],
+        [17799, "y", 914.51, 1400, 0],
+        [69878, "z", 173.10, 2397, 1034.87],
+        [277825, "lin", 0.42, -11135.63, 0],
+        [null, "lin", 0.45, -19470.38, 0]
+      ]
+    },
+    "einheit": "Formelparameter §32a EStG, x/y/z in Zehntausendsteln nach Gesetzestext",
+    "quelle": "§32a Abs. 1 EStG, Veranlagungszeitraum 2026",
+    "url": "https://www.gesetze-im-internet.de/estg/__32a.html",
+    "abgerufen": "2026-09-29",
+    "primaer": true,
+    "hinweis": "Jede Zeile: [obere Grenze der Zone (EUR, null = letzte Zone), Typ, a, b, c]. Typ \"null\": ESt = 0. Typ \"y\"/\"z\": mit t = (x - untere Grenze der Zone)/10000, ESt = floor((a*t + b)*t + c). Typ \"lin\": ESt = floor(a*x + b), b bereits mit Vorzeichen (negativ) fuer die direkte Addition, quivalent zur Gesetzesschreibweise ESt = a*x - |b|. Werte gegen zwei unabhaengige Sekundaerquellen (finanz-tools.de, rechnercheck.de) kreuzgeprueft, identisch; Vorzeichen- und Typkonvention 2026-09-30 an salaire.est_32a angeglichen (vorher progression1/progression2/linear42/linear45 mit positivem b, c=null in den linearen Zonen)."
+  },
+  "soli_freigrenze_2026": {
+    "wert": 20350,
+    "einheit": "EUR/Jahr Einkommensteuer (Einzelveranlagung), 40700 EUR bei Zusammenveranlagung",
+    "quelle": "§3 Abs. 3 SolzG 1995 n.F. (Steuerfortentwicklungsgesetz 2024), erstmals VZ 2026",
+    "url": "https://www.buzer.de/gesetz/282/al234205-0.htm",
+    "abgerufen": "2026-09-29",
+    "primaer": true
+  },
+  "sv_arbeitnehmer": {
+    "wert": {
+      "rv": 0.093,
+      "av": 0.013,
+      "kv_allgemein": 0.146,
+      "kv_zusatz": 0.029,
+      "pv": 0.036,
+      "pv_kinderlos_zuschlag": 0.006,
+      "bbg_rv_jahr": 101400,
+      "bbg_kv_jahr": 69750
+    },
+    "einheit": "Anteile bzw. EUR/Jahr, 2026",
+    "quelle": "GKV-Spitzenverband-Faktenblatt 'Rechengroessen und Grenzwerte im Versicherungs- und Beitragsrecht fuer das Jahr 2026'",
+    "url": "https://www.gkv-spitzenverband.de/media/dokumente/presse/zahlen_und_grafiken/20260101_Faktenblatt_Rechengroessen_Beitragsrecht.pdf",
+    "abgerufen": "2026-09-29",
+    "seite": "S. 1",
+    "primaer": true,
+    "hinweis": "rv und av sind bereits die Arbeitnehmerhaelfte (halber Beitragssatz 18,6 % bzw. 2,6 %). kv_allgemein und pv sind die vollen, hälftig geteilten Beitragssaetze (14,6 % bzw. 3,6 %); der Kinderlosenzuschlag von 0,6 % traegt gesetzlich allein der Arbeitnehmer. kv_zusatz (2,9 %, voller Satz) ist eine Kopie von kv_zusatzbeitrag_2026, ebenfalls hälftig zu teilen (sv_anteil in salaire.py teilt kv_allgemein+kv_zusatz durch 2)."
+  },
+  "quellensteuer": {
+    "wert": {
+      "US": {"einbehalt": 0.30, "anrechenbar": 0.15, "mit_antrag": 0.15, "hinweis": "Regelsatz 30 % ohne Formular; mit W-8BEN wird direkt zum DBA-Satz von 15 % einbehalten, voll anrechenbar"},
+      "CH": {"einbehalt": 0.35, "anrechenbar": 0.15, "mit_antrag": 0.15, "hinweis": "35 % Verrechnungssteuer; DBA-Hoechstsatz fuer Anrechnung 15 %; die restlichen 20 Punkte sind per Formular 90 in der Schweiz rueckforderbar, nicht in Deutschland anrechenbar"},
+      "FR": {"einbehalt": 0.128, "anrechenbar": 0.128, "mit_antrag": 0.128, "hinweis": "Nationaler Quellensteuersatz fuer DBA-Ansaessige bereits bei 12,8 %; DBA-Hoechstsatz von 15 % wird nicht ausgeschoepft"},
+      "NL": {"einbehalt": 0.15, "anrechenbar": 0.15, "mit_antrag": 0.15, "hinweis": "Niederlaendischer Satz entspricht genau dem DBA-Hoechstsatz, voll automatisch anrechenbar, kein Formular noetig"},
+      "GB": {"einbehalt": 0.0, "anrechenbar": 0.0, "mit_antrag": 0.0, "hinweis": "Grossbritannien erhebt keine Quellensteuer auf Dividenden"},
+      "DE": {"einbehalt": 0.0, "anrechenbar": 0.0, "mit_antrag": 0.0, "hinweis": "Keine auslaendische Quellensteuer auf Dividenden deutscher Emittenten, kein DBA-Sachverhalt. Die deutsche Abgeltungsteuer (25 % + Soli, ggf. KiSt) wird von fiscalite.py selbst berechnet (steuer_kap/posten_netto); ein einbehalt > 0 hier wuerde sie ein zweites Mal als auslaendische Retenue abziehen"},
+      "NO": {"einbehalt": 0.25, "anrechenbar": 0.0, "mit_antrag": 0.0, "hinweis": "EWR-Ansaessigen wird die einbehaltene Quellensteuer auf Antrag ganz oder teilweise erstattet (shielding deduction); danach bleibt nichts zur Anrechnung in Deutschland"},
+      "DK": {"einbehalt": 0.27, "anrechenbar": 0.15, "mit_antrag": 0.15, "hinweis": "DBA-Hoechstsatz 15 %, Rest von 12 Punkten in Daenemark rueckforderbar"},
+      "ES": {"einbehalt": 0.19, "anrechenbar": 0.15, "mit_antrag": 0.15, "hinweis": "DBA-Hoechstsatz 15 %, Rest von 4 Punkten in Spanien rueckforderbar"},
+      "IT": {"einbehalt": 0.26, "anrechenbar": 0.15, "mit_antrag": 0.15, "hinweis": "DBA-Hoechstsatz 15 %, Rest von 11 Punkten in Italien rueckforderbar"},
+      "IE": {"einbehalt": 0.0, "anrechenbar": 0.0, "mit_antrag": 0.0, "hinweis": "Regelsatz 25 %, aber keine Quellensteuer fuer EU-Buerger/DBA-Ansaessige dank Vorabbefreiung oder nachtraeglicher Erstattung"},
+      "CA": {"einbehalt": 0.25, "anrechenbar": 0.15, "mit_antrag": 0.15, "hinweis": "DBA-Hoechstsatz 15 %, Rest von 10 Punkten in Kanada rueckforderbar"},
+      "BE": {"einbehalt": 0.30, "anrechenbar": 0.15, "mit_antrag": 0.15, "hinweis": "Nationaler Satz je nach Kategorie 5/20/30 %, DBA-Hoechstsatz fuer Anrechnung 15 %"},
+      "FI": {"einbehalt": 0.35, "anrechenbar": 0.15, "mit_antrag": 0.15, "hinweis": "DBA-Hoechstsatz 15 %, Rest von 20 Punkten in Finnland rueckforderbar"}
+    },
+    "einheit": "Anteile, Dividenden",
+    "quelle": "Bundeszentralamt fuer Steuern (BZSt), 'Anrechenbarkeit der Quellensteuer auf Dividenden und Zinsen von Staaten, mit denen Deutschland ein Doppelbesteuerungsabkommen abgeschlossen hat', Stand 1. Januar 2025, Redaktionsschluss Juni 2025",
+    "url": "https://www.bzst.de/SharedDocs/Downloads/DE/EU_OECD/anrechenbare_ausl_quellensteuer_2025.pdf",
+    "abgerufen": "2026-09-29",
+    "seite": "laenderspezifische Zeilen, S. 1-25 (Belgien S.5, Daenemark S.7, Finnland S.9, Frankreich S.9, Irland S.12, Italien S.13, Kanada S.14, Niederlande S.21, Norwegen S.22, Spanien S.24, Schweiz S.23, Vereinigte Staaten S.24, Vereinigtes Koenigreich S.24)",
+    "primaer": true,
+    "hinweis": "PDF gespeichert unter refs/bzst-anrechenbare-quellensteuer-2025.pdf. Stand 1.1.2025, da 2026 zum Abrufzeitpunkt noch nicht veroeffentlicht war; DBA-Saetze aendern sich nur bei Vertragsaenderungen, siehe LUECKEN.md. DE-Zeile ist keine BZSt-Zeile, sondern aus abgeltungsteuer_satz + soli_satz abgeleitet."
+  },
+  "shiller_url": {
+    "wert": "http://www.econ.yale.edu/~shiller/data/ie_data.xls",
+    "einheit": "URL",
+    "quelle": "Robert J. Shiller, Yale University, Online-Datentabelle S&P 500 (Kurse, Dividenden, Ertraege, CPI) seit 1871",
+    "url": "http://www.econ.yale.edu/~shiller/data/ie_data.xls",
+    "abgerufen": "2026-09-29",
+    "primaer": true,
+    "hinweis": "Erreichbarkeit per curl geprueft: HTTP 200, gueltige Excel-Datei (zuletzt gespeichert 2023, Autor RShiller)"
+  },
+  "etf_welt_rendite_div": {
+    "wert": 0.018,
+    "einheit": "Anteil, Ausschuettungsrendite p.a.",
+    "quelle": "Repli explicite (Annahme), aucune valeur exploitable trouvee sur la fiche justETF du plus grand ETF MSCI World",
+    "url": "https://www.justetf.com/en/etf-profile.html?isin=IE00B4L5Y983",
+    "abgerufen": "2026-09-30",
+    "primaer": false,
+    "hinweis": "Le plus grand ETF MSCI World par encours (iShares Core MSCI World UCITS ETF USD Acc, IE00B4L5Y983, EUR 129 840 m au 31.08.2026 selon la fiche justETF) est THESAURISANT: aucun rendement de distribution n'y est affiche (verifie par WebFetch le 30.09.2026, page consultee integralement). A titre de comparaison seulement (pas retenu comme valeur, car ce n'est pas le plus grand ETF): la part distribuante iShares MSCI World UCITS ETF (Dist), IE00B0M62Q58 (https://www.justetf.com/en/etf-profile.html?isin=IE00B0M62Q58, encours EUR 8 303 m), affiche 'Current dividend yield 0,85 %' et 'Dividend yield (1 an) 1,01 %', tous deux sensiblement sous le repli de 1,8 % retenu ici. Repli 0,018 conserve tel quel (decision du controleur, tache 9), ecart documente pour revision de jour. Voir LUECKEN.md."
+  },
+  "inflation_destatis_2019_2025": {
+    "wert": {"2019": 0.014, "2020": 0.005, "2021": 0.031, "2022": 0.069, "2023": 0.059, "2024": 0.022, "2025": 0.022},
+    "einheit": "Anteil, Jahresdurchschnitt VPI ggue. Vorjahr",
+    "quelle": "Statistisches Bundesamt (Destatis), Pressemitteilungen annuelles 'Inflationsrate im Jahr JJJJ': PD20_019_611 (2019), PD21_025_611 (2020), PD22_025_611 (2021), PD25_020_611 (citant retrospectivement 2022 a +6,9% et 2023 a +5,9%), PD24_020_611 (2023), PD25_020_611 (2024), PD26_019_611 KORREKTUR (2025)",
+    "url": "https://www.destatis.de/DE/Presse/Pressemitteilungen/2025/01/PD25_020_611.html",
+    "abgerufen": "2026-09-30",
+    "primaer": true,
+    "hinweis": "Serie pour fig_inflation_2022 (chapitre 7, tache 9 partie B), sourcee par avance ici. ATTENTION ecart de revision: la premiere publication provisoire de janvier 2023 (PD23_022_611, deja citee ici sous inflation_2022_de) annoncait +7,9% pour 2022; les publications retrospectives 2024/2025 (PD24_020_611, PD25_020_611) citent uniformement +6,9% pour 2022 en comparaison des annees suivantes, probablement lie au changement de base du VPI (nouvelle base 2020=100 introduite en 2024). Serie ci-dessus prise entierement dans les publications retrospectives coherentes entre elles (2021/2022/2023/2024 cites ensemble dans PD25_020_611), pas melangee avec le chiffre provisoire de 2023. inflation_2022_de (7,9%) laisse inchange ailleurs dans le depot (hors perimetre de cette tache); ecart signale dans LUECKEN.md pour arbitrage de jour."
+  }
+}

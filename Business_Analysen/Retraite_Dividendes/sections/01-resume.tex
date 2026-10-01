@@ -1,0 +1,81 @@
+\section{R\'esum\'e en une page}\label{sec:resume}
+% Resume (tache 10, passage resume, titre et annexes), une page au plus, redige apres
+% les chapitres 2 a 10. Aucun chiffre tape: macros de data/kennzahlen.tex seulement.
+% Controle croise de la specification (section 8): le capital requis est celui du
+% chapitre 4 (\KapitalMaisonSiebzig, \KapitalEtfReferenz) et l'age celui du chapitre 5
+% (\AlterYannBasis, \AnneeYannBasis), les memes macros, jamais un second calcul.
+% Aucune citation ni note de bas de page (resume). Phrases qualitatives liees aux
+% valeurs actuelles, a relire si les donnees changent: "aucune strategie de dividendes
+% a 20 %", "l'ETF monde fait mieux sur chaque ligne", "plus souvent que le revenu de
+% dividendes", "le capital de depart ne change pas l'age".
+
+Ce r\'esum\'e r\'epond \`a la question du document~: \`a quel \^age, et avec quelle \'epargne,
+peux-tu vivre de \ZielMonat~€ nets par mois, en euros de 2026, gr\^ace aux dividendes~? \bk{Au
+sc\'enario de base, r\'epartition \ReferenzStrategie{} entre ETF maison et ETF monde et
+\ReferenzSparquote~\% de ton salaire net \'epargn\'es, tu atteins l'objectif en \AnneeYannBasis, \`a
+\AlterYannBasis~ans, soit l'\^age l\'egal de la retraite~: \`a ce taux, les dividendes ne t'offrent
+aucune retraite anticip\'ee.} \`A \SparquoteZwanzig~\% d'\'epargne, aucune strat\'egie de dividendes
+n'atteint l'objectif avant \AlterHorizon~ans, alors qu'un ETF monde dont tu retires \TauxRetrait~\%
+par an l'atteint \`a \AlterEtfReferenzZwanzig~ans (section~\ref{sec:accu-age}). La raison tient au
+capital~: vivre des seuls dividendes demande \KapitalMaisonSiebzig~€, contre \KapitalEtfReferenz~€
+avec un retrait de \TauxRetrait~\%, soit \KapitalDifferenzSiebzigProzent~\% de plus
+(section~\ref{sec:capital-regle}), parce que le dividende ne rapporte que \RenditeDivMaison~\% par an
+et qu'une action d\'etenue en direct est plus impos\'ee qu'un ETF (chapitre~\ref{sec:fiscalite}).
+
+Deux leviers avancent la date, r\'esum\'es au tableau~\ref{tab:tableau-de-bord}. En restant aux
+dividendes, il faut \'epargner au moins \QuoteAnticipeeMaisonSiebzig~\% pour partir \`a
+\AlterAnticipeeMaisonSiebzig~ans, et \SparquoteFuenfzig~\% pour partir \`a
+\AlterMaisonSiebzigFuenfzig~ans, au prix d'une rente l\'egale r\'eduite de \RenteBrueckePerteProzent~\%
+\`a vie. Le plus puissant est de changer de strat\'egie~: l'ETF monde avec retrait de \TauxRetrait~\%
+atteint l'objectif \`a \AlterEtfBasis~ans avec la m\^eme \'epargne, \EcartAgeEtfMaisonBasis~ans plus
+t\^ot (section~\ref{sec:plan-verdict}). Ton capital de d\'epart ne change pas l'\^age.
+
+\begin{center}
+  \small
+  \captionof{table}{Tableau de bord (euros de 2026). Tenue~: part des d\'eparts am\'ericains dont le
+  revenu reste au-dessus de \SeuilReussite~\% de la cible, ou dont le capital tient.}\label{tab:tableau-de-bord}
+  \begin{tabularx}{\linewidth}{>{\bfseries\raggedright\arraybackslash}X
+    *{2}{>{\centering\arraybackslash}p{0.27\linewidth}}}
+    \toprule
+    \rowcolor[gray]{0.9}
+    \textbf{Indicateur} & \textbf{Dividendes seuls, \ReferenzStrategie} & \textbf{ETF monde, retrait \TauxRetrait~\%} \\
+    \midrule
+    Capital requis & \KapitalMaisonSiebzig~€ & \KapitalEtfReferenz~€ \\
+    \^Age d'atteinte \`a \SparquoteZwanzig~\% d'\'epargne & \AlterMaisonSiebzigZwanzig
+      & \AlterEtfReferenzZwanzig~ans \\
+    \^Age d'atteinte \`a \ReferenzSparquote~\% (base) & \AlterYannBasis~ans & \AlterEtfBasis~ans \\
+    \'Epargne pour partir avant \AgeLegal~ans & \QuoteAnticipeeMaisonSiebzig~\%
+      (\AlterAnticipeeMaisonSiebzig~ans) & \QuoteAnticipeeEtfReferenz~\% (\AlterAnticipeeEtfReferenz~ans) \\
+    Tenue sur \McRenteAns~ans (\RetraitHistMemesDepartsJuges{} d\'eparts)
+      & \RueckspielTenusProzent~\% & \RetraitHistMemesDepartsProzent~\% \\
+    \bottomrule
+  \end{tabularx}
+\end{center}
+
+Ce tableau montre que l'ETF monde fait mieux sur chaque ligne~: moins de capital, un d\'epart plus
+t\^ot et une meilleure tenue sur l'histoire. Son risque est autre~: un capital vendu chaque ann\'ee
+peut s'\'epuiser, un revenu de dividendes qui baisse reste un revenu (section~\ref{sec:retraite-quatre}).
+
+Les risques principaux viennent du dividende lui-m\^eme. Celui de l'indice am\'ericain a d\'ej\`a perdu
+jusqu'\`a \GroessterEinbruch~\% de sa valeur r\'eelle (section~\ref{sec:risques-baisses}). Dans un
+mod\`ele sans imp\^ot, ton revenu tient \McRenteAns~ans dans \ErfolgsquoteBasis~\% des tirages Monte
+Carlo sans r\'eserve, et dans \ErfolgsquoteMitPuffer~\% avec \PufferJahreMit~ans de d\'epenses en
+liquidit\'es, \`a \'epargner en plus. \bk{Le plan suppose aussi que ton dividende croisse de
+\CroissanceModeleMaison~\% par an au-del\`a de l'inflation, alors que celui de l'indice n'a cr\^u que
+de \ShillerDivCroissanceFenetre~\% de \FenetreMarcheDebut{} \`a \FenetreMarcheFin~: c'est
+l'hypoth\`ese la plus favorable du document}, et sans elle l'objectif recule
+(section~\ref{sec:risques-histoire}).
+
+\`A \AlterYannBasis~ans, ta rente l\'egale brute, \RenteBeiZielalter~€ par mois, couvre d\'ej\`a
+environ \RenteLegalePartCible~\% de la cible, que le plan ne d\'eduit pas~: le capital de base est
+donc surdimensionn\'e d\`es que la rente est vers\'ee (section~\ref{sec:retraite-pont}). Sur les m\^emes
+d\'eparts historiques, la r\`egle des \TauxRetrait~\% tient plus souvent que le revenu de dividendes,
+\RetraitHistMemesDepartsProzent{} contre \RueckspielTenusProzent~\% des cas. La G\"unstigerpr\"ufung, qui vaudrait environ \GuenstigerEconomieMois~€ par mois \`a
+la retraite, n'est pas mod\'elis\'ee~: les capitaux sont prudents sur ce point
+(section~\ref{sec:fisc-guenstiger}). Deux \'ecarts au plan initial sont assum\'es~: le rendement r\'eel
+du march\'e, \RenditeReal~\% par an, est une moyenne g\'eom\'etrique et non la m\'ediane de
+\RenditeReelleMediane~\%, qui surestimerait le capital (section~\ref{sec:depart-cible}), et le
+formulaire W-8BEN est suppos\'e d\'epos\'e~: sans lui, cent euros de dividende am\'ericain laissent
+\NettoUsSansFormulaire~€ au lieu de \NettoUs~€ (section~\ref{sec:fisc-quellensteuer}).
+
+\clearpage
