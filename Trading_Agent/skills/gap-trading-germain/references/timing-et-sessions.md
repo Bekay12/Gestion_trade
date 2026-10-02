@@ -24,7 +24,7 @@ d'avant-bourse ; à 9h30 ET, la formation est terminée et l'information est pub
 
 Cadence conseillée par les praticiens : commencer vers 7h00 ET, disposer d'une
 liste courte de cinq à quinze noms à 8h30, classée **par volume et non par
-pourcentage de hausse** — le volume indique quel mouvement a un adossement
+pourcentage de hausse** : le volume indique quel mouvement a un adossement
 institutionnel.
 
 Pour un opérateur en France, cette fenêtre tombe l'après-midi (13h–15h30), ce qui

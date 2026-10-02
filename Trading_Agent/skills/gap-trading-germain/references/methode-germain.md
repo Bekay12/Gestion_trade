@@ -71,11 +71,11 @@ d'avant-pump.
 ### Les sept signaux d'alarme du pump (mêmes pages)
 
 1. Montée rapide sans catalyseur fondamental clair
-2. Volume explosif **au sommet** — le pic de volume exactement au plus haut est une distribution
-3. Nano cap et/ou low float — facile à manipuler
+2. Volume explosif **au sommet** : le pic de volume exactement au plus haut est une distribution
+3. Nano cap et/ou low float, donc facile à manipuler
 4. Chute rapide après le sommet
 5. Cours retombant sous le VWAP
-6. Email ou SMS de recommandation — « le signal le plus fiable du pump »
+6. Email ou SMS de recommandation, « le signal le plus fiable du pump »
 7. Absence de dépôts SEC récents
 
 La formation insiste : le short squeeze n'est pas illégal, le pump and dump l'est,
@@ -89,9 +89,9 @@ Le gap doit avoir une cause nommable et datable. Hiérarchie :
   contrat majeur, entrée d'un institutionnel visible en 13F (pour une microcap,
   la formation la qualifie de « catalyseur haussier potentiel fort »).
 - **Baissiers déguisés en gap haussier** : dépôt S-3 ou 424B (dilution à venir),
-  conversion d'actions privilégiées — « catalyseur baissier pour les actionnaires
+  conversion d'actions privilégiées, « catalyseur baissier pour les actionnaires
   ordinaires ». Un gap up sur un S-3 récent est une alerte, pas une confirmation.
-- **Spéculatifs** : gamma squeeze, options 0DTE (Partie 9, Ch.04) — mouvement réel
+- **Spéculatifs** : gamma squeeze, options 0DTE (Partie 9, Ch.04) : mouvement réel
   mais mécanique, qui se dégonfle avec l'échéance.
 
 Règle de composition donnée par la formation :

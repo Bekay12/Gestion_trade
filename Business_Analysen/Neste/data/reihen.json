@@ -1,0 +1,1196 @@
+{
+ "umsatz": {
+  "2019": {
+   "wert": 15840.0,
+   "bericht": "neste-ar-2021",
+   "seite": "162"
+  },
+  "2018": {
+   "wert": 14918.0,
+   "bericht": "neste-ar-2020",
+   "seite": "129"
+  },
+  "2017": {
+   "wert": 13217.0,
+   "bericht": "neste-ar-2019",
+   "seite": "123"
+  },
+  "2020": {
+   "wert": 11751.0,
+   "bericht": "neste-ar-2022",
+   "seite": "172"
+  },
+  "2021": {
+   "wert": 15148.0,
+   "bericht": "neste-ar-2023",
+   "seite": "171"
+  },
+  "2022": {
+   "wert": 25707.0,
+   "bericht": "neste-ar-2024",
+   "seite": "150"
+  },
+  "2023": {
+   "wert": 22926.0,
+   "bericht": "neste-ar-2025",
+   "seite": "146"
+  },
+  "2024": {
+   "wert": 20635.0,
+   "bericht": "neste-ar-2025",
+   "seite": "146"
+  },
+  "2025": {
+   "wert": 19016.0,
+   "bericht": "neste-ar-2025",
+   "seite": "146"
+  }
+ },
+ "ebitda": {
+  "2019": {
+   "wert": 2731.0,
+   "bericht": "neste-ar-2021",
+   "seite": "162"
+  },
+  "2018": {
+   "wert": 1636.0,
+   "bericht": "neste-ar-2020",
+   "seite": "129"
+  },
+  "2017": {
+   "wert": 1530.0,
+   "bericht": "neste-ar-2019",
+   "seite": "123"
+  },
+  "2020": {
+   "wert": 1508.0,
+   "bericht": "neste-ar-2022",
+   "seite": "172"
+  },
+  "2021": {
+   "wert": 2607.0,
+   "bericht": "neste-ar-2023",
+   "seite": "171"
+  },
+  "2022": {
+   "wert": 3048.0,
+   "bericht": "neste-ar-2024",
+   "seite": "150"
+  },
+  "2023": {
+   "wert": 2548.0,
+   "bericht": "neste-ar-2025",
+   "seite": "146"
+  },
+  "2024": {
+   "wert": 1005.0,
+   "bericht": "neste-ar-2025",
+   "seite": "146"
+  },
+  "2025": {
+   "wert": 1438.0,
+   "bericht": "neste-ar-2025",
+   "seite": "146"
+  }
+ },
+ "ebit": {
+  "2019": {
+   "wert": 2229.0,
+   "bericht": "neste-ar-2021",
+   "seite": "162"
+  },
+  "2018": {
+   "wert": 1022.0,
+   "bericht": "neste-ar-2020",
+   "seite": "129"
+  },
+  "2017": {
+   "wert": 1159.0,
+   "bericht": "neste-ar-2019",
+   "seite": "123"
+  },
+  "2020": {
+   "wert": 828.0,
+   "bericht": "neste-ar-2022",
+   "seite": "172"
+  },
+  "2021": {
+   "wert": 2023.0,
+   "bericht": "neste-ar-2023",
+   "seite": "171"
+  },
+  "2022": {
+   "wert": 2410.0,
+   "bericht": "neste-ar-2024",
+   "seite": "150"
+  },
+  "2023": {
+   "wert": 1682.0,
+   "bericht": "neste-ar-2025",
+   "seite": "146"
+  },
+  "2024": {
+   "wert": 25.0,
+   "bericht": "neste-ar-2025",
+   "seite": "146"
+  },
+  "2025": {
+   "wert": 503.0,
+   "bericht": "neste-ar-2025",
+   "seite": "146"
+  }
+ },
+ "vergl_ebit": {
+  "2019": {
+   "wert": 1962.0,
+   "bericht": "neste-ar-2021",
+   "seite": "162"
+  },
+  "2018": {
+   "wert": 1422.0,
+   "bericht": "neste-ar-2020",
+   "seite": "129"
+  },
+  "2017": {
+   "wert": 1101.0,
+   "bericht": "neste-ar-2019",
+   "seite": "123"
+  },
+  "2020": {
+   "wert": 1416.0,
+   "bericht": "neste-ar-2021",
+   "seite": "162"
+  },
+  "2021": {
+   "wert": 1342.0,
+   "bericht": "neste-ar-2021",
+   "seite": "162"
+  }
+ },
+ "nettoschulden": {
+  "2019": {
+   "wert": -191.0,
+   "bericht": "neste-ar-2021",
+   "seite": "162"
+  },
+  "2018": {
+   "wert": -70.0,
+   "bericht": "neste-ar-2020",
+   "seite": "129"
+  },
+  "2017": {
+   "wert": 412.0,
+   "bericht": "neste-ar-2019",
+   "seite": "123"
+  },
+  "2020": {
+   "wert": -265.0,
+   "bericht": "neste-ar-2022",
+   "seite": "172"
+  },
+  "2021": {
+   "wert": 41.0,
+   "bericht": "neste-ar-2023",
+   "seite": "171"
+  },
+  "2022": {
+   "wert": 1344.0,
+   "bericht": "neste-ar-2024",
+   "seite": "150"
+  },
+  "2023": {
+   "wert": 2488.0,
+   "bericht": "neste-ar-2025",
+   "seite": "146"
+  },
+  "2024": {
+   "wert": 4192.0,
+   "bericht": "neste-ar-2025",
+   "seite": "146"
+  },
+  "2025": {
+   "wert": 3817.0,
+   "bericht": "neste-ar-2025",
+   "seite": "146"
+  }
+ },
+ "verschuldungsgrad": {
+  "2019": {
+   "wert": -3.3,
+   "bericht": "neste-ar-2021",
+   "seite": "162"
+  },
+  "2018": {
+   "wert": -1.5,
+   "bericht": "neste-ar-2020",
+   "seite": "129"
+  },
+  "2017": {
+   "wert": 8.7,
+   "bericht": "neste-ar-2019",
+   "seite": "123"
+  },
+  "2020": {
+   "wert": -4.7,
+   "bericht": "neste-ar-2022",
+   "seite": "172"
+  },
+  "2021": {
+   "wert": 0.6,
+   "bericht": "neste-ar-2023",
+   "seite": "171"
+  },
+  "2022": {
+   "wert": 13.9,
+   "bericht": "neste-ar-2024",
+   "seite": "150"
+  },
+  "2023": {
+   "wert": 22.7,
+   "bericht": "neste-ar-2025",
+   "seite": "146"
+  },
+  "2024": {
+   "wert": 36.1,
+   "bericht": "neste-ar-2025",
+   "seite": "146"
+  },
+  "2025": {
+   "wert": 34.3,
+   "bericht": "neste-ar-2025",
+   "seite": "146"
+  }
+ },
+ "roace": {
+  "2019": {
+   "wert": 26.6,
+   "bericht": "neste-ar-2021",
+   "seite": "162"
+  },
+  "2018": {
+   "wert": 21.1,
+   "bericht": "neste-ar-2020",
+   "seite": "129"
+  },
+  "2017": {
+   "wert": 17.5,
+   "bericht": "neste-ar-2019",
+   "seite": "123"
+  },
+  "2020": {
+   "wert": 19.8,
+   "bericht": "neste-ar-2022",
+   "seite": "172",
+   "neu_dargestellt": "Definitionswechsel ROACE -> Comparable ROACE (GB 2022 S. 172)",
+   "frueher": [
+    17.3,
+    "neste-ar-2021"
+   ]
+  },
+  "2021": {
+   "wert": 18.3,
+   "bericht": "neste-ar-2023",
+   "seite": "171"
+  },
+  "2022": {
+   "wert": 30.1,
+   "bericht": "neste-ar-2024",
+   "seite": "150"
+  },
+  "2023": {
+   "wert": 23.9,
+   "bericht": "neste-ar-2025",
+   "seite": "146"
+  },
+  "2024": {
+   "wert": 2.5,
+   "bericht": "neste-ar-2025",
+   "seite": "146"
+  },
+  "2025": {
+   "wert": 5.3,
+   "bericht": "neste-ar-2025",
+   "seite": "146"
+  }
+ },
+ "roe": {
+  "2019": {
+   "wert": 35.8,
+   "bericht": "neste-ar-2021",
+   "seite": "162"
+  },
+  "2018": {
+   "wert": 17.3,
+   "bericht": "neste-ar-2020",
+   "seite": "129"
+  },
+  "2017": {
+   "wert": 22.5,
+   "bericht": "neste-ar-2019",
+   "seite": "123"
+  },
+  "2020": {
+   "wert": 11.8,
+   "bericht": "neste-ar-2022",
+   "seite": "172"
+  },
+  "2021": {
+   "wert": 28.5,
+   "bericht": "neste-ar-2023",
+   "seite": "171"
+  },
+  "2022": {
+   "wert": 25.1,
+   "bericht": "neste-ar-2024",
+   "seite": "150"
+  },
+  "2023": {
+   "wert": 17.9,
+   "bericht": "neste-ar-2025",
+   "seite": "146"
+  },
+  "2024": {
+   "wert": -1.2,
+   "bericht": "neste-ar-2025",
+   "seite": "146"
+  },
+  "2025": {
+   "wert": 2.0,
+   "bericht": "neste-ar-2025",
+   "seite": "146"
+  }
+ },
+ "capital_employed": {
+  "2019": {
+   "wert": 7243.0,
+   "bericht": "neste-ar-2021",
+   "seite": "162"
+  },
+  "2018": {
+   "wert": 5756.0,
+   "bericht": "neste-ar-2020",
+   "seite": "129"
+  },
+  "2017": {
+   "wert": 5522.0,
+   "bericht": "neste-ar-2019",
+   "seite": "123"
+  },
+  "2020": {
+   "wert": 7236.0,
+   "bericht": "neste-ar-2022",
+   "seite": "172"
+  },
+  "2021": {
+   "wert": 8742.0,
+   "bericht": "neste-ar-2023",
+   "seite": "171"
+  },
+  "2022": {
+   "wert": 10942.0,
+   "bericht": "neste-ar-2024",
+   "seite": "150"
+  },
+  "2023": {
+   "wert": 12532.0,
+   "bericht": "neste-ar-2025",
+   "seite": "146"
+  },
+  "2024": {
+   "wert": 12564.0,
+   "bericht": "neste-ar-2025",
+   "seite": "146"
+  },
+  "2025": {
+   "wert": 12497.0,
+   "bericht": "neste-ar-2025",
+   "seite": "146"
+  }
+ },
+ "capex_kf": {
+  "2019": {
+   "wert": 890.0,
+   "bericht": "neste-ar-2021",
+   "seite": "162"
+  },
+  "2018": {
+   "wert": 438.0,
+   "bericht": "neste-ar-2020",
+   "seite": "129"
+  },
+  "2017": {
+   "wert": 536.0,
+   "bericht": "neste-ar-2019",
+   "seite": "123"
+  },
+  "2020": {
+   "wert": 1197.0,
+   "bericht": "neste-ar-2022",
+   "seite": "172"
+  },
+  "2021": {
+   "wert": 1535.0,
+   "bericht": "neste-ar-2023",
+   "seite": "171"
+  },
+  "2022": {
+   "wert": 2218.0,
+   "bericht": "neste-ar-2024",
+   "seite": "150"
+  },
+  "2023": {
+   "wert": 2351.0,
+   "bericht": "neste-ar-2025",
+   "seite": "146"
+  },
+  "2024": {
+   "wert": 2006.0,
+   "bericht": "neste-ar-2025",
+   "seite": "146"
+  },
+  "2025": {
+   "wert": 1253.0,
+   "bericht": "neste-ar-2025",
+   "seite": "146"
+  }
+ },
+ "eps": {
+  "2019": {
+   "wert": 2.33,
+   "bericht": "neste-ar-2021",
+   "seite": "162"
+  },
+  "2018": {
+   "wert": 1.01,
+   "bericht": "neste-ar-2020",
+   "seite": "129"
+  },
+  "2017": {
+   "wert": 1.17,
+   "bericht": "neste-ar-2019",
+   "seite": "123"
+  },
+  "2020": {
+   "wert": 0.93,
+   "bericht": "neste-ar-2022",
+   "seite": "172"
+  },
+  "2021": {
+   "wert": 2.31,
+   "bericht": "neste-ar-2023",
+   "seite": "171"
+  },
+  "2022": {
+   "wert": 2.46,
+   "bericht": "neste-ar-2024",
+   "seite": "150"
+  },
+  "2023": {
+   "wert": 1.87,
+   "bericht": "neste-ar-2025",
+   "seite": "146"
+  },
+  "2024": {
+   "wert": -0.12,
+   "bericht": "neste-ar-2025",
+   "seite": "146"
+  },
+  "2025": {
+   "wert": 0.19,
+   "bericht": "neste-ar-2025",
+   "seite": "146"
+  }
+ },
+ "ek_je_aktie": {
+  "2019": {
+   "wert": 7.71,
+   "bericht": "neste-ar-2021",
+   "seite": "162"
+  },
+  "2018": {
+   "wert": 6.01,
+   "bericht": "neste-ar-2020",
+   "seite": "129"
+  },
+  "2017": {
+   "wert": 5.64,
+   "bericht": "neste-ar-2019",
+   "seite": "123"
+  },
+  "2020": {
+   "wert": 7.72,
+   "bericht": "neste-ar-2022",
+   "seite": "172"
+  },
+  "2021": {
+   "wert": 9.09,
+   "bericht": "neste-ar-2023",
+   "seite": "171"
+  },
+  "2022": {
+   "wert": 10.83,
+   "bericht": "neste-ar-2024",
+   "seite": "150"
+  },
+  "2023": {
+   "wert": 11.02,
+   "bericht": "neste-ar-2025",
+   "seite": "146"
+  },
+  "2024": {
+   "wert": 9.65,
+   "bericht": "neste-ar-2025",
+   "seite": "146"
+  },
+  "2025": {
+   "wert": 9.52,
+   "bericht": "neste-ar-2025",
+   "seite": "146"
+  }
+ },
+ "dps": {
+  "2019": {
+   "wert": 1.02,
+   "bericht": "neste-ar-2021",
+   "seite": "162"
+  },
+  "2018": {
+   "wert": 0.76,
+   "bericht": "neste-ar-2020",
+   "seite": "129"
+  },
+  "2017": {
+   "wert": 0.57,
+   "bericht": "neste-ar-2019",
+   "seite": "123"
+  },
+  "2020": {
+   "wert": 0.8,
+   "bericht": "neste-ar-2022",
+   "seite": "172"
+  },
+  "2021": {
+   "wert": 0.82,
+   "bericht": "neste-ar-2023",
+   "seite": "171"
+  },
+  "2022": {
+   "wert": 1.52,
+   "bericht": "neste-ar-2024",
+   "seite": "150"
+  },
+  "2023": {
+   "wert": 1.2,
+   "bericht": "neste-ar-2025",
+   "seite": "146"
+  },
+  "2024": {
+   "wert": 0.2,
+   "bericht": "neste-ar-2025",
+   "seite": "146"
+  },
+  "2025": {
+   "wert": 0.2,
+   "bericht": "neste-ar-2025",
+   "seite": "146"
+  }
+ },
+ "kurs_ende": {
+  "2019": {
+   "wert": 31.02,
+   "bericht": "neste-ar-2021",
+   "seite": "162"
+  },
+  "2018": {
+   "wert": 22.45,
+   "bericht": "neste-ar-2020",
+   "seite": "129"
+  },
+  "2017": {
+   "wert": 17.78,
+   "bericht": "neste-ar-2019",
+   "seite": "123"
+  },
+  "2020": {
+   "wert": 59.16,
+   "bericht": "neste-ar-2022",
+   "seite": "172"
+  },
+  "2021": {
+   "wert": 43.36,
+   "bericht": "neste-ar-2023",
+   "seite": "171"
+  },
+  "2022": {
+   "wert": 43.02,
+   "bericht": "neste-ar-2024",
+   "seite": "150"
+  },
+  "2023": {
+   "wert": 32.21,
+   "bericht": "neste-ar-2025",
+   "seite": "146"
+  },
+  "2024": {
+   "wert": 12.13,
+   "bericht": "neste-ar-2025",
+   "seite": "146"
+  },
+  "2025": {
+   "wert": 19.41,
+   "bericht": "neste-ar-2025",
+   "seite": "146"
+  }
+ },
+ "kurs_hoch": {
+  "2019": {
+   "wert": 33.33,
+   "bericht": "neste-ar-2021",
+   "seite": "162"
+  },
+  "2018": {
+   "wert": 25.51,
+   "bericht": "neste-ar-2020",
+   "seite": "129"
+  },
+  "2017": {
+   "wert": 18.02,
+   "bericht": "neste-ar-2019",
+   "seite": "123"
+  },
+  "2020": {
+   "wert": 60.14,
+   "bericht": "neste-ar-2022",
+   "seite": "172"
+  },
+  "2021": {
+   "wert": 64.74,
+   "bericht": "neste-ar-2023",
+   "seite": "171"
+  },
+  "2022": {
+   "wert": 52.18,
+   "bericht": "neste-ar-2024",
+   "seite": "150"
+  },
+  "2023": {
+   "wert": 48.5,
+   "bericht": "neste-ar-2025",
+   "seite": "146"
+  },
+  "2024": {
+   "wert": 33.6,
+   "bericht": "neste-ar-2025",
+   "seite": "146"
+  },
+  "2025": {
+   "wert": 20.22,
+   "bericht": "neste-ar-2025",
+   "seite": "146"
+  }
+ },
+ "kurs_tief": {
+  "2019": {
+   "wert": 22.19,
+   "bericht": "neste-ar-2021",
+   "seite": "162"
+  },
+  "2018": {
+   "wert": 17.37,
+   "bericht": "neste-ar-2020",
+   "seite": "129"
+  },
+  "2017": {
+   "wert": 10.38,
+   "bericht": "neste-ar-2019",
+   "seite": "123"
+  },
+  "2020": {
+   "wert": 20.37,
+   "bericht": "neste-ar-2022",
+   "seite": "172"
+  },
+  "2021": {
+   "wert": 41.17,
+   "bericht": "neste-ar-2023",
+   "seite": "171"
+  },
+  "2022": {
+   "wert": 30.81,
+   "bericht": "neste-ar-2024",
+   "seite": "150"
+  },
+  "2023": {
+   "wert": 28.55,
+   "bericht": "neste-ar-2025",
+   "seite": "146"
+  },
+  "2024": {
+   "wert": 10.98,
+   "bericht": "neste-ar-2025",
+   "seite": "146"
+  },
+  "2025": {
+   "wert": 6.79,
+   "bericht": "neste-ar-2025",
+   "seite": "146"
+  }
+ },
+ "boersenwert": {
+  "2019": {
+   "wert": 23861.0,
+   "bericht": "neste-ar-2021",
+   "seite": "162"
+  },
+  "2018": {
+   "wert": 17271.0,
+   "bericht": "neste-ar-2020",
+   "seite": "129"
+  },
+  "2017": {
+   "wert": 13679.0,
+   "bericht": "neste-ar-2019",
+   "seite": "123"
+  },
+  "2020": {
+   "wert": 45507.0,
+   "bericht": "neste-ar-2022",
+   "seite": "172"
+  },
+  "2021": {
+   "wert": 33353.0,
+   "bericht": "neste-ar-2023",
+   "seite": "171"
+  },
+  "2022": {
+   "wert": 33091.0,
+   "bericht": "neste-ar-2024",
+   "seite": "150"
+  },
+  "2023": {
+   "wert": 24776.0,
+   "bericht": "neste-ar-2025",
+   "seite": "146"
+  },
+  "2024": {
+   "wert": 9331.0,
+   "bericht": "neste-ar-2025",
+   "seite": "146"
+  },
+  "2025": {
+   "wert": 14930.0,
+   "bericht": "neste-ar-2025",
+   "seite": "146"
+  }
+ },
+ "aktien_ende": {
+  "2019": {
+   "wert": 767683600.0,
+   "bericht": "neste-ar-2021",
+   "seite": "162"
+  },
+  "2018": {
+   "wert": 767490072.0,
+   "bericht": "neste-ar-2020",
+   "seite": "129"
+  },
+  "2017": {
+   "wert": 767370423.0,
+   "bericht": "neste-ar-2019",
+   "seite": "123"
+  },
+  "2020": {
+   "wert": 767836640.0,
+   "bericht": "neste-ar-2022",
+   "seite": "172"
+  },
+  "2021": {
+   "wert": 767969396.0,
+   "bericht": "neste-ar-2023",
+   "seite": "171"
+  },
+  "2022": {
+   "wert": 768083170.0,
+   "bericht": "neste-ar-2024",
+   "seite": "150"
+  },
+  "2023": {
+   "wert": 768199747.0,
+   "bericht": "neste-ar-2025",
+   "seite": "146"
+  },
+  "2024": {
+   "wert": 768215734.0,
+   "bericht": "neste-ar-2025",
+   "seite": "146"
+  },
+  "2025": {
+   "wert": 768274059.0,
+   "bericht": "neste-ar-2025",
+   "seite": "146"
+  }
+ },
+ "vergl_ebitda": {
+  "2021": {
+   "wert": 1920.0,
+   "bericht": "neste-ar-2023",
+   "seite": "171"
+  },
+  "2020": {
+   "wert": 1929.0,
+   "bericht": "neste-ar-2022",
+   "seite": "172"
+  },
+  "2019": {
+   "wert": 2452.0,
+   "bericht": "neste-ar-2021",
+   "seite": "162"
+  },
+  "2022": {
+   "wert": 3537.0,
+   "bericht": "neste-ar-2024",
+   "seite": "150"
+  },
+  "2023": {
+   "wert": 3458.0,
+   "bericht": "neste-ar-2025",
+   "seite": "146"
+  },
+  "2024": {
+   "wert": 1252.0,
+   "bericht": "neste-ar-2025",
+   "seite": "146"
+  },
+  "2025": {
+   "wert": 1683.0,
+   "bericht": "neste-ar-2025",
+   "seite": "146"
+  }
+ },
+ "ergebnis": {
+  "2021": {
+   "wert": 1774.0,
+   "bericht": "neste-ar-2023",
+   "seite": "171"
+  },
+  "2020": {
+   "wert": 714.0,
+   "bericht": "neste-ar-2022",
+   "seite": "172"
+  },
+  "2019": {
+   "wert": 1789.0,
+   "bericht": "neste-ar-2021",
+   "seite": "162"
+  },
+  "2022": {
+   "wert": 1891.0,
+   "bericht": "neste-ar-2024",
+   "seite": "150"
+  },
+  "2023": {
+   "wert": 1436.0,
+   "bericht": "neste-ar-2025",
+   "seite": "146"
+  },
+  "2024": {
+   "wert": -95.0,
+   "bericht": "neste-ar-2025",
+   "seite": "146"
+  },
+  "2025": {
+   "wert": 144.0,
+   "bericht": "neste-ar-2025",
+   "seite": "146"
+  },
+  "2017": {
+   "wert": 914,
+   "bericht": "neste-fsr-2018",
+   "seite": "24"
+  },
+  "2018": {
+   "wert": 775,
+   "bericht": "neste-ar-2019",
+   "seite": "129",
+   "neu_dargestellt": "GB 2019 S. 129 fuehrt 2018 als 'Restated' (779 -> 775)",
+   "frueher": [
+    779,
+    "neste-fsr-2018"
+   ]
+  }
+ },
+ "operativer_cf": {
+  "2019": {
+   "wert": 1456.0,
+   "bericht": "neste-ar-2020",
+   "seite": "137"
+  },
+  "2018": {
+   "wert": 1452.0,
+   "bericht": "neste-ar-2019",
+   "seite": "131"
+  },
+  "2020": {
+   "wert": 2057.0,
+   "bericht": "neste-ar-2021",
+   "seite": "170"
+  },
+  "2021": {
+   "wert": 1994.0,
+   "bericht": "neste-ar-2022",
+   "seite": "180"
+  },
+  "2022": {
+   "wert": 1197.0,
+   "bericht": "neste-ar-2023",
+   "seite": "180"
+  },
+  "2023": {
+   "wert": 2279.0,
+   "bericht": "neste-ar-2024",
+   "seite": "158"
+  },
+  "2024": {
+   "wert": 1154.0,
+   "bericht": "neste-ar-2025",
+   "seite": "154",
+   "neu_dargestellt": "GB 2025 S. 154: 2024 neu dargestellt (Wechselkurseffekte aus Finance cost and income taxes paid herausgenommen), 1.183 -> 1.154",
+   "frueher": [
+    1183.0,
+    "neste-ar-2024"
+   ]
+  },
+  "2025": {
+   "wert": 1747.0,
+   "bericht": "neste-ar-2025",
+   "seite": "154"
+  },
+  "2017": {
+   "wert": 1094,
+   "bericht": "neste-fsr-2018",
+   "seite": "26"
+  }
+ },
+ "sachanlagen": {
+  "2019": {
+   "wert": -522.0,
+   "bericht": "neste-ar-2020",
+   "seite": "137"
+  },
+  "2018": {
+   "wert": -347.0,
+   "bericht": "neste-ar-2019",
+   "seite": "131"
+  },
+  "2020": {
+   "wert": -727.0,
+   "bericht": "neste-ar-2021",
+   "seite": "170"
+  },
+  "2021": {
+   "wert": -929.0,
+   "bericht": "neste-ar-2022",
+   "seite": "180"
+  },
+  "2022": {
+   "wert": -1670.0,
+   "bericht": "neste-ar-2023",
+   "seite": "180"
+  },
+  "2023": {
+   "wert": -1403.0,
+   "bericht": "neste-ar-2024",
+   "seite": "158"
+  },
+  "2024": {
+   "wert": -1525.0,
+   "bericht": "neste-ar-2025",
+   "seite": "154"
+  },
+  "2025": {
+   "wert": -910.0,
+   "bericht": "neste-ar-2025",
+   "seite": "154"
+  }
+ },
+ "immateriell": {
+  "2019": {
+   "wert": -45.0,
+   "bericht": "neste-ar-2020",
+   "seite": "137"
+  },
+  "2018": {
+   "wert": -34.0,
+   "bericht": "neste-ar-2019",
+   "seite": "131"
+  },
+  "2020": {
+   "wert": -35.0,
+   "bericht": "neste-ar-2021",
+   "seite": "170"
+  },
+  "2021": {
+   "wert": -48.0,
+   "bericht": "neste-ar-2022",
+   "seite": "180"
+  },
+  "2022": {
+   "wert": -73.0,
+   "bericht": "neste-ar-2023",
+   "seite": "180"
+  },
+  "2023": {
+   "wert": -27.0,
+   "bericht": "neste-ar-2024",
+   "seite": "158"
+  },
+  "2024": {
+   "wert": -27.0,
+   "bericht": "neste-ar-2025",
+   "seite": "154"
+  },
+  "2025": {
+   "wert": -12.0,
+   "bericht": "neste-ar-2025",
+   "seite": "154"
+  }
+ },
+ "dividenden": {
+  "2019": {
+   "wert": -583.0,
+   "bericht": "neste-ar-2020",
+   "seite": "137"
+  },
+  "2018": {
+   "wert": -435.0,
+   "bericht": "neste-ar-2019",
+   "seite": "131"
+  },
+  "2020": {
+   "wert": -783.0,
+   "bericht": "neste-ar-2021",
+   "seite": "170"
+  },
+  "2021": {
+   "wert": -614.0,
+   "bericht": "neste-ar-2022",
+   "seite": "180"
+  },
+  "2022": {
+   "wert": -630.0,
+   "bericht": "neste-ar-2023",
+   "seite": "180"
+  },
+  "2023": {
+   "wert": -1168.0,
+   "bericht": "neste-ar-2024",
+   "seite": "158"
+  },
+  "2024": {
+   "wert": -922.0,
+   "bericht": "neste-ar-2025",
+   "seite": "154"
+  },
+  "2025": {
+   "wert": -154.0,
+   "bericht": "neste-ar-2025",
+   "seite": "154"
+  },
+  "2017": {
+   "wert": -332,
+   "bericht": "neste-fsr-2018",
+   "seite": "26"
+  }
+ },
+ "akquisitionen": {
+  "2019": {
+   "wert": -1.0,
+   "bericht": "neste-ar-2020",
+   "seite": "137"
+  },
+  "2018": {
+   "wert": -15.0,
+   "bericht": "neste-ar-2019",
+   "seite": "131"
+  },
+  "2020": {
+   "wert": -175.0,
+   "bericht": "neste-ar-2021",
+   "seite": "170"
+  },
+  "2021": {
+   "wert": -322.0,
+   "bericht": "neste-ar-2022",
+   "seite": "180"
+  },
+  "2022": {
+   "wert": -14.0,
+   "bericht": "neste-ar-2023",
+   "seite": "180"
+  },
+  "2023": {
+   "wert": -176.0,
+   "bericht": "neste-ar-2024",
+   "seite": "158"
+  },
+  "2024": {
+   "wert": -11.0,
+   "bericht": "neste-ar-2025",
+   "seite": "154"
+  },
+  "2025": {
+   "wert": -14.0,
+   "bericht": "neste-ar-2025",
+   "seite": "154"
+  }
+ },
+ "leasing": {
+  "2022": {
+   "wert": -157.0,
+   "bericht": "neste-ar-2023",
+   "seite": "180"
+  },
+  "2021": {
+   "wert": -144.0,
+   "bericht": "neste-ar-2022",
+   "seite": "180"
+  },
+  "2023": {
+   "wert": -254.0,
+   "bericht": "neste-ar-2024",
+   "seite": "158"
+  },
+  "2024": {
+   "wert": -278.0,
+   "bericht": "neste-ar-2025",
+   "seite": "154"
+  },
+  "2025": {
+   "wert": -275.0,
+   "bericht": "neste-ar-2025",
+   "seite": "154"
+  },
+  "2019": {
+   "wert": -68,
+   "bericht": "neste-ar-2020",
+   "seite": "193",
+   "anmerkung": "Anhang: total cash outflow for leases",
+   "gedruckt": 68
+  },
+  "2020": {
+   "wert": -115,
+   "bericht": "neste-ar-2020",
+   "seite": "193",
+   "anmerkung": "Anhang: total cash outflow for leases",
+   "gedruckt": 115
+  }
+ },
+ "investitionen_gesamt": {
+  "2017": {
+   "wert": -475,
+   "bericht": "neste-fsr-2018",
+   "seite": "26",
+   "anmerkung": "Capital expenditure als eine Zeile; ab 2018 nach Sach- und immateriellen Anlagen getrennt"
+  }
+ }
+}

@@ -1,0 +1,485 @@
+{
+ "date": "2026-10-02T07:41:16.403497-04:00",
+ "mode": "premarket",
+ "fenetre_au_scan": "premarket",
+ "min_gap": 5,
+ "verdicts": [
+  {
+   "ticker": "QTEX",
+   "classe": "FADE",
+   "horizon": "jour, souvent la premiere heure",
+   "sortie": "racheter sur stop a 20 % au-dessus de l'entree, ou en fin d'horizon. Sous reserve du borrow.",
+   "direction": "vendeuse",
+   "stop_pct": 20.0,
+   "motifs": [
+    "pas de catalyseur haussier verifie",
+    "comblement attendu 25 % le jour meme"
+   ],
+   "alertes": [
+    "montee rapide sans catalyseur identifie (RVOL eleve)",
+    "nano cap (44 M$), facile a manipuler"
+   ],
+   "inconnues": [
+    "catalyseur non verifie (EDGAR / news)",
+    "VWAP non mesure",
+    "disponibilite et cout du borrow inconnus (a relever chez le courtier)",
+    "tenue a 30 min inconnue (mesurable seulement apres l'ouverture)"
+   ],
+   "comblement_attendu_pct": 25
+  },
+  {
+   "ticker": "NIVF",
+   "classe": "PUMP_RISK",
+   "horizon": "jour a trois seances, en vendeuse",
+   "sortie": "racheter sur stop a 20 % au-dessus de l'entree, ou en fin d'horizon. Sous reserve du borrow.",
+   "direction": "vendeuse",
+   "stop_pct": 20.0,
+   "motifs": [
+    "4 signal(aux) de manipulation presents"
+   ],
+   "alertes": [
+    "montee rapide sans catalyseur identifie (RVOL eleve)",
+    "nano cap (0 M$), facile a manipuler",
+    "low float (0.0 M), mouvements violents",
+    "depot 424B4 = dilution, catalyseur baissier deguise"
+   ],
+   "inconnues": [
+    "VWAP non mesure",
+    "disponibilite et cout du borrow inconnus (a relever chez le courtier)",
+    "tenue a 30 min inconnue (mesurable seulement apres l'ouverture)"
+   ],
+   "comblement_attendu_pct": 78
+  },
+  {
+   "ticker": "GPUS",
+   "classe": "PUMP_RISK",
+   "horizon": "jour a trois seances, en vendeuse",
+   "sortie": "racheter sur stop a 20 % au-dessus de l'entree, ou en fin d'horizon. Sous reserve du borrow.",
+   "direction": "vendeuse",
+   "stop_pct": 20.0,
+   "motifs": [
+    "3 signal(aux) de manipulation presents"
+   ],
+   "alertes": [
+    "montee rapide sans catalyseur identifie (RVOL eleve)",
+    "nano cap (23 M$), facile a manipuler",
+    "depot 8-K/2.03 = dilution, catalyseur baissier deguise"
+   ],
+   "inconnues": [
+    "VWAP non mesure",
+    "disponibilite et cout du borrow inconnus (a relever chez le courtier)",
+    "tenue a 30 min inconnue (mesurable seulement apres l'ouverture)"
+   ],
+   "comblement_attendu_pct": 42
+  },
+  {
+   "ticker": "SGRX",
+   "classe": "PUMP_RISK",
+   "horizon": "jour a trois seances, en vendeuse",
+   "sortie": "racheter sur stop a 20 % au-dessus de l'entree, ou en fin d'horizon. Sous reserve du borrow.",
+   "direction": "vendeuse",
+   "stop_pct": 20.0,
+   "motifs": [
+    "3 signal(aux) de manipulation presents"
+   ],
+   "alertes": [
+    "montee rapide sans catalyseur identifie (RVOL eleve)",
+    "nano cap (3 M$), facile a manipuler",
+    "low float (0.7 M), mouvements violents"
+   ],
+   "inconnues": [
+    "catalyseur non verifie (EDGAR / news)",
+    "VWAP non mesure",
+    "disponibilite et cout du borrow inconnus (a relever chez le courtier)",
+    "tenue a 30 min inconnue (mesurable seulement apres l'ouverture)"
+   ],
+   "comblement_attendu_pct": 25
+  },
+  {
+   "ticker": "SDEV",
+   "classe": "PUMP_RISK",
+   "horizon": "jour a trois seances, en vendeuse",
+   "sortie": "racheter sur stop a 20 % au-dessus de l'entree, ou en fin d'horizon. Sous reserve du borrow.",
+   "direction": "vendeuse",
+   "stop_pct": 20.0,
+   "motifs": [
+    "1 signal(aux) de manipulation presents"
+   ],
+   "alertes": [
+    "montee rapide sans catalyseur identifie (RVOL eleve)"
+   ],
+   "inconnues": [
+    "catalyseur non verifie (EDGAR / news)",
+    "VWAP non mesure",
+    "disponibilite et cout du borrow inconnus (a relever chez le courtier)",
+    "tenue a 30 min inconnue (mesurable seulement apres l'ouverture)"
+   ],
+   "comblement_attendu_pct": 8
+  },
+  {
+   "ticker": "SORA",
+   "classe": "INSUFFISANT",
+   "horizon": "aucun",
+   "sortie": "ne pas entrer",
+   "direction": null,
+   "stop_pct": null,
+   "motifs": [
+    "volume moyen 4,650 < 100,000 (plancher structurel: sortie de position incertaine)"
+   ],
+   "alertes": [
+    "montee rapide sans catalyseur identifie (RVOL eleve)",
+    "low float (4.9 M), mouvements violents"
+   ],
+   "inconnues": [
+    "catalyseur non verifie (EDGAR / news)",
+    "VWAP non mesure",
+    "disponibilite et cout du borrow inconnus (a relever chez le courtier)",
+    "tenue a 30 min inconnue (mesurable seulement apres l'ouverture)"
+   ],
+   "comblement_attendu_pct": 78
+  },
+  {
+   "ticker": "AMOD",
+   "classe": "INSUFFISANT",
+   "horizon": "aucun",
+   "sortie": "ne pas entrer",
+   "direction": null,
+   "stop_pct": null,
+   "motifs": [
+    "volume moyen 62,250 < 100,000 (plancher structurel: sortie de position incertaine)"
+   ],
+   "alertes": [
+    "montee rapide sans catalyseur identifie (RVOL eleve)",
+    "nano cap (6 M$), facile a manipuler",
+    "low float (0.6 M), mouvements violents"
+   ],
+   "inconnues": [
+    "catalyseur non verifie (EDGAR / news)",
+    "VWAP non mesure",
+    "disponibilite et cout du borrow inconnus (a relever chez le courtier)",
+    "tenue a 30 min inconnue (mesurable seulement apres l'ouverture)"
+   ],
+   "comblement_attendu_pct": 8
+  }
+ ],
+ "mesures": {
+  "AMOD": {
+   "ticker": "AMOD",
+   "gap_pct": 125.81,
+   "atr_pct": 17.63,
+   "rvol": 134.21,
+   "rvol_pre_tendance": 560.7,
+   "prix": 2.64,
+   "vwap": null,
+   "ouverture": null,
+   "cloture_veille": 1.1699999570846558,
+   "volume_jour": 34846160.0,
+   "volume_moyen": 62250.0,
+   "float_actions": 630935,
+   "market_cap": 5811177,
+   "short_interest_pct": 0.86,
+   "catalyseur": null,
+   "formulaire_sec": null,
+   "volume_pic_au_sommet": null,
+   "chute_depuis_sommet_pct": null,
+   "gap_tenu_30min": null
+  },
+  "NIVF": {
+   "ticker": "NIVF",
+   "gap_pct": 39.6,
+   "atr_pct": 161.17,
+   "rvol": 338.42,
+   "rvol_pre_tendance": 640.53,
+   "prix": 0.14,
+   "vwap": null,
+   "ouverture": null,
+   "cloture_veille": 0.10100000351667404,
+   "volume_jour": 108736973.0,
+   "volume_moyen": 147350.0,
+   "float_actions": 30419,
+   "market_cap": 281751,
+   "short_interest_pct": 0.69,
+   "catalyseur": null,
+   "formulaire_sec": "424B4",
+   "volume_pic_au_sommet": null,
+   "chute_depuis_sommet_pct": null,
+   "gap_tenu_30min": null
+  },
+  "SDEV": {
+   "ticker": "SDEV",
+   "gap_pct": 30.32,
+   "atr_pct": 14.56,
+   "rvol": 296.33,
+   "rvol_pre_tendance": 907.09,
+   "prix": 4.77,
+   "vwap": null,
+   "ouverture": null,
+   "cloture_veille": 3.6600000858306885,
+   "volume_jour": 19284765.0,
+   "volume_moyen": 355550.0,
+   "float_actions": 22550189,
+   "market_cap": 185252496,
+   "short_interest_pct": 4.35,
+   "catalyseur": null,
+   "formulaire_sec": null,
+   "volume_pic_au_sommet": null,
+   "chute_depuis_sommet_pct": null,
+   "gap_tenu_30min": null
+  },
+  "SGRX": {
+   "ticker": "SGRX",
+   "gap_pct": 15.83,
+   "atr_pct": 14.38,
+   "rvol": 2.17,
+   "rvol_pre_tendance": 16.22,
+   "prix": 1.61,
+   "vwap": null,
+   "ouverture": null,
+   "cloture_veille": 1.3899999856948853,
+   "volume_jour": 5184789.0,
+   "volume_moyen": 152200.0,
+   "float_actions": 730450,
+   "market_cap": 2645139,
+   "short_interest_pct": 3.67,
+   "catalyseur": null,
+   "formulaire_sec": null,
+   "volume_pic_au_sommet": null,
+   "chute_depuis_sommet_pct": null,
+   "gap_tenu_30min": null
+  },
+  "QTEX": {
+   "ticker": "QTEX",
+   "gap_pct": 12.17,
+   "atr_pct": 10.47,
+   "rvol": 7.7,
+   "rvol_pre_tendance": 7.37,
+   "prix": 0.88,
+   "vwap": null,
+   "ouverture": null,
+   "cloture_veille": 0.7850000262260437,
+   "volume_jour": 18450153.0,
+   "volume_moyen": 1555100.0,
+   "float_actions": 39305504,
+   "market_cap": 43709104,
+   "short_interest_pct": 5.83,
+   "catalyseur": null,
+   "formulaire_sec": null,
+   "volume_pic_au_sommet": null,
+   "chute_depuis_sommet_pct": null,
+   "gap_tenu_30min": null
+  },
+  "GPUS": {
+   "ticker": "GPUS",
+   "gap_pct": 3.53,
+   "atr_pct": 8.48,
+   "rvol": 2.53,
+   "rvol_pre_tendance": 10.87,
+   "prix": 0.17,
+   "vwap": null,
+   "ouverture": null,
+   "cloture_veille": 0.1599999964237213,
+   "volume_jour": 6335308.0,
+   "volume_moyen": 24656000.0,
+   "float_actions": 127194343,
+   "market_cap": 22512472,
+   "short_interest_pct": 30.68,
+   "catalyseur": null,
+   "formulaire_sec": "8-K/2.03",
+   "volume_pic_au_sommet": null,
+   "chute_depuis_sommet_pct": null,
+   "gap_tenu_30min": null
+  },
+  "SORA": {
+   "ticker": "SORA",
+   "gap_pct": 0.83,
+   "atr_pct": 5.68,
+   "rvol": 1051.23,
+   "rvol_pre_tendance": 109.11,
+   "prix": 2.42,
+   "vwap": null,
+   "ouverture": null,
+   "cloture_veille": 2.4000000953674316,
+   "volume_jour": 885425.0,
+   "volume_moyen": 4650.0,
+   "float_actions": 4863896,
+   "market_cap": 59673604,
+   "short_interest_pct": 0.1,
+   "catalyseur": null,
+   "formulaire_sec": null,
+   "volume_pic_au_sommet": null,
+   "chute_depuis_sommet_pct": null,
+   "gap_tenu_30min": null
+  }
+ },
+ "depots_sec": {
+  "AMOD": {
+   "cik": 1862463,
+   "formulaire_sec": null,
+   "depots": [
+    {
+     "date": "2026-10-01",
+     "form": "8-K",
+     "items": "2.01,8.01",
+     "classe": "A_LIRE",
+     "url": "https://www.sec.gov/Archives/edgar/data/1862463/000149315226045296/form8-k.htm"
+    }
+   ],
+   "a_lire": [
+    {
+     "date": "2026-10-01",
+     "form": "8-K",
+     "items": "2.01,8.01",
+     "classe": "A_LIRE",
+     "url": "https://www.sec.gov/Archives/edgar/data/1862463/000149315226045296/form8-k.htm"
+    }
+   ]
+  },
+  "NIVF": {
+   "cik": 1981662,
+   "formulaire_sec": "424B4",
+   "depots": [
+    {
+     "date": "2026-09-30",
+     "form": "6-K",
+     "items": "",
+     "classe": "A_LIRE",
+     "url": "https://www.sec.gov/Archives/edgar/data/1981662/000121390026105211/ea0307155-6k_newgeni.htm"
+    },
+    {
+     "date": "2026-09-30",
+     "form": "424B4",
+     "items": "",
+     "classe": "DILUTION",
+     "url": "https://www.sec.gov/Archives/edgar/data/1981662/000121390026104917/ea0307067-424b4_newgenivf.htm",
+     "form_qualifie": "424B4"
+    }
+   ],
+   "a_lire": [
+    {
+     "date": "2026-09-30",
+     "form": "6-K",
+     "items": "",
+     "classe": "A_LIRE",
+     "url": "https://www.sec.gov/Archives/edgar/data/1981662/000121390026105211/ea0307155-6k_newgeni.htm"
+    }
+   ]
+  },
+  "SDEV": {
+   "cik": 1389545,
+   "formulaire_sec": null,
+   "depots": [
+    {
+     "date": "2026-09-29",
+     "form": "8-K",
+     "items": "8.01,9.01",
+     "classe": "A_LIRE",
+     "url": "https://www.sec.gov/Archives/edgar/data/1389545/000143774926031464/sdev20260929_8k.htm"
+    }
+   ],
+   "a_lire": [
+    {
+     "date": "2026-09-29",
+     "form": "8-K",
+     "items": "8.01,9.01",
+     "classe": "A_LIRE",
+     "url": "https://www.sec.gov/Archives/edgar/data/1389545/000143774926031464/sdev20260929_8k.htm"
+    }
+   ]
+  },
+  "SGRX": {
+   "cik": 1735556,
+   "formulaire_sec": null,
+   "depots": [
+    {
+     "date": "2026-09-23",
+     "form": "6-K",
+     "items": "",
+     "classe": "A_LIRE",
+     "url": "https://www.sec.gov/Archives/edgar/data/1735556/000110465926110020/tm2625944d1_6k.htm"
+    }
+   ],
+   "a_lire": [
+    {
+     "date": "2026-09-23",
+     "form": "6-K",
+     "items": "",
+     "classe": "A_LIRE",
+     "url": "https://www.sec.gov/Archives/edgar/data/1735556/000110465926110020/tm2625944d1_6k.htm"
+    }
+   ]
+  },
+  "QTEX": {
+   "cik": 1837493,
+   "formulaire_sec": null,
+   "depots": [
+    {
+     "date": "2026-10-01",
+     "form": "6-K",
+     "items": "",
+     "classe": "A_LIRE",
+     "url": "https://www.sec.gov/Archives/edgar/data/1837493/000118518526004479/qtrex6k100126.htm"
+    },
+    {
+     "date": "2026-09-24",
+     "form": "6-K",
+     "items": "",
+     "classe": "A_LIRE",
+     "url": "https://www.sec.gov/Archives/edgar/data/1837493/000118518526004282/qtrex6k092226.htm"
+    }
+   ],
+   "a_lire": [
+    {
+     "date": "2026-10-01",
+     "form": "6-K",
+     "items": "",
+     "classe": "A_LIRE",
+     "url": "https://www.sec.gov/Archives/edgar/data/1837493/000118518526004479/qtrex6k100126.htm"
+    },
+    {
+     "date": "2026-09-24",
+     "form": "6-K",
+     "items": "",
+     "classe": "A_LIRE",
+     "url": "https://www.sec.gov/Archives/edgar/data/1837493/000118518526004282/qtrex6k092226.htm"
+    }
+   ]
+  },
+  "GPUS": {
+   "cik": 896493,
+   "formulaire_sec": "8-K/2.03",
+   "depots": [
+    {
+     "date": "2026-09-30",
+     "form": "8-K",
+     "items": "1.01,2.03,9.01",
+     "classe": "DILUTION",
+     "url": "https://www.sec.gov/Archives/edgar/data/896493/000121465926012236/z9292618k.htm",
+     "form_qualifie": "8-K/2.03"
+    }
+   ],
+   "a_lire": []
+  },
+  "SORA": {
+   "cik": 2033515,
+   "formulaire_sec": null,
+   "depots": [
+    {
+     "date": "2026-10-01",
+     "form": "6-K",
+     "items": "",
+     "classe": "A_LIRE",
+     "url": "https://www.sec.gov/Archives/edgar/data/2033515/000121390026105764/ea0305939-6k_asia.htm"
+    }
+   ],
+   "a_lire": [
+    {
+     "date": "2026-10-01",
+     "form": "6-K",
+     "items": "",
+     "classe": "A_LIRE",
+     "url": "https://www.sec.gov/Archives/edgar/data/2033515/000121390026105764/ea0305939-6k_asia.htm"
+    }
+   ]
+  }
+ }
+}

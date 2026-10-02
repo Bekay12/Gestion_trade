@@ -1,0 +1,122 @@
+{
+ "detection": "2026-09-28_premarket.json",
+ "evalue_le": "2026-09-29T23:29:56.152227",
+ "fenetre_jours": 1,
+ "reconstitue": "29.09.2026: fichier ecrase par erreur par une relance incluant la seance du 29.09; recalcule sur la seule seance du 28.09, comme le soir du 28.09, avec l'executabilite en plus",
+ "notes": [
+  {
+   "ticker": "SRFM",
+   "classe": "FADE",
+   "resultat": "juste",
+   "motif": "gap comble (bas 1.08 <= veille 1.11); vente ouverture->cloture -5.8 %",
+   "variation_pct": 5.78,
+   "vente_ouverture_cloture_pct": -5.78,
+   "executabilite": {
+    "executable": "oui",
+    "volume_post_ouverture_usd": 1105753,
+    "barres_vides": 0,
+    "motif": "volume 09:35-10:00 1106 k$, carnet continu (spread et borrow non mesures)"
+   }
+  },
+  {
+   "ticker": "ARAY",
+   "classe": "FADE",
+   "resultat": "faux",
+   "motif": "gap non comble (bas 0.28 > veille 0.22); vente ouverture->cloture -3.4 %",
+   "variation_pct": 3.45,
+   "vente_ouverture_cloture_pct": -3.45,
+   "executabilite": {
+    "executable": "oui",
+    "volume_post_ouverture_usd": 4393012,
+    "barres_vides": 0,
+    "motif": "volume 09:35-10:00 4393 k$, carnet continu (spread et borrow non mesures)"
+   }
+  },
+  {
+   "ticker": "CDT",
+   "classe": "PUMP_RISK",
+   "resultat": "faux",
+   "motif": "a tenu (+1.3 %) : alerte trop severe",
+   "variation_pct": 1.33,
+   "executabilite": {
+    "executable": "non",
+    "volume_post_ouverture_usd": 132214,
+    "barres_vides": 0,
+    "motif": "volume 09:35-10:00 132 k$ < 200 k$"
+   }
+  },
+  {
+   "ticker": "FFAI",
+   "classe": "PUMP_RISK",
+   "resultat": "juste",
+   "motif": "retombe de -20.8 %, l'alerte etait fondee",
+   "variation_pct": -20.79,
+   "executabilite": {
+    "executable": "oui",
+    "volume_post_ouverture_usd": 941455,
+    "barres_vides": 0,
+    "motif": "volume 09:35-10:00 941 k$, carnet continu (spread et borrow non mesures)"
+   }
+  },
+  {
+   "ticker": "GYGY",
+   "classe": "PUMP_RISK",
+   "resultat": "juste",
+   "motif": "retombe de -28.1 %, l'alerte etait fondee",
+   "variation_pct": -28.1,
+   "executabilite": {
+    "executable": "oui",
+    "volume_post_ouverture_usd": 11520397,
+    "barres_vides": 0,
+    "motif": "volume 09:35-10:00 11520 k$, carnet continu (spread et borrow non mesures)"
+   }
+  },
+  {
+   "ticker": "MIMI",
+   "classe": "PUMP_RISK",
+   "resultat": "juste",
+   "motif": "retombe de -12.4 %, l'alerte etait fondee",
+   "variation_pct": -12.43,
+   "executabilite": {
+    "executable": "oui",
+    "volume_post_ouverture_usd": 2938594,
+    "barres_vides": 0,
+    "motif": "volume 09:35-10:00 2939 k$, carnet continu (spread et borrow non mesures)"
+   }
+  },
+  {
+   "ticker": "SDEV",
+   "classe": "PUMP_RISK",
+   "resultat": "juste",
+   "motif": "retombe de -9.8 %, l'alerte etait fondee",
+   "variation_pct": -9.77,
+   "executabilite": {
+    "executable": "oui",
+    "volume_post_ouverture_usd": 2318792,
+    "barres_vides": 0,
+    "motif": "volume 09:35-10:00 2319 k$, carnet continu (spread et borrow non mesures)"
+   }
+  },
+  {
+   "ticker": "CLRO",
+   "classe": "INSUFFISANT",
+   "resultat": "non juge",
+   "motif": "ecarte a la detection, aucune promesse",
+   "variation_pct": -12.52
+  },
+  {
+   "ticker": "MTEK",
+   "classe": "INSUFFISANT",
+   "resultat": "non juge",
+   "motif": "ecarte a la detection, aucune promesse",
+   "variation_pct": -2.9
+  },
+  {
+   "ticker": "SCYX",
+   "classe": "INSUFFISANT",
+   "resultat": "non juge",
+   "motif": "ecarte a la detection, aucune promesse",
+   "variation_pct": 0.43
+  }
+ ]
+}

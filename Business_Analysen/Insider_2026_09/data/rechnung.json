@@ -1,0 +1,61 @@
+{
+ "gme": {
+  "teile": {
+   "Kasse und Wertpapiere nach Barteil des Tauschs": 4701.900000000001,
+   "eBay-Beteiligung (43.4 Mio. Aktien zu 108.39 $)": 4703.0836133699995,
+   "Bitcoin (4710 zu 83,393 $, an Coinbase verpfaendet)": 392.7832908,
+   "Wandelanleihen nach Tausch (Buchwert, Naeherung)": -2767.8
+  },
+  "netto": 7029.966904170001,
+  "je_aktie": 13.934495756232314,
+  "rest_je_aktie": 9.745504243767686,
+  "ebit_ltm": 480.0
+ },
+ "crm": {
+  "szenarien": {
+   "LTM (07/2026)": {
+    "zufluss": 15154.0,
+    "schwellen": [
+     88.5799734951164,
+     110.79187691827056,
+     122.55327249980114
+    ],
+    "schwelle_lang": 137.30794783718136,
+    "wachstum10": 0.16775410352600162
+   },
+   "LTM, volle neue Zinslast": {
+    "zufluss": 14187.0,
+    "schwellen": [
+     84.50318136170539,
+     104.55638797841046,
+     115.17473487124701
+    ],
+    "schwelle_lang": 129.7938750419277,
+    "wachstum10": 0.18115941714708994
+   },
+   "LTM abzgl. Aktienverguetung": {
+    "zufluss": 11489.0,
+    "schwellen": [
+     73.12863619527015,
+     87.15892245644292,
+     94.58808076386427
+    ],
+    "schwelle_lang": 108.8290680082209,
+    "wachstum10": 0.22365685706133054
+   },
+   "Median FY2018-2026": {
+    "zufluss": 5283,
+    "schwellen": [
+     46.96465276202433,
+     47.14088278656505,
+     47.23419811359847
+    ],
+    "schwelle_lang": 60.605349531132674,
+    "wachstum10": 0.3773397401258406
+   }
+  },
+  "mcap": 188022.58000000002,
+  "nettoschulden": 27885.0,
+  "fcf_ltm": 15154.0
+ }
+}

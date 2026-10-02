@@ -82,9 +82,11 @@ def screen_combined(symbols=None):
         sec = sum(_flag(df, f"s{i}_ok").astype(int) for i in range(1, 8))
     df = df.assign(_bg=bg, _sec=sec)
 
-    def _profile(g, s):
+    etoile = _etoile(df)
+
+    def _profile(g, s, e):
         if g >= 3 and s >= 5:
-            return "Dual Champion"
+            return "Dual Champion*" if e else "Dual Champion"
         if g >= 4 and s < 3:
             return "Pure Growth"
         if s >= 5 and g < 3:
@@ -93,10 +95,10 @@ def screen_combined(symbols=None):
             return "Balanced"
         return None
 
-    _order = {"Dual Champion": 0, "Pure Safe": 1, "Pure Growth": 2, "Balanced": 3}
+    _order = {"Dual Champion*": 0, "Dual Champion": 1, "Pure Safe": 2, "Pure Growth": 3, "Balanced": 4}
     rows = []
-    for _, r in df.iterrows():
-        prof = _profile(int(r["_bg"]), int(r["_sec"]))
+    for i, r in df.iterrows():
+        prof = _profile(int(r["_bg"]), int(r["_sec"]), bool(etoile.loc[i]))
         if prof:
             rows.append([r["symbol"], prof, int(r["_bg"]), int(r["_sec"])])
     # Le symbole clôt la clé de tri : sans lui, les nombreux ex aequo
@@ -109,12 +111,48 @@ def screen_combined(symbols=None):
     symboles = [r[0] for r in rows]
     cmap = get_country_map(symboles)
     nmap = _noms(symboles, df)
-    rows = [[r[0], nmap.get(r[0]) or "N/A", cmap.get(r[0]) or "N/A", *r[1:]] for r in rows]
+    # Colonne ⭐ : meme signalement que la forme Finviz + Combined (core/combined_finviz).
+    rows = [[r[0], nmap.get(r[0]) or "N/A", cmap.get(r[0]) or "N/A", r[1],
+             "⭐" if r[1] == "Dual Champion*" else "", *r[2:]] for r in rows]
+    n_star = sum(1 for r in rows if r[4] == "⭐")
     return _result(
-        "Combined — profils (Dual Champion / Pure Safe / Pure Growth / Balanced)",
-        ["Symbole", "Nom", "Pays", "Profil", "Growth /5", "Safe /7"],
+        f"Combined pur (catalogue) — {n_star} ⭐ Dual Champion* — profils Dual* / Dual / Pure Safe / Pure Growth / Balanced",
+        ["Symbole", "Nom", "Pays", "Profil", "⭐", "Growth /5", "Safe /7"],
         rows,
     )
+
+
+def _etoile(df):
+    """
+    Dual Champion* : G3 (c3_ok), G4 (c4_ok) et S4 (s4_ok) en plus du Dual.
+    Meme regle que core/scan_fondamentaux.est_etoile, sur les colonnes du store.
+    """
+    return _flag(df, "c3_ok") & _flag(df, "c4_ok") & _flag(df, "s4_ok")
+
+
+def screen_dual_star(symbols=None):
+    """
+    Dual Champion* du catalogue, avec la date des donnees de chaque titre.
+    La date est affichee parce qu'elle est le defaut principal de cette vue :
+    mesure du 02.10.2026, 67 % des indicateurs du store dataient d'avant
+    septembre, et G4 (momentum) ne tenait plus qu'a 75 % en direct. 0 requete
+    yfinance ; confirmer avant d'agir.
+    """
+    df = get_latest_features(symbols)
+    if df.empty:
+        return _empty("Dual Champion*")
+    bg = sum(_flag(df, f"c{i}_ok").astype(int) for i in range(1, 6))
+    sec = (_num(df, "secure_score").fillna(0) if "secure_score" in df.columns
+           else sum(_flag(df, f"s{i}_ok").astype(int) for i in range(1, 8)))
+    sel = df[(bg >= 3) & (sec >= 5) & _etoile(df)].assign(_bg=bg, _sec=sec)
+    sel = sel.sort_values(["_bg", "_sec", "symbol"], ascending=[False, False, True]).head(MAX_ROWS)
+    symboles = list(sel["symbol"])
+    cmap, nmap = get_country_map(symboles), _noms(symboles, sel)
+    rows = [[r["symbol"], nmap.get(r["symbol"]) or "N/A", cmap.get(r["symbol"]) or "N/A",
+             int(r["_bg"]), int(r["_sec"]), str(r.get("feature_date", ""))[:10]]
+            for _, r in sel.iterrows()]
+    return _result("Dual Champion* (catalogue) — Dual + sous-valorisé + momentum + dividende",
+                   ["Symbole", "Nom", "Pays", "Growth /5", "Safe /7", "Données du"], rows)
 
 
 def screen_golden_cross(max_gap_pct: float = 5.0, symbols=None):
@@ -153,5 +191,6 @@ def screen_golden_cross(max_gap_pct: float = 5.0, symbols=None):
 # Registre nom → fonction (uniquement les vues sans équivalent Finviz).
 SCREENERS = {
     "combined": screen_combined,
+    "dual_star": screen_dual_star,
     "golden_cross": screen_golden_cross,
 }

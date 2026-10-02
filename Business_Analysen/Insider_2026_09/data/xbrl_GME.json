@@ -1,0 +1,1538 @@
+{
+ "posten": {
+  "umsatz": {
+   "2018-02-03": {
+    "wert": 8547100000,
+    "akte": "0001326380-20-000022",
+    "eingereicht": "2020-03-27",
+    "tag": "RevenueFromContractWithCustomerExcludingAssessedTax"
+   },
+   "2019-02-02": {
+    "wert": 8285300000,
+    "akte": "0001326380-21-000032",
+    "eingereicht": "2021-03-23",
+    "tag": "RevenueFromContractWithCustomerExcludingAssessedTax"
+   },
+   "2020-02-01": {
+    "wert": 6466000000,
+    "akte": "0001326380-22-000021",
+    "eingereicht": "2022-03-17",
+    "tag": "RevenueFromContractWithCustomerExcludingAssessedTax"
+   },
+   "2021-01-30": {
+    "wert": 5089800000,
+    "akte": "0001326380-23-000019",
+    "eingereicht": "2023-03-28",
+    "tag": "RevenueFromContractWithCustomerExcludingAssessedTax"
+   },
+   "2022-01-29": {
+    "wert": 6010700000,
+    "akte": "0001326380-24-000012",
+    "eingereicht": "2024-03-26",
+    "tag": "RevenueFromContractWithCustomerExcludingAssessedTax"
+   },
+   "2023-01-28": {
+    "wert": 5927200000,
+    "akte": "0001628280-25-014731",
+    "eingereicht": "2025-03-25",
+    "tag": "RevenueFromContractWithCustomerExcludingAssessedTax"
+   },
+   "2024-02-03": {
+    "wert": 5272800000,
+    "akte": "0001326380-26-000013",
+    "eingereicht": "2026-03-24",
+    "tag": "RevenueFromContractWithCustomerExcludingAssessedTax"
+   },
+   "2025-02-01": {
+    "wert": 3823000000,
+    "akte": "0001326380-26-000013",
+    "eingereicht": "2026-03-24",
+    "tag": "RevenueFromContractWithCustomerExcludingAssessedTax"
+   },
+   "2026-01-31": {
+    "wert": 3629900000,
+    "akte": "0001326380-26-000013",
+    "eingereicht": "2026-03-24",
+    "tag": "RevenueFromContractWithCustomerExcludingAssessedTax"
+   },
+   "2017-01-28": {
+    "wert": 7965000000,
+    "akte": "0001326380-19-000052",
+    "eingereicht": "2019-04-02",
+    "tag": "RevenueFromContractWithCustomerExcludingAssessedTax"
+   }
+  },
+  "ergebnis": {
+   "2008-02-02": {
+    "wert": 288291000,
+    "akte": "0000950123-10-030164",
+    "eingereicht": "2010-03-30",
+    "tag": "NetIncomeLoss"
+   },
+   "2009-01-31": {
+    "wert": 398300000,
+    "akte": "0000950123-11-030842",
+    "eingereicht": "2011-03-30",
+    "tag": "NetIncomeLoss"
+   },
+   "2010-01-30": {
+    "wert": 377300000,
+    "akte": "0001193125-12-134615",
+    "eingereicht": "2012-03-27",
+    "tag": "NetIncomeLoss"
+   },
+   "2011-01-29": {
+    "wert": 408000000,
+    "akte": "0001193125-13-140443",
+    "eingereicht": "2013-04-03",
+    "tag": "NetIncomeLoss"
+   },
+   "2012-01-28": {
+    "wert": 339900000,
+    "akte": "0001445305-14-001259",
+    "eingereicht": "2014-04-02",
+    "tag": "NetIncomeLoss"
+   },
+   "2013-02-02": {
+    "wert": -269700000,
+    "akte": "0001326380-15-000078",
+    "eingereicht": "2015-03-30",
+    "tag": "NetIncomeLoss"
+   },
+   "2014-02-01": {
+    "wert": 354200000,
+    "akte": "0001326380-16-000323",
+    "eingereicht": "2016-03-29",
+    "tag": "NetIncomeLoss"
+   },
+   "2015-01-31": {
+    "wert": 393100000,
+    "akte": "0001326380-17-000046",
+    "eingereicht": "2017-03-27",
+    "tag": "NetIncomeLoss"
+   },
+   "2016-01-30": {
+    "wert": 402800000,
+    "akte": "0001326380-18-000033",
+    "eingereicht": "2018-04-02",
+    "tag": "NetIncomeLoss"
+   },
+   "2017-01-28": {
+    "wert": 353200000,
+    "akte": "0001326380-19-000052",
+    "eingereicht": "2019-04-02",
+    "tag": "NetIncomeLoss"
+   },
+   "2018-02-03": {
+    "wert": 34700000,
+    "akte": "0001326380-20-000022",
+    "eingereicht": "2020-03-27",
+    "tag": "NetIncomeLoss"
+   },
+   "2019-02-02": {
+    "wert": -673000000,
+    "akte": "0001326380-21-000032",
+    "eingereicht": "2021-03-23",
+    "tag": "NetIncomeLoss"
+   },
+   "2020-02-01": {
+    "wert": -470900000,
+    "akte": "0001326380-22-000021",
+    "eingereicht": "2022-03-17",
+    "tag": "NetIncomeLoss"
+   },
+   "2021-01-30": {
+    "wert": -215300000,
+    "akte": "0001326380-23-000019",
+    "eingereicht": "2023-03-28",
+    "tag": "NetIncomeLoss"
+   },
+   "2022-01-29": {
+    "wert": -381300000,
+    "akte": "0001326380-24-000012",
+    "eingereicht": "2024-03-26",
+    "tag": "NetIncomeLoss"
+   },
+   "2023-01-28": {
+    "wert": -313100000,
+    "akte": "0001628280-25-014731",
+    "eingereicht": "2025-03-25",
+    "tag": "NetIncomeLoss"
+   },
+   "2024-02-03": {
+    "wert": 6700000,
+    "akte": "0001326380-26-000013",
+    "eingereicht": "2026-03-24",
+    "tag": "NetIncomeLoss"
+   },
+   "2025-02-01": {
+    "wert": 131300000,
+    "akte": "0001326380-26-000013",
+    "eingereicht": "2026-03-24",
+    "tag": "NetIncomeLoss"
+   },
+   "2026-01-31": {
+    "wert": 418400000,
+    "akte": "0001326380-26-000013",
+    "eingereicht": "2026-03-24",
+    "tag": "NetIncomeLoss"
+   }
+  },
+  "cfo": {
+   "2008-02-02": {
+    "wert": 494046000,
+    "akte": "0000950123-10-030164",
+    "eingereicht": "2010-03-30",
+    "tag": "NetCashProvidedByUsedInOperatingActivities"
+   },
+   "2009-01-31": {
+    "wert": 549200000,
+    "akte": "0000950123-11-030842",
+    "eingereicht": "2011-03-30",
+    "tag": "NetCashProvidedByUsedInOperatingActivities"
+   },
+   "2010-01-30": {
+    "wert": 644200000,
+    "akte": "0001193125-12-134615",
+    "eingereicht": "2012-03-27",
+    "tag": "NetCashProvidedByUsedInOperatingActivities"
+   },
+   "2011-01-29": {
+    "wert": 591200000,
+    "akte": "0001193125-13-140443",
+    "eingereicht": "2013-04-03",
+    "tag": "NetCashProvidedByUsedInOperatingActivities"
+   },
+   "2012-01-28": {
+    "wert": 641800000,
+    "akte": "0001445305-14-001259",
+    "eingereicht": "2014-04-02",
+    "tag": "NetCashProvidedByUsedInOperatingActivities"
+   },
+   "2013-02-02": {
+    "wert": 610200000,
+    "akte": "0001326380-15-000078",
+    "eingereicht": "2015-03-30",
+    "tag": "NetCashProvidedByUsedInOperatingActivities"
+   },
+   "2014-02-01": {
+    "wert": 762700000,
+    "akte": "0001326380-16-000323",
+    "eingereicht": "2016-03-29",
+    "tag": "NetCashProvidedByUsedInOperatingActivities"
+   },
+   "2015-01-31": {
+    "wert": 480500000,
+    "akte": "0001326380-17-000046",
+    "eingereicht": "2017-03-27",
+    "tag": "NetCashProvidedByUsedInOperatingActivities"
+   },
+   "2016-01-30": {
+    "wert": 656800000,
+    "akte": "0001326380-18-000033",
+    "eingereicht": "2018-04-02",
+    "tag": "NetCashProvidedByUsedInOperatingActivities"
+   },
+   "2017-01-28": {
+    "wert": 537100000,
+    "akte": "0001326380-19-000052",
+    "eingereicht": "2019-04-02",
+    "tag": "NetCashProvidedByUsedInOperatingActivities"
+   },
+   "2018-02-03": {
+    "wert": 434900000,
+    "akte": "0001326380-20-000022",
+    "eingereicht": "2020-03-27",
+    "tag": "NetCashProvidedByUsedInOperatingActivities"
+   },
+   "2019-02-02": {
+    "wert": 325100000,
+    "akte": "0001326380-21-000032",
+    "eingereicht": "2021-03-23",
+    "tag": "NetCashProvidedByUsedInOperatingActivities"
+   },
+   "2020-02-01": {
+    "wert": -414500000,
+    "akte": "0001326380-22-000021",
+    "eingereicht": "2022-03-17",
+    "tag": "NetCashProvidedByUsedInOperatingActivities"
+   },
+   "2021-01-30": {
+    "wert": 123700000,
+    "akte": "0001326380-23-000019",
+    "eingereicht": "2023-03-28",
+    "tag": "NetCashProvidedByUsedInOperatingActivities"
+   },
+   "2022-01-29": {
+    "wert": -434300000,
+    "akte": "0001326380-24-000012",
+    "eingereicht": "2024-03-26",
+    "tag": "NetCashProvidedByUsedInOperatingActivities"
+   },
+   "2023-01-28": {
+    "wert": 108200000,
+    "akte": "0001628280-25-014731",
+    "eingereicht": "2025-03-25",
+    "tag": "NetCashProvidedByUsedInOperatingActivities"
+   },
+   "2024-02-03": {
+    "wert": -203700000,
+    "akte": "0001326380-26-000013",
+    "eingereicht": "2026-03-24",
+    "tag": "NetCashProvidedByUsedInOperatingActivities"
+   },
+   "2025-02-01": {
+    "wert": 145700000,
+    "akte": "0001326380-26-000013",
+    "eingereicht": "2026-03-24",
+    "tag": "NetCashProvidedByUsedInOperatingActivities"
+   },
+   "2026-01-31": {
+    "wert": 614800000,
+    "akte": "0001326380-26-000013",
+    "eingereicht": "2026-03-24",
+    "tag": "NetCashProvidedByUsedInOperatingActivities"
+   }
+  },
+  "capex": {
+   "2008-02-02": {
+    "wert": 175569000,
+    "akte": "0000950123-10-030164",
+    "eingereicht": "2010-03-30",
+    "tag": "PaymentsToAcquirePropertyPlantAndEquipment"
+   },
+   "2009-01-31": {
+    "wert": 183200000,
+    "akte": "0000950123-11-030842",
+    "eingereicht": "2011-03-30",
+    "tag": "PaymentsToAcquirePropertyPlantAndEquipment"
+   },
+   "2010-01-30": {
+    "wert": 163800000,
+    "akte": "0001193125-12-134615",
+    "eingereicht": "2012-03-27",
+    "tag": "PaymentsToAcquirePropertyPlantAndEquipment"
+   },
+   "2011-01-29": {
+    "wert": 197600000,
+    "akte": "0001193125-13-140443",
+    "eingereicht": "2013-04-03",
+    "tag": "PaymentsToAcquirePropertyPlantAndEquipment"
+   },
+   "2012-01-28": {
+    "wert": 165100000,
+    "akte": "0001445305-14-001259",
+    "eingereicht": "2014-04-02",
+    "tag": "PaymentsToAcquirePropertyPlantAndEquipment"
+   },
+   "2013-02-02": {
+    "wert": 139600000,
+    "akte": "0001326380-15-000078",
+    "eingereicht": "2015-03-30",
+    "tag": "PaymentsToAcquirePropertyPlantAndEquipment"
+   },
+   "2014-02-01": {
+    "wert": 125600000,
+    "akte": "0001326380-16-000323",
+    "eingereicht": "2016-03-29",
+    "tag": "PaymentsToAcquirePropertyPlantAndEquipment"
+   },
+   "2015-01-31": {
+    "wert": 159600000,
+    "akte": "0001326380-17-000046",
+    "eingereicht": "2017-03-27",
+    "tag": "PaymentsToAcquirePropertyPlantAndEquipment"
+   },
+   "2016-01-30": {
+    "wert": 173200000,
+    "akte": "0001326380-18-000033",
+    "eingereicht": "2018-04-02",
+    "tag": "PaymentsToAcquirePropertyPlantAndEquipment"
+   },
+   "2017-01-28": {
+    "wert": 142700000,
+    "akte": "0001326380-19-000052",
+    "eingereicht": "2019-04-02",
+    "tag": "PaymentsToAcquirePropertyPlantAndEquipment"
+   },
+   "2018-02-03": {
+    "wert": 113400000,
+    "akte": "0001326380-20-000022",
+    "eingereicht": "2020-03-27",
+    "tag": "PaymentsToAcquirePropertyPlantAndEquipment"
+   },
+   "2019-02-02": {
+    "wert": 93700000,
+    "akte": "0001326380-21-000032",
+    "eingereicht": "2021-03-23",
+    "tag": "PaymentsToAcquirePropertyPlantAndEquipment"
+   },
+   "2020-02-01": {
+    "wert": 78500000,
+    "akte": "0001326380-22-000021",
+    "eingereicht": "2022-03-17",
+    "tag": "PaymentsToAcquirePropertyPlantAndEquipment"
+   },
+   "2021-01-30": {
+    "wert": 60000000,
+    "akte": "0001326380-23-000019",
+    "eingereicht": "2023-03-28",
+    "tag": "PaymentsToAcquirePropertyPlantAndEquipment"
+   },
+   "2022-01-29": {
+    "wert": 62000000,
+    "akte": "0001326380-24-000012",
+    "eingereicht": "2024-03-26",
+    "tag": "PaymentsToAcquirePropertyPlantAndEquipment"
+   },
+   "2023-01-28": {
+    "wert": 55900000,
+    "akte": "0001628280-25-014731",
+    "eingereicht": "2025-03-25",
+    "tag": "PaymentsToAcquirePropertyPlantAndEquipment"
+   },
+   "2024-02-03": {
+    "wert": 34900000,
+    "akte": "0001326380-26-000013",
+    "eingereicht": "2026-03-24",
+    "tag": "PaymentsToAcquirePropertyPlantAndEquipment"
+   },
+   "2025-02-01": {
+    "wert": 16100000,
+    "akte": "0001326380-26-000013",
+    "eingereicht": "2026-03-24",
+    "tag": "PaymentsToAcquirePropertyPlantAndEquipment"
+   },
+   "2026-01-31": {
+    "wert": 17500000,
+    "akte": "0001326380-26-000013",
+    "eingereicht": "2026-03-24",
+    "tag": "PaymentsToAcquirePropertyPlantAndEquipment"
+   }
+  },
+  "sbc": {
+   "2008-02-02": {
+    "wert": 26911000,
+    "akte": "0000950123-10-030164",
+    "eingereicht": "2010-03-30",
+    "tag": "ShareBasedCompensation"
+   },
+   "2009-01-31": {
+    "wert": 35400000,
+    "akte": "0000950123-11-030842",
+    "eingereicht": "2011-03-30",
+    "tag": "ShareBasedCompensation"
+   },
+   "2010-01-30": {
+    "wert": 37800000,
+    "akte": "0001193125-12-134615",
+    "eingereicht": "2012-03-27",
+    "tag": "ShareBasedCompensation"
+   },
+   "2011-01-29": {
+    "wert": 29600000,
+    "akte": "0001193125-13-140443",
+    "eingereicht": "2013-04-03",
+    "tag": "ShareBasedCompensation"
+   },
+   "2012-01-28": {
+    "wert": 18800000,
+    "akte": "0001445305-14-001259",
+    "eingereicht": "2014-04-02",
+    "tag": "ShareBasedCompensation"
+   },
+   "2013-02-02": {
+    "wert": 19600000,
+    "akte": "0001326380-15-000078",
+    "eingereicht": "2015-03-30",
+    "tag": "ShareBasedCompensation"
+   },
+   "2014-02-01": {
+    "wert": 19400000,
+    "akte": "0001326380-16-000323",
+    "eingereicht": "2016-03-29",
+    "tag": "ShareBasedCompensation"
+   },
+   "2015-01-31": {
+    "wert": 21500000,
+    "akte": "0001326380-17-000046",
+    "eingereicht": "2017-03-27",
+    "tag": "ShareBasedCompensation"
+   },
+   "2016-01-30": {
+    "wert": 29900000,
+    "akte": "0001326380-18-000033",
+    "eingereicht": "2018-04-02",
+    "tag": "ShareBasedCompensation"
+   },
+   "2017-01-28": {
+    "wert": 17800000,
+    "akte": "0001326380-19-000052",
+    "eingereicht": "2019-04-02",
+    "tag": "ShareBasedCompensation"
+   },
+   "2018-02-03": {
+    "wert": 25600000,
+    "akte": "0001326380-20-000022",
+    "eingereicht": "2020-03-27",
+    "tag": "ShareBasedCompensation"
+   },
+   "2019-02-02": {
+    "wert": 10700000,
+    "akte": "0001326380-21-000032",
+    "eingereicht": "2021-03-23",
+    "tag": "ShareBasedCompensation"
+   },
+   "2020-02-01": {
+    "wert": 8900000,
+    "akte": "0001326380-22-000021",
+    "eingereicht": "2022-03-17",
+    "tag": "ShareBasedCompensation"
+   },
+   "2021-01-30": {
+    "wert": 7900000,
+    "akte": "0001326380-23-000019",
+    "eingereicht": "2023-03-28",
+    "tag": "ShareBasedCompensation"
+   },
+   "2022-01-29": {
+    "wert": 30500000,
+    "akte": "0001326380-24-000012",
+    "eingereicht": "2024-03-26",
+    "tag": "ShareBasedCompensation"
+   },
+   "2023-01-28": {
+    "wert": 40100000,
+    "akte": "0001628280-25-014731",
+    "eingereicht": "2025-03-25",
+    "tag": "ShareBasedCompensation"
+   },
+   "2024-02-03": {
+    "wert": 22200000,
+    "akte": "0001326380-26-000013",
+    "eingereicht": "2026-03-24",
+    "tag": "ShareBasedCompensation"
+   },
+   "2025-02-01": {
+    "wert": 16400000,
+    "akte": "0001326380-26-000013",
+    "eingereicht": "2026-03-24",
+    "tag": "ShareBasedCompensation"
+   },
+   "2026-01-31": {
+    "wert": 26700000,
+    "akte": "0001326380-26-000013",
+    "eingereicht": "2026-03-24",
+    "tag": "ShareBasedCompensation"
+   }
+  },
+  "rueckkauf": {
+   "2010-01-30": {
+    "wert": 58400000,
+    "akte": "0001193125-12-134615",
+    "eingereicht": "2012-03-27",
+    "tag": "PaymentsForRepurchaseOfCommonStock"
+   },
+   "2011-01-29": {
+    "wert": 381200000,
+    "akte": "0001193125-13-140443",
+    "eingereicht": "2013-04-03",
+    "tag": "PaymentsForRepurchaseOfCommonStock"
+   },
+   "2012-01-28": {
+    "wert": 262100000,
+    "akte": "0001445305-14-001259",
+    "eingereicht": "2014-04-02",
+    "tag": "PaymentsForRepurchaseOfCommonStock"
+   },
+   "2013-02-02": {
+    "wert": 409400000,
+    "akte": "0001326380-15-000078",
+    "eingereicht": "2015-03-30",
+    "tag": "PaymentsForRepurchaseOfCommonStock"
+   },
+   "2014-02-01": {
+    "wert": 258300000,
+    "akte": "0001326380-16-000323",
+    "eingereicht": "2016-03-29",
+    "tag": "PaymentsForRepurchaseOfCommonStock"
+   },
+   "2015-01-31": {
+    "wert": 331100000,
+    "akte": "0001326380-17-000046",
+    "eingereicht": "2017-03-27",
+    "tag": "PaymentsForRepurchaseOfCommonStock"
+   },
+   "2016-01-30": {
+    "wert": 194300000,
+    "akte": "0001326380-18-000033",
+    "eingereicht": "2018-04-02",
+    "tag": "PaymentsForRepurchaseOfCommonStock"
+   },
+   "2017-01-28": {
+    "wert": 63100000,
+    "akte": "0001326380-19-000052",
+    "eingereicht": "2019-04-02",
+    "tag": "PaymentsForRepurchaseOfCommonStock"
+   },
+   "2018-02-03": {
+    "wert": 22000000,
+    "akte": "0001326380-20-000022",
+    "eingereicht": "2020-03-27",
+    "tag": "PaymentsForRepurchaseOfCommonStock"
+   },
+   "2019-02-02": {
+    "wert": 0,
+    "akte": "0001326380-21-000032",
+    "eingereicht": "2021-03-23",
+    "tag": "PaymentsForRepurchaseOfCommonStock"
+   },
+   "2020-02-01": {
+    "wert": 198700000,
+    "akte": "0001326380-22-000021",
+    "eingereicht": "2022-03-17",
+    "tag": "PaymentsForRepurchaseOfCommonStock"
+   },
+   "2021-01-30": {
+    "wert": 0,
+    "akte": "0001326380-22-000021",
+    "eingereicht": "2022-03-17",
+    "tag": "PaymentsForRepurchaseOfCommonStock"
+   },
+   "2022-01-29": {
+    "wert": 0,
+    "akte": "0001326380-22-000021",
+    "eingereicht": "2022-03-17",
+    "tag": "PaymentsForRepurchaseOfCommonStock"
+   }
+  },
+  "dividenden": {
+   "2012-01-28": {
+    "wert": 0,
+    "akte": "0001445305-14-001259",
+    "eingereicht": "2014-04-02",
+    "tag": "PaymentsOfDividends"
+   },
+   "2013-02-02": {
+    "wert": 102000000,
+    "akte": "0001326380-15-000078",
+    "eingereicht": "2015-03-30",
+    "tag": "PaymentsOfDividends"
+   },
+   "2014-02-01": {
+    "wert": 130900000,
+    "akte": "0001326380-16-000323",
+    "eingereicht": "2016-03-29",
+    "tag": "PaymentsOfDividends"
+   },
+   "2015-01-31": {
+    "wert": 148800000,
+    "akte": "0001326380-17-000046",
+    "eingereicht": "2017-03-27",
+    "tag": "PaymentsOfDividends"
+   },
+   "2016-01-30": {
+    "wert": 154100000,
+    "akte": "0001326380-18-000033",
+    "eingereicht": "2018-04-02",
+    "tag": "PaymentsOfDividends"
+   },
+   "2017-01-28": {
+    "wert": 155500000,
+    "akte": "0001326380-19-000052",
+    "eingereicht": "2019-04-02",
+    "tag": "PaymentsOfDividends"
+   },
+   "2018-02-03": {
+    "wert": 155200000,
+    "akte": "0001326380-20-000022",
+    "eingereicht": "2020-03-27",
+    "tag": "PaymentsOfDividends"
+   },
+   "2019-02-02": {
+    "wert": 157400000,
+    "akte": "0001326380-21-000032",
+    "eingereicht": "2021-03-23",
+    "tag": "PaymentsOfDividends"
+   },
+   "2020-02-01": {
+    "wert": 40500000,
+    "akte": "0001326380-22-000021",
+    "eingereicht": "2022-03-17",
+    "tag": "PaymentsOfDividends"
+   },
+   "2021-01-30": {
+    "wert": 300000,
+    "akte": "0001326380-23-000019",
+    "eingereicht": "2023-03-28",
+    "tag": "PaymentsOfDividends"
+   },
+   "2022-01-29": {
+    "wert": 0,
+    "akte": "0001326380-23-000019",
+    "eingereicht": "2023-03-28",
+    "tag": "PaymentsOfDividends"
+   },
+   "2023-01-28": {
+    "wert": 0,
+    "akte": "0001326380-23-000019",
+    "eingereicht": "2023-03-28",
+    "tag": "PaymentsOfDividends"
+   }
+  },
+  "eigenkapital": {
+   "2009-01-31": {
+    "wert": 2270585000,
+    "akte": "0000950123-10-030164",
+    "eingereicht": "2010-03-30",
+    "tag": "StockholdersEquity"
+   },
+   "2010-01-30": {
+    "wert": 2723200000,
+    "akte": "0000950123-11-030842",
+    "eingereicht": "2011-03-30",
+    "tag": "StockholdersEquity"
+   },
+   "2011-01-29": {
+    "wert": 2897300000,
+    "akte": "0001193125-12-134615",
+    "eingereicht": "2012-03-27",
+    "tag": "StockholdersEquity"
+   },
+   "2012-01-28": {
+    "wert": 3042100000,
+    "akte": "0001193125-13-140443",
+    "eingereicht": "2013-04-03",
+    "tag": "StockholdersEquity"
+   },
+   "2013-02-02": {
+    "wert": 2286300000,
+    "akte": "0001193125-13-140443",
+    "eingereicht": "2013-04-03",
+    "tag": "StockholdersEquity"
+   },
+   "2023-01-28": {
+    "wert": 1322300000,
+    "akte": "0001326380-26-000013",
+    "eingereicht": "2026-03-24",
+    "tag": "StockholdersEquity"
+   },
+   "2024-02-03": {
+    "wert": 1338600000,
+    "akte": "0001326380-26-000013",
+    "eingereicht": "2026-03-24",
+    "tag": "StockholdersEquity"
+   },
+   "2025-02-01": {
+    "wert": 4929800000,
+    "akte": "0001326380-26-000013",
+    "eingereicht": "2026-03-24",
+    "tag": "StockholdersEquity"
+   },
+   "2026-01-31": {
+    "wert": 5444400000,
+    "akte": "0001326380-26-000013",
+    "eingereicht": "2026-03-24",
+    "tag": "StockholdersEquity"
+   }
+  },
+  "kasse": {
+   "2007-02-03": {
+    "wert": 652403000,
+    "akte": "0000950123-10-030164",
+    "eingereicht": "2010-03-30",
+    "tag": "CashAndCashEquivalentsAtCarryingValue"
+   },
+   "2008-02-02": {
+    "wert": 857400000,
+    "akte": "0000950123-11-030842",
+    "eingereicht": "2011-03-30",
+    "tag": "CashAndCashEquivalentsAtCarryingValue"
+   },
+   "2009-01-31": {
+    "wert": 578100000,
+    "akte": "0001193125-12-134615",
+    "eingereicht": "2012-03-27",
+    "tag": "CashAndCashEquivalentsAtCarryingValue"
+   },
+   "2010-01-30": {
+    "wert": 905400000,
+    "akte": "0001193125-13-140443",
+    "eingereicht": "2013-04-03",
+    "tag": "CashAndCashEquivalentsAtCarryingValue"
+   },
+   "2011-01-29": {
+    "wert": 454500000,
+    "akte": "0001445305-14-001259",
+    "eingereicht": "2014-04-02",
+    "tag": "CashAndCashEquivalentsAtCarryingValue"
+   },
+   "2012-01-28": {
+    "wert": 415800000,
+    "akte": "0001326380-15-000078",
+    "eingereicht": "2015-03-30",
+    "tag": "CashAndCashEquivalentsAtCarryingValue"
+   },
+   "2013-02-02": {
+    "wert": 374400000,
+    "akte": "0001326380-16-000323",
+    "eingereicht": "2016-03-29",
+    "tag": "CashAndCashEquivalentsAtCarryingValue"
+   },
+   "2014-02-01": {
+    "wert": 536200000,
+    "akte": "0001326380-17-000046",
+    "eingereicht": "2017-03-27",
+    "tag": "CashAndCashEquivalentsAtCarryingValue"
+   },
+   "2015-01-31": {
+    "wert": 610100000,
+    "akte": "0001326380-18-000033",
+    "eingereicht": "2018-04-02",
+    "tag": "CashAndCashEquivalentsAtCarryingValue"
+   },
+   "2016-01-30": {
+    "wert": 450400000,
+    "akte": "0001326380-18-000033",
+    "eingereicht": "2018-04-02",
+    "tag": "CashAndCashEquivalentsAtCarryingValue"
+   },
+   "2017-01-28": {
+    "wert": 664500000,
+    "akte": "0001326380-19-000052",
+    "eingereicht": "2019-04-02",
+    "tag": "CashAndCashEquivalentsAtCarryingValue"
+   },
+   "2018-02-03": {
+    "wert": 854200000,
+    "akte": "0001326380-20-000022",
+    "eingereicht": "2020-03-27",
+    "tag": "CashAndCashEquivalentsAtCarryingValue"
+   },
+   "2019-02-02": {
+    "wert": 1624400000,
+    "akte": "0001326380-21-000032",
+    "eingereicht": "2021-03-23",
+    "tag": "CashAndCashEquivalentsAtCarryingValue"
+   },
+   "2020-02-01": {
+    "wert": 499400000,
+    "akte": "0001326380-21-000032",
+    "eingereicht": "2021-03-23",
+    "tag": "CashAndCashEquivalentsAtCarryingValue"
+   },
+   "2021-01-30": {
+    "wert": 508500000,
+    "akte": "0001326380-22-000021",
+    "eingereicht": "2022-03-17",
+    "tag": "CashAndCashEquivalentsAtCarryingValue"
+   },
+   "2022-01-29": {
+    "wert": 1271400000,
+    "akte": "0001326380-23-000019",
+    "eingereicht": "2023-03-28",
+    "tag": "CashAndCashEquivalentsAtCarryingValue"
+   },
+   "2023-01-28": {
+    "wert": 1139000000,
+    "akte": "0001326380-24-000012",
+    "eingereicht": "2024-03-26",
+    "tag": "CashAndCashEquivalentsAtCarryingValue"
+   },
+   "2024-02-03": {
+    "wert": 921700000,
+    "akte": "0001628280-25-014731",
+    "eingereicht": "2025-03-25",
+    "tag": "CashAndCashEquivalentsAtCarryingValue"
+   },
+   "2025-02-01": {
+    "wert": 4756900000,
+    "akte": "0001326380-26-000013",
+    "eingereicht": "2026-03-24",
+    "tag": "CashAndCashEquivalentsAtCarryingValue"
+   },
+   "2026-01-31": {
+    "wert": 6304700000,
+    "akte": "0001326380-26-000013",
+    "eingereicht": "2026-03-24",
+    "tag": "CashAndCashEquivalentsAtCarryingValue"
+   }
+  },
+  "wertpapiere_kurz": {
+   "2022-01-29": {
+    "wert": 0,
+    "akte": "0001326380-23-000019",
+    "eingereicht": "2023-03-28",
+    "tag": "MarketableSecuritiesCurrent"
+   },
+   "2023-01-28": {
+    "wert": 251600000,
+    "akte": "0001326380-24-000012",
+    "eingereicht": "2024-03-26",
+    "tag": "MarketableSecuritiesCurrent"
+   },
+   "2024-02-03": {
+    "wert": 277600000,
+    "akte": "0001628280-25-014731",
+    "eingereicht": "2025-03-25",
+    "tag": "MarketableSecuritiesCurrent"
+   },
+   "2025-02-01": {
+    "wert": 18000000,
+    "akte": "0001326380-26-000013",
+    "eingereicht": "2026-03-24",
+    "tag": "MarketableSecuritiesCurrent"
+   },
+   "2026-01-31": {
+    "wert": 2709100000,
+    "akte": "0001326380-26-000013",
+    "eingereicht": "2026-03-24",
+    "tag": "MarketableSecuritiesCurrent"
+   }
+  },
+  "schulden": {
+   "2016-01-30": {
+    "wert": 345400000,
+    "akte": "0001326380-17-000046",
+    "eingereicht": "2017-03-27",
+    "tag": "LongTermDebt"
+   },
+   "2017-01-28": {
+    "wert": 815000000,
+    "akte": "0001326380-18-000033",
+    "eingereicht": "2018-04-02",
+    "tag": "LongTermDebt"
+   },
+   "2018-02-03": {
+    "wert": 817900000,
+    "akte": "0001326380-19-000052",
+    "eingereicht": "2019-04-02",
+    "tag": "LongTermDebtNoncurrent"
+   },
+   "2019-02-02": {
+    "wert": 471600000,
+    "akte": "0001326380-20-000022",
+    "eingereicht": "2020-03-27",
+    "tag": "LongTermDebtNoncurrent"
+   },
+   "2020-02-01": {
+    "wert": 419800000,
+    "akte": "0001326380-21-000032",
+    "eingereicht": "2021-03-23",
+    "tag": "LongTermDebtNoncurrent"
+   },
+   "2021-01-30": {
+    "wert": 216000000,
+    "akte": "0001326380-22-000021",
+    "eingereicht": "2022-03-17",
+    "tag": "LongTermDebtNoncurrent"
+   },
+   "2022-01-29": {
+    "wert": 40500000,
+    "akte": "0001326380-22-000021",
+    "eingereicht": "2022-03-17",
+    "tag": "LongTermDebtNoncurrent"
+   },
+   "2023-01-28": {
+    "wert": 39500000,
+    "akte": "0001326380-23-000019",
+    "eingereicht": "2023-03-28",
+    "tag": "LongTermDebt"
+   },
+   "2024-02-03": {
+    "wert": 28500000,
+    "akte": "0001326380-24-000012",
+    "eingereicht": "2024-03-26",
+    "tag": "LongTermDebt"
+   },
+   "2025-02-01": {
+    "wert": 16900000,
+    "akte": "0001326380-26-000013",
+    "eingereicht": "2026-03-24",
+    "tag": "LongTermDebt"
+   },
+   "2026-01-31": {
+    "wert": 4164300000,
+    "akte": "0001326380-26-000013",
+    "eingereicht": "2026-03-24",
+    "tag": "LongTermDebt"
+   }
+  },
+  "zinsertrag": {
+   "2008-02-02": {
+    "wert": 13779000,
+    "akte": "0000950123-10-030164",
+    "eingereicht": "2010-03-30",
+    "tag": "InvestmentIncomeInterest"
+   },
+   "2009-01-31": {
+    "wert": 11600000,
+    "akte": "0000950123-11-030842",
+    "eingereicht": "2011-03-30",
+    "tag": "InvestmentIncomeInterest"
+   },
+   "2010-01-30": {
+    "wert": 2200000,
+    "akte": "0001193125-12-134615",
+    "eingereicht": "2012-03-27",
+    "tag": "InvestmentIncomeInterest"
+   },
+   "2011-01-29": {
+    "wert": 1800000,
+    "akte": "0001193125-13-140443",
+    "eingereicht": "2013-04-03",
+    "tag": "InvestmentIncomeInterest"
+   },
+   "2012-01-28": {
+    "wert": 900000,
+    "akte": "0001445305-14-001259",
+    "eingereicht": "2014-04-02",
+    "tag": "InvestmentIncomeInterest"
+   },
+   "2013-02-02": {
+    "wert": 900000,
+    "akte": "0001326380-15-000078",
+    "eingereicht": "2015-03-30",
+    "tag": "InvestmentIncomeInterest"
+   },
+   "2014-02-01": {
+    "wert": 900000,
+    "akte": "0001326380-16-000323",
+    "eingereicht": "2016-03-29",
+    "tag": "InvestmentIncomeInterest"
+   },
+   "2015-01-31": {
+    "wert": 700000,
+    "akte": "0001326380-17-000046",
+    "eingereicht": "2017-03-27",
+    "tag": "InvestmentIncomeInterest"
+   },
+   "2016-01-30": {
+    "wert": 400000,
+    "akte": "0001326380-18-000033",
+    "eingereicht": "2018-04-02",
+    "tag": "InvestmentIncomeInterest"
+   },
+   "2017-01-28": {
+    "wert": 800000,
+    "akte": "0001326380-19-000052",
+    "eingereicht": "2019-04-02",
+    "tag": "InvestmentIncomeInterest"
+   },
+   "2018-02-03": {
+    "wert": 1500000,
+    "akte": "0001326380-20-000022",
+    "eingereicht": "2020-03-27",
+    "tag": "InvestmentIncomeInterest"
+   },
+   "2019-02-02": {
+    "wert": 5700000,
+    "akte": "0001326380-21-000032",
+    "eingereicht": "2021-03-23",
+    "tag": "InvestmentIncomeInterest"
+   },
+   "2020-02-01": {
+    "wert": 11300000,
+    "akte": "0001326380-21-000032",
+    "eingereicht": "2021-03-23",
+    "tag": "InvestmentIncomeInterest"
+   },
+   "2021-01-30": {
+    "wert": 1900000,
+    "akte": "0001326380-21-000032",
+    "eingereicht": "2021-03-23",
+    "tag": "InvestmentIncomeInterest"
+   }
+  },
+  "q": {
+   "umsatz|2026-02-01|2026-05-02": {
+    "wert": 835300000,
+    "akte": "0001326380-26-000025",
+    "eingereicht": "2026-06-11",
+    "tag": "Revenues"
+   },
+   "umsatz|2026-02-01|2026-08-01": {
+    "wert": 1625500000,
+    "akte": "0001326380-26-000055",
+    "eingereicht": "2026-09-09",
+    "tag": "Revenues"
+   },
+   "umsatz|2026-05-03|2026-08-01": {
+    "wert": 790200000,
+    "akte": "0001326380-26-000055",
+    "eingereicht": "2026-09-09",
+    "tag": "Revenues"
+   },
+   "ergebnis|2026-02-01|2026-05-02": {
+    "wert": 389600000,
+    "akte": "0001326380-26-000055",
+    "eingereicht": "2026-09-09",
+    "tag": "NetIncomeLoss"
+   },
+   "ergebnis|2026-02-01|2026-08-01": {
+    "wert": 688300000,
+    "akte": "0001326380-26-000055",
+    "eingereicht": "2026-09-09",
+    "tag": "NetIncomeLoss"
+   },
+   "ergebnis|2026-05-03|2026-08-01": {
+    "wert": 298700000,
+    "akte": "0001326380-26-000055",
+    "eingereicht": "2026-09-09",
+    "tag": "NetIncomeLoss"
+   },
+   "cfo|2026-02-01|2026-05-02": {
+    "wert": 337400000,
+    "akte": "0001326380-26-000025",
+    "eingereicht": "2026-06-11",
+    "tag": "NetCashProvidedByUsedInOperatingActivities"
+   },
+   "cfo|2026-02-01|2026-08-01": {
+    "wert": 399800000,
+    "akte": "0001326380-26-000055",
+    "eingereicht": "2026-09-09",
+    "tag": "NetCashProvidedByUsedInOperatingActivities"
+   },
+   "capex|2026-02-01|2026-05-02": {
+    "wert": 4500000,
+    "akte": "0001326380-26-000025",
+    "eingereicht": "2026-06-11",
+    "tag": "PaymentsToAcquirePropertyPlantAndEquipment"
+   },
+   "capex|2026-02-01|2026-08-01": {
+    "wert": 6200000,
+    "akte": "0001326380-26-000055",
+    "eingereicht": "2026-09-09",
+    "tag": "PaymentsToAcquirePropertyPlantAndEquipment"
+   },
+   "sbc|2026-02-01|2026-05-02": {
+    "wert": 8500000,
+    "akte": "0001326380-26-000025",
+    "eingereicht": "2026-06-11",
+    "tag": "ShareBasedCompensation"
+   },
+   "sbc|2026-02-01|2026-08-01": {
+    "wert": 15800000,
+    "akte": "0001326380-26-000055",
+    "eingereicht": "2026-09-09",
+    "tag": "ShareBasedCompensation"
+   },
+   "eigenkapital|None|2026-01-31": {
+    "wert": 5444400000,
+    "akte": "0001326380-26-000055",
+    "eingereicht": "2026-09-09",
+    "tag": "StockholdersEquity"
+   },
+   "eigenkapital|None|2026-05-02": {
+    "wert": 5842100000,
+    "akte": "0001326380-26-000055",
+    "eingereicht": "2026-09-09",
+    "tag": "StockholdersEquity"
+   },
+   "eigenkapital|None|2026-08-01": {
+    "wert": 6141400000,
+    "akte": "0001326380-26-000055",
+    "eingereicht": "2026-09-09",
+    "tag": "StockholdersEquity"
+   },
+   "kasse|None|2026-01-31": {
+    "wert": 6304700000,
+    "akte": "0001326380-26-000055",
+    "eingereicht": "2026-09-09",
+    "tag": "CashAndCashEquivalentsAtCarryingValue"
+   },
+   "kasse|None|2026-05-02": {
+    "wert": 7397600000,
+    "akte": "0001326380-26-000025",
+    "eingereicht": "2026-06-11",
+    "tag": "CashAndCashEquivalentsAtCarryingValue"
+   },
+   "kasse|None|2026-08-01": {
+    "wert": 4854300000,
+    "akte": "0001326380-26-000055",
+    "eingereicht": "2026-09-09",
+    "tag": "CashAndCashEquivalentsAtCarryingValue"
+   },
+   "wertpapiere_kurz|None|2026-01-31": {
+    "wert": 2709100000,
+    "akte": "0001326380-26-000055",
+    "eingereicht": "2026-09-09",
+    "tag": "MarketableSecuritiesCurrent"
+   },
+   "wertpapiere_kurz|None|2026-05-02": {
+    "wert": 970500000,
+    "akte": "0001326380-26-000025",
+    "eingereicht": "2026-06-11",
+    "tag": "MarketableSecuritiesCurrent"
+   },
+   "wertpapiere_kurz|None|2026-08-01": {
+    "wert": 206000000,
+    "akte": "0001326380-26-000055",
+    "eingereicht": "2026-09-09",
+    "tag": "MarketableSecuritiesCurrent"
+   }
+  },
+  "aktien_dei": {
+   "2009-08-28": {
+    "wert": 164676215,
+    "akte": "0000950123-09-042090",
+    "form": "10-Q"
+   },
+   "2009-11-27": {
+    "wert": 164767330,
+    "akte": "0000950123-09-069549",
+    "form": "10-Q"
+   },
+   "2010-03-25": {
+    "wert": 152824100,
+    "akte": "0000950123-10-030164",
+    "form": "10-K"
+   },
+   "2010-06-03": {
+    "wert": 151540280,
+    "akte": "0000950123-10-056938",
+    "form": "10-Q"
+   },
+   "2010-08-25": {
+    "wert": 150352480,
+    "akte": "0000950123-10-084627",
+    "form": "10-Q"
+   },
+   "2010-11-24": {
+    "wert": 151396983,
+    "akte": "0000950123-10-112044",
+    "form": "10-Q"
+   },
+   "2011-03-23": {
+    "wert": 140700393,
+    "akte": "0000950123-11-030842",
+    "form": "10-K"
+   },
+   "2011-06-01": {
+    "wert": 141442515,
+    "akte": "0000950123-11-057592",
+    "form": "10-Q"
+   },
+   "2011-08-25": {
+    "wert": 139078768,
+    "akte": "0001193125-11-263719",
+    "form": "10-Q/A"
+   },
+   "2011-11-23": {
+    "wert": 136424174,
+    "akte": "0001193125-11-333737",
+    "form": "10-Q"
+   },
+   "2012-03-22": {
+    "wert": 133980946,
+    "akte": "0001193125-12-134615",
+    "form": "10-K"
+   },
+   "2012-05-29": {
+    "wert": 130295176,
+    "akte": "0001193125-12-262005",
+    "form": "10-Q"
+   },
+   "2012-08-28": {
+    "wert": 123429414,
+    "akte": "0001193125-12-381205",
+    "form": "10-Q"
+   },
+   "2012-11-26": {
+    "wert": 121180041,
+    "akte": "0001193125-12-492205",
+    "form": "10-Q"
+   },
+   "2013-03-25": {
+    "wert": 117836276,
+    "akte": "0001193125-13-140443",
+    "form": "10-K"
+   },
+   "2013-06-04": {
+    "wert": 117630881,
+    "akte": "0001193125-13-257876",
+    "form": "10-Q"
+   },
+   "2013-09-04": {
+    "wert": 116896851,
+    "akte": "0001193125-13-364182",
+    "form": "10-Q"
+   },
+   "2013-12-04": {
+    "wert": 115810737,
+    "akte": "0001193125-13-470097",
+    "form": "10-Q"
+   },
+   "2014-03-20": {
+    "wert": 115305927,
+    "akte": "0001445305-14-001259",
+    "form": "10-K"
+   },
+   "2014-06-04": {
+    "wert": 113857577,
+    "akte": "0001445305-14-002574",
+    "form": "10-Q"
+   },
+   "2014-08-29": {
+    "wert": 112667338,
+    "akte": "0001445305-14-003873",
+    "form": "10-Q"
+   },
+   "2014-12-03": {
+    "wert": 108515426,
+    "akte": "0001326380-14-000007",
+    "form": "10-Q"
+   },
+   "2015-03-19": {
+    "wert": 107768713,
+    "akte": "0001326380-15-000078",
+    "form": "10-K"
+   },
+   "2015-06-02": {
+    "wert": 106719962,
+    "akte": "0001326380-15-000118",
+    "form": "10-Q"
+   },
+   "2015-09-01": {
+    "wert": 105489060,
+    "akte": "0001326380-15-000178",
+    "form": "10-Q"
+   },
+   "2015-12-01": {
+    "wert": 104670330,
+    "akte": "0001326380-15-000229",
+    "form": "10-Q"
+   },
+   "2016-03-17": {
+    "wert": 103875772,
+    "akte": "0001326380-16-000323",
+    "form": "10-K"
+   },
+   "2016-05-31": {
+    "wert": 103952269,
+    "akte": "0001326380-16-000366",
+    "form": "10-Q"
+   },
+   "2016-08-31": {
+    "wert": 103981539,
+    "akte": "0001326380-16-000406",
+    "form": "10-Q"
+   },
+   "2016-11-29": {
+    "wert": 101874578,
+    "akte": "0001326380-16-000419",
+    "form": "10-Q"
+   },
+   "2017-03-16": {
+    "wert": 101210856,
+    "akte": "0001326380-17-000046",
+    "form": "10-K"
+   },
+   "2017-05-30": {
+    "wert": 101263816,
+    "akte": "0001326380-17-000078",
+    "form": "10-Q"
+   },
+   "2017-08-30": {
+    "wert": 101307160,
+    "akte": "0001326380-17-000106",
+    "form": "10-Q"
+   },
+   "2017-11-28": {
+    "wert": 101304394,
+    "akte": "0001326380-17-000127",
+    "form": "10-Q"
+   },
+   "2018-03-22": {
+    "wert": 101583319,
+    "akte": "0001326380-18-000033",
+    "form": "10-K"
+   },
+   "2018-06-05": {
+    "wert": 101870874,
+    "akte": "0001326380-18-000075",
+    "form": "10-Q"
+   },
+   "2018-09-04": {
+    "wert": 101946590,
+    "akte": "0001326380-18-000113",
+    "form": "10-Q"
+   },
+   "2018-12-04": {
+    "wert": 101967550,
+    "akte": "0001326380-18-000122",
+    "form": "10-Q"
+   },
+   "2019-03-21": {
+    "wert": 102267435,
+    "akte": "0001326380-19-000052",
+    "form": "10-K"
+   },
+   "2019-05-04": {
+    "wert": 102268940,
+    "akte": "0001326380-19-000110",
+    "form": "10-Q/A"
+   },
+   "2019-09-04": {
+    "wert": 90457598,
+    "akte": "0001326380-19-000145",
+    "form": "10-Q"
+   },
+   "2019-12-04": {
+    "wert": 65922283,
+    "akte": "0001326380-19-000171",
+    "form": "10-Q"
+   },
+   "2020-03-20": {
+    "wert": 64457992,
+    "akte": "0001326380-20-000022",
+    "form": "10-K"
+   },
+   "2020-06-02": {
+    "wert": 64758910,
+    "akte": "0001326380-20-000060",
+    "form": "10-Q"
+   },
+   "2020-09-02": {
+    "wert": 65161610,
+    "akte": "0001326380-20-000119",
+    "form": "10-Q"
+   },
+   "2020-12-01": {
+    "wert": 69746960,
+    "akte": "0001326380-20-000134",
+    "form": "10-Q"
+   },
+   "2021-03-17": {
+    "wert": 69935828,
+    "akte": "0001326380-21-000032",
+    "form": "10-K"
+   },
+   "2021-06-01": {
+    "wert": 71815131,
+    "akte": "0001326380-21-000066",
+    "form": "10-Q"
+   },
+   "2021-09-01": {
+    "wert": 76491496,
+    "akte": "0001326380-21-000090",
+    "form": "10-Q"
+   },
+   "2021-12-01": {
+    "wert": 76350781,
+    "akte": "0001326380-21-000129",
+    "form": "10-Q"
+   },
+   "2022-03-11": {
+    "wert": 76339248,
+    "akte": "0001326380-22-000021",
+    "form": "10-K"
+   },
+   "2022-05-26": {
+    "wert": 76129034,
+    "akte": "0001326380-22-000072",
+    "form": "10-Q"
+   },
+   "2022-09-01": {
+    "wert": 304529721,
+    "akte": "0001326380-22-000126",
+    "form": "10-Q"
+   },
+   "2022-12-01": {
+    "wert": 304578070,
+    "akte": "0001326380-22-000137",
+    "form": "10-Q"
+   },
+   "2023-03-22": {
+    "wert": 304675439,
+    "akte": "0001326380-23-000019",
+    "form": "10-K"
+   },
+   "2023-06-01": {
+    "wert": 304751243,
+    "akte": "0001326380-23-000028",
+    "form": "10-Q"
+   },
+   "2023-08-31": {
+    "wert": 305241294,
+    "akte": "0001326380-23-000047",
+    "form": "10-Q"
+   },
+   "2023-11-30": {
+    "wert": 305514315,
+    "akte": "0001326380-23-000063",
+    "form": "10-Q"
+   },
+   "2024-03-20": {
+    "wert": 305873200,
+    "akte": "0001326380-24-000016",
+    "form": "10-K/A"
+   },
+   "2024-06-05": {
+    "wert": 351217517,
+    "akte": "0001326380-24-000159",
+    "form": "10-Q/A"
+   },
+   "2024-09-04": {
+    "wert": 426509592,
+    "akte": "0001326380-24-000160",
+    "form": "10-Q/A"
+   },
+   "2024-12-04": {
+    "wert": 446800365,
+    "akte": "0001326380-24-000170",
+    "form": "10-Q"
+   },
+   "2025-03-19": {
+    "wert": 447083981,
+    "akte": "0001628280-25-014731",
+    "form": "10-K"
+   },
+   "2025-06-05": {
+    "wert": 447336306,
+    "akte": "0001326380-25-000035",
+    "form": "10-Q"
+   },
+   "2025-09-05": {
+    "wert": 447666484,
+    "akte": "0001326380-25-000075",
+    "form": "10-Q"
+   },
+   "2025-12-05": {
+    "wert": 448009480,
+    "akte": "0001326380-25-000098",
+    "form": "10-Q"
+   },
+   "2026-03-18": {
+    "wert": 448375157,
+    "akte": "0001326380-26-000013",
+    "form": "10-K"
+   },
+   "2026-06-05": {
+    "wert": 448691257,
+    "akte": "0001326380-26-000025",
+    "form": "10-Q"
+   },
+   "2026-09-03": {
+    "wert": 504500990,
+    "akte": "0001326380-26-000055",
+    "form": "10-Q"
+   }
+  }
+ },
+ "brueche": [
+  "cfo 2012-01-28: 624700000 (0001193125-13-140443) vs 641800000 (0001445305-14-001259)",
+  "cfo 2013-02-02: 632400000 (0001193125-13-140443) vs 610200000 (0001445305-14-001259)",
+  "kasse 2011-01-29: 710800000 (0001193125-13-140443) vs 454500000 (0001445305-14-001259)",
+  "kasse 2012-01-28: 655000000 (0001193125-13-140443) vs 415800000 (0001445305-14-001259)",
+  "kasse 2013-02-02: 635800000 (0001193125-13-140443) vs 374400000 (0001445305-14-001259)",
+  "kasse 2017-01-28: 669400000 (0001326380-18-000033) vs 664500000 (0001326380-19-000052)",
+  "kasse 2018-02-03: 864400000 (0001326380-18-000033) vs 854200000 (0001326380-19-000052)",
+  "schulden 2019-02-02: 820800000 (0001326380-20-000022) vs 471600000 (0001326380-19-000052)",
+  "schulden 2019-02-02: 820800000 (0001326380-20-000022) vs 471600000 (0001326380-20-000022)",
+  "schulden 2021-01-30: 362700000 (0001326380-22-000021) vs 216000000 (0001326380-21-000032)",
+  "schulden 2021-01-30: 362700000 (0001326380-22-000021) vs 216000000 (0001326380-22-000021)",
+  "schulden 2022-01-29: 44600000 (0001326380-22-000021) vs 40500000 (0001326380-22-000021)",
+  "zinsertrag 2010-01-30: 2177000 (0000950123-10-030164) vs 2200000 (0000950123-11-030842)"
+ ]
+}

@@ -1,0 +1,92 @@
+{
+ "detection": "2026-09-25_premarket.json",
+ "evalue_le": "2026-09-28T22:39:08.995597",
+ "fenetre_jours": 1,
+ "notes": [
+  {
+   "ticker": "GETY",
+   "classe": "FADE",
+   "resultat": "juste",
+   "motif": "gap comble (bas 0.135 <= veille 0.162); vente ouverture->cloture +12.5 %",
+   "variation_pct": -12.5,
+   "vente_ouverture_cloture_pct": 12.5
+  },
+  {
+   "ticker": "CTNT",
+   "classe": "PUMP_RISK",
+   "resultat": "faux",
+   "motif": "a tenu (+10488.2 %) : alerte trop severe",
+   "variation_pct": 10488.23
+  },
+  {
+   "ticker": "DCX",
+   "classe": "PUMP_RISK",
+   "resultat": "faux",
+   "motif": "a tenu (+12240.0 %) : alerte trop severe",
+   "variation_pct": 12240.0
+  },
+  {
+   "ticker": "GRML",
+   "classe": "PUMP_RISK",
+   "resultat": "juste",
+   "motif": "retombe de -28.1 %, l'alerte etait fondee",
+   "variation_pct": -28.09
+  },
+  {
+   "ticker": "SUGP",
+   "classe": "PUMP_RISK",
+   "resultat": "juste",
+   "motif": "retombe de -7.2 %, l'alerte etait fondee",
+   "variation_pct": -7.23
+  },
+  {
+   "ticker": "ONCO",
+   "classe": "PUMP_RISK",
+   "resultat": "juste",
+   "motif": "retombe de -0.9 %, l'alerte etait fondee",
+   "variation_pct": -0.89
+  },
+  {
+   "ticker": "SDEV",
+   "classe": "PUMP_RISK",
+   "resultat": "juste",
+   "motif": "retombe de -0.6 %, l'alerte etait fondee",
+   "variation_pct": -0.63
+  },
+  {
+   "ticker": "GLND",
+   "classe": "PUMP_RISK",
+   "resultat": "juste",
+   "motif": "retombe de -26.5 %, l'alerte etait fondee",
+   "variation_pct": -26.51
+  },
+  {
+   "ticker": "BENF",
+   "classe": "INSUFFISANT",
+   "resultat": "non juge",
+   "motif": "ecarte a la detection, aucune promesse",
+   "variation_pct": -11.8
+  },
+  {
+   "ticker": "INLF",
+   "classe": "INSUFFISANT",
+   "resultat": "non juge",
+   "motif": "ecarte a la detection, aucune promesse",
+   "variation_pct": -16.32
+  },
+  {
+   "ticker": "IFBD",
+   "classe": "INSUFFISANT",
+   "resultat": "non juge",
+   "motif": "ecarte a la detection, aucune promesse",
+   "variation_pct": -2.31
+  },
+  {
+   "ticker": "FTHM",
+   "classe": "INSUFFISANT",
+   "resultat": "non juge",
+   "motif": "ecarte a la detection, aucune promesse",
+   "variation_pct": -16.03
+  }
+ ]
+}

@@ -1,112 +1,117 @@
 {
  "detection": "2026-09-23_premarket.json",
- "evalue_le": "2026-09-23T22:04:13.147436",
+ "evalue_le": "2026-09-28T22:39:06.741109",
  "fenetre_jours": 1,
  "notes": [
   {
    "ticker": "EDVA",
    "classe": "FADE",
    "resultat": "juste",
-   "motif": "gap comble dans la seance",
-   "variation_pct": -18.32
+   "motif": "gap comble (bas 0.169 <= veille 0.231); vente ouverture->cloture +18.3 %",
+   "variation_pct": -18.33,
+   "vente_ouverture_cloture_pct": 18.33
   },
   {
    "ticker": "IPDN",
    "classe": "FADE",
-   "resultat": "juste",
-   "motif": "gap comble dans la seance",
-   "variation_pct": -21.62
+   "resultat": "faux",
+   "motif": "gap non comble (bas 4.7 > veille 3.9); vente ouverture->cloture +21.7 %",
+   "variation_pct": -21.68,
+   "vente_ouverture_cloture_pct": 21.68
   },
   {
    "ticker": "VTGN",
    "classe": "FADE",
-   "resultat": "juste",
-   "motif": "gap comble dans la seance",
-   "variation_pct": -4.58
+   "resultat": "faux",
+   "motif": "gap non comble (bas 0.34 > veille 0.25); vente ouverture->cloture +5.1 %",
+   "variation_pct": -5.13,
+   "vente_ouverture_cloture_pct": 5.13
   },
   {
    "ticker": "CAPS",
    "classe": "FADE",
    "resultat": "juste",
-   "motif": "gap comble dans la seance",
-   "variation_pct": -7.36
+   "motif": "gap comble (bas 0.15 <= veille 0.18); vente ouverture->cloture +13.0 %",
+   "variation_pct": -13.04,
+   "vente_ouverture_cloture_pct": 13.04
   },
   {
    "ticker": "ZONE",
    "classe": "FADE",
-   "resultat": "juste",
-   "motif": "gap comble dans la seance",
-   "variation_pct": -9.64
+   "resultat": "faux",
+   "motif": "gap non comble (bas 0.139 > veille 0.136); vente ouverture->cloture +9.4 %",
+   "variation_pct": -9.38,
+   "vente_ouverture_cloture_pct": 9.38
   },
   {
    "ticker": "CYPH",
    "classe": "PUMP_RISK",
-   "resultat": "juste",
-   "motif": "retombe de -4.7 %, l'alerte etait fondee",
-   "variation_pct": -4.75
+   "resultat": "faux",
+   "motif": "a tenu (+6.8 %) : alerte trop severe",
+   "variation_pct": 6.81
   },
   {
    "ticker": "TNMG",
    "classe": "PUMP_RISK",
    "resultat": "faux",
-   "motif": "a tenu (+13.5 %) : alerte trop severe",
-   "variation_pct": 13.5
+   "motif": "a tenu (+26.2 %) : alerte trop severe",
+   "variation_pct": 26.2
   },
   {
    "ticker": "CDT",
    "classe": "PUMP_RISK",
    "resultat": "juste",
-   "motif": "retombe de -2.9 %, l'alerte etait fondee",
-   "variation_pct": -2.95
+   "motif": "retombe de -12.3 %, l'alerte etait fondee",
+   "variation_pct": -12.32
   },
   {
    "ticker": "WHLR",
    "classe": "PUMP_RISK",
-   "resultat": "faux",
-   "motif": "a tenu (+4.4 %) : alerte trop severe",
-   "variation_pct": 4.41
+   "resultat": "juste",
+   "motif": "retombe de -28.1 %, l'alerte etait fondee",
+   "variation_pct": -28.15
   },
   {
    "ticker": "GRML",
    "classe": "PUMP_RISK",
    "resultat": "juste",
-   "motif": "retombe de -36.0 %, l'alerte etait fondee",
-   "variation_pct": -36.02
+   "motif": "retombe de -14.1 %, l'alerte etait fondee",
+   "variation_pct": -14.1
   },
   {
    "ticker": "SQFT",
    "classe": "INSUFFISANT",
    "resultat": "non juge",
    "motif": "ecarte a la detection, aucune promesse",
-   "variation_pct": 3.79
+   "variation_pct": 6.82
   },
   {
    "ticker": "HAO",
    "classe": "INSUFFISANT",
    "resultat": "non juge",
    "motif": "ecarte a la detection, aucune promesse",
-   "variation_pct": -5.67
+   "variation_pct": -11.34
   },
   {
    "ticker": "BFRG",
    "classe": "INSUFFISANT",
    "resultat": "non juge",
    "motif": "ecarte a la detection, aucune promesse",
-   "variation_pct": 21.19
+   "variation_pct": -2.17
   },
   {
    "ticker": "DCOY",
    "classe": "INSUFFISANT",
    "resultat": "non juge",
    "motif": "ecarte a la detection, aucune promesse",
-   "variation_pct": -12.1
+   "variation_pct": -29.32
   },
   {
    "ticker": "WAFU",
    "classe": "INSUFFISANT",
    "resultat": "non juge",
    "motif": "ecarte a la detection, aucune promesse",
-   "variation_pct": -1.23
+   "variation_pct": -3.7
   }
  ]
 }

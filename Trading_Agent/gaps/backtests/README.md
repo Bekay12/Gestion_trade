@@ -99,3 +99,24 @@ python3 $SKILL/backtest_gaps.py --annees 2 --sans-statique   # sensibilité
 
 L'univers par défaut est lu dans `../detections/`, donc il grandit à chaque
 séance. Le cache `_statique.json` rend les rejeux suivants gratuits en requêtes.
+
+## Re-mesure du 28.09.2026 : promesse FADE corrigée
+
+`evaluer_gaps.noter()` juge désormais FADE sur la **clôture de la veille** (plus bas ≤
+veille × 1,005) au lieu de « plus bas ≤ ouverture × 0,995 ». Rejeu sur le **même univers**
+(les 37 titres des détections du 22 au 25.09), deux ans, gap ≥ 5 %, fenêtre 3 séances:
+`2026-09-28_regle-fade-veille.json`, 234 verdicts (la fenêtre de deux ans a glissé).
+
+| | 26.09 (ancienne règle) | 28.09 (règle corrigée) |
+|---|---|---|
+| `FADE` justesse | 61/64 (95 %) | **36/63 (57 %)** |
+| `FADE` vente ouverture→clôture | +4,75 % | +2,27 % (médiane +3,33 %, 41/63 gagnants) |
+| `PUMP_RISK` justesse | 109/162 (67 %) | 118/170 (69 %) |
+| `PUMP_RISK` vente sans stop | −9,57 % | −7,88 % hors CTNT (voir ci-dessous) |
+| `PUMP_RISK` vente, stop 20 % | +11,83 % | +12,21 % |
+
+**Artefact de données : CTNT, séance du 25.09.2026, +10 488 %.** Le 28.09 le cours passe
+de 0,032 à 4,17 $ pendant que le volume tombe de 507 M à 0,4 M: regroupement d'actions pas
+encore ajusté par yfinance (dernier split connu: 29.04.2026). Cette ligne seule porte la
+moyenne brute à −69,53 %; elle est exclue des chiffres ci-dessus. Le backtest ne détecte pas
+encore ce cas; un garde-fou (saut de cours > 20× avec effondrement du volume) reste à écrire.

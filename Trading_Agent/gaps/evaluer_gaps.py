@@ -34,6 +34,9 @@ import os
 import sys
 from datetime import datetime
 
+sys.path.insert(0, os.path.dirname(os.path.abspath(__file__)))
+from executabilite import CLASSES_VENDEUSES, barres_ouverture, bilan_shorts, juger  # noqa: E402
+
 RACINE = os.path.dirname(os.path.abspath(__file__))
 DETECTIONS = os.path.join(RACINE, "detections")
 
@@ -72,9 +75,14 @@ def cours_depuis(tickers: list, depart: str, jours: int) -> dict:
     import pandas as pd
     import yfinance as yf
 
+    from datetime import date, timedelta
+
     if not tickers:
         return {}
-    lot = yf.download(tickers, start=depart, period=None, interval="1d",
+    # Dix jours calendaires en arriere: la cloture de la veille est la reference de
+    # la promesse FADE, et un week-end ou un jour ferie la repousse de plusieurs jours.
+    avant = (date.fromisoformat(depart) - timedelta(days=10)).isoformat()
+    lot = yf.download(tickers, start=avant, period=None, interval="1d",
                       group_by="ticker", auto_adjust=False, progress=False,
                       threads=True)
     series = {}
@@ -82,9 +90,12 @@ def cours_depuis(tickers: list, depart: str, jours: int) -> dict:
         try:
             d = lot[t] if isinstance(lot.columns, pd.MultiIndex) else lot
             d = d.dropna()
+            anterieur = d[d.index.strftime("%Y-%m-%d") < depart]
+            d = d[d.index.strftime("%Y-%m-%d") >= depart]
             if d.empty:
                 continue
             series[t] = {
+                "veille":  float(anterieur["Close"].iloc[-1]) if len(anterieur) else None,
                 "dates":   [i.strftime("%Y-%m-%d") for i in d.index[:jours + 1]],
                 "cloture": [float(x) for x in d["Close"].iloc[:jours + 1]],
                 "haut":    [float(x) for x in d["High"].iloc[:jours + 1]],
@@ -117,13 +128,27 @@ def noter(verdict: dict, serie: dict | None) -> dict:
                 "variation_pct": round(var_totale, 2) if var_totale else None}
 
     if classe == "FADE":
-        # Promesse : comblement. Le bas du jour revient-il sous l'ouverture ?
-        comble = serie["bas"][0] <= ouverture * 0.995
+        # Promesse: le gap se comble, c'est-a-dire retour a la CLOTURE DE LA VEILLE.
+        # Jusqu'au 28.09.2026 le test etait "bas <= ouverture x 0,995": un repli de
+        # 0,5 % sous l'ouverture suffisait, et ARAY (clos +36,3 % sur la veille) comme
+        # SRFM (clos +5,3 % sur l'ouverture) ressortaient "juste". Tolerance de 0,5 %
+        # conservee, mais sur la bonne reference. La variation rapportee est celle
+        # d'une vente a l'ouverture rachetee a la cloture, signe inverse.
+        veille = serie.get("veille")
+        if not veille:
+            return {"ticker": ticker, "classe": classe, "resultat": "incomplet",
+                    "motif": "cloture de la veille indisponible",
+                    "variation_pct": round(var_j0, 2) if var_j0 is not None else None}
+        comble = serie["bas"][0] <= veille * 1.005
+        vente = -var_j0 if var_j0 is not None else None
         return {"ticker": ticker, "classe": classe,
                 "resultat": "juste" if comble else "faux",
-                "motif": ("gap comble dans la seance" if comble
-                          else f"pas de comblement, cloture {var_j0:+.1f} % vs ouverture"),
-                "variation_pct": round(var_j0, 2) if var_j0 is not None else None}
+                "motif": (f"gap comble (bas {serie['bas'][0]:.3g} <= veille {veille:.3g}); "
+                          f"vente ouverture->cloture {vente:+.1f} %" if comble else
+                          f"gap non comble (bas {serie['bas'][0]:.3g} > veille {veille:.3g}); "
+                          f"vente ouverture->cloture {vente:+.1f} %"),
+                "variation_pct": round(var_j0, 2) if var_j0 is not None else None,
+                "vente_ouverture_cloture_pct": round(vente, 2) if vente is not None else None}
 
     if classe == "CONTINUATION":
         tenu = cloture_j0 >= ouverture
@@ -208,12 +233,21 @@ def main(argv=None) -> int:
 
     series = cours_depuis(tickers, date_detection, args.jours)
     notes = [noter(v, series.get(v.get("ticker"))) for v in verdicts]
+    # Un short juste n'est gagnant que s'il etait executable (29.09.2026, EGG).
+    vendeurs = [n["ticker"] for n in notes if n["classe"] in CLASSES_VENDEUSES]
+    barres = barres_ouverture(vendeurs, date_detection) if vendeurs else {}
+    for n in notes:
+        if n["classe"] in CLASSES_VENDEUSES:
+            n["executabilite"] = juger(barres.get(n["ticker"]))
 
     largeur = max((len(n["ticker"]) for n in notes), default=6)
     for n in sorted(notes, key=lambda x: (x["resultat"], x["classe"])):
         var = f"{n['variation_pct']:+7.2f} %" if n["variation_pct"] is not None else "      --"
         print(f"  {n['ticker']:<{largeur}}  {n['classe']:<13} {n['resultat']:<10} "
               f"{var}   {n['motif']}")
+        if "executabilite" in n:
+            e = n["executabilite"]
+            print(f"  {'':<{largeur}}  executable: {e['executable']:<8} {e['motif']}")
 
     juges = [n for n in notes if n["resultat"] in ("juste", "faux")]
     justes = [n for n in juges if n["resultat"] == "juste"]
@@ -224,6 +258,10 @@ def main(argv=None) -> int:
               f"({100*len(justes)/len(juges):.0f} %)")
     else:
         print("Aucun verdict jugeable sur cette fenetre.")
+    shorts = bilan_shorts(notes)
+    if shorts["justes"]:
+        print(f"Shorts justes ET executables : {shorts['justes_executables']}/{shorts['justes']} "
+              "(spread et borrow non mesures)")
     if incomplets:
         print(f"Incomplets (cours manquant) : {len(incomplets)} - non comptes")
 

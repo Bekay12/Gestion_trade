@@ -1,0 +1,127 @@
+{
+ "detection": "2026-10-01_premarket.json",
+ "evalue_le": "2026-10-01T22:04:56.479501",
+ "fenetre_jours": 3,
+ "notes": [
+  {
+   "ticker": "GNS",
+   "classe": "FADE",
+   "resultat": "juste",
+   "motif": "gap comble (bas 0.145 <= veille 0.159); vente ouverture->cloture +4.2 %",
+   "variation_pct": -4.24,
+   "vente_ouverture_cloture_pct": 4.24,
+   "executabilite": {
+    "executable": "oui",
+    "volume_post_ouverture_usd": 862643,
+    "barres_vides": 0,
+    "motif": "volume 09:35-10:00 863 k$, carnet continu (spread et borrow non mesures)"
+   }
+  },
+  {
+   "ticker": "QSI",
+   "classe": "FADE",
+   "resultat": "faux",
+   "motif": "gap non comble (bas 1.15 > veille 1.07); vente ouverture->cloture -19.2 %",
+   "variation_pct": 19.17,
+   "vente_ouverture_cloture_pct": -19.17,
+   "executabilite": {
+    "executable": "oui",
+    "volume_post_ouverture_usd": 3812369,
+    "barres_vides": 0,
+    "motif": "volume 09:35-10:00 3812 k$, carnet continu (spread et borrow non mesures)"
+   }
+  },
+  {
+   "ticker": "OPNW",
+   "classe": "FADE",
+   "resultat": "juste",
+   "motif": "gap comble (bas 5.1 <= veille 8.98); vente ouverture->cloture +32.3 %",
+   "variation_pct": -32.27,
+   "vente_ouverture_cloture_pct": 32.27,
+   "executabilite": {
+    "executable": "oui",
+    "volume_post_ouverture_usd": 333698,
+    "barres_vides": 0,
+    "motif": "volume 09:35-10:00 334 k$, carnet continu (spread et borrow non mesures)"
+   }
+  },
+  {
+   "ticker": "AXG",
+   "classe": "PUMP_RISK",
+   "resultat": "juste",
+   "motif": "retombe de -0.7 %, l'alerte etait fondee",
+   "variation_pct": -0.69,
+   "executabilite": {
+    "executable": "non",
+    "volume_post_ouverture_usd": 87752,
+    "barres_vides": 0,
+    "motif": "volume 09:35-10:00 88 k$ < 200 k$"
+   }
+  },
+  {
+   "ticker": "WETO",
+   "classe": "PUMP_RISK",
+   "resultat": "faux",
+   "motif": "a tenu (+6.7 %) : alerte trop severe",
+   "variation_pct": 6.67,
+   "executabilite": {
+    "executable": "oui",
+    "volume_post_ouverture_usd": 865413,
+    "barres_vides": 0,
+    "motif": "volume 09:35-10:00 865 k$, carnet continu (spread et borrow non mesures)"
+   }
+  },
+  {
+   "ticker": "LESL",
+   "classe": "PUMP_RISK",
+   "resultat": "faux",
+   "motif": "a tenu (+25.0 %) : alerte trop severe",
+   "variation_pct": 25.0,
+   "executabilite": {
+    "executable": "oui",
+    "volume_post_ouverture_usd": 227546,
+    "barres_vides": 0,
+    "motif": "volume 09:35-10:00 228 k$, carnet continu (spread et borrow non mesures)"
+   }
+  },
+  {
+   "ticker": "GIPR",
+   "classe": "PUMP_RISK",
+   "resultat": "juste",
+   "motif": "retombe de -13.8 %, l'alerte etait fondee",
+   "variation_pct": -13.79,
+   "executabilite": {
+    "executable": "oui",
+    "volume_post_ouverture_usd": 4310434,
+    "barres_vides": 0,
+    "motif": "volume 09:35-10:00 4310 k$, carnet continu (spread et borrow non mesures)"
+   }
+  },
+  {
+   "ticker": "AIB",
+   "classe": "PUMP_RISK",
+   "resultat": "faux",
+   "motif": "a tenu (+6.4 %) : alerte trop severe",
+   "variation_pct": 6.43,
+   "executabilite": {
+    "executable": "oui",
+    "volume_post_ouverture_usd": 604411,
+    "barres_vides": 0,
+    "motif": "volume 09:35-10:00 604 k$, carnet continu (spread et borrow non mesures)"
+   }
+  },
+  {
+   "ticker": "SDEV",
+   "classe": "PUMP_RISK",
+   "resultat": "faux",
+   "motif": "a tenu (+1.5 %) : alerte trop severe",
+   "variation_pct": 1.53,
+   "executabilite": {
+    "executable": "oui",
+    "volume_post_ouverture_usd": 93339324,
+    "barres_vides": 0,
+    "motif": "volume 09:35-10:00 93339 k$, carnet continu (spread et borrow non mesures)"
+   }
+  }
+ ]
+}

@@ -109,6 +109,28 @@ PRESETS = {
             "Dividend Yield": "Over 2%",
         },
     },
+    "dual_star": {
+        "title": "Dual Champion* (marché) — sous-valorisé + momentum 3 mois + dividende",
+        # Traduction Finviz de l'etoile (core/scan_fondamentaux.est_etoile) : G3, G4
+        # et S4, les trois criteres associes aux meilleurs resultats du backtest
+        # point-in-time du 02.10.2026. Finviz ne combine qu'en ET : le « G >= 3/5
+        # et S >= 5/7 » du Dual n'est pas exprimable, seul le coeur l'est.
+        #   G3 -> P/E < 25 et PEG < 2 (pas d'option 1,5 ; PEG Finviz = previsions)
+        #   G4 -> perf. trimestre > +10 % et cours au-dessus de la SMA50
+        #   S4 -> dividende > 0
+        # Mesure du 02.10.2026 : 53 titres, dont 8 Dual Champion* confirmes par
+        # Combined_scan en direct (15 %) ; G4 et S4 tiennent a 100 %, G3 a 43 %.
+        # Liste de DECOUVERTE a confirmer, pas une selection.
+        "filters": {
+            "P/E": "Under 25",
+            "PEG": "Under 2",
+            "Performance": "Quarter +10%",
+            "50-Day Simple Moving Average": "Price above SMA50",
+            "Dividend Yield": "Positive (>0%)",
+            "Average Volume": "Over 500K",
+        },
+        "order": "Performance (Quarter)",
+    },
     "gap_up": {
         "title": "Gap Up ≥ 5% (marché) — cassures haussières du jour",
         # Remplace le gap up sur symboles populaires : tout le marché, pas le catalogue.
@@ -250,13 +272,19 @@ def run_screen(filters: dict, order: str = "Change", limit: int = 100,
     from curl_cffi.requests import Session as CurlSession
 
     _orig = _fv_util.session
+    _orig_headers = _fv_util.headers
     _fv_util.session = CurlSession(impersonate="chrome")
+    # finvizfinance envoie un User-Agent Chrome/81 fige qui ecrase celui de
+    # l'impersonation; Finviz le refuse (403 constate le 01.10.2026). Sans
+    # en-tete propre, curl_cffi envoie l'empreinte complete du navigateur imite.
+    _fv_util.headers = {}
     try:
         fov = _construire_overview()
         fov.set_filter(filters_dict=filters)
         df = fov.screener_view(order=order, limit=limit, ascend=ascend)
     finally:
         _fv_util.session = _orig
+        _fv_util.headers = _orig_headers
 
     _verifier_tickers(df, fov.lignes_fiables)
     return df

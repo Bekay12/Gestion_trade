@@ -1,0 +1,58 @@
+{
+ "detection": "2026-09-29_premarket.json",
+ "evalue_le": "2026-09-29T21:05:49.153830",
+ "fenetre_jours": 1,
+ "notes": [
+  {
+   "ticker": "CYAB",
+   "classe": "FADE",
+   "resultat": "juste",
+   "motif": "gap comble (bas 0.186 <= veille 0.19); vente ouverture->cloture -3.3 %",
+   "variation_pct": 3.35,
+   "vente_ouverture_cloture_pct": -3.35
+  },
+  {
+   "ticker": "IVVD",
+   "classe": "FADE",
+   "resultat": "juste",
+   "motif": "gap comble (bas 0.774 <= veille 0.95); vente ouverture->cloture +8.3 %",
+   "variation_pct": -8.28,
+   "vente_ouverture_cloture_pct": 8.28
+  },
+  {
+   "ticker": "FFAI",
+   "classe": "PUMP_RISK",
+   "resultat": "juste",
+   "motif": "retombe de -16.0 %, l'alerte etait fondee",
+   "variation_pct": -16.01
+  },
+  {
+   "ticker": "SLXN",
+   "classe": "PUMP_RISK",
+   "resultat": "faux",
+   "motif": "a tenu (+1.3 %) : alerte trop severe",
+   "variation_pct": 1.34
+  },
+  {
+   "ticker": "MSGY",
+   "classe": "INSUFFISANT",
+   "resultat": "non juge",
+   "motif": "ecarte a la detection, aucune promesse",
+   "variation_pct": 8.12
+  },
+  {
+   "ticker": "EVGN",
+   "classe": "INSUFFISANT",
+   "resultat": "non juge",
+   "motif": "ecarte a la detection, aucune promesse",
+   "variation_pct": 13.82
+  },
+  {
+   "ticker": "YMT",
+   "classe": "INSUFFISANT",
+   "resultat": "non juge",
+   "motif": "ecarte a la detection, aucune promesse",
+   "variation_pct": -18.6
+  }
+ ]
+}

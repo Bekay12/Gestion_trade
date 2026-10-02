@@ -48,29 +48,19 @@ logging.getLogger("yfinance").setLevel(logging.CRITICAL)
 logging.getLogger("urllib3").setLevel(logging.CRITICAL)
 logging.getLogger("peewee").setLevel(logging.CRITICAL)
 
-# Throttle global : délai minimum entre 2 appels yfinance
-_throttle_lock = threading.Lock()
-_last_call_time = 0.0
-THROTTLE_DELAY = 0.25  # ~4 req/s max
+# Couche reseau et criteres : code commun des scanners (voir le module).
+from core import scan_fondamentaux as sf
 
-# Compteur thread-safe des raisons de skip
-_skip_lock = threading.Lock()
-_skip_reasons: dict[str, int] = {}
+_safe_float   = sf.safe_float
+_record_skip  = sf.record_skip
+_throttle     = sf.throttle
+_is_rate_limit_error = sf.is_rate_limit_error
+_skip_reasons = sf.SKIP_REASONS
+THROTTLE_DELAY = sf.debit()
 USE_MARKET_DB = True
 DB_REFRESH_HOURS = 20
 DB_RECALC_WINDOW_DAYS = 420
 DB_BOOTSTRAP_START = "2016-01-01"
-
-
-def _safe_float(value):
-    """Convertit en float fini si possible, sinon None."""
-    if value is None:
-        return None
-    try:
-        f = float(value)
-    except (TypeError, ValueError):
-        return None
-    return f if math.isfinite(f) else None
 
 
 def _to_bool(value):
@@ -82,110 +72,6 @@ def _to_bool(value):
         return value != 0
     txt = str(value).strip().lower()
     return txt in {"1", "true", "yes", "y"}
-
-
-def _is_valid_history(hist):
-    """Valide rapidement l'historique de prix/volume."""
-    if hist is None or getattr(hist, "empty", True):
-        return False
-    if "Close" not in hist.columns or "Volume" not in hist.columns:
-        return False
-
-    close = pd.to_numeric(hist["Close"], errors="coerce").dropna()
-    volume = pd.to_numeric(hist["Volume"], errors="coerce").dropna()
-
-    if len(close) < 130 or len(volume) < 90:
-        return False
-    if (close <= 0).all():
-        return False
-    if (volume < 0).any():
-        return False
-    return True
-
-
-def _get_fast_info_snapshot(stock):
-    """Récupère les champs rapides de yfinance sans lever d'exception."""
-    try:
-        fi = stock.fast_info
-    except Exception:
-        return {}
-
-    if fi is None:
-        return {}
-
-    out = {}
-    for src_key, dst_key in [
-        ("lastPrice", "currentPrice"),
-        ("last_price", "currentPrice"),
-        ("marketCap", "marketCap"),
-        ("market_cap", "marketCap"),
-        ("currency", "currency"),
-        ("quoteType", "quoteType"),
-    ]:
-        try:
-            val = fi.get(src_key)
-            if val is not None:
-                out[dst_key] = val
-        except Exception:
-            continue
-
-    return out
-
-
-def _is_valid_info(info):
-    """Vérifie qu'on a au moins une identité ou un prix exploitable."""
-    if not isinstance(info, dict):
-        return False
-    if not info:
-        return False
-
-    has_identity = bool(info.get("shortName") or info.get("longName") or info.get("symbol"))
-    price = _safe_float(info.get("currentPrice") or info.get("regularMarketPrice") or info.get("previousClose"))
-
-    return has_identity or (price is not None and price > 0)
-
-
-def _fetch_info_with_retry(stock, ticker, max_retries=4):
-    """Télécharge les métadonnées avec retry/backoff et fallback fast_info."""
-    last_info = {}
-    for attempt in range(max_retries):
-        try:
-            _throttle()
-            info = stock.info or {}
-            if isinstance(info, dict):
-                last_info = info
-        except Exception:
-            info = {}
-
-        fast_info = _get_fast_info_snapshot(stock)
-        merged = dict(last_info) if isinstance(last_info, dict) else {}
-        merged.update({k: v for k, v in fast_info.items() if v is not None})
-        merged.setdefault("symbol", ticker)
-
-        if _is_valid_info(merged):
-            return merged
-
-        if attempt < max_retries - 1:
-            time.sleep(0.8 * (2 ** attempt))
-
-    return None
-
-
-def _fetch_history_with_retry(stock, max_retries=4):
-    """Télécharge l'historique avec retry/backoff et validation."""
-    for attempt in range(max_retries):
-        try:
-            _throttle()
-            hist = stock.history(period="3y", auto_adjust=False)
-            if _is_valid_history(hist):
-                return hist
-        except Exception:
-            pass
-
-        if attempt < max_retries - 1:
-            time.sleep(0.8 * (2 ** attempt))
-
-    return None
 
 
 def _result_from_db_row(ticker, row):
@@ -222,12 +108,6 @@ def _result_from_db_row(ticker, row):
         "C5_VolRatio": _safe_float(row.get("c5_volume_ratio")),
         "C5_ok": _to_bool(row.get("c5_ok")),
     }
-
-
-def _is_rate_limit_error(exc: Exception) -> bool:
-    """Détecte une erreur 429 / rate limit yfinance."""
-    msg = str(exc).lower()
-    return any(k in msg for k in ("429", "rate limit", "too many requests", "rate limited"))
 
 
 def _analyze_from_market_db(ticker):
@@ -294,110 +174,40 @@ def load_symbols(path=POPULAR_FILE):
 # ─────────────────────────────────────────────────────────────
 def c1_revenue_growth(info):
     """C1 — Croissance structurelle du CA (>20% YoY)"""
-    rg = info.get("revenueGrowth")
-    if rg is None:
-        return False, None, "N/A"
-    passed = rg > 0.20
-    return passed, round(rg * 100, 1), f"CA +{round(rg*100,1)}% YoY"
+    ok, v = sf.g1_revenue_growth(info)
+    return ok, v, "N/A" if v is None else f"CA +{v}% YoY"
 
 
 def c2_gross_margin(info):
     """C2 — Marges brutes en expansion (>30%)"""
-    gm = info.get("grossMargins")
-    if gm is None:
-        return False, None, "N/A"
-    passed = gm > 0.30
-    return passed, round(gm * 100, 1), f"Marge brute {round(gm*100,1)}%"
+    ok, v = sf.g2_gross_margin(info)
+    return ok, v, "N/A" if v is None else f"Marge brute {v}%"
 
 
 def c3_undervaluation(info):
     """C3 — Sous-valorisation (2 proxies sur 3 : P/E<25, PEG<1.5, prix<75% 52wH)"""
-    hits = 0
-    details = []
-
-    pe = info.get("trailingPE")
-    if pe and 0 < pe < 25:
-        hits += 1
-        details.append(f"P/E={round(pe,1)}")
-
-    peg = info.get("pegRatio")
-    if peg and 0 < peg < 1.5:
-        hits += 1
-        details.append(f"PEG={round(peg,2)}")
-
-    high_52w = info.get("fiftyTwoWeekHigh")
-    price = info.get("currentPrice") or info.get("regularMarketPrice")
-    if high_52w and price and high_52w > 0:
-        ratio = price / high_52w
-        if ratio < 0.75:
-            hits += 1
-            details.append(f"Prix@{round(ratio*100)}%52wH")
-
-    return hits >= 2, hits, " | ".join(details) or "N/A"
+    ok, hits = sf.g3_undervaluation(info)
+    return ok, hits, f"{hits}/3 proxies"
 
 
 def c4_nascent_momentum(hist):
     """C4 — Momentum naissant (3m +8-60%, > SMA50, 6m < 150%)"""
-    if hist is None or len(hist) < 130:
+    ok, v = sf.g4_momentum(hist)
+    if v is None:
         return False, None, "Historique insuffisant"
-
-    # DEFAUT CORRIGE, identique a celui de Combined_scan.py : sur les bourses
-    # europeennes la derniere ligne est la seance en cours et porte NaN. Lue
-    # brute, elle rend current, ret_3m, ret_6m et sma50 tous NaN, et le critere
-    # tombe en silence — un cinquieme du score de croissance.
-    close = hist["Close"].dropna()
-    if len(close) < 130:
-        return False, None, "Historique insuffisant"
-    current = float(close.iloc[-1])
-    p3m = float(close.iloc[-63])
-    p6m = float(close.iloc[-126])
-
-    if p3m == 0 or p6m == 0:
-        return False, None, "Prix nul"
-
-    ret_3m = (current - p3m) / p3m
-    ret_6m = (current - p6m) / p6m
-    sma50 = float(close.rolling(50).mean().iloc[-1])
-
-    passed = (0.08 < ret_3m < 0.60) and (current > sma50) and (ret_6m < 1.50)
-    return passed, round(ret_3m * 100, 1), f"3m={round(ret_3m*100,1)}% 6m={round(ret_6m*100,1)}%"
+    r3, r6, _, _ = sf.momentum_detail(hist)
+    return ok, v, f"3m={round(r3*100,1)}% 6m={round(r6*100,1)}%"
 
 
 def c5_volume_buildup(hist):
     """C5 — Accumulation institutionnelle (vol30j / vol90j > 1.20x)"""
-    if hist is None or len(hist) < 90:
-        return False, None, "Historique insuffisant"
-
-    vol_30 = float(hist["Volume"].iloc[-30:].mean())
-    vol_90 = float(hist["Volume"].iloc[-90:].mean())
-
-    if vol_90 == 0:
-        return False, None, "Volume nul"
-
-    ratio = vol_30 / vol_90
-    return ratio > 1.20, round(ratio, 2), f"Vol30/90={round(ratio,2)}x"
+    ok, v = sf.g5_volume(hist)
+    return ok, v, "Historique insuffisant" if v is None else f"Vol30/90={v}x"
 
 
 # ─────────────────────────────────────────────────────────────
 # ANALYSE D'UN SYMBOLE
 # ─────────────────────────────────────────────────────────────
-def _record_skip(reason: str) -> None:
-    """Incrémente le compteur de skip pour une raison donnée (thread-safe)."""
-    with _skip_lock:
-        _skip_reasons[reason] = _skip_reasons.get(reason, 0) + 1
-
-
-def _throttle():
-    """Limite globale du débit d'appels yfinance."""
-    global _last_call_time
-    with _throttle_lock:
-        now = time.monotonic()
-        wait = THROTTLE_DELAY - (now - _last_call_time)
-        if wait > 0:
-            time.sleep(wait)
-        _last_call_time = time.monotonic()
-
-
 def analyze(ticker):
     """Retourne un dict de résultats ou None en cas d'erreur."""
     if USE_MARKET_DB and MARKET_DB_AVAILABLE:
@@ -407,7 +217,7 @@ def analyze(ticker):
 
     # Fallback réseau direct (si DB indisponible ou vide)
     stock = yf.Ticker(ticker)
-    info = _fetch_info_with_retry(stock, ticker)
+    info = sf.fetch_info(stock, ticker)
     if info is None:
         _record_skip("Pas de données (yfinance)")
         return None
@@ -419,7 +229,7 @@ def analyze(ticker):
         _record_skip("Ticker invalide / introuvable")
         return None
 
-    hist = _fetch_history_with_retry(stock)
+    hist = sf.fetch_hist(stock)
     if hist is None:
         _record_skip("Historique insuffisant (<130 jours)")
         return None
@@ -660,7 +470,7 @@ if __name__ == "__main__":
         seed_info = f", seed={args.seed}" if args.seed is not None else ""
         print(f"🎲 Sélection aléatoire: {n}/{len(load_symbols(sym_file))} symboles{seed_info}")
 
-    THROTTLE_DELAY = max(0.05, args.throttle)
+    THROTTLE_DELAY = sf.regler_debit(args.throttle)
     USE_MARKET_DB = (not args.no_db) and MARKET_DB_AVAILABLE
     DB_REFRESH_HOURS = max(1, int(args.db_refresh_hours))
     DB_RECALC_WINDOW_DAYS = max(120, int(args.db_recalc_days))

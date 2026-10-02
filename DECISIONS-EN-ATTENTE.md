@@ -7,33 +7,29 @@ conséquences que je ne peux pas arbitrer à ta place.
 Rien de ce qui suit n'a été fait. Chaque entrée décrit le constat, les options, et ce que je
 recommanderais — mais la décision reste ouverte.
 
-Dernière mise à jour : 2026-07-30.
+Dernière mise à jour : 2026-10-02.
 
 ---
 
 ## 0. Travail restant — ne demande pas ton avis, demande du temps
 
-**M-04, extraction de la couche réseau yfinance.** Pas fait. Ce n'est pas un arbitrage :
-c'est un chantier que je n'ai pas mené au bout dans cette session.
+**M-04, extraction de la couche réseau yfinance.** Fait le 02.10.2026, avec les critères.
+Tout le code commun de `Combined_scan.py`, `Sichere_Unternehmen_scan.py`, `Big_Growth_scan.py`
+et `AI_Implement/news_monitor_combined.py` vit dans `stock-analysis-ui/src/core/scan_fondamentaux.py` :
+un seul limiteur de débit (`regler_debit`), une seule politique de reprise, la conversion en
+euros, les états annuels et les critères G1-G5 / S1-S7. Les scripts ne gardent que leur sortie
+et le libellé de chaque critère. Vérifié de bout en bout sur 28 titres : Sichere = Combined
+sur S1-S7, Big_Growth (chemin direct) = Combined sur G1-G5, résultat du Combined inchangé par
+le regroupement. Tests : `src/tests/test_scanner_criteres.py`, `test_scanner_devises.py`.
 
-Les trois scripts `Big_Growth_scan.py`, `Sichere_Unternehmen_scan.py` et `Combined_scan.py`
-partagent 18 noms de fonctions identiques, dont toute la couche réseau : `_throttle`,
-`_fetch_history_with_retry`, `_fetch_info_with_retry`, `_is_rate_limit_error`,
-`_is_valid_history`, `_is_valid_info`, `_get_fast_info_snapshot`, `analyze_safe`,
-`load_symbols`, `run_scan`, `print_summary`.
-
-C'est précisément le code qui gère ton budget de requêtes yfinance — en trois exemplaires aux
-constantes divergentes. Un ajustement du backoff après un blocage doit être répété trois fois,
-et en oublier un suffit à faire bannir l'IP.
-
-**Plan proposé :** extraire dans `core/yf_fetch.py` le throttle, le backoff, la détection de
-rate-limit et la validation de réponse ; les trois scripts ne gardent que leurs critères
-propres. Une seule constante de backoff, un seul endroit à ajuster.
-
-**Pourquoi je m'arrête là :** ces trois scripts n'ont aucun test. Refactoriser du code réseau
-non testé en fin de session, sans pouvoir vérifier chaque script bout à bout, c'est
-exactement le genre de changement qui casse en silence — et le premier symptôme serait un
-bannissement yfinance. À reprendre au début d'une session, avec des tests d'abord.
+**Reste ouvert, demande ton avis :** `market_store.py` calcule encore sa propre version des
+critères pour le store (colonnes `c1..c5`, `s1_ok..s7_ok`, `secure_score`), lue par la vue
+« Combined » de `store_screeners.py` et par le chemin DB de `Big_Growth_scan.py`. Elle porte
+les défauts corrigés le 02.10.2026 dans le module commun : S6/S7 trimestriels, S5 sur le FCF
+« levered », S4 sans contrôle d'échelle ni de suspension, S1 converti au taux fixe 1,08 USD
+quelle que soit la devise ; et sa G3 donnait 0 pour les 28 titres de Börse Online 40/2026.
+La corriger change le schéma ou le coût du store (S5-S7 exigent les états annuels, donc des
+requêtes en plus) : c'est un arbitrage, pas un oubli.
 
 ---
 

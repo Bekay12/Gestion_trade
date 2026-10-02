@@ -19,6 +19,7 @@ ISSUES = {  # étiquette de fichier -> (magazine, date de parution, fichier Mark
     "BO_07.08.2026": ("Börse Online 33/2026", "2026-08-07", "Boerse_Online_Festhalten_bitte_2026-08-07.md"),
     "BO_18.09.2026": ("Börse Online 39/2026", "2026-09-18",
                       "Boerse_Online_12_Biotech-_und_Pharma-Aktien_mit_bis_zu_100_Prozent_2026-09-18.md"),
+    "BO_25.09.2026": ("Börse Online 40/2026", "2026-09-25", "Boerse_Online_Clever_kaufen_2026-09-25.md"),
     "Capital_07-2026": ("Capital 07/2026", "2026-07", "Capital_MADE_IN_CHINA_2026-07.md"),
     "Capital_10-2026": ("Capital 10/2026", "2026-10", "Capital_50_AKTIEN_FÜRS_LEBEN_2026-10.md"),
     "Cash_08-2026": ("Cash 08/2026", "2026-08", "Cash_Lass_Dein_Geld_für_Dich_arbeiten_2026-08.md"),
@@ -28,7 +29,8 @@ ISSUES = {  # étiquette de fichier -> (magazine, date de parution, fichier Mark
 # Date d'entrée pour l'évaluation : date du numéro (hebdomadaire) ou date de création du PDF
 # (mensuels, approximation de la mise en vente ; pdfinfo CreationDate).
 ENTREE = {"Börse Online 27/2026": "2026-06-26", "Börse Online 33/2026": "2026-08-07",
-          "Börse Online 39/2026": "2026-09-18", "Capital 07/2026": "2026-06-13",
+          "Börse Online 39/2026": "2026-09-18",
+          "Börse Online 40/2026": "2026-09-25", "Capital 07/2026": "2026-06-13",
           "Capital 10/2026": "2026-09-14", "Cash 08/2026": "2026-07-24",
           "Euro 07/2026": "2026-06-03", "Euro 10/2026": "2026-09-09"}
 HORIZON_ORDER = ["long", "moyen", "court", "non precise"]
@@ -171,6 +173,15 @@ for o in json.load((S / "manual.json").open()):
                  "note": o["note"], "cours": o["cours"], "objectif": "", "stop": "", "risque": "",
                  "horizon_verbatim": "", "raison": o["raison"], "citation": "", "controle": "ok",
                  "md": md})
+
+# BO 40/2026 : relevé à la main page par page (pdftotext), sans passage par le modèle local.
+for o in json.load((S / "bo40_2026.json").open()):
+    mag, date, md = ISSUES["BO_25.09.2026"]
+    rows.append({"horizon": o.get("horizon", "non precise"), "type": o["type"], "entreprise": o["entreprise"],
+                 "identifiant": o["identifiant"], "magazine": mag, "date": date, "page": o["page"],
+                 "note": o["note"], "cours": o["cours"], "objectif": o["objectif"], "stop": o["stop"],
+                 "risque": o["risque"], "horizon_verbatim": o.get("horizon_verbatim", ""), "raison": o["raison"],
+                 "citation": o["citation"], "controle": "ok", "md": md})
 
 # Corrections vérifiées à la main sur la page (voir le texte de la page citée).
 FIXES = {

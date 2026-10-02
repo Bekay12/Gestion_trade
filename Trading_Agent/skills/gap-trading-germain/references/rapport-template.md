@@ -50,7 +50,7 @@ classification, il ne se choisit pas librement :
 
 | Verdict | Horizon annoncé | Ce qui le fixe |
 |---|---|---|
-| `FADE` | **Jour** — souvent la première heure | Comblement attendu ; l'essentiel se joue dans les 30 premières minutes |
+| `FADE` | **Jour**, souvent la première heure | Comblement attendu ; l'essentiel se joue dans les 30 premières minutes |
 | `CONTINUATION` | **Jour**, prolongeable | Gap tenu + RVOL ≥ 3 + catalyseur ; réévaluer à la clôture |
 | `SQUEEZE` | **Plusieurs jours à une semaine** | « Le mouvement continue sur plusieurs jours » (Germain, P7 Ch.03) |
 | `PUMP_RISK` | **Aucun** | Ne pas entrer. Si déjà en position : sortie, pas d'horizon |
@@ -70,12 +70,12 @@ Trois obligations d'écriture :
 ## Modèle condensé (un titre)
 
 ```
-### XXXX — Nom (cap XX M$, float X,X M)
+### XXXX : Nom (cap XX M$, float X,X M)
 
 GAP        +12,4 % · 1,8 × ATR · au-dessus du VWAP
-CATALYSEUR 8-K du 21.09.2026 : contrat de distribution signé — haussier réel
+CATALYSEUR 8-K du 21.09.2026 : contrat de distribution signé, haussier réel
 TECHNIQUE  RVOL 6,2 · volume 4,1 M (moy. 660 K) · short interest 18,3 %
-VERDICT    SQUEEZE — short interest élevé avant le mouvement, volume progressif
+VERDICT    SQUEEZE : short interest élevé avant le mouvement, volume progressif
 
 À VALIDER AVANT L'ORDRE
 [x] Catalyseur haussier daté      [x] RVOL ≥ 3        [x] Au-dessus du VWAP

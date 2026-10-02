@@ -203,6 +203,10 @@ class ScreenersMixin:
             self._show_store_screener(screener_key[len("_store_"):])
             return
 
+        if screener_key == "_fvc_dual_star":
+            self._show_finviz_combined_screener()
+            return
+
         if screener_key.startswith("_fvw_"):
             self._show_finviz_market_screener(screener_key[len("_fvw_"):])
             return
@@ -337,6 +341,51 @@ class ScreenersMixin:
             return
         if hasattr(self, "_status"):
             self._status(f"Finviz : {len(rows)} titres trouvés sur le marché entier")
+        self._present_screener_results(res["title"], res["headers"], rows)
+
+    def _show_finviz_combined_screener(self):
+        """Forme « Finviz + Combined » : Finviz découvre sur tout le marché US
+        (1 requête), puis le Combined en direct note chaque titre et signale
+        l'étoile ⭐ (Dual Champion*). ~4 requêtes yfinance par titre : voir
+        core/combined_finviz.py pour le coût et la mesure qui justifie la forme."""
+        try:
+            from core.combined_finviz import run_finviz_combined
+        except Exception as e:
+            QMessageBox.warning(self, "Finviz + Combined", f"Moteur indisponible : {e}")
+            return
+
+        progress = QProgressDialog("Finviz : découverte sur le marché entier…", "Annuler", 0, 0, self)
+        progress.setWindowTitle("Finviz + Combined")
+        progress.setWindowModality(Qt.WindowModal)
+        progress.setMinimumDuration(0)
+        progress.setValue(0)
+        QApplication.processEvents()
+
+        def _avancement(i, total, symbole):
+            if progress.maximum() != total:
+                progress.setMaximum(total)
+            progress.setValue(i - 1)
+            progress.setLabelText(f"Combined en direct : {symbole} ({i}/{total})")
+            QApplication.processEvents()
+            return progress.wasCanceled()     # True = arrêter et afficher ce qui est fait
+
+        try:
+            res = run_finviz_combined(progress=_avancement)
+        except Exception as e:
+            progress.close()
+            import traceback
+            QMessageBox.warning(self, "Finviz + Combined",
+                                f"Erreur pendant le screening :\n{e}\n\n{traceback.format_exc()}")
+            return
+        # NB : wasCanceled() est lu dans le rappel, jamais après close().
+        progress.close()
+
+        rows = res.get("rows") or []
+        if not rows:
+            QMessageBox.information(self, "Finviz + Combined", res.get("title", "Aucun résultat."))
+            return
+        if hasattr(self, "_status"):
+            self._status(res["title"])
         self._present_screener_results(res["title"], res["headers"], rows)
 
     def _show_finviz_gapper_screener(self):

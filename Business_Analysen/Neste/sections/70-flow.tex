@@ -1,0 +1,107 @@
+\section{Grobe Flow-Analyse}
+\label{sec:flow}
+
+Es gibt keine Handlungsoptionen des \emph{Unternehmens} zu vergleichen; gerechnet wird, was
+ein Eigent\"umer verdient, der heute kauft. Die Frage, wie schnell Neste seine Schulden
+tilgen k\"onnte, stellt sich bei einem Verschuldungsgrad von \Pz{\VerschuldungHj} gegen ein
+Ziel von unter \Pz{\Verschuldungsziel}\Q{HJ}{3} nicht als Engpass und wird nicht gerechnet.
+Derselbe Zufluss kann nur einmal verwendet werden: Die Rechnung unterstellt, dass er
+vollst\"andig an die Eigent\"umer geht.
+
+\subsection{Annahmen, erkl\"art vor jeder Zahl}
+
+\annahme{\textbf{Anfangsbestand.} Der Einstieg ist der B\"orsenwert zum \KursDatum,
+\Mio{\Boersenwert}{EUR}, f\"allig im Jahr 2026 (t\,=\,0). Weitere Liquidit\"at des Anlegers
+spielt keine Rolle.}
+
+\annahme{\textbf{Investitionsprofil.} Der Kaufpreis f\"allt in einer Summe an. Die
+Investitionen des Unternehmens stecken bereits im freien Zufluss jedes Szenarios, sie werden
+nicht ein zweites Mal abgezogen.}
+
+\annahme{\textbf{Kapitalbindung.} Keine gesonderte. Die Bewegung des Umlaufverm\"ogens ist
+Teil des operativen Mittelzuflusses; das Szenario \enquote{LTM ohne Umlaufverm\"ogen} nimmt
+sie heraus, weil der Vorratsaufbau des ersten Halbjahrs 2026 den Stillst\"anden dient und
+sich zur\"uckbilden soll.}
+
+\annahme{\textbf{Abgrenzung des Zuflusses.} Freier Zufluss des Konzerns (operativer
+Mittelzufluss + Investitionen + Leasingtilgung), vollst\"andig aussch\"uttbar gedacht. Er
+wird ab 2027 konstant fortgeschrieben; der Kaufpreis f\"allt 2026.}
+
+\annahme{\textbf{Steuerliche Betrachtung.} Vorsteuer auf Ebene des Anlegers
+(Rahmen, S.~\pageref{sec:methode}). Die Ertragsteuern des Unternehmens sind im operativen
+Mittelzufluss bereits bezahlt.}
+
+\annahme{\textbf{Renditehorizont und Endwert.} F\"unf, zehn und f\"unfzehn Jahre. Am Ende
+des Horizonts flie{\ss}t der Buchwert des Eigenkapitals zum 30.06.2026 zur\"uck,
+\Mio{\Buchwert}{EUR}; er w\"achst nicht mit.}
+
+\subsection{F\"unf Szenarien aus der eigenen Reihe}
+
+Keines der Szenarien ist gesch\"atzt; jedes ist ein Wert, den Neste berichtet hat, oder eine
+Kombination berichteter Werte:
+
+\begin{description}\small
+\item[pessimistisch] 25.~Perzentil des freien Zuflusses 2017--2025: \Mio{\FcfPes}{EUR}.
+\item[Basis] Median derselben Reihe: \Mio{\FcfMedian}{EUR}. Er enth\"alt Jahre gro{\ss}er
+  Wachstumsinvestitionen ebenso wie Jahre ohne.
+\item[Erntephase] Die Lage nach Rotterdam, wie Neste sie ank\"undigt: Median des operativen
+  Mittelzuflusses 2017--2025 (\Mio{\CfoMedian}{EUR}), abz\"uglich der angek\"undigten
+  Investitionen von rund \je{\InvestNachRotterdam}{Mrd.\,EUR}\Q{GBXXIV}{91} und der
+  Leasingtilgung 2025 (\Mio{\LeasingVoll}{EUR}): \Mio{\FcfErnte}{EUR}.
+\item[LTM] Freier Zufluss der letzten zw\"olf Monate bis Juni 2026: \Mio{\FcfLtm}{EUR},
+  Rang \Pz{\FcfRangLtm} der Reihe.
+\item[LTM ohne Umlaufverm\"ogen] Derselbe Zeitraum ohne die Bewegung des Umlaufverm\"ogens:
+  \Mio{\FcfLtmOhne}{EUR}. Das ist die Ertragskraft der Sondermarge selbst und der h\"ochste
+  Wert, den die Berichte stützen.
+\end{description}
+
+\annahme{Die Erntephase unterstellt, dass Rotterdam 2027 fertig ist und keine weiteren
+Mittel bindet. Die Restinvestition in Rotterdam f\"ur 2027 ist nicht ver\"offentlicht
+(Abschnitt~\ref{sec:luecken}); das Szenario ist deshalb f\"ur das Jahr 2027 zu g\"unstig.
+Umgekehrt enth\"alt es keinen Mehrertrag aus der zus\"atzlichen Kapazit\"at, weil dieser
+nicht beziffert ist; den holt die Umkehrung in Tabelle~\ref{tab:umkehr} zur\"uck.}
+
+\subsection{Ergebnis: Schwellenkurs je Horizont}
+
+\schwellentabelle
+
+Auf zehn Jahre liegt der Schwellenkurs im Basisfall bei \je{\SchwelleMEDZehn}{EUR}, in der
+Erntephase bei \je{\SchwelleERNZehn}{EUR} und im g\"unstigsten Szenario bei
+\je{\SchwelleLTMOZehn}{EUR}; bei der H\"urde von \Pz{\HuerdeLang} steigt dieser Wert auf
+\je{\SchwelleLTMOZehnLang}{EUR}. Der heutige Kurs von \je{\Kurs}{EUR} liegt \"uber jedem Wert
+der Tabelle, auf jedem Horizont und bei beiden H\"urden.
+
+\textbf{Die Rangfolge der Horizonte kehrt sich um.} In den niedrigen Szenarien sinkt der
+Schwellenkurs mit dem Horizont (Basis: \je{\SchwelleMEDFuenf}{EUR} auf f\"unf, \je{\SchwelleMEDFuenfzehn}{EUR}
+auf f\"unfzehn Jahre), im Szenario ohne Umlaufverm\"ogen steigt er (\je{\SchwelleLTMOFuenf}{EUR}
+auf \je{\SchwelleLTMOFuenfzehn}{EUR}). Der Grund ist der Endwert: Liegt die Zuflussrendite auf
+den Buchwert unter der H\"urde, schadet jedes weitere Jahr, liegt sie dar\"uber, n\"utzt es.
+\bk{Die Zeit arbeitet f\"ur den Eigent\"umer nur, wenn die Sondermarge zur Regel wird.}
+
+\subsection{Umkehrungen: Was der Kurs voraussetzt}
+
+\umkehrtabellen
+
+Um zum heutigen Kurs die H\"urde auf zehn Jahre zu erreichen, m\"usste der freie Zufluss
+im Basisfall um \WachstumMEDZehn{} p.\,a.\ wachsen, vom LTM-Niveau ohne Umlaufverm\"ogen aus
+um \WachstumLTMOZehn{} p.\,a.\ Zum Vergleich die eigene Geschichte, jeweils Durchschnitt der
+ersten gegen den der letzten drei Jahre: Der operative Mittelzufluss wuchs um
+\CfoWachstumReal{} p.\,a., das vergleichbare EBITDA (2019--2025) um \EbitdaWachstumReal{}
+p.\,a. Alternativ m\"usste die Beteiligung nach zehn Jahren das \EndwertMEDZehn-fache
+(Basis) bzw.\ das \EndwertLTMOZehn-fache (LTM ohne Umlaufverm\"ogen) des heutigen Buchwerts
+wert sein; heute ist sie das \EndwertHeute-fache wert.
+
+\subsection{Wie lange m\"usste die Sondermarge anhalten?}
+
+Die Frage nach der zeitlichen Reichweite l\"asst sich direkt stellen: Wie viele Jahre muss der
+Zufluss auf dem LTM-Niveau bleiben, bevor er auf den Median zur\"uckf\"allt, damit sich der
+heutige Kurs rechnet?
+
+\dauertabelle
+
+Selbst zehn volle Jahre auf LTM-Niveau ergeben zum Buchwert als Endwert \DauerIrrBuchZehn{},
+zum heutigen B\"orsenwert als Endwert \DauerIrrMarktZehn{} p.\,a. Keine Dauer der
+Sondermarge erreicht die H\"urde, auch nicht bei einem Ausstieg ohne jeden
+Bewertungsabschlag. \bk{Das ist der st\"arkste Befund dieses Berichts: Nicht die Dauer der
+Marge ist die offene Frage, sondern ihre H\"ohe. Der Kurs verlangt einen Zufluss, den Neste
+auch in seinem besten Jahr nicht erreicht hat.}

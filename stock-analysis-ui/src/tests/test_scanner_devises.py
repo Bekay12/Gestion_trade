@@ -21,40 +21,53 @@ import pytest
 
 import Combined_scan as cs
 import Sichere_Unternehmen_scan as ss
+from AI_Implement import news_monitor_combined as nm
+from core import scan_fondamentaux as sf
 
 
 # ── D1 : conversion de devise ──────────────────────────────────────────────
-@pytest.mark.parametrize('module', [ss, cs], ids=['sichere', 'combined'])
-def test_capitalisation_convertie_depuis_toute_devise(module, monkeypatch):
+# Depuis le regroupement (02.10.2026) la conversion vit dans core.scan_fondamentaux,
+# partagee par tous les scanners : on la teste la, et on verifie que le critere
+# de chaque scanner s'appuie bien dessus.
+TAUX = {'EUR': 1.0, 'USD': 1.15, 'SEK': 11.28, 'GBP': 0.855, 'GBP_PENCE': 85.5}
+
+
+def test_capitalisation_convertie_depuis_toute_devise(monkeypatch):
     """Une capitalisation en SEK ne vaut pas le meme nombre d'euros."""
-    monkeypatch.setattr(module, 'EUR_RATES',
-                        {'EUR': 1.0, 'USD': 1.15, 'SEK': 11.28, 'GBP': 0.855, 'GBP_PENCE': 85.5})
+    monkeypatch.setattr(sf, 'EUR_RATES', TAUX)
     # 88,2 milliards de couronnes suedoises font 7,8 milliards d'euros, pas 88,2.
-    assert module._mcap_en_mrd_eur(88.2e9, 'SEK') == pytest.approx(7.82, abs=0.02)
-    assert module._mcap_en_mrd_eur(10.0e9, 'EUR') == pytest.approx(10.0, abs=0.01)
-    assert module._mcap_en_mrd_eur(11.5e9, 'USD') == pytest.approx(10.0, abs=0.02)
+    assert sf.mcap_en_mrd_eur(88.2e9, 'SEK') == pytest.approx(7.82, abs=0.02)
+    assert sf.mcap_en_mrd_eur(10.0e9, 'EUR') == pytest.approx(10.0, abs=0.01)
+    assert sf.mcap_en_mrd_eur(11.5e9, 'USD') == pytest.approx(10.0, abs=0.02)
 
 
-@pytest.mark.parametrize('module', [ss, cs], ids=['sichere', 'combined'])
-def test_cotation_en_pence_divisee_par_cent(module, monkeypatch):
+def test_cotation_en_pence_divisee_par_cent(monkeypatch):
     """GBp est un sous-multiple : l'ignorer gonfle la capitalisation de x100."""
-    monkeypatch.setattr(module, 'EUR_RATES',
-                        {'EUR': 1.0, 'USD': 1.15, 'GBP': 0.855, 'GBP_PENCE': 85.5})
+    monkeypatch.setattr(sf, 'EUR_RATES', TAUX)
     # 247,4 milliards de pence font 2,9 milliards d'euros.
-    assert module._mcap_en_mrd_eur(247.4e9, 'GBp') == pytest.approx(2.89, abs=0.02)
+    assert sf.mcap_en_mrd_eur(247.4e9, 'GBp') == pytest.approx(2.89, abs=0.02)
 
 
-@pytest.mark.parametrize('module', [ss, cs], ids=['sichere', 'combined'])
-def test_devise_inconnue_ne_vaut_pas_un_critere_rempli(module, monkeypatch):
+@pytest.mark.parametrize('critere', [ss.c1_market_cap, cs.s1_market_cap, nm.s1_market_cap],
+                         ids=['sichere', 'combined', 'news_monitor'])
+def test_devise_inconnue_ne_vaut_pas_un_critere_rempli(critere, monkeypatch):
     """Sans taux, le critere n'est pas evaluable — et ne doit donc pas passer.
 
     Se rabattre sur 1.0 serait exactement le defaut corrige ici, en plus
     silencieux.
     """
-    monkeypatch.setattr(module, 'EUR_RATES', {'EUR': 1.0})
-    assert module._mcap_en_mrd_eur(50e9, 'JPY') is None
-    ok, valeur, *_ = (module.c1_market_cap if module is ss else module.s1_market_cap)(
-        {'marketCap': 50e9, 'currency': 'JPY'})
+    monkeypatch.setattr(sf, 'EUR_RATES', {'EUR': 1.0})
+    assert sf.mcap_en_mrd_eur(50e9, 'JPY') is None
+    ok, *_ = critere({'marketCap': 50e9, 'currency': 'JPY'})
+    assert ok is False
+
+
+@pytest.mark.parametrize('critere', [ss.c1_market_cap, cs.s1_market_cap, nm.s1_market_cap],
+                         ids=['sichere', 'combined', 'news_monitor'])
+def test_chaque_scanner_convertit_la_couronne(critere, monkeypatch):
+    """88,2 Md SEK = 7,8 Md € : sous le seuil de 10 Md € dans TOUS les scanners."""
+    monkeypatch.setattr(sf, 'EUR_RATES', TAUX)
+    ok, *_ = critere({'marketCap': 88.2e9, 'currency': 'SEK'})
     assert ok is False
 
 
@@ -75,6 +88,13 @@ def test_momentum_calculable_malgre_la_seance_en_cours():
     assert sans[1] is not None, 'temoin : le cas propre doit donner une valeur'
     assert avec[1] is not None, 'le cas avec NaN final doit aussi donner une valeur'
     assert avec[1] == pytest.approx(sans[1], abs=0.3)
+
+
+def test_news_monitor_momentum_survit_a_la_seance_en_cours():
+    """news_monitor_combined n'avait jamais recu ce correctif (copie locale)."""
+    ok_s, sans = nm.g4_momentum(_historique())
+    ok_a, avec = nm.g4_momentum(_historique(dernier_nan=True))
+    assert avec != 'N/A' and avec == sans
 
 
 def test_momentum_reste_indisponible_si_lhistorique_est_trop_court():

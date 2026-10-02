@@ -8,8 +8,8 @@ basé sur 7 critères fondamentaux:
   C3 — Beta                  < 0.8
   C4 — Dividendenrendite     > 0 %
   C5 — Free-Cashflow-Marge   > 5 %
-  C6 — Ø Wachstum FCF 5J    > 0 %
-  C7 — Ø Wachstum CA+EPS 5J > 3 %
+  C6 — Wachstum FCF        > 0 %/Jahr  (taux compose, exercices annuels)
+  C7 — Wachstum CA und EPS > 3 %/Jahr  (les deux, exercices annuels)
 
 Usage:
   python Sichere_Unternehmen_scan.py --min-score 5
@@ -44,298 +44,50 @@ logging.getLogger("yfinance").setLevel(logging.CRITICAL)
 logging.getLogger("urllib3").setLevel(logging.CRITICAL)
 logger = logging.getLogger(__name__)
 
-_throttle_lock = threading.Lock()
-_last_call_time = 0.0
-THROTTLE_DELAY = 0.25
-_skip_lock = threading.Lock()
-_skip_reasons: dict[str, int] = {}
+# Couche reseau, devises et criteres : code commun des scanners (voir le module).
+from core import scan_fondamentaux as sf
 
-# Bogue observe le 20.09.2026 sur DTG.DE: "dividendYield" valait 4.37 (deja
-# un pourcentage) alors que "trailingAnnualDividendYield" valait 0.042937852
-# (fraction) pour le MEME dividende reel (~4,3 %) - yfinance ne garantit pas
-# l'echelle du premier champ. Multiplier par 100 sans verification donnait
-# 437 % au lieu de 4,37 %. Meme correctif que Combined_scan.py.
-_SEUIL_FRACTION_PLAUSIBLE = 1.5    # aucun rendement de dividende reel ne depasse 150 %
-_SEUIL_CROISSANCE_EXTREME = 300.0  # % au-dela desquels la valeur est signalee, pas corrigee
-
-
-def _pct_dividend_yield(info):
-    """
-    --------------------------------------------------------------------------
-    Purpose:
-        Rendement du dividende en %, robuste au changement de convention de
-        yfinance sur "dividendYield" (fraction 0-1 vs pourcentage deja mis a
-        l'echelle). Quand "trailingAnnualDividendYield" (toujours documente
-        comme une fraction) est disponible, il sert d'etalon: l'echelle
-        retenue est celle qui s'en rapproche le plus. A defaut, une fraction
-        plausible ne depasse jamais _SEUIL_FRACTION_PLAUSIBLE (150 %).
-
-    Inputs:
-        info (dict): objet yfinance .info
-
-    Outputs:
-        pct (float | None): rendement en pourcentage, ou None si absent
-    --------------------------------------------------------------------------
-    """
-    dy_brut  = _safe_float(info.get("dividendYield"))
-    dy_annee = _safe_float(info.get("trailingAnnualDividendYield"))
-    if dy_brut is not None:
-        if dy_annee is not None and dy_annee > 0:
-            comme_pourcentage = abs(dy_brut - dy_annee * 100)
-            comme_fraction    = abs(dy_brut * 100 - dy_annee * 100)
-            return round(dy_brut if comme_pourcentage <= comme_fraction else dy_brut * 100, 2)
-        return round(dy_brut if abs(dy_brut) > _SEUIL_FRACTION_PLAUSIBLE else dy_brut * 100, 2)
-    if dy_annee is not None:
-        return round(dy_annee * 100, 2)
-    return None
-
-
-def _pct_croissance(fraction, ticker=None, champ=None):
-    """
-    --------------------------------------------------------------------------
-    Purpose:
-        Convertit une fraction de croissance yfinance en pourcentage sans
-        l'alterer - une croissance extreme peut etre reelle (base de
-        comparaison proche de zero) - mais la journalise pour verification
-        au lieu de l'accepter sans regard.
-
-    Inputs:
-        fraction (float): valeur brute du champ yfinance
-        ticker, champ (str): pour le message de journalisation uniquement
-
-    Outputs:
-        pct (float): fraction * 100, journalisee si |pct| > 300 %
-    --------------------------------------------------------------------------
-    """
-    pct = fraction * 100
-    if abs(pct) > _SEUIL_CROISSANCE_EXTREME:
-        logger.warning(f"[SCAN] {ticker or '?'} {champ or 'croissance'}: {pct:.0f}% "
-                       f"- valeur extreme, a verifier avant de la prendre au mot")
-    return pct
 USE_MARKET_DB = True
-EUR_USD_RATE = 1.08   # conserve pour l'option --eur-usd ; voir charger_taux_eur()
-
-# ── Devises ──────────────────────────────────────────────────
-# DEFAUT CORRIGE : seule l'USD etait convertie, toute autre devise etait
-# traitee comme si elle etait deja en euros. Mesure du 14.09.2026 sur 43
-# valeurs europeennes : 13 capitalisations fausses d'un facteur 7 a 11 (SEK,
-# DKK, NOK, CHF) et une d'un facteur 85 (GBp, cotation en pence). Le critere
-# « capitalisation > 10 Mrd € » en dependait directement.
-EUR_RATES: dict[str, float] = {"EUR": 1.0}
-
-# Paires Yahoo : unites de devise par euro.
-_PAIRES_EUR = {"USD": "EURUSD=X", "SEK": "EURSEK=X", "DKK": "EURDKK=X",
-               "NOK": "EURNOK=X", "CHF": "EURCHF=X", "GBP": "EURGBP=X",
-               "PLN": "EURPLN=X", "CZK": "EURCZK=X", "HUF": "EURHUF=X",
-               "JPY": "EURJPY=X", "CAD": "EURCAD=X", "AUD": "EURAUD=X"}
+_safe_float   = sf.safe_float
+_record_skip  = sf.record_skip
+_skip_reasons = sf.SKIP_REASONS
 
 
-def charger_taux_eur(verbose: bool = True) -> dict:
-    """Charge les taux de change en UN seul appel groupe.
-
-    Un appel groupe et non un par devise : la contrainte de budget yfinance du
-    projet vaut aussi ici. Les taux manquants restent absents du dictionnaire,
-    ce qui rend la capitalisation non evaluable plutot que fausse.
-    """
-    global EUR_RATES
-    taux = {"EUR": 1.0}
-    try:
-        data = yf.download(list(_PAIRES_EUR.values()), period="5d",
-                           progress=False, auto_adjust=False, group_by="ticker")
-        for devise, paire in _PAIRES_EUR.items():
-            try:
-                serie = data[paire]["Close"].dropna()
-                if len(serie):
-                    taux[devise] = float(serie.iloc[-1])
-            except Exception:
-                continue
-    except Exception as exc:
-        if verbose:
-            print(f"   ⚠️ Taux de change indisponibles ({exc}) : "
-                  f"les capitalisations hors zone euro ne seront pas evaluees")
-    if "USD" not in taux:
-        # Repli explicite sur la valeur passee en ligne de commande : c'est le
-        # seul role restant de --eur-usd, et il est annonce dans la banniere.
-        taux["USD"] = EUR_USD_RATE
-    if "GBP" in taux:
-        taux["GBP_PENCE"] = taux["GBP"] * 100.0   # GBp est un centieme de livre
-    EUR_RATES = taux
-    if verbose:
-        print(f"   💱 {len(taux)-1} taux de change charges "
-              f"({', '.join(sorted(k for k in taux if k != 'EUR'))})")
-    return taux
+def _fmt(v, suffixe=""):
+    return "N/A" if v is None else f"{v}{suffixe}"
 
 
-def _mcap_en_mrd_eur(mc, devise):
-    """Capitalisation en milliards d'euros, ou None si le taux manque.
-
-    None, jamais un repli sur 1.0 : une devise non convertie qui passe pour de
-    l'euro est precisement le defaut corrige ici.
-    """
-    if mc is None:
-        return None
-    cle = (devise or "USD").strip()
-    # GBp / GBX : cotation en pence, cas particulier a traiter avant le .upper()
-    if cle in ("GBp", "GBX", "GBPp"):
-        taux = EUR_RATES.get("GBP_PENCE")
-    else:
-        taux = EUR_RATES.get(cle.upper())
-    if not taux:
-        return None
-    return (float(mc) / taux) / 1e9
-
-# ── Utilitaires ──────────────────────────────────────────────
-def _safe_float(value):
-    if value is None: return None
-    try:
-        f = float(value)
-    except (TypeError, ValueError):
-        return None
-    return f if math.isfinite(f) else None
-
-def _to_bool(value):
-    if value is None: return False
-    if isinstance(value, bool): return value
-    if isinstance(value, (int, float)): return value != 0
-    return str(value).strip().lower() in {"1","true","yes","y"}
-
-def _throttle():
-    global _last_call_time
-    with _throttle_lock:
-        now = time.monotonic()
-        wait = THROTTLE_DELAY - (now - _last_call_time)
-        if wait > 0: time.sleep(wait)
-        _last_call_time = time.monotonic()
-
-def _record_skip(reason):
-    with _skip_lock:
-        _skip_reasons[reason] = _skip_reasons.get(reason, 0) + 1
-
-def _is_valid_history(hist):
-    if hist is None or getattr(hist, "empty", True): return False
-    if "Close" not in hist.columns or "Volume" not in hist.columns: return False
-    close = pd.to_numeric(hist["Close"], errors="coerce").dropna()
-    volume = pd.to_numeric(hist["Volume"], errors="coerce").dropna()
-    return len(close) >= 130 and len(volume) >= 90 and not (close <= 0).all()
-
-def _get_fast_info_snapshot(stock):
-    try: fi = stock.fast_info
-    except Exception: return {}
-    if fi is None: return {}
-    out = {}
-    for src, dst in [("lastPrice","currentPrice"),("last_price","currentPrice"),
-                     ("marketCap","marketCap"),("market_cap","marketCap"),
-                     ("currency","currency"),("quoteType","quoteType")]:
-        try:
-            val = fi.get(src)
-            if val is not None: out[dst] = val
-        except Exception: continue
-    return out
-
-def _is_valid_info(info):
-    if not isinstance(info, dict) or not info: return False
-    has_id = bool(info.get("shortName") or info.get("longName") or info.get("symbol"))
-    price = _safe_float(info.get("currentPrice") or info.get("regularMarketPrice") or info.get("previousClose"))
-    return has_id or (price is not None and price > 0)
-
-def _fetch_info_with_retry(stock, ticker, max_retries=4):
-    last_info = {}
-    for attempt in range(max_retries):
-        try:
-            _throttle()
-            info = stock.info or {}
-            if isinstance(info, dict): last_info = info
-        except Exception: pass
-        fast = _get_fast_info_snapshot(stock)
-        merged = dict(last_info)
-        merged.update({k: v for k, v in fast.items() if v is not None})
-        merged.setdefault("symbol", ticker)
-        if _is_valid_info(merged): return merged
-        if attempt < max_retries - 1: time.sleep(0.8 * (2 ** attempt))
-    return None
-
-def _fetch_history_with_retry(stock, max_retries=4):
-    for attempt in range(max_retries):
-        try:
-            _throttle()
-            hist = stock.history(period="3y", auto_adjust=False)
-            if _is_valid_history(hist): return hist
-        except Exception: pass
-        if attempt < max_retries - 1: time.sleep(0.8 * (2 ** attempt))
-    return None
-
-def _is_rate_limit_error(exc):
-    msg = str(exc).lower()
-    return any(k in msg for k in ("429","rate limit","too many requests","rate limited"))
-
-# ── 7 CRITÈRES ───────────────────────────────────────────────
+# ── 7 CRITÈRES (libelle d'affichage en plus du resultat commun) ──────────────
 def c1_market_cap(info):
-    mc_b = _mcap_en_mrd_eur(_safe_float(info.get("marketCap")), info.get("currency"))
-    if mc_b is None:
-        return False, None, "N/A"
-    return mc_b > 10.0, round(mc_b, 1), f"MCap={round(mc_b,1)}Mrd€"
+    ok, v = sf.s1_market_cap(info)
+    return ok, v, _fmt(v if v is None else f"MCap={v}", "Mrd€")
 
 def c2_debt_to_equity(info):
-    de = _safe_float(info.get("debtToEquity"))
-    if de is None: return False, None, "N/A"
-    return de < 100.0, round(de, 1), f"D/E={round(de,1)}%"
+    ok, v = sf.s2_debt_equity(info)
+    return ok, v, _fmt(v if v is None else f"D/E={v}", "%")
 
-def c3_beta(info, hist):
-    beta = _safe_float(info.get("beta"))
-    if beta is None: return False, None, "N/A"
-    return 0 < beta < 0.8, round(beta, 2), f"Beta={round(beta,2)}"
+def c3_beta(info, hist=None):
+    ok, v = sf.s3_beta(info)
+    return ok, v, _fmt(v if v is None else f"Beta={v}")
 
 def c4_dividend_yield(info):
-    dy_pct = _pct_dividend_yield(info)
-    if dy_pct is None: return False, None, "N/A"
-    return dy_pct > 0, dy_pct, f"Div={dy_pct}%"
+    ok, v = sf.s4_dividend(info)
+    return ok, v, _fmt(v if v is None else f"Div={v}", "%")
 
-def c5_fcf_margin(info):
-    fcf = _safe_float(info.get("freeCashflow"))
-    rev = _safe_float(info.get("totalRevenue"))
-    if fcf is None or rev is None or rev == 0:
-        ocf = _safe_float(info.get("operatingCashflow"))
-        capex = _safe_float(info.get("capitalExpenditures"))
-        if ocf is not None and capex is not None and rev and rev > 0:
-            fcf = ocf - abs(capex)
-        else:
-            return False, None, "N/A"
-    margin = (fcf / rev) * 100
-    return margin > 5.0, round(margin, 1), f"FCFmarge={round(margin,1)}%"
+def c5_fcf_margin(info, etats=None):
+    ok, v = sf.s5_fcf_margin(info, etats)
+    return ok, v, _fmt(v if v is None else f"FCFmarge={v}", "%")
 
-def c6_fcf_growth_5y(info, ticker=None):
-    growth = _safe_float(info.get("earningsQuarterlyGrowth")) or _safe_float(info.get("earningsGrowth"))
-    fcf = _safe_float(info.get("freeCashflow"))
-    if fcf is None:
-        ocf = _safe_float(info.get("operatingCashflow"))
-        capex = _safe_float(info.get("capitalExpenditures"))
-        if ocf is not None and capex is not None:
-            fcf = ocf - abs(capex)
-    if fcf is None: return False, None, "N/A"
-    if growth is not None:
-        g_pct = _pct_croissance(growth, ticker, "C6 earningsGrowth")
-        return fcf > 0 and g_pct > 0, round(g_pct, 1), f"FCF+EG={round(g_pct,1)}%"
-    rev_g = _safe_float(info.get("revenueGrowth"))
-    if rev_g is not None:
-        g_pct = _pct_croissance(rev_g, ticker, "C6 revenueGrowth")
-        return fcf > 0 and g_pct > 0, round(g_pct, 1), f"FCF+RG={round(g_pct,1)}%"
-    return fcf > 0, None, f"FCF={'pos' if fcf > 0 else 'neg'}"
+def c6_fcf_growth_5y(info, ticker=None, etats=None):
+    ok, v = sf.s6_fcf_growth(info, ticker, etats)
+    return ok, v, _fmt(v if v is None else f"FCF compose={v}", "%/an")
 
-def c7_revenue_eps_growth_5y(info, ticker=None):
-    rev_g = _safe_float(info.get("revenueGrowth"))
-    eps_g = _safe_float(info.get("earningsGrowth"))
-    if rev_g is None and eps_g is None: return False, None, "N/A"
-    rev_g_pct = _pct_croissance(rev_g, ticker, "C7 revenueGrowth") if rev_g is not None else None
-    eps_g_pct = _pct_croissance(eps_g, ticker, "C7 earningsGrowth") if eps_g is not None else None
-    values = [v for v in [rev_g_pct, eps_g_pct] if v is not None]
-    avg_pct = sum(values) / len(values)
-    if rev_g_pct is not None and eps_g_pct is not None:
-        passed = rev_g_pct > 3.0 and eps_g_pct > 3.0
-        detail = f"RevG={round(rev_g_pct,1)}% EpsG={round(eps_g_pct,1)}%"
-    else:
-        passed = avg_pct > 3.0
-        detail = f"AvgG={round(avg_pct,1)}%"
-    return passed, round(avg_pct, 1), detail
+def c7_revenue_eps_growth_5y(info, ticker=None, etats=None):
+    ok, v = sf.s7_rev_eps_growth(info, ticker, etats)
+    t_ca, t_bpa = sf.s7_detail(etats)
+    detail = "N/A" if v is None else (f"CA={t_ca:.1f}%/an " if t_ca is not None else "CA=n.c. ") + \
+        (f"BPA={t_bpa:.1f}%/an" if t_bpa is not None else "BPA=n.c.")
+    return ok, v, detail
 
 # ── FICHIERS ─────────────────────────────────────────────────
 SRC_DIR = Path(__file__).parent
@@ -354,22 +106,23 @@ def load_symbols(path=POPULAR_FILE):
 # ── ANALYSE ──────────────────────────────────────────────────
 def analyze(ticker):
     stock = yf.Ticker(ticker)
-    info = _fetch_info_with_retry(stock, ticker)
+    info = sf.fetch_info(stock, ticker)
     if info is None:
         _record_skip("Pas de données (yfinance)"); return None
     name = info.get("shortName") or info.get("longName") or info.get("symbol")
     price_p = _safe_float(info.get("currentPrice") or info.get("regularMarketPrice") or info.get("previousClose"))
     if not name and (price_p is None or price_p <= 0):
         _record_skip("Ticker invalide"); return None
-    hist = _fetch_history_with_retry(stock)
+    hist = sf.fetch_hist(stock)
+    etats = sf.etats_annuels(*sf.fetch_statements(stock))
 
     r1 = c1_market_cap(info)
     r2 = c2_debt_to_equity(info)
     r3 = c3_beta(info, hist)
     r4 = c4_dividend_yield(info)
-    r5 = c5_fcf_margin(info)
-    r6 = c6_fcf_growth_5y(info, ticker)
-    r7 = c7_revenue_eps_growth_5y(info, ticker)
+    r5 = c5_fcf_margin(info, etats)
+    r6 = c6_fcf_growth_5y(info, ticker, etats)
+    r7 = c7_revenue_eps_growth_5y(info, ticker, etats)
     score = sum(1 for r in [r1,r2,r3,r4,r5,r6,r7] if r[0])
 
     price = _safe_float(info.get("currentPrice") or info.get("regularMarketPrice") or info.get("previousClose"))
@@ -504,9 +257,8 @@ if __name__ == "__main__":
     parser.add_argument("--eur-usd",    type=float, default=1.08)
     args = parser.parse_args()
 
-    EUR_USD_RATE = args.eur_usd
-    charger_taux_eur(verbose=not args.quiet)
-    THROTTLE_DELAY = max(0.05, args.throttle)
+    sf.charger_taux_eur(verbose=not args.quiet, eur_usd_repli=args.eur_usd)
+    THROTTLE_DELAY = sf.regler_debit(args.throttle)
     USE_MARKET_DB = (not args.no_db) and MARKET_DB_AVAILABLE
 
     sym_file = Path(args.symbols_file) if args.symbols_file else POPULAR_FILE
@@ -520,7 +272,7 @@ if __name__ == "__main__":
         symbols = rng.sample(symbols, min(max(1,args.random), len(symbols)))
         print(f"🎲 Sélection aléatoire: {len(symbols)} symboles")
 
-    print(f"📋 {len(symbols)} symboles | ⏱️ Throttle={THROTTLE_DELAY}s | 💱 EUR/USD={EUR_RATES.get('USD', float('nan')):.4f} ({len(EUR_RATES)-1} devises)")
+    print(f"📋 {len(symbols)} symboles | ⏱️ Throttle={THROTTLE_DELAY}s | 💱 EUR/USD={sf.EUR_RATES.get('USD', float('nan')):.4f} ({len(sf.EUR_RATES)-1} devises)")
 
     df = run_scan(symbols, max_workers=args.workers, min_score=args.min_score,
                   top_n=args.top, verbose=not args.quiet)

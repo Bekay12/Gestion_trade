@@ -21,6 +21,7 @@ break.
 | `charts.py` | Unified price/volume/signal matplotlib charts | none |
 | `finviz_screeners.py` | **Market-wide** Finviz presets (`PRESETS`, `run_preset`) — 1 Finviz req, discovers tickers across the whole US market | Finviz |
 | `store_screeners.py` | **Store-only** views (`SCREENERS`: combined, golden_cross) — 0 yfinance req, local catalogue only | DuckDB |
+| `scan_fondamentaux.py` | Shared code of the standalone fundamental scanners (`Combined_scan`, `Sichere_Unternehmen_scan`, `Big_Growth_scan`, `AI_Implement/news_monitor_combined`): one yfinance throttle/retry layer, FX to EUR, annual statements, criteria G1-G5 / S1-S7, profile. Fix a criterion here, never in a script | yfinance |
 
 ## Screener design (don't collapse the two)
 

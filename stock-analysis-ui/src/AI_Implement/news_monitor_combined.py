@@ -28,8 +28,13 @@ from zoneinfo import ZoneInfo
 import feedparser, requests
 import yfinance as yf
 import pandas as pd
+import sys
 import warnings
 warnings.filterwarnings("ignore")
+
+# src/ sur le chemin : ce script vit dans AI_Implement/ mais partage core/.
+sys.path.insert(0, str(Path(__file__).resolve().parent.parent))
+from core import scan_fondamentaux as sf  # noqa: E402
 
 # ── Configuration ────────────────────────────────────────────
 OLLAMA_URL   = "http://localhost:11434/api/generate"
@@ -246,114 +251,30 @@ Limite: max 10 opportunités. JSON uniquement."""
     ]
 
 # ═══════════════════════════════════════════════════════════════
-# 🚀 BIG GROWTH — 5 critères
+# 12 CRITÈRES : code commun des scanners (core/scan_fondamentaux.py)
 # ═══════════════════════════════════════════════════════════════
+# Cette copie locale avait manque tous les correctifs des scanners : devise
+# limitee a l'USD (S1), seance en cours NaN (G4), dividende x100 (S4),
+# FCF et BPA trimestriels (S5-S7). Les criteres viennent desormais du module
+# commun ; seul le formatage texte du rapport reste ici.
 
-def g1_revenue_growth(info):
-    v = _f(info.get("revenueGrowth"))
-    if v is None: return False, "N/A"
-    return v > 0.20, f"{v*100:.1f}%"
+def _txt(res, fmt):
+    ok, v = res
+    return ok, "N/A" if v is None else fmt.format(v)
 
-def g2_gross_margin(info):
-    v = _f(info.get("grossMargins"))
-    if v is None: return False, "N/A"
-    return v > 0.30, f"{v*100:.1f}%"
-
-def g3_undervaluation(info):
-    hits = 0
-    pe  = _f(info.get("trailingPE"))
-    peg = _f(info.get("pegRatio"))
-    h52 = _f(info.get("fiftyTwoWeekHigh"))
-    px  = _f(info.get("currentPrice") or info.get("regularMarketPrice"))
-    if pe  and 0 < pe  < 25:  hits += 1
-    if peg and 0 < peg < 1.5: hits += 1
-    if h52 and px and h52>0 and (px/h52)<0.75: hits += 1
-    return hits >= 2, f"{hits}/3"
-
-def g4_momentum(hist):
-    if hist is None or len(hist) < 130: return False, "N/A"
-    close = hist["Close"]
-    cur, p3m, p6m = float(close.iloc[-1]), float(close.iloc[-63]), float(close.iloc[-126])
-    if p3m==0 or p6m==0: return False, "N/A"
-    r3 = (cur-p3m)/p3m; r6 = (cur-p6m)/p6m
-    sma50 = float(close.rolling(50).mean().iloc[-1])
-    return (0.08<r3<0.60) and (cur>sma50) and (r6<1.50), f"{r3*100:.1f}%"
-
-def g5_volume(hist):
-    if hist is None or len(hist) < 90: return False, "N/A"
-    v30 = float(hist["Volume"].iloc[-30:].mean())
-    v90 = float(hist["Volume"].iloc[-90:].mean())
-    if v90==0: return False, "N/A"
-    ratio = v30/v90
-    return ratio > 1.20, f"{ratio:.2f}x"
-
-# ═══════════════════════════════════════════════════════════════
-# 🛡️ SICHERE UNTERNEHMEN — 7 critères
-# ═══════════════════════════════════════════════════════════════
-
-def s1_market_cap(info):
-    mc = _f(info.get("marketCap"))
-    if mc is None: return False, "N/A"
-    cur = (info.get("currency") or "USD").upper()
-    mc_b = (mc/EUR_USD_RATE if cur=="USD" else mc)/1e9
-    return mc_b > 10.0, f"{mc_b:.1f}Mrd€"
-
-def s2_debt_equity(info):
-    de = _f(info.get("debtToEquity"))
-    if de is None: return False, "N/A"
-    return de < 100.0, f"{de:.1f}%"
-
-def s3_beta(info):
-    beta = _f(info.get("beta"))
-    if beta is None: return False, "N/A"
-    return 0 < beta < 0.8, f"{beta:.2f}"
-
-def s4_dividend(info):
-    dy = _f(info.get("dividendYield")) or _f(info.get("trailingAnnualDividendYield"))
-    if dy is None: return False, "N/A"
-    return dy*100 > 0, f"{dy*100:.2f}%"
-
-def s5_fcf_margin(info):
-    fcf = _f(info.get("freeCashflow"))
-    rev = _f(info.get("totalRevenue"))
-    if fcf is None or rev is None or rev==0:
-        ocf   = _f(info.get("operatingCashflow"))
-        capex = _f(info.get("capitalExpenditures"))
-        if ocf is not None and capex is not None and rev and rev>0:
-            fcf = ocf - abs(capex)
-        else: return False, "N/A"
-    m = (fcf/rev)*100
-    return m > 5.0, f"{m:.1f}%"
-
-def s6_fcf_growth(info):
-    g   = _f(info.get("earningsQuarterlyGrowth")) or _f(info.get("earningsGrowth"))
-    fcf = _f(info.get("freeCashflow"))
-    if fcf is None:
-        ocf   = _f(info.get("operatingCashflow"))
-        capex = _f(info.get("capitalExpenditures"))
-        if ocf is not None and capex is not None: fcf = ocf-abs(capex)
-    if fcf is None: return False, "N/A"
-    if g is not None: return fcf>0 and g*100>0, f"{g*100:.1f}%"
-    rg = _f(info.get("revenueGrowth"))
-    if rg is not None: return fcf>0 and rg>0, f"{rg*100:.1f}%"
-    return fcf>0, "FCF+" if fcf>0 else "FCF-"
-
-def s7_rev_eps_growth(info):
-    rg = _f(info.get("revenueGrowth"))
-    eg = _f(info.get("earningsGrowth"))
-    if rg is None and eg is None: return False, "N/A"
-    vals = [g for g in [rg,eg] if g is not None]
-    avg  = sum(vals)/len(vals)*100
-    if rg is not None and eg is not None:
-        return rg*100>3.0 and eg*100>3.0, f"{avg:.1f}%"
-    return avg>3.0, f"{avg:.1f}%"
-
-def get_profile(gs, ss):
-    if gs>=3 and ss>=5: return "💎 Dual Champion"
-    if gs>=4 and ss< 3: return "🚀 Pure Growth"
-    if ss>=5 and gs< 3: return "🛡️  Pure Safe"
-    if gs>=3 and ss>=3: return "⚖️  Balanced"
-    return "⚪ Below"
+def g1_revenue_growth(info): return _txt(sf.g1_revenue_growth(info), "{:.1f}%")
+def g2_gross_margin(info):   return _txt(sf.g2_gross_margin(info), "{:.1f}%")
+def g3_undervaluation(info): return _txt(sf.g3_undervaluation(info), "{}/3")
+def g4_momentum(hist):       return _txt(sf.g4_momentum(hist), "{:.1f}%")
+def g5_volume(hist):         return _txt(sf.g5_volume(hist), "{:.2f}x")
+def s1_market_cap(info):     return _txt(sf.s1_market_cap(info), "{:.1f}Mrd€")
+def s2_debt_equity(info):    return _txt(sf.s2_debt_equity(info), "{:.1f}%")
+def s3_beta(info):           return _txt(sf.s3_beta(info), "{:.2f}")
+def s4_dividend(info):       return _txt(sf.s4_dividend(info), "{:.2f}%")
+def s5_fcf_margin(info, etats=None):            return _txt(sf.s5_fcf_margin(info, etats), "{:.1f}%")
+def s6_fcf_growth(info, ticker=None, etats=None):     return _txt(sf.s6_fcf_growth(info, ticker, etats), "{:.1f}%/an")
+def s7_rev_eps_growth(info, ticker=None, etats=None): return _txt(sf.s7_rev_eps_growth(info, ticker, etats), "{:.1f}%/an")
+get_profile = sf.get_profile
 
 # ═══════════════════════════════════════════════════════════════
 # ANALYSE FONDAMENTALE COMBINÉE (12 critères)
@@ -367,6 +288,9 @@ def run_fundamental_combined(ticker):
         info  = stock.info
         if not info or not (info.get("regularMarketPrice") or info.get("currentPrice")):
             return None
+        if len(sf.EUR_RATES) == 1:   # taux de change charges une fois, en un appel groupe
+            sf.charger_taux_eur(verbose=False, eur_usd_repli=EUR_USD_RATE)
+        etats = sf.etats_annuels(*sf.fetch_statements(stock))
 
         # Big Growth
         rg1 = g1_revenue_growth(info)
@@ -381,13 +305,13 @@ def run_fundamental_combined(ticker):
         rs2 = s2_debt_equity(info)
         rs3 = s3_beta(info)
         rs4 = s4_dividend(info)
-        rs5 = s5_fcf_margin(info)
-        rs6 = s6_fcf_growth(info)
-        rs7 = s7_rev_eps_growth(info)
+        rs5 = s5_fcf_margin(info, etats)
+        rs6 = s6_fcf_growth(info, ticker, etats)
+        rs7 = s7_rev_eps_growth(info, ticker, etats)
         ss  = sum(1 for r in [rs1,rs2,rs3,rs4,rs5,rs6,rs7] if r[0])
 
         total   = gs + ss
-        profile = get_profile(gs, ss)
+        profile = get_profile(gs, ss, sf.est_etoile(rg3[0], rg4[0], rs4[0]))
         price   = _f(info.get("currentPrice") or info.get("regularMarketPrice"))
         mc      = _f(info.get("marketCap"))
 
@@ -722,7 +646,7 @@ def run_once(run_fundamentals=True):
     consolidate_ticker_summary(portfolio_alerts, opportunities, fundamentals, run_time)
 
     save_seen_ids(seen_ids)
-    nb_dual = len([f for f in fundamentals if f and f.get("profil")=="💎 Dual Champion"])
+    nb_dual = len([f for f in fundamentals if f and sf.est_dual(f.get("profil"))])
     print(f"\n✅ {len(portfolio_alerts)} alerte(s) | "
           f"{len(opportunities)} opportunité(s) | "
           f"{len(fundamentals)} analysés | "

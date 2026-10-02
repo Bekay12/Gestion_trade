@@ -191,10 +191,18 @@ deux avant l'examen. Un critère qui sépare deux cas et un critère qui en
 
 ### 3.3 Les filtres avant et après
 
+**Mise à jour du 28.09.2026 (cas KOD).** En pré-marché, Finviz applique `Price` et
+`Market Cap.` au cours déjà gonflé par le gap. KOD (Kodiak Sciences, Phase 3 positive,
+titre de la revue Germain du jour) clôturait 32,35 $ la veille, cotait ~61 $ au scan
+et pesait 2,03 Md$ avant le gap: exclu deux fois. Finviz filtre désormais large
+(capitalisation < 10 Md$, prix libre) et `gap_scan.perimetre()` applique les plafonds
+à la clôture de la veille et à la capitalisation avant gap. Tests:
+`scripts/Test/test_perimetre.py`.
+
 | Critère | Avant | Après | Motif |
 |---|---|---|---|
-| Capitalisation | Sous 2 Md$ | Sous 2 Md$ | Inchangé : contrôle du risque |
-| Prix | Sous 20 $ | Sous 50 $ | MAZE cotait 22,39 avant son gap |
+| Capitalisation | Sous 2 Md$ | Sous 2 Md$ **avant gap** (jusqu'à 10 Md$ gardés, marqués hors périmètre) | Contrôle du risque; depuis le 28.09.2026 jugé avant le gap (KOD) |
+| Prix | Sous 20 $ | Sous 50 $ **à la clôture de la veille** | MAZE cotait 22,39 avant son gap; KOD 32,35 la veille, 61 $ au scan |
 | Volume du jour | Absent | Au-dessus de 500 K | Décide de l'exécution |
 | Volume moyen | Au-dessus de 500 K | Au-dessus de 100 K | Devient un plancher structurel |
 | Volume relatif | Au-dessus de 2 | Au-dessus de 2 | Inchangé pour les gaps |
@@ -573,6 +581,11 @@ presque rien.
 `FADE` a 95 % est la classe la plus fiable du dispositif, et sa notation n'est
 pas circulaire : elle verifie si le plus bas de la seance est revenu sous
 l'ouverture, critere independant des alertes.
+
+**Corrige le 28.09.2026.** Ce critere etait trop large : un repli de 0,5 % sous
+l'ouverture n'est pas un comblement. Juge sur la cloture de la veille, le meme
+univers donne **36 sur 63, soit 57 %** (`backtests/2026-09-28_regle-fade-veille.json`).
+Le 95 % ci-dessus ne doit plus etre cite.
 
 ### 12.2 Le resultat qui a renverse une conclusion
 

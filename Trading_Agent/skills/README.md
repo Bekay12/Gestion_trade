@@ -1,4 +1,4 @@
-# skills/ — copie d'archive
+# skills/ : copie d'archive
 
 Le skill vit dans `~/.claude/skills/`, hors du dépôt : c'est là que Claude Code
 le charge. Cette copie existe pour qu'un `git pull` sur une autre machine

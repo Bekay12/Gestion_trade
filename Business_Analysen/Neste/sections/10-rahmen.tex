@@ -1,0 +1,86 @@
+% Unnummeriert, damit die sieben Teile des Musters die Nummern 1 bis 7 tragen.
+\section*{Rahmen und Methode}
+\addcontentsline{toc}{section}{Rahmen und Methode}
+\markright{Rahmen und Methode}
+\label{sec:methode}
+
+\subsection*{Gegenstand und Frage}
+
+Neste Oyj, Espoo, stellt erneuerbaren Diesel und nachhaltigen Flugkraftstoff (Segment
+Renewable Products, RP) her und betreibt die Raffinerie Porvoo (Oil Products, OP) sowie ein
+Tankstellennetz (Marketing \& Services). Der Bericht betrachtet die Gesch\"aftsjahre 2017
+bis 2025 sowie das erste Halbjahr 2026 und entscheidet \"uber die Aktie zum Kurs von
+\je{\Kurs}{EUR} (\KursDatum).
+
+Die Frage wird ausdr\"ucklich \emph{nach Horizont getrennt} gestellt. Neste steht 2026 an
+einer Stelle, an der drei Zeitskalen verschiedene Antworten geben k\"onnen: Die Marge des
+ersten Halbjahrs 2026 ist die h\"ochste der eigenen Reihe (kurzer Horizont), der Ausbau in
+Rotterdam soll 2027 in Betrieb gehen und die Investitionen danach senken (mittlerer
+Horizont), und \"uber f\"unf bis f\"unfzehn Jahre entscheidet, was ein Eigent\"umer aus dem
+Gesch\"aft tats\"achlich entnehmen kann (langer Horizont). Teil~\ref{sec:votum} gibt deshalb
+ein Votum je Horizont.
+
+\subsection*{Quellen}
+
+Prim\"arquellen sind die Gesch\"aftsberichte 2019 bis 2025, der Financial Statements
+Release 2018 (f\"ur das Jahr 2017) und der Halbjahresfinanzbericht 2026, jeweils in der
+englischen Originalfassung und lokal abgelegt. Jede Seitenangabe bezeichnet die
+\emph{gedruckte} Seite. In den Gesch\"aftsberichten stimmt sie mit der PDF-Seite
+\"uberein, im Halbjahresbericht liegt sie eine Seite darunter, weil das Deckblatt
+ungez\"ahlt ist. Sekund\"arquellen sind als solche gekennzeichnet: Kurse (Yahoo Finance),
+Analystenkonsens und Vergleichsmultiples (stockanalysis.com), Meldungen der
+F\"uhrungskr\"afte nach Art.~19 MAR (neste.com), Rating (neste.com) und die H\"urde (MSCI).
+
+\subsection*{Wie die Zahlen in dieses Dokument kommen}
+
+Die Berichte werden seitenweise zerlegt, die gedruckte Seitenzahl wird aus der Fu{\ss}zeile
+gelesen und \"uber die Folge der Seiten gepr\"uft. Die Werte liest Programmcode aus dem
+Textlayer der Kennzahlenseiten und Kapitalflussrechnungen, bei der Kapitalflussrechnung nach
+der Spaltenstellung unter dem Jahreskopf, weil dort eine Notenspalte und eine Randspalte
+Zahlen tragen, die keine Werte sind. Danach pr\"uft \texttt{scripts/pruefe\_seiten.py} jeden
+gespeicherten Prim\"arwert gegen den Text der Seite, die er als Beleg nennt:
+\GeprueftAnzahl{} von \GeprueftGesamt{} Werten sind so belegt; \ExternAnzahl{}
+Sekund\"arwerte stehen getrennt und tragen keine Seite.
+
+Diese Pr\"ufung erkennt eine falsch zugeordnete Zahl nicht, wenn die Zahl auf der Seite
+steht. Dagegen steht die Kette \"uber die Berichte: Jede Kennzahlenseite druckt drei Jahre,
+jede Kapitalflussrechnung zwei, und derselbe Wert muss in jedem Bericht gleich stehen. Die
+Kette hat beim ersten Lauf drei Br\"uche gemeldet, alle aus einer Ursache: Die
+Nachbarzelle \enquote{- of weighted average number of shares} war in den Verschuldungsgrad
+und den ROACE geraten.
+Die verbleibenden Abweichungen sind Neudarstellungen des Unternehmens und in
+Abschnitt~\ref{sec:luecken} einzeln genannt.
+
+\subsection*{Die drei Gr\"o{\ss}en, auf denen der Bericht ruht}
+
+\textbf{Freier Zufluss.} Operativer Mittelzufluss, vermindert um Investitionen in Sach- und
+immaterielle Anlagen und um die Tilgung von Leasingverbindlichkeiten. Neste weist als
+\enquote{Free cash flow} den Mittelfluss vor Finanzierungst\"atigkeit aus
+(\Mio{\FreierCfNeste}{EUR} f\"ur 2025\Q{GBXXV}{80}); der Bericht rechnet mit der eigenen
+Gr\"o{\ss}e, weil nur sie den Leasingabfluss enth\"alt, den ein Eigent\"umer ebenso tragen
+muss wie eine Investition.
+
+\textbf{H\"urde.} \Pz{\Huerde} p.\,a.\ Das ist die Rendite des MSCI World (Gross Returns,
+USD) \"uber zehn Jahre nach dem Factsheet zum 31.08.2026\QW{MSCI World Index, Index
+Factsheet 31.08.2026}{quelle:msci}{19.09.2026}. Eine Anlage in Neste muss diese Rendite
+schlagen, sonst ist der Indexfonds die bessere Wahl. Als Sensitivit\"at dient die Rendite
+seit Auflage des Index (1987) von \Pz{\HuerdeLang}. Dieselben beiden H\"urden tragen die
+Berichte zu GEA und den \enquote{Dual Champions}; die Schwellenkurse sind damit
+berichts\"ubergreifend vergleichbar.
+
+\textbf{Endwert.} Der Buchwert des Eigenkapitals zum 30.06.2026, \je{\EkJeAktieHj}{EUR} je
+Aktie\Q{HJ}{3}, zusammen \Mio{\Buchwert}{EUR} auf \AktienMio{} Mio.\ Aktien.
+
+\annahme{Alle Rechnungen sind Vorsteuerrechnungen auf Ebene des Unternehmens. Der Zufluss
+ist der Zufluss an das Unternehmen, nicht der nach Quellen- und Abgeltungsteuer beim
+Anleger verbleibende Betrag. Die H\"urde ist eine Bruttoindexrendite; der Vergleich bleibt
+damit gleichartig.}
+
+\annahme{Der freie Zufluss wird in jedem Szenario \emph{konstant} fortgeschrieben. Das ist
+keine Prognose, sondern der Verzicht auf eine. Den fehlenden Wachstumsterm holt der Bericht
+in Teil~\ref{sec:votum} als Umkehrung zur\"uck: Er rechnet aus, welches Wachstum der heutige
+Kurs voraussetzt, und h\"alt es gegen die eigene Reihe.}
+
+\annahme{Der W\"ahrungsunterschied zwischen H\"urde (USD) und Zufluss (EUR) bleibt
+unber\"ucksichtigt. Eine W\"ahrungsbereinigung der H\"urde h\"atte eine eigene, nicht
+belegte Annahme zur Kursentwicklung verlangt.}

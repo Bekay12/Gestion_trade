@@ -1,0 +1,100 @@
+{
+ "KonsensAnalysten": 19,
+ "KonsensZiel": 34.26,
+ "KonsensHoch": 41.5,
+ "KonsensTief": 18.4,
+ "KonsensKurs": 34.01,
+ "KonsensAufschlag": 0.74,
+ "KonsensEpsXXVI": 3.35,
+ "KonsensEpsXXVII": 2.6,
+ "KonsensUmsatzXXVI": 21.93,
+ "KonsensUmsatzXXVII": 22.53,
+ "DdVerkaeufe": 1,
+ "DdKaeufe": 0,
+ "DdZuteilungen": 7,
+ "DdElmslieStueck": 2000,
+ "DdElmsliePreis": 27.7,
+ "DdMalinenStueck": 30449,
+ "PeerNesteKgv": 17.21,
+ "PeerNesteKgvFwd": 11.28,
+ "PeerNesteEv": 9.89,
+ "PeerNesteKbv": 3.09,
+ "PeerVloKgv": 16.18,
+ "PeerVloKgvFwd": 7.62,
+ "PeerVloEv": 8.59,
+ "PeerVloKbv": 4.46,
+ "PeerDarKgv": 16.54,
+ "PeerDarKgvFwd": 8.88,
+ "PeerDarEv": 12.14,
+ "PeerDarKbv": 1.84,
+ "DgdQzwei": 2.23,
+ "DgdQeins": 1.11,
+ "ZielGoldman": 40,
+ "ZielBerenberg": 40,
+ "ZielNordea": 39,
+ "KursReaktionVor": 33.59,
+ "KursReaktionNach": 31.43,
+ "SafQuoteZiel": 2,
+ "SafQuoteIst": 2.8,
+ "SafQuoteZielDreissig": 6,
+ "dd": [
+  [
+   "31.10.2025",
+   "Heikki Malinen, President and CEO",
+   "Zuteilung (Vergütung)",
+   30449,
+   null
+  ],
+  [
+   "17.03.2026",
+   "Nick Elmslie, Aufsichtsrat",
+   "Verkauf",
+   2000,
+   27.7
+  ],
+  [
+   "30.04.2026",
+   "Pasi Laine, Vorsitzender des Board",
+   "Zuteilung (Vergütung)",
+   2597,
+   null
+  ],
+  [
+   "30.04.2026",
+   "John Abbott, stv. Vorsitzender",
+   "Zuteilung (Vergütung)",
+   1305,
+   null
+  ],
+  [
+   "30.04.2026",
+   "Anna Hyvönen, Board",
+   "Zuteilung (Vergütung)",
+   1105,
+   null
+  ],
+  [
+   "30.04.2026",
+   "Just Jansz, Board",
+   "Zuteilung (Vergütung)",
+   1105,
+   null
+  ],
+  [
+   "30.04.2026",
+   "Sari Mannonen, Board",
+   "Zuteilung (Vergütung)",
+   1105,
+   null
+  ],
+  [
+   "30.04.2026",
+   "Eeva Sipilä, CFO",
+   "Zuteilung (Vergütung)",
+   7207,
+   null
+  ]
+ ],
+ "ShortSchwelle": 0.5,
+ "Isin": "FI0009013296"
+}

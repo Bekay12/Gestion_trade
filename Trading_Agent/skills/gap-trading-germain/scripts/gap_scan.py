@@ -63,14 +63,88 @@ logger = logging.getLogger(__name__)
 #                   rendait la classe CONTINUATION inatteignable. Le seuil de
 #                   10 % reste actif dans gap_qualifier.SHORT_INTEREST_SQUEEZE,
 #                   ou il discrimine au lieu d'exclure.
+#   Price et Market Cap. (28.09.2026) ne sont plus jugés côté Finviz sur le cours
+#                   DU GAP. En pré-marché Finviz applique « Price » et « Market Cap. »
+#                   au cours déjà gonflé par le gap: KOD (Phase 3 positive, clôture
+#                   veille 32,35, ouverture 61,28, clôture +46,7 % sur l'ouverture)
+#                   était exclu deux fois, prix > 50 $ et capitalisation > 2 Md$,
+#                   alors qu'il était le titre de la revue Germain du jour. Finviz
+#                   filtre désormais large (< 10 Md$, prix libre); perimetre()
+#                   recalcule la clôture de la veille et la capitalisation avant gap
+#                   et applique les plafonds sur ces valeurs-là.
 FILTRES_GERMAIN = {
-    "Market Cap.":     "-Small (under $2bln)",
-    "Price":           "Under $50",
+    "Market Cap.":     "-Mid (under $10bln)",
     "Current Volume":  "Over 500K",
     "Average Volume":  "Over 100K",
     "Relative Volume": "Over 2",
 }
 GAP_PAR_SEUIL = {5: "Up 5%", 10: "Up 10%", 15: "Up 15%", 20: "Up 20%"}
+
+PRIX_MAX_VEILLE = 50.0          # plafond de prix, appliqué à la clôture de la veille
+CAP_SMALL_MAX = 2e9             # périmètre Germain (P7): nano à small cap
+CAP_MAX = 10e9                  # au-delà, même avec catalyseur: hors du champ du skill
+
+
+def aujourdhui_ny():
+    """Date du jour a New York (EDT/EST sans dependance: l'ecart d'une heure n'importe pas)."""
+    return datetime.now(timezone(timedelta(hours=-4))).date()
+
+
+def reference_veille(date_derniere, clotures, ouvertures, jour=None):
+    """
+    --------------------------------------------------------------------------
+    Purpose:
+        Cloture de la veille et ouverture du jour selon que la seance du jour a
+        deja une barre journaliere (en seance, a la cloture) ou non (pre-marche).
+
+    Inputs:
+        date_derniere (date): date de la derniere barre journaliere
+        clotures, ouvertures (sequence): series de la barre journaliere
+        jour (date): date du jour a New York (defaut: aujourdhui_ny())
+
+    Outputs:
+        (cloture_veille, ouverture_du_jour): floats ou None
+    --------------------------------------------------------------------------
+    """
+    jour = jour or aujourdhui_ny()
+    if date_derniere >= jour:          # la seance du jour a sa barre
+        veille = float(clotures.iloc[-2]) if len(clotures) >= 2 else None
+        return veille, float(ouvertures.iloc[-1])
+    return float(clotures.iloc[-1]), None   # pre-marche: la derniere barre EST la veille
+
+
+def perimetre(lignes: list) -> list:
+    """
+    --------------------------------------------------------------------------
+    Purpose:
+        Applique les plafonds de prix et de capitalisation aux valeurs AVANT le
+        gap, reconstruites depuis la variation du jour: veille = prix / (1 + g).
+        Un titre de 2 à 10 Md$ avant gap est conservé mais marqué hors périmètre
+        Germain; un titre dont la variation est illisible est conservé et
+        marqué, jamais écarté sur une valeur qu'on ne connaît pas.
+
+    Inputs:
+        lignes (list[dict]): lignes Finviz (prix, change_pct, market_cap)
+
+    Outputs:
+        gardees (list[dict]): mêmes lignes, enrichies de prix_veille,
+            cap_avant_gap, hors_small_cap, avant_gap_inconnu
+    --------------------------------------------------------------------------
+    """
+    gardees = []
+    for l in lignes:
+        g = l.get("change_pct")
+        facteur = 1 + g / 100 if g is not None and g > -100 else None
+        prix_v = l["prix"] / facteur if facteur and l.get("prix") else None
+        cap_v = l["market_cap"] / facteur if facteur and l.get("market_cap") else None
+        if prix_v is not None and prix_v > PRIX_MAX_VEILLE:
+            continue
+        if cap_v is not None and cap_v > CAP_MAX:
+            continue
+        gardees.append({**l, "prix_veille": prix_v, "cap_avant_gap": cap_v,
+                        "hors_small_cap": cap_v is not None and cap_v > CAP_SMALL_MAX,
+                        "avant_gap_inconnu": prix_v is None})
+    return gardees
 
 
 def _fenetre_actuelle() -> str:
@@ -240,7 +314,7 @@ def scanner_finviz(min_gap: int, limit: int):
             "volume": _num(r.get("Volume")),
             "market_cap": _num(r.get("Market Cap")),
         })
-    return lignes
+    return perimetre(lignes)
 
 
 def enrichir(tickers: list, mode: str = "close") -> dict:
@@ -292,11 +366,19 @@ def enrichir(tickers: list, mode: str = "close") -> dict:
             # 24.09.2026). En pre-marche la derniere barre est celle de la
             # veille, donc c'est elle la reference; en seance c'est l'avant
             # derniere.
-            if len(cloture) >= 2:
-                mesures[t]["cloture_veille"] = float(cloture.iloc[-2])
+            #
+            # Corrige le 29.09.2026: le code prenait TOUJOURS l'avant-derniere barre,
+            # contrairement au commentaire. En pre-marche il lisait donc l'avant-veille
+            # et declenchait de fausses alertes (MSGY a +19,5 % annonce a -53,7 % "sous
+            # la veille", FFAI a +13,5 % annonce "gap efface"). La reference se decide
+            # desormais sur la DATE de la derniere barre, pas sur le mode.
+            ref, ouv = reference_veille(d.index[-1].date(), cloture, d["Open"])
+            if ref is not None:
+                mesures[t]["cloture_veille"] = ref
             # L'ouverture du jour, et non gap_pct, porte la condition "a ouvert
-            # en hausse": gap_pct vaut la variation courante de Finviz.
-            mesures[t]["ouverture"] = float(d["Open"].iloc[-1])
+            # en hausse": gap_pct vaut la variation courante de Finviz. Avant
+            # l'ouverture elle n'existe pas encore: None, jamais celle de la veille.
+            mesures[t]["ouverture"] = ouv
             mesures[t]["atr_pct"] = round(float(atr) / dernier * 100, 2) if dernier else None
             # Reference de volume: MEDIANE des 20 seances precedentes, pas la
             # moyenne. Mesure du 22.09.2026 sur VEEA: deux seances a 14 M juste
@@ -441,6 +523,14 @@ def main(argv=None) -> int:
 
     gaps = construire_gaps(lignes, mesures, args.mode, edgar)
     verdicts = [qualifier(g) for g in gaps]
+    par_ticker = {l["ticker"]: l for l in lignes}
+    for v in verdicts:
+        l = par_ticker.get(v.ticker, {})
+        if l.get("hors_small_cap"):
+            v.alertes.append(f"capitalisation avant gap {l['cap_avant_gap']/1e9:.1f} Md$: hors perimetre "
+                             "Germain (nano a small), mouvement moins violent, catalyseur a verifier")
+        if l.get("avant_gap_inconnu") and args.mode != "ticker":
+            v.inconnues.append("prix et capitalisation avant gap non calculables (variation illisible)")
 
     ordre = {"SQUEEZE": 0, "CONTINUATION": 1, "FADE": 2, "PUMP_RISK": 3, "INSUFFISANT": 4}
     verdicts.sort(key=lambda v: (ordre.get(v.classe, 9), -(v.comblement_attendu_pct or 0)))

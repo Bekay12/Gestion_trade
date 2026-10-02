@@ -1,0 +1,255 @@
+% ===================================================================
+% preamble.tex - Praeambel des Vollberichts GEA Group
+% Uebernommen aus Business_Analysen/Dual_Champions und auf einen
+% einzelnen Titel zurueckgebaut: keine Teile, keine Paartabellen.
+% ===================================================================
+\usepackage[T1]{fontenc}
+\usepackage[utf8]{inputenc}
+\usepackage{lmodern}
+\usepackage[ngerman]{babel}
+\usepackage{csquotes}
+% patch ohne "footnote": microtype kann seinen Fussnotenpatch nicht anlegen,
+% wenn footmisc (para) den Fussnotenapparat ersetzt.
+\usepackage[patch={item,toc,eqnum}]{microtype}
+\usepackage{xcolor}
+\usepackage{amsmath}
+\usepackage{amssymb}
+\usepackage{booktabs}
+\usepackage{longtable}
+\usepackage{array}
+\usepackage{tabularx}
+\usepackage{siunitx}
+\usepackage{graphicx}
+\usepackage{tikz}
+\usepackage{placeins}
+\usepackage{needspace}
+\usepackage{pgfplots}
+\usepackage[hidelinks]{hyperref}
+\usepackage{url}
+
+\areaset[current]{463.07pt}{636.6pt}
+
+% Schusterjungen und Hurenkinder verbieten (im deutschen Satz Fehler).
+\clubpenalty=10000
+\widowpenalty=10000
+\displaywidowpenalty=10000
+
+% Fussnotenapparat flach halten: alle Fussnoten einer Seite in einem
+% durchlaufenden Absatz. Das zweispaltige dblfnote laeuft mit pgfplots und
+% hyperref in eine Endlosschleife der Ausgaberoutine.
+\usepackage[para]{footmisc}
+
+\usepackage[automark]{scrlayer-scrpage}
+\pagestyle{scrheadings}
+\renewcommand{\sectionmark}[1]{\markright{\thesection\quad #1}}
+\clearpairofpagestyles
+\setkomafont{pagehead}{\normalfont\small}
+\ihead{\rightmark}
+\ohead{Neste}
+\KOMAoptions{headsepline=true}
+\cfoot*{\pagemark}
+
+\setcounter{tocdepth}{2}
+
+\pgfplotsset{compat=1.18}
+\usepgfplotslibrary{dateplot}
+\pgfplotsset{/pgf/number format/use comma, /pgf/number format/1000 sep={}}
+
+\definecolor{kursfarbe}{RGB}{25,55,120}
+\definecolor{auftragsfarbe}{RGB}{0,120,60}
+
+% --- Zahlenformat: deutsches Dezimalkomma ---------------------------
+\sisetup{
+  output-decimal-marker = {,},
+  group-separator       = {.},
+  group-minimum-digits  = 4,
+  % Ohne group-digits=integer gruppiert siunitx auch die Nachkommastellen:
+  % aus 43.4679 wurde im Satz "43,467.9".
+  group-digits          = integer,
+  detect-weight         = true,
+  detect-family         = true
+}
+
+% --- Zitierweise ------------------------------------------------------
+% \Q{Schluessel}{Seite}: Fussnote mit Kurztitel (Sprung ins Quellenverzeichnis)
+% und GEDRUCKTER Seite. \QW{Titel}{Schluessel}{Abrufdatum}: Webquelle; die
+% Adresse steht nur im Quellenverzeichnis, damit jede URL genau einmal vorkommt.
+\definecolor{quellenlink}{RGB}{20,60,120}
+\newcommand{\quellensprung}[2]{\hyperref[#1]{\textcolor{quellenlink}{#2}}}
+\newcommand{\kurzGBXXV}{Neste, Annual Report 2025}
+\newcommand{\kurzGBXXIV}{Neste, Annual Report 2024}
+\newcommand{\kurzGBXXIII}{Neste, Annual Report 2023}
+\newcommand{\kurzGBXXII}{Neste, Annual Report 2022}
+\newcommand{\kurzGBXXI}{Neste, Annual Report 2021}
+\newcommand{\kurzGBXX}{Neste, Annual Report 2020}
+\newcommand{\kurzGBXIX}{Neste, Annual Report 2019}
+\newcommand{\kurzFSRXVIII}{Neste, Financial Statements Release 2018}
+\newcommand{\kurzHJ}{Neste, Half-year financial report January--June 2026}
+\newcommand{\Q}[2]{\footnote{\quellensprung{quelle:#1}{\csname kurz#1\endcsname}, S.~#2.}}
+% \QL{Schluessel}{Dokument}{Seite}: Fussnote mit Marke; \QR{Schluessel}: dieselbe Fussnote
+% erneut referenziert (nur auf derselben gedruckten Seite, geprueft von
+% scripts/check_footnote_groups.py). \QI: Beleg im Text, fuer Tabellenzellen, in denen
+% Fussnoten in Gleitumgebungen verloren gehen.
+\newcommand{\QL}[3]{\footnote{\label{fn:#1}\quellensprung{quelle:#2}{\csname kurz#2\endcsname}, S.~#3.}}
+\newcommand{\QR}[1]{\textsuperscript{\ref{fn:#1}}}
+\newcommand{\tagGBXXV}{GB\,2025}\newcommand{\tagGBXXIV}{GB\,2024}\newcommand{\tagGBXXIII}{GB\,2023}
+\newcommand{\tagGBXXII}{GB\,2022}\newcommand{\tagGBXXI}{GB\,2021}\newcommand{\tagHJ}{HJ\,2026}
+\newcommand{\QI}[2]{{\scriptsize[\csname tag#1\endcsname\ S.\,#2]}}
+\newcommand{\QW}[3]{\footnote{\quellensprung{#2}{#1} (abgerufen am #3).}}
+
+% --- Einheiten: Makros aus data/kennzahlen.tex sind bereits deutsch gesetzt
+\newcommand{\Mio}[2]{#1\,Mio.\,#2}
+\newcommand{\je}[2]{#1\,#2}
+\newcommand{\Pz}[1]{#1\,\%}
+
+% --- Drei Farben, drei Verantwortlichkeiten --------------------------
+% Schwarz: belegte Fakten. Blau: Einschaetzung des Verfassers. Rot: Votum.
+\definecolor{vdrot}{RGB}{155,25,30}
+\newcommand{\vd}[1]{{\color{vdrot}#1}}
+\definecolor{bkblau}{RGB}{20,60,150}
+\newcommand{\bk}[1]{{\color{bkblau}#1}}
+
+% --- Generierte Tabellenkoerper ohne angehaengtes \relax --------------
+\makeatletter
+\newcommand{\tabellenkoerper}[1]{\@@input #1.tex }
+\makeatother
+
+\newcommand{\annahme}[1]{%
+  \par\medskip\noindent\fbox{\parbox{0.97\linewidth}{\small\textbf{Annahme:} #1}}\par\medskip}
+
+% =====================================================================
+% Tabellen. Jeder Koerper kommt aus data/ und wird von scripts/rechnung_neste.py
+% erzeugt; im Dokument steht keine Zahl von Hand.
+% =====================================================================
+\newcommand{\ueberblicktabelle}{%
+\begin{table}[htbp]\centering\small
+\caption{Kennzahlen 2025 gegen 2024 (Mio.~EUR, wo nicht anders angegeben), aus der
+Mehrjahresreihe (Tabelle~\ref{tab:ergebnis}). Ver\"anderung in Einheiten der Zeile
+(Prozentpunkte bei Quoten).}\label{tab:ueberblick}
+\begin{tabular}{@{}lrrr@{}}\toprule
+Kennzahl & 2025 & 2024 & Ver\"anderung\\\midrule
+\tabellenkoerper{data/ueberblick}
+\bottomrule\end{tabular}\end{table}}
+
+\newcommand{\ergebnistabelle}{%
+\begin{table}[htbp]\centering\footnotesize\setlength{\tabcolsep}{3.5pt}
+\caption{Ergebnisreihe 2017--2025 (Mio.~EUR; EPS und Dividende in EUR; ROACE und
+Verschuldungsgrad in \%). Quelle je Jahr ist der j\"ungste Gesch\"aftsbericht, der das Jahr
+druckt (Kennzahlenseiten GB~2019 S.~123, GB~2020 S.~129, GB~2021 S.~162, GB~2022 S.~172,
+GB~2023 S.~171, GB~2024 S.~150, GB~2025 S.~146). Vergleichbares EBITDA in heutiger
+Abgrenzung erst ab 2019. ROACE bis 2019 alte Abgrenzung, ab 2020 \enquote{Comparable ROACE}.}
+\label{tab:ergebnis}
+\begin{tabular}{@{}lrrrrrrrrr@{}}\toprule
+Jahr & Umsatz & Vergl.\ EBITDA & EBIT & Ergebnis & EPS & Dividende & ROACE & Nettoschulden & Verschuldung\\\midrule
+\tabellenkoerper{data/reihe_ergebnis}
+\bottomrule\end{tabular}\end{table}}
+
+\newcommand{\zahlungstabelle}{%
+\begin{table}[htbp]\centering\footnotesize\setlength{\tabcolsep}{3.5pt}
+\caption{Zahlungsreihe 2017--2025 und letzte zw\"olf Monate (Mio.~EUR). Freier Zufluss =
+operativer Mittelzufluss + Investitionen (Sach- und immaterielle Anlagen) + Leasingtilgung.
+Instandhaltung: Kassenabfluss f\"ur Instandhaltungsinvestitionen laut Lagebericht.
+Zufluss ohne Wachstum = operativer Mittelzufluss $-$ Instandhaltung + Leasingtilgung.
+Leasing 2019 und 2020 aus dem Anhang (GB~2020 S.~193), vor 2019 keine aktivierten
+Leasingverh\"altnisse (IAS~17).}\label{tab:zahlung}
+\begin{tabular}{@{}lrrrrrrrl@{}}\toprule
+Jahr & Oper.\ CF & Investitionen & Leasing & Freier Zufluss & Instandhaltung & ohne Wachstum & Dividende & Beleg oper.\ CF\\\midrule
+\tabellenkoerper{data/reihe_zahlung}
+\bottomrule\end{tabular}\end{table}}
+
+\newcommand{\prognosetabelle}{%
+\begin{table}[htbp]\centering\small
+\caption{Prognosetreue der Investitionen ohne M\&A 2021--2025. Gelesen ist die Prognose
+\emph{wie zuerst gegeben} (Ausblick im Gesch\"aftsbericht des Vorjahres). \enquote{ca.} wird
+als $\pm$\,5\,\% gelesen. Ist-Werte aus dem Lagebericht des jeweiligen Jahres.}\label{tab:prognose}
+\begin{tabular}{@{}llrrll@{}}\toprule
+Jahr & Prognose (zuerst) & Ist (Mio.~EUR) & Abweichung zur Mitte & Lage & Prognose aus\\\midrule
+\tabellenkoerper{data/prognose}
+\bottomrule\end{tabular}\end{table}}
+
+\newcommand{\margentabelle}{%
+\begin{table}[htbp]\centering\small
+\caption{Vergleichbare Verkaufsmarge von Renewable Products (USD/t), vergleichbares EBITDA
+des Konzerns (Mio.~EUR) und Schlusskurs (EUR). Marge je Jahr in der j\"ungsten Darstellung
+(Einzelbelege im Text); 2022 nach der 2023 ge\"anderten Formel. Kurs zum Jahresende laut
+Kennzahlenseite, letzte Zeile Kurs vom \KursDatum{} (Yahoo Finance) gegen Jahresende 2025.}\label{tab:marge}
+\begin{tabular}{@{}lrrrrr@{}}\toprule
+Jahr & RP-Marge & Ver\"and.\ in \% & Vergl.\ EBITDA & Kurs & Ver\"and.\ in \%\\\midrule
+\tabellenkoerper{data/marge}
+\bottomrule\end{tabular}\end{table}}
+
+\newcommand{\optionentabelle}{%
+\begin{table}[htbp]\centering\small
+\caption{Interner Zinsfu{\ss} auf zehn Jahre je Handlungsoption und Zuflussszenario. Option~C
+legt denselben Betrag zur H\"urde an; ihre Zeile ist die Messlatte.}\label{tab:optionen}
+\begin{tabular}{@{}lrrrrrr@{}}\toprule
+Option & Kurs (EUR) & pess. & Basis & Ernte & LTM & LTM o.\,UV\\\midrule
+\tabellenkoerper{data/optionen}
+\bottomrule\end{tabular}\end{table}}
+
+\newcommand{\schwellentabelle}{%
+\begin{table}[htbp]\centering\small
+\caption{Schwellenkurs je Aktie (EUR): Kurs, zu dem der interne Zinsfu{\ss} die H\"urde von
+\Pz{\Huerde} erreicht; letzte Spalte bei \Pz{\HuerdeLang}. Zufluss konstant ab 2027,
+Endwert = Buchwert des Eigenkapitals zum 30.06.2026.}\label{tab:schwelle}
+\begin{tabular}{@{}lrrrrr@{}}\toprule
+Szenario & Zufluss (Mio.~EUR) & 5 Jahre & 10 Jahre & 15 Jahre & 10 J., \Pz{\HuerdeLang}\\\midrule
+\tabellenkoerper{data/schwelle}
+\bottomrule\end{tabular}\end{table}}
+
+\newcommand{\umkehrtabellen}{%
+\begin{table}[htbp]\centering\small
+\caption{Umkehrungen zum heutigen Kurs bei \Pz{\Huerde}: erforderliches Wachstum des freien
+Zuflusses p.\,a.\ (oben) und erforderlicher Endwert als Vielfaches des Buchwerts
+(unten).}\label{tab:umkehr}
+\begin{tabular}{@{}lrrr@{}}\toprule
+Szenario & 5 Jahre & 10 Jahre & 15 Jahre\\\midrule
+\tabellenkoerper{data/wachstum}
+\midrule
+\tabellenkoerper{data/endwert}
+\bottomrule\end{tabular}\end{table}}
+
+\newcommand{\dauertabelle}{%
+\begin{table}[htbp]\centering\small
+\caption{Wie lange m\"usste die Sondermarge anhalten? Interner Zinsfu{\ss} auf zehn Jahre zum
+heutigen Kurs, wenn der Zufluss $k$ Jahre auf dem LTM-Niveau (\Mio{\FcfLtm}{EUR}) liegt und danach
+auf den Median (\Mio{\FcfMedian}{EUR}) zur\"uckf\"allt. Endwert links Buchwert, rechts der heutige
+B\"orsenwert (Ausstieg ohne Bewertungs\"anderung).}\label{tab:dauer}
+\begin{tabular}{@{}rrr@{}}\toprule
+$k$ (Jahre) & Endwert Buchwert & Endwert heutiger B\"orsenwert\\\midrule
+\tabellenkoerper{data/dauer}
+\bottomrule\end{tabular}\end{table}}
+
+\newcommand{\evtabelle}{%
+\begin{table}[htbp]\centering\small
+\caption{Unternehmenswert zu vergleichbarem EBITDA: B\"orsenwert und Nettofinanzschulden zum
+Jahresende laut Kennzahlenseite, vergleichbares EBITDA des Jahres. Letzte Zeile: B\"orsenwert
+zum \KursDatum, Nettofinanzschulden zum 30.06.2026, EBITDA der letzten zw\"olf Monate.}\label{tab:ev}
+\begin{tabular}{@{}lrrrr@{}}\toprule
+Jahr & B\"orsenwert & Nettoschulden & Vergl.\ EBITDA & EV/EBITDA\\\midrule
+\tabellenkoerper{data/evebitda}
+\bottomrule\end{tabular}\end{table}}
+
+\newcommand{\kurzfristtabelle}{%
+\begin{table}[htbp]\centering\small
+\caption{Kurzer Horizont: Kurs je Aktie, wenn der Markt Neste zum Median-Multiple
+2019--2025 (\EvMedian{}$\times$) auf dem jeweiligen EBITDA-Niveau bewertet;
+Nettofinanzschulden zum 30.06.2026. Abstand zum Kurs vom \KursDatum.}\label{tab:kurzfrist}
+\begin{tabular}{@{}lrrr@{}}\toprule
+EBITDA-Niveau & Vergl.\ EBITDA (Mio.~EUR) & Kurs (EUR) & Abstand\\\midrule
+\tabellenkoerper{data/kurzfrist}
+\bottomrule\end{tabular}\end{table}}
+
+\newcommand{\kursabbildung}{%
+\begin{figure}[htbp]\centering
+\begin{tikzpicture}
+\begin{axis}[width=\linewidth, height=6.2cm, date coordinates in=x,
+  xticklabel=\year, xtick={2017-01-01,2019-01-01,2021-01-01,2023-01-01,2025-01-01},
+  ylabel={EUR}, ymin=0, grid=major, grid style={gray!20},
+  tick label style={font=\footnotesize}, label style={font=\footnotesize}]
+\addplot[kursfarbe, thick, mark=none] table[x=datum, y=kurs, col sep=comma] {data/kursreihe.csv};
+\end{axis}
+\end{tikzpicture}
+\caption{Neste, Schlusskurs zum Monatsende, Dezember 2016 bis September 2026
+(Yahoo Finance, splitbereinigt).}\label{fig:kurs}
+\end{figure}}

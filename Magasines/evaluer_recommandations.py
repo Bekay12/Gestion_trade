@@ -40,7 +40,7 @@ CHUNK = 50
 BENCHMARKS = {
     ".DE": "^GDAXI", ".PA": "^FCHI", ".BR": "^BFX", ".AS": "^AEX", ".MI": "FTSEMIB.MI",
     ".MC": "^IBEX", ".VI": "^ATX", ".IR": "^ISEQ", ".L": "^FTSE", ".SW": "^SSMI",
-    ".ST": "^OMX", ".OL": "OBX.OL", ".CO": "^OMXC25", ".T": "^N225", ".SI": "^STI",
+    ".ST": "^OMX", ".HE": "^OMXH25", ".OL": "OBX.OL", ".CO": "^OMXC25", ".T": "^N225", ".SI": "^STI",
     ".NZ": "^NZ50", ".TO": "^GSPTSE", "": "^GSPC",
 }
 

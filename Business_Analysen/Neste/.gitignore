@@ -1,0 +1,6 @@
+# Die Berichte (rund 150 MB) werden aus den URLs in docs/quellen.md neu beschafft;
+# das Bauergebnis mit ./build.sh.
+refs/
+out/
+__pycache__/
+*.pyc

@@ -1,0 +1,649 @@
+{
+ "date": "2026-09-28T11:23:54.302306-04:00",
+ "mode": "ticker",
+ "fenetre_au_scan": "seance",
+ "min_gap": 5,
+ "verdicts": [
+  {
+   "ticker": "MX",
+   "classe": "FADE",
+   "horizon": "jour, souvent la premiere heure",
+   "sortie": "racheter sur stop a 20 % au-dessus de l'entree, ou en fin d'horizon. Sous reserve du borrow.",
+   "direction": "vendeuse",
+   "stop_pct": 20.0,
+   "motifs": [
+    "pas de catalyseur haussier verifie",
+    "cours sous le VWAP"
+   ],
+   "alertes": [
+    "montee rapide sans catalyseur identifie (RVOL eleve)",
+    "cours sous le VWAP (-2.5 %), pression vendeuse"
+   ],
+   "inconnues": [
+    "catalyseur non verifie (EDGAR / news)",
+    "disponibilite et cout du borrow inconnus (a relever chez le courtier)",
+    "tenue a 30 min inconnue (mesurable seulement apres l'ouverture)"
+   ],
+   "comblement_attendu_pct": null
+  },
+  {
+   "ticker": "SOAR",
+   "classe": "PUMP_RISK",
+   "horizon": "jour a trois seances, en vendeuse",
+   "sortie": "racheter sur stop a 20 % au-dessus de l'entree, ou en fin d'horizon. Sous reserve du borrow.",
+   "direction": "vendeuse",
+   "stop_pct": 20.0,
+   "motifs": [
+    "2 signal(aux) de manipulation presents"
+   ],
+   "alertes": [
+    "montee rapide sans catalyseur identifie (RVOL eleve)",
+    "nano cap (21 M$), facile a manipuler"
+   ],
+   "inconnues": [
+    "catalyseur non verifie (EDGAR / news)",
+    "disponibilite et cout du borrow inconnus (a relever chez le courtier)",
+    "tenue a 30 min inconnue (mesurable seulement apres l'ouverture)"
+   ],
+   "comblement_attendu_pct": null
+  },
+  {
+   "ticker": "LFCR",
+   "classe": "PUMP_RISK",
+   "horizon": "jour a trois seances, en vendeuse",
+   "sortie": "racheter sur stop a 20 % au-dessus de l'entree, ou en fin d'horizon. Sous reserve du borrow.",
+   "direction": "vendeuse",
+   "stop_pct": 20.0,
+   "motifs": [
+    "2 signal(aux) de manipulation presents"
+   ],
+   "alertes": [
+    "montee rapide sans catalyseur identifie (RVOL eleve)",
+    "low float (19.3 M), mouvements violents"
+   ],
+   "inconnues": [
+    "catalyseur non verifie (EDGAR / news)",
+    "disponibilite et cout du borrow inconnus (a relever chez le courtier)",
+    "tenue a 30 min inconnue (mesurable seulement apres l'ouverture)"
+   ],
+   "comblement_attendu_pct": null
+  },
+  {
+   "ticker": "MEDS",
+   "classe": "PUMP_RISK",
+   "horizon": "jour a trois seances, en vendeuse",
+   "sortie": "racheter sur stop a 20 % au-dessus de l'entree, ou en fin d'horizon. Sous reserve du borrow.",
+   "direction": "vendeuse",
+   "stop_pct": 20.0,
+   "motifs": [
+    "3 signal(aux) de manipulation presents"
+   ],
+   "alertes": [
+    "montee rapide sans catalyseur identifie (RVOL eleve)",
+    "nano cap (14 M$), facile a manipuler",
+    "low float (1.5 M), mouvements violents"
+   ],
+   "inconnues": [
+    "catalyseur non verifie (EDGAR / news)",
+    "disponibilite et cout du borrow inconnus (a relever chez le courtier)",
+    "tenue a 30 min inconnue (mesurable seulement apres l'ouverture)"
+   ],
+   "comblement_attendu_pct": null
+  },
+  {
+   "ticker": "ONCO",
+   "classe": "PUMP_RISK",
+   "horizon": "jour a trois seances, en vendeuse",
+   "sortie": "racheter sur stop a 20 % au-dessus de l'entree, ou en fin d'horizon. Sous reserve du borrow.",
+   "direction": "vendeuse",
+   "stop_pct": 20.0,
+   "motifs": [
+    "3 signal(aux) de manipulation presents"
+   ],
+   "alertes": [
+    "montee rapide sans catalyseur identifie (RVOL eleve)",
+    "nano cap (5 M$), facile a manipuler",
+    "low float (3.9 M), mouvements violents"
+   ],
+   "inconnues": [
+    "catalyseur non verifie (EDGAR / news)",
+    "disponibilite et cout du borrow inconnus (a relever chez le courtier)",
+    "tenue a 30 min inconnue (mesurable seulement apres l'ouverture)"
+   ],
+   "comblement_attendu_pct": null
+  },
+  {
+   "ticker": "CANG",
+   "classe": "PUMP_RISK",
+   "horizon": "jour a trois seances, en vendeuse",
+   "sortie": "racheter sur stop a 20 % au-dessus de l'entree, ou en fin d'horizon. Sous reserve du borrow.",
+   "direction": "vendeuse",
+   "stop_pct": 20.0,
+   "motifs": [
+    "1 signal(aux) de manipulation presents"
+   ],
+   "alertes": [
+    "montee rapide sans catalyseur identifie (RVOL eleve)"
+   ],
+   "inconnues": [
+    "catalyseur non verifie (EDGAR / news)",
+    "disponibilite et cout du borrow inconnus (a relever chez le courtier)",
+    "tenue a 30 min inconnue (mesurable seulement apres l'ouverture)"
+   ],
+   "comblement_attendu_pct": null
+  },
+  {
+   "ticker": "KNDI",
+   "classe": "INSUFFISANT",
+   "horizon": "aucun",
+   "sortie": "ne pas entrer",
+   "direction": null,
+   "stop_pct": null,
+   "motifs": [
+    "volume moyen 74,500 < 100,000 (plancher structurel: sortie de position incertaine)"
+   ],
+   "alertes": [
+    "montee rapide sans catalyseur identifie (RVOL eleve)"
+   ],
+   "inconnues": [
+    "catalyseur non verifie (EDGAR / news)",
+    "disponibilite et cout du borrow inconnus (a relever chez le courtier)",
+    "tenue a 30 min inconnue (mesurable seulement apres l'ouverture)"
+   ],
+   "comblement_attendu_pct": null
+  },
+  {
+   "ticker": "EGG",
+   "classe": "INSUFFISANT",
+   "horizon": "aucun",
+   "sortie": "ne pas entrer",
+   "direction": null,
+   "stop_pct": null,
+   "motifs": [
+    "volume moyen 5,250 < 100,000 (plancher structurel: sortie de position incertaine)"
+   ],
+   "alertes": [
+    "montee rapide sans catalyseur identifie (RVOL eleve)",
+    "low float (8.3 M), mouvements violents",
+    "cours sous le VWAP (-10.1 %), pression vendeuse"
+   ],
+   "inconnues": [
+    "catalyseur non verifie (EDGAR / news)",
+    "disponibilite et cout du borrow inconnus (a relever chez le courtier)",
+    "tenue a 30 min inconnue (mesurable seulement apres l'ouverture)"
+   ],
+   "comblement_attendu_pct": null
+  },
+  {
+   "ticker": "WBUY",
+   "classe": "INSUFFISANT",
+   "horizon": "aucun",
+   "sortie": "ne pas entrer",
+   "direction": null,
+   "stop_pct": null,
+   "motifs": [
+    "volume moyen 83,750 < 100,000 (plancher structurel: sortie de position incertaine)"
+   ],
+   "alertes": [
+    "montee rapide sans catalyseur identifie (RVOL eleve)",
+    "nano cap (5 M$), facile a manipuler",
+    "low float (2.5 M), mouvements violents",
+    "cours sous le VWAP (-7.9 %), pression vendeuse"
+   ],
+   "inconnues": [
+    "catalyseur non verifie (EDGAR / news)",
+    "disponibilite et cout du borrow inconnus (a relever chez le courtier)",
+    "tenue a 30 min inconnue (mesurable seulement apres l'ouverture)"
+   ],
+   "comblement_attendu_pct": null
+  },
+  {
+   "ticker": "MGLD",
+   "classe": "INSUFFISANT",
+   "horizon": "aucun",
+   "sortie": "ne pas entrer",
+   "direction": null,
+   "stop_pct": null,
+   "motifs": [
+    "volume moyen 8,850 < 100,000 (plancher structurel: sortie de position incertaine)"
+   ],
+   "alertes": [
+    "montee rapide sans catalyseur identifie (RVOL eleve)",
+    "low float (16.0 M), mouvements violents",
+    "cours sous le VWAP (-0.2 %), pression vendeuse"
+   ],
+   "inconnues": [
+    "catalyseur non verifie (EDGAR / news)",
+    "disponibilite et cout du borrow inconnus (a relever chez le courtier)",
+    "tenue a 30 min inconnue (mesurable seulement apres l'ouverture)"
+   ],
+   "comblement_attendu_pct": null
+  }
+ ],
+ "mesures": {
+  "SOAR": {
+   "ticker": "SOAR",
+   "gap_pct": null,
+   "atr_pct": 9.83,
+   "rvol": 87.14,
+   "rvol_pre_tendance": 360.61,
+   "prix": 0.3910999894142151,
+   "vwap": 0.3829,
+   "ouverture": 0.37880000472068787,
+   "cloture_veille": 0.18000000715255737,
+   "volume_jour": 701230322.0,
+   "volume_moyen": 8046800.0,
+   "float_actions": 38416423,
+   "market_cap": 20943784,
+   "short_interest_pct": 12.16,
+   "catalyseur": null,
+   "formulaire_sec": null,
+   "volume_pic_au_sommet": null,
+   "chute_depuis_sommet_pct": null,
+   "gap_tenu_30min": null
+  },
+  "LFCR": {
+   "ticker": "LFCR",
+   "gap_pct": null,
+   "atr_pct": 5.77,
+   "rvol": 12.16,
+   "rvol_pre_tendance": 13.29,
+   "prix": 6.559999942779541,
+   "vwap": 6.5377,
+   "ouverture": 6.519999980926514,
+   "cloture_veille": 4.199999809265137,
+   "volume_jour": 1681817.0,
+   "volume_moyen": 138350.0,
+   "float_actions": 19328908,
+   "market_cap": 248316064,
+   "short_interest_pct": 8.66,
+   "catalyseur": null,
+   "formulaire_sec": null,
+   "volume_pic_au_sommet": null,
+   "chute_depuis_sommet_pct": null,
+   "gap_tenu_30min": null
+  },
+  "KNDI": {
+   "ticker": "KNDI",
+   "gap_pct": null,
+   "atr_pct": 7.99,
+   "rvol": 734.32,
+   "rvol_pre_tendance": 663.92,
+   "prix": 0.849399983882904,
+   "vwap": 0.8364,
+   "ouverture": 0.612500011920929,
+   "cloture_veille": 0.5899999737739563,
+   "volume_jour": 54707114.0,
+   "volume_moyen": 74500.0,
+   "float_actions": 67911029,
+   "market_cap": 85975640,
+   "short_interest_pct": 1.48,
+   "catalyseur": null,
+   "formulaire_sec": null,
+   "volume_pic_au_sommet": null,
+   "chute_depuis_sommet_pct": null,
+   "gap_tenu_30min": null
+  },
+  "MEDS": {
+   "ticker": "MEDS",
+   "gap_pct": null,
+   "atr_pct": 40.78,
+   "rvol": 79.22,
+   "rvol_pre_tendance": 447.35,
+   "prix": 4.320099830627441,
+   "vwap": 4.0439,
+   "ouverture": 3.9700000286102295,
+   "cloture_veille": 3.109999895095825,
+   "volume_jour": 24917283.0,
+   "volume_moyen": 314550.0,
+   "float_actions": 1489624,
+   "market_cap": 13829762,
+   "short_interest_pct": 20.04,
+   "catalyseur": null,
+   "formulaire_sec": null,
+   "volume_pic_au_sommet": null,
+   "chute_depuis_sommet_pct": null,
+   "gap_tenu_30min": null
+  },
+  "EGG": {
+   "ticker": "EGG",
+   "gap_pct": null,
+   "atr_pct": 10.47,
+   "rvol": 381.54,
+   "rvol_pre_tendance": 77.49,
+   "prix": 3.890000104904175,
+   "vwap": 4.3294,
+   "ouverture": 3.0,
+   "cloture_veille": 2.799999952316284,
+   "volume_jour": 2003108.0,
+   "volume_moyen": 5250.0,
+   "float_actions": 8255093,
+   "market_cap": 108940232,
+   "short_interest_pct": 1.21,
+   "catalyseur": null,
+   "formulaire_sec": null,
+   "volume_pic_au_sommet": null,
+   "chute_depuis_sommet_pct": null,
+   "gap_tenu_30min": null
+  },
+  "ONCO": {
+   "ticker": "ONCO",
+   "gap_pct": null,
+   "atr_pct": 11.82,
+   "rvol": 105.38,
+   "rvol_pre_tendance": 85.1,
+   "prix": 1.2549999952316284,
+   "vwap": 1.2183,
+   "ouverture": 1.190000057220459,
+   "cloture_veille": 1.0299999713897705,
+   "volume_jour": 18135640.0,
+   "volume_moyen": 172100.0,
+   "float_actions": 3949068,
+   "market_cap": 5497555,
+   "short_interest_pct": 3.09,
+   "catalyseur": null,
+   "formulaire_sec": null,
+   "volume_pic_au_sommet": null,
+   "chute_depuis_sommet_pct": null,
+   "gap_tenu_30min": null
+  },
+  "CANG": {
+   "ticker": "CANG",
+   "gap_pct": null,
+   "atr_pct": 13.65,
+   "rvol": 4.04,
+   "rvol_pre_tendance": 12.82,
+   "prix": 2.270400047302246,
+   "vwap": 2.217,
+   "ouverture": 2.109999895095825,
+   "cloture_veille": 1.909999966621399,
+   "volume_jour": 1179666.0,
+   "volume_moyen": 291750.0,
+   "float_actions": null,
+   "market_cap": 93136280,
+   "short_interest_pct": 3.02,
+   "catalyseur": null,
+   "formulaire_sec": null,
+   "volume_pic_au_sommet": null,
+   "chute_depuis_sommet_pct": null,
+   "gap_tenu_30min": null
+  },
+  "WBUY": {
+   "ticker": "WBUY",
+   "gap_pct": null,
+   "atr_pct": 9.08,
+   "rvol": 415.18,
+   "rvol_pre_tendance": 533.71,
+   "prix": 0.953000009059906,
+   "vwap": 1.0346,
+   "ouverture": 1.0399999618530273,
+   "cloture_veille": 0.8320000171661377,
+   "volume_jour": 34771028.0,
+   "volume_moyen": 83750.0,
+   "float_actions": 2472062,
+   "market_cap": 5223492,
+   "short_interest_pct": 2.4,
+   "catalyseur": null,
+   "formulaire_sec": null,
+   "volume_pic_au_sommet": null,
+   "chute_depuis_sommet_pct": null,
+   "gap_tenu_30min": null
+  },
+  "MX": {
+   "ticker": "MX",
+   "gap_pct": null,
+   "atr_pct": 5.86,
+   "rvol": 9.95,
+   "rvol_pre_tendance": 4.8,
+   "prix": 3.7600998878479004,
+   "vwap": 3.8555,
+   "ouverture": 3.890000104904175,
+   "cloture_veille": 3.299999952316284,
+   "volume_jour": 3921915.0,
+   "volume_moyen": 394350.0,
+   "float_actions": 31044912,
+   "market_cap": 137278016,
+   "short_interest_pct": 3.69,
+   "catalyseur": null,
+   "formulaire_sec": null,
+   "volume_pic_au_sommet": null,
+   "chute_depuis_sommet_pct": null,
+   "gap_tenu_30min": null
+  },
+  "MGLD": {
+   "ticker": "MGLD",
+   "gap_pct": null,
+   "atr_pct": 6.4,
+   "rvol": 154.77,
+   "rvol_pre_tendance": 175.6,
+   "prix": 2.0899999141693115,
+   "vwap": 2.0952,
+   "ouverture": 2.0999999046325684,
+   "cloture_veille": 1.9299999475479126,
+   "volume_jour": 1369690.0,
+   "volume_moyen": 8850.0,
+   "float_actions": 15958151,
+   "market_cap": 90380640,
+   "short_interest_pct": 0.59,
+   "catalyseur": null,
+   "formulaire_sec": null,
+   "volume_pic_au_sommet": null,
+   "chute_depuis_sommet_pct": null,
+   "gap_tenu_30min": null
+  }
+ },
+ "depots_sec": {
+  "SOAR": {
+   "cik": 1853070,
+   "formulaire_sec": null,
+   "depots": [
+    {
+     "date": "2026-09-28",
+     "form": "8-K",
+     "items": "1.01,7.01,9.01",
+     "classe": "A_LIRE",
+     "url": "https://www.sec.gov/Archives/edgar/data/1853070/000149315226044456/form8-k.htm"
+    },
+    {
+     "date": "2026-09-21",
+     "form": "8-K",
+     "items": "5.02,9.01",
+     "classe": "A_LIRE",
+     "url": "https://www.sec.gov/Archives/edgar/data/1853070/000149315226043439/form8-k.htm"
+    }
+   ],
+   "a_lire": [
+    {
+     "date": "2026-09-28",
+     "form": "8-K",
+     "items": "1.01,7.01,9.01",
+     "classe": "A_LIRE",
+     "url": "https://www.sec.gov/Archives/edgar/data/1853070/000149315226044456/form8-k.htm"
+    },
+    {
+     "date": "2026-09-21",
+     "form": "8-K",
+     "items": "5.02,9.01",
+     "classe": "A_LIRE",
+     "url": "https://www.sec.gov/Archives/edgar/data/1853070/000149315226043439/form8-k.htm"
+    }
+   ]
+  },
+  "LFCR": {
+   "cik": 1005286,
+   "formulaire_sec": null,
+   "depots": [
+    {
+     "date": "2026-09-28",
+     "form": "8-K",
+     "items": "1.01,7.01,9.01",
+     "classe": "A_LIRE",
+     "url": "https://www.sec.gov/Archives/edgar/data/1005286/000114036126037767/ef20082009_8k.htm"
+    }
+   ],
+   "a_lire": [
+    {
+     "date": "2026-09-28",
+     "form": "8-K",
+     "items": "1.01,7.01,9.01",
+     "classe": "A_LIRE",
+     "url": "https://www.sec.gov/Archives/edgar/data/1005286/000114036126037767/ef20082009_8k.htm"
+    }
+   ]
+  },
+  "KNDI": {
+   "cik": 1720250,
+   "formulaire_sec": null,
+   "depots": [
+    {
+     "date": "2026-09-28",
+     "form": "6-K",
+     "items": "",
+     "classe": "A_LIRE",
+     "url": "https://www.sec.gov/Archives/edgar/data/1720250/000121390026103734/ea0306612-6k_kandi.htm"
+    },
+    {
+     "date": "2026-09-25",
+     "form": "6-K",
+     "items": "",
+     "classe": "A_LIRE",
+     "url": "https://www.sec.gov/Archives/edgar/data/1720250/000121390026103503/ea0306627-6k_kandi.htm"
+    }
+   ],
+   "a_lire": [
+    {
+     "date": "2026-09-28",
+     "form": "6-K",
+     "items": "",
+     "classe": "A_LIRE",
+     "url": "https://www.sec.gov/Archives/edgar/data/1720250/000121390026103734/ea0306612-6k_kandi.htm"
+    },
+    {
+     "date": "2026-09-25",
+     "form": "6-K",
+     "items": "",
+     "classe": "A_LIRE",
+     "url": "https://www.sec.gov/Archives/edgar/data/1720250/000121390026103503/ea0306627-6k_kandi.htm"
+    }
+   ]
+  },
+  "MEDS": {
+   "cik": 2030763,
+   "formulaire_sec": null,
+   "depots": [],
+   "a_lire": []
+  },
+  "EGG": {
+   "cik": 1982961,
+   "formulaire_sec": null,
+   "depots": [],
+   "a_lire": []
+  },
+  "ONCO": {
+   "cik": 1782107,
+   "formulaire_sec": null,
+   "depots": [],
+   "a_lire": []
+  },
+  "CANG": {
+   "cik": 1725123,
+   "formulaire_sec": null,
+   "depots": [],
+   "a_lire": []
+  },
+  "WBUY": {
+   "cik": 1946703,
+   "formulaire_sec": null,
+   "depots": [
+    {
+     "date": "2026-09-28",
+     "form": "6-K",
+     "items": "",
+     "classe": "A_LIRE",
+     "url": "https://www.sec.gov/Archives/edgar/data/1946703/000121390026103727/ea0306044-6k_webuy.htm"
+    },
+    {
+     "date": "2026-09-18",
+     "form": "6-K",
+     "items": "",
+     "classe": "A_LIRE",
+     "url": "https://www.sec.gov/Archives/edgar/data/1946703/000121390026101413/ea0305806-6k_webuy.htm"
+    }
+   ],
+   "a_lire": [
+    {
+     "date": "2026-09-28",
+     "form": "6-K",
+     "items": "",
+     "classe": "A_LIRE",
+     "url": "https://www.sec.gov/Archives/edgar/data/1946703/000121390026103727/ea0306044-6k_webuy.htm"
+    },
+    {
+     "date": "2026-09-18",
+     "form": "6-K",
+     "items": "",
+     "classe": "A_LIRE",
+     "url": "https://www.sec.gov/Archives/edgar/data/1946703/000121390026101413/ea0305806-6k_webuy.htm"
+    }
+   ]
+  },
+  "MX": {
+   "cik": 1325702,
+   "formulaire_sec": null,
+   "depots": [
+    {
+     "date": "2026-09-21",
+     "form": "8-K",
+     "items": "1.01,3.02,7.01,9.01",
+     "classe": "A_LIRE",
+     "url": "https://www.sec.gov/Archives/edgar/data/1325702/000119312526396059/mx-20260729.htm"
+    }
+   ],
+   "a_lire": [
+    {
+     "date": "2026-09-21",
+     "form": "8-K",
+     "items": "1.01,3.02,7.01,9.01",
+     "classe": "A_LIRE",
+     "url": "https://www.sec.gov/Archives/edgar/data/1325702/000119312526396059/mx-20260729.htm"
+    }
+   ]
+  },
+  "MGLD": {
+   "cik": 1005101,
+   "formulaire_sec": null,
+   "depots": [
+    {
+     "date": "2026-09-24",
+     "form": "8-K",
+     "items": "1.01,7.01,9.01",
+     "classe": "A_LIRE",
+     "url": "https://www.sec.gov/Archives/edgar/data/1005101/000149315226044118/form8-k.htm"
+    },
+    {
+     "date": "2026-09-21",
+     "form": "8-K",
+     "items": "2.02,9.01",
+     "classe": "A_LIRE",
+     "url": "https://www.sec.gov/Archives/edgar/data/1005101/000149315226043498/form8-k.htm"
+    }
+   ],
+   "a_lire": [
+    {
+     "date": "2026-09-24",
+     "form": "8-K",
+     "items": "1.01,7.01,9.01",
+     "classe": "A_LIRE",
+     "url": "https://www.sec.gov/Archives/edgar/data/1005101/000149315226044118/form8-k.htm"
+    },
+    {
+     "date": "2026-09-21",
+     "form": "8-K",
+     "items": "2.02,9.01",
+     "classe": "A_LIRE",
+     "url": "https://www.sec.gov/Archives/edgar/data/1005101/000149315226043498/form8-k.htm"
+    }
+   ]
+  }
+ }
+}

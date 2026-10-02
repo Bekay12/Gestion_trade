@@ -688,9 +688,13 @@ class MainWindow(QMainWindow, ScreenersMixin, ExportMixin):
             ("_valley_inflexion",       "↗️ Creux — inflexion d'activité"),
             ("_valley_piege",           "⚠️ Creux — pièges de valeur"),
             # ── Vues store-only sans équivalent Finviz (catalogue local) ──
-            ("_store_combined",         "💎 Combined / Profils (catalogue)"),
+            # ── Combined : deux formes, l'étoile ⭐ signalée dans les deux ──
+            ("_store_combined",         "💎 Combined pur (catalogue, ⭐ signalée)"),
+            ("_fvc_dual_star",          "🌍💎 Finviz + Combined (marché, ⭐ signalée)"),
+            ("_store_dual_star",        "💎⭐ Dual Champion* seuls (catalogue)"),
             ("_store_golden_cross",     "✨ Golden Cross récent (catalogue)"),
             # ── Screeners Finviz MARKET-WIDE (découverte hors catalogue) ──
+            ("_fvw_dual_star",          "🌍 Dual* liste brute Finviz (non confirmée)"),
             ("_fvw_big_growth",         "🌍 Big Growth (marché Finviz)"),
             ("_fvw_garp",               "🌍 GARP croissance/prix (marché Finviz)"),
             ("_fvw_secure_growth",      "🌍 Secure/Quality (marché Finviz)"),

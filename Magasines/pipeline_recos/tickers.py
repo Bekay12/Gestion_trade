@@ -2,6 +2,11 @@
 # KO : tickers sans cours sur Yahoo au 19.09.2026 (un seul yf.download groupé).
 KO = {"B5A.DE", "VSCO"}
 T = {
+"Deme Group":"DEME.BR","Fuchs St.":"FPE.DE","OneSpan":"OSPN","Strabag":"STR.VI","Drax Group":"DRX.L",
+"United Internet":"UTDI.DE","Takkt":"TTK.DE","ElringKlinger":"ZIL2.DE","PWO":"PWO.DE","Stabilus":"STM.DE",
+"Fossil":"FOSL","ASML":"ASML.AS","Ahold Delhaize":"AD.AS","ASR Nederland":"ASRNL.AS","OMV":"OMV.VI",
+"Drägerwerk St.":"DRW8.DE","Intel":"INTC","GFT Technologies":"GFT.DE","Neste":"NESTE.HE","Wacker Neuson":"WAC.DE",
+"General Motors":"GM","Sartorius Vz.":"SRT3.DE","AbbVie":"ABBV","Commerzbank":"CBK.DE","Qualcomm":"QCOM",
 "A2 Milk":"ATM.NZ","AB Inbev":"ABI.BR","ADP":"ADP","AIRBUS":"AIR.PA","Air Liquide":"AI.PA","Alcon":"ALC.SW",
 "Allianz":"ALV.DE","Alphabet (Google Cloud)":"GOOGL","Altria":"MO","AMG CRITICAL MATERIALS":"AMG.AS","Apple":"AAPL",
 "Arcturus Therapeutics":"ARCT","Asmodee Group AB":"ASMDEE-B.ST","Assa Abloy":"ASSA-B.ST","Atmos Energy":"ATO",

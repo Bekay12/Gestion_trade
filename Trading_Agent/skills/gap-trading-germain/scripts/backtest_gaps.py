@@ -208,7 +208,10 @@ def seances_candidates(serie: dict, min_gap: float, statique: dict) -> list:
 def serie_de_notation(serie: dict, i0: int, jours: int) -> dict:
     """Fenetre de cours au format attendu par evaluer_gaps.noter()."""
     fin = min(i0 + jours, len(serie["dates"]))
-    return {"ouverture": serie["ouverture"][i0:fin],
+    # La cloture de la veille est la reference de la promesse FADE depuis le
+    # 28.09.2026 (evaluer_gaps.noter); sans elle, chaque FADE ressortirait incomplet.
+    return {"veille": serie["cloture"][i0 - 1] if i0 >= 1 else None,
+            "ouverture": serie["ouverture"][i0:fin],
             "cloture": serie["cloture"][i0:fin],
             "bas": serie["bas"][i0:fin],
             "haut": serie["haut"][i0:fin]}

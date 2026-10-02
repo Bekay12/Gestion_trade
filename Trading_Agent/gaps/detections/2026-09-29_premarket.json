@@ -1,0 +1,555 @@
+{
+ "date": "2026-09-29T07:11:05.953071-04:00",
+ "mode": "premarket",
+ "fenetre_au_scan": "premarket",
+ "min_gap": 5,
+ "verdicts": [
+  {
+   "ticker": "CYAB",
+   "classe": "FADE",
+   "horizon": "jour, souvent la premiere heure",
+   "sortie": "racheter sur stop a 20 % au-dessus de l'entree, ou en fin d'horizon. Sous reserve du borrow.",
+   "direction": "vendeuse",
+   "stop_pct": 20.0,
+   "motifs": [
+    "pas de catalyseur haussier verifie",
+    "comblement attendu 42 % le jour meme"
+   ],
+   "alertes": [
+    "nano cap (3 M$), facile a manipuler",
+    "low float (7.0 M), mouvements violents"
+   ],
+   "inconnues": [
+    "catalyseur non verifie (EDGAR / news)",
+    "VWAP non mesure",
+    "short interest inconnu",
+    "disponibilite et cout du borrow inconnus (a relever chez le courtier)",
+    "tenue a 30 min inconnue (mesurable seulement apres l'ouverture)"
+   ],
+   "comblement_attendu_pct": 42
+  },
+  {
+   "ticker": "IVVD",
+   "classe": "FADE",
+   "horizon": "jour, souvent la premiere heure",
+   "sortie": "racheter sur stop a 20 % au-dessus de l'entree, ou en fin d'horizon. Sous reserve du borrow.",
+   "direction": "vendeuse",
+   "stop_pct": 20.0,
+   "motifs": [
+    "pas de catalyseur haussier verifie",
+    "RVOL 2.0 < 3",
+    "comblement attendu 8 % le jour meme"
+   ],
+   "alertes": [],
+   "inconnues": [
+    "catalyseur non verifie (EDGAR / news)",
+    "VWAP non mesure",
+    "disponibilite et cout du borrow inconnus (a relever chez le courtier)",
+    "tenue a 30 min inconnue (mesurable seulement apres l'ouverture)"
+   ],
+   "comblement_attendu_pct": 8
+  },
+  {
+   "ticker": "FFAI",
+   "classe": "PUMP_RISK",
+   "horizon": "jour a trois seances, en vendeuse",
+   "sortie": "racheter sur stop a 20 % au-dessus de l'entree, ou en fin d'horizon. Sous reserve du borrow.",
+   "direction": "vendeuse",
+   "stop_pct": 20.0,
+   "motifs": [
+    "4 signal(aux) de manipulation presents"
+   ],
+   "alertes": [
+    "montee rapide sans catalyseur identifie (RVOL eleve)",
+    "nano cap (9 M$), facile a manipuler",
+    "low float (3.8 M), mouvements violents",
+    "depot S-3/A = dilution, catalyseur baissier deguise"
+   ],
+   "inconnues": [
+    "VWAP non mesure",
+    "disponibilite et cout du borrow inconnus (a relever chez le courtier)",
+    "tenue a 30 min inconnue (mesurable seulement apres l'ouverture)"
+   ],
+   "comblement_attendu_pct": 25
+  },
+  {
+   "ticker": "SLXN",
+   "classe": "PUMP_RISK",
+   "horizon": "jour a trois seances, en vendeuse",
+   "sortie": "racheter sur stop a 20 % au-dessus de l'entree, ou en fin d'horizon. Sous reserve du borrow.",
+   "direction": "vendeuse",
+   "stop_pct": 20.0,
+   "motifs": [
+    "3 signal(aux) de manipulation presents"
+   ],
+   "alertes": [
+    "montee rapide sans catalyseur identifie (RVOL eleve)",
+    "nano cap (1 M$), facile a manipuler",
+    "low float (5.6 M), mouvements violents"
+   ],
+   "inconnues": [
+    "catalyseur non verifie (EDGAR / news)",
+    "VWAP non mesure",
+    "disponibilite et cout du borrow inconnus (a relever chez le courtier)",
+    "tenue a 30 min inconnue (mesurable seulement apres l'ouverture)"
+   ],
+   "comblement_attendu_pct": 8
+  },
+  {
+   "ticker": "MSGY",
+   "classe": "INSUFFISANT",
+   "horizon": "aucun",
+   "sortie": "ne pas entrer",
+   "direction": null,
+   "stop_pct": null,
+   "motifs": [
+    "volume moyen 39,850 < 100,000 (plancher structurel: sortie de position incertaine)"
+   ],
+   "alertes": [
+    "montee rapide sans catalyseur identifie (RVOL eleve)",
+    "nano cap (7 M$), facile a manipuler",
+    "low float (0.8 M), mouvements violents"
+   ],
+   "inconnues": [
+    "catalyseur non verifie (EDGAR / news)",
+    "VWAP non mesure",
+    "disponibilite et cout du borrow inconnus (a relever chez le courtier)",
+    "tenue a 30 min inconnue (mesurable seulement apres l'ouverture)"
+   ],
+   "comblement_attendu_pct": 42
+  },
+  {
+   "ticker": "EVGN",
+   "classe": "INSUFFISANT",
+   "horizon": "aucun",
+   "sortie": "ne pas entrer",
+   "direction": null,
+   "stop_pct": null,
+   "motifs": [
+    "volume moyen 64,000 < 100,000 (plancher structurel: sortie de position incertaine)"
+   ],
+   "alertes": [
+    "nano cap (6 M$), facile a manipuler",
+    "low float (12.4 M), mouvements violents"
+   ],
+   "inconnues": [
+    "catalyseur non verifie (EDGAR / news)",
+    "VWAP non mesure",
+    "disponibilite et cout du borrow inconnus (a relever chez le courtier)",
+    "tenue a 30 min inconnue (mesurable seulement apres l'ouverture)"
+   ],
+   "comblement_attendu_pct": 42
+  },
+  {
+   "ticker": "YMT",
+   "classe": "INSUFFISANT",
+   "horizon": "aucun",
+   "sortie": "ne pas entrer",
+   "direction": null,
+   "stop_pct": null,
+   "motifs": [
+    "volume moyen 91,850 < 100,000 (plancher structurel: sortie de position incertaine)"
+   ],
+   "alertes": [
+    "montee rapide sans catalyseur identifie (RVOL eleve)",
+    "nano cap (1 M$), facile a manipuler",
+    "low float (0.1 M), mouvements violents",
+    "depot 424B3 = dilution, catalyseur baissier deguise"
+   ],
+   "inconnues": [
+    "VWAP non mesure",
+    "short interest inconnu",
+    "disponibilite et cout du borrow inconnus (a relever chez le courtier)",
+    "tenue a 30 min inconnue (mesurable seulement apres l'ouverture)"
+   ],
+   "comblement_attendu_pct": 8
+  }
+ ],
+ "mesures": {
+  "SLXN": {
+   "ticker": "SLXN",
+   "gap_pct": 79.27,
+   "atr_pct": 33.5,
+   "rvol": 35.16,
+   "rvol_pre_tendance": 1030.84,
+   "prix": 0.45,
+   "vwap": null,
+   "ouverture": null,
+   "cloture_veille": 0.24799999594688416,
+   "volume_jour": 70496267.0,
+   "volume_moyen": 1762250.0,
+   "float_actions": 5555085,
+   "market_cap": 1381167,
+   "short_interest_pct": 4.44,
+   "catalyseur": null,
+   "formulaire_sec": null,
+   "volume_pic_au_sommet": null,
+   "chute_depuis_sommet_pct": null,
+   "gap_tenu_30min": null
+  },
+  "IVVD": {
+   "ticker": "IVVD",
+   "gap_pct": 26.17,
+   "atr_pct": 9.14,
+   "rvol": 1.51,
+   "rvol_pre_tendance": 2.05,
+   "prix": 1.2,
+   "vwap": null,
+   "ouverture": null,
+   "cloture_veille": 0.949999988079071,
+   "volume_jour": 6402228.0,
+   "volume_moyen": 4016300.0,
+   "float_actions": 207831444,
+   "market_cap": 280020800,
+   "short_interest_pct": 11.45,
+   "catalyseur": null,
+   "formulaire_sec": null,
+   "volume_pic_au_sommet": null,
+   "chute_depuis_sommet_pct": null,
+   "gap_tenu_30min": null
+  },
+  "YMT": {
+   "ticker": "YMT",
+   "gap_pct": 24.29,
+   "atr_pct": 10.82,
+   "rvol": 164.13,
+   "rvol_pre_tendance": 789.41,
+   "prix": 2.2,
+   "vwap": null,
+   "ouverture": null,
+   "cloture_veille": 1.7699999809265137,
+   "volume_jour": 13267073.0,
+   "volume_moyen": 91850.0,
+   "float_actions": 60086,
+   "market_cap": 843530,
+   "short_interest_pct": null,
+   "catalyseur": null,
+   "formulaire_sec": "424B3",
+   "volume_pic_au_sommet": null,
+   "chute_depuis_sommet_pct": null,
+   "gap_tenu_30min": null
+  },
+  "MSGY": {
+   "ticker": "MSGY",
+   "gap_pct": 18.35,
+   "atr_pct": 40.52,
+   "rvol": 231.61,
+   "rvol_pre_tendance": 205.02,
+   "prix": 3.7,
+   "vwap": null,
+   "ouverture": null,
+   "cloture_veille": 3.130000114440918,
+   "volume_jour": 5570725.0,
+   "volume_moyen": 39850.0,
+   "float_actions": 807132,
+   "market_cap": 6634426,
+   "short_interest_pct": 15.53,
+   "catalyseur": null,
+   "formulaire_sec": null,
+   "volume_pic_au_sommet": null,
+   "chute_depuis_sommet_pct": null,
+   "gap_tenu_30min": null
+  },
+  "FFAI": {
+   "ticker": "FFAI",
+   "gap_pct": 14.18,
+   "atr_pct": 15.85,
+   "rvol": 18.78,
+   "rvol_pre_tendance": 25.65,
+   "prix": 1.61,
+   "vwap": null,
+   "ouverture": null,
+   "cloture_veille": 1.409999966621399,
+   "volume_jour": 5485711.0,
+   "volume_moyen": 954100.0,
+   "float_actions": 3785751,
+   "market_cap": 8639068,
+   "short_interest_pct": 17.54,
+   "catalyseur": null,
+   "formulaire_sec": "S-3/A",
+   "volume_pic_au_sommet": null,
+   "chute_depuis_sommet_pct": null,
+   "gap_tenu_30min": null
+  },
+  "CYAB": {
+   "ticker": "CYAB",
+   "gap_pct": 12.08,
+   "atr_pct": 17.29,
+   "rvol": 1.16,
+   "rvol_pre_tendance": 4.01,
+   "prix": 0.22,
+   "vwap": null,
+   "ouverture": null,
+   "cloture_veille": 0.1899999976158142,
+   "volume_jour": 55748047.0,
+   "volume_moyen": 843300.0,
+   "float_actions": 6962809,
+   "market_cap": 3424390,
+   "short_interest_pct": null,
+   "catalyseur": null,
+   "formulaire_sec": null,
+   "volume_pic_au_sommet": null,
+   "chute_depuis_sommet_pct": null,
+   "gap_tenu_30min": null
+  },
+  "EVGN": {
+   "ticker": "EVGN",
+   "gap_pct": -7.95,
+   "atr_pct": 12.78,
+   "rvol": 2.67,
+   "rvol_pre_tendance": 0.81,
+   "prix": 0.35,
+   "vwap": null,
+   "ouverture": null,
+   "cloture_veille": 0.3799999952316284,
+   "volume_jour": 18406834.0,
+   "volume_moyen": 64000.0,
+   "float_actions": 12383672,
+   "market_cap": 6004534,
+   "short_interest_pct": 0.36,
+   "catalyseur": null,
+   "formulaire_sec": null,
+   "volume_pic_au_sommet": null,
+   "chute_depuis_sommet_pct": null,
+   "gap_tenu_30min": null
+  }
+ },
+ "depots_sec": {
+  "SLXN": {
+   "cik": 2022416,
+   "formulaire_sec": null,
+   "depots": [
+    {
+     "date": "2026-09-28",
+     "form": "8-K",
+     "items": "7.01,9.01",
+     "classe": "A_LIRE",
+     "url": "https://www.sec.gov/Archives/edgar/data/2022416/000117891326004628/zk2636165.htm"
+    },
+    {
+     "date": "2026-09-25",
+     "form": "8-K",
+     "items": "3.01",
+     "classe": "A_LIRE",
+     "url": "https://www.sec.gov/Archives/edgar/data/2022416/000117891326004609/zk2636161.htm"
+    },
+    {
+     "date": "2026-09-25",
+     "form": "8-K",
+     "items": "5.07",
+     "classe": "A_LIRE",
+     "url": "https://www.sec.gov/Archives/edgar/data/2022416/000117891326004604/zk2636155.htm"
+    }
+   ],
+   "a_lire": [
+    {
+     "date": "2026-09-28",
+     "form": "8-K",
+     "items": "7.01,9.01",
+     "classe": "A_LIRE",
+     "url": "https://www.sec.gov/Archives/edgar/data/2022416/000117891326004628/zk2636165.htm"
+    },
+    {
+     "date": "2026-09-25",
+     "form": "8-K",
+     "items": "3.01",
+     "classe": "A_LIRE",
+     "url": "https://www.sec.gov/Archives/edgar/data/2022416/000117891326004609/zk2636161.htm"
+    },
+    {
+     "date": "2026-09-25",
+     "form": "8-K",
+     "items": "5.07",
+     "classe": "A_LIRE",
+     "url": "https://www.sec.gov/Archives/edgar/data/2022416/000117891326004604/zk2636155.htm"
+    }
+   ]
+  },
+  "IVVD": {
+   "cik": 1832038,
+   "formulaire_sec": null,
+   "depots": [],
+   "a_lire": []
+  },
+  "YMT": {
+   "cik": 1991605,
+   "formulaire_sec": "424B3",
+   "depots": [
+    {
+     "date": "2026-09-28",
+     "form": "6-K",
+     "items": "",
+     "classe": "A_LIRE",
+     "url": "https://www.sec.gov/Archives/edgar/data/1991605/000121390026104027/ea0306833-6k_yimutian.htm"
+    },
+    {
+     "date": "2026-09-24",
+     "form": "6-K/A",
+     "items": "",
+     "classe": "A_LIRE",
+     "url": "https://www.sec.gov/Archives/edgar/data/1991605/000121390026103044/ea0306546-6ka1_yimutian.htm"
+    },
+    {
+     "date": "2026-09-24",
+     "form": "424B3",
+     "items": "",
+     "classe": "DILUTION",
+     "url": "https://www.sec.gov/Archives/edgar/data/1991605/000121390026102833/ea0306400-424b3_yimutian.htm",
+     "form_qualifie": "424B3"
+    },
+    {
+     "date": "2026-09-24",
+     "form": "6-K",
+     "items": "",
+     "classe": "A_LIRE",
+     "url": "https://www.sec.gov/Archives/edgar/data/1991605/000121390026102830/ea0306400-6k_yimutian.htm"
+    }
+   ],
+   "a_lire": [
+    {
+     "date": "2026-09-28",
+     "form": "6-K",
+     "items": "",
+     "classe": "A_LIRE",
+     "url": "https://www.sec.gov/Archives/edgar/data/1991605/000121390026104027/ea0306833-6k_yimutian.htm"
+    },
+    {
+     "date": "2026-09-24",
+     "form": "6-K/A",
+     "items": "",
+     "classe": "A_LIRE",
+     "url": "https://www.sec.gov/Archives/edgar/data/1991605/000121390026103044/ea0306546-6ka1_yimutian.htm"
+    },
+    {
+     "date": "2026-09-24",
+     "form": "6-K",
+     "items": "",
+     "classe": "A_LIRE",
+     "url": "https://www.sec.gov/Archives/edgar/data/1991605/000121390026102830/ea0306400-6k_yimutian.htm"
+    }
+   ]
+  },
+  "MSGY": {
+   "cik": 2020228,
+   "formulaire_sec": null,
+   "depots": [
+    {
+     "date": "2026-09-28",
+     "form": "6-K",
+     "items": "",
+     "classe": "A_LIRE",
+     "url": "https://www.sec.gov/Archives/edgar/data/2020228/000121390026103905/ea030687201-6k_masonglory.htm"
+    },
+    {
+     "date": "2026-09-24",
+     "form": "6-K",
+     "items": "",
+     "classe": "A_LIRE",
+     "url": "https://www.sec.gov/Archives/edgar/data/2020228/000121390026102846/ea0299000-6k_masonglory.htm"
+    }
+   ],
+   "a_lire": [
+    {
+     "date": "2026-09-28",
+     "form": "6-K",
+     "items": "",
+     "classe": "A_LIRE",
+     "url": "https://www.sec.gov/Archives/edgar/data/2020228/000121390026103905/ea030687201-6k_masonglory.htm"
+    },
+    {
+     "date": "2026-09-24",
+     "form": "6-K",
+     "items": "",
+     "classe": "A_LIRE",
+     "url": "https://www.sec.gov/Archives/edgar/data/2020228/000121390026102846/ea0299000-6k_masonglory.htm"
+    }
+   ]
+  },
+  "FFAI": {
+   "cik": 1805521,
+   "formulaire_sec": "S-3/A",
+   "depots": [
+    {
+     "date": "2026-09-28",
+     "form": "8-K",
+     "items": "8.01,9.01",
+     "classe": "A_LIRE",
+     "url": "https://www.sec.gov/Archives/edgar/data/1805521/000121390026104130/ea0306819-8k_faraday.htm"
+    },
+    {
+     "date": "2026-09-24",
+     "form": "8-K",
+     "items": "5.02,7.01,9.01",
+     "classe": "A_LIRE",
+     "url": "https://www.sec.gov/Archives/edgar/data/1805521/000121390026102861/ea0306503-8k_faraday.htm"
+    },
+    {
+     "date": "2026-09-21",
+     "form": "8-K",
+     "items": "8.01,9.01",
+     "classe": "A_LIRE",
+     "url": "https://www.sec.gov/Archives/edgar/data/1805521/000121390026101673/ea0306063-8k_faraday.htm"
+    },
+    {
+     "date": "2026-09-21",
+     "form": "S-3/A",
+     "items": "",
+     "classe": "DILUTION",
+     "url": "https://www.sec.gov/Archives/edgar/data/1805521/000121390026101559/ea0305988-s3a1_faraday.htm",
+     "form_qualifie": "S-3/A"
+    }
+   ],
+   "a_lire": [
+    {
+     "date": "2026-09-28",
+     "form": "8-K",
+     "items": "8.01,9.01",
+     "classe": "A_LIRE",
+     "url": "https://www.sec.gov/Archives/edgar/data/1805521/000121390026104130/ea0306819-8k_faraday.htm"
+    },
+    {
+     "date": "2026-09-24",
+     "form": "8-K",
+     "items": "5.02,7.01,9.01",
+     "classe": "A_LIRE",
+     "url": "https://www.sec.gov/Archives/edgar/data/1805521/000121390026102861/ea0306503-8k_faraday.htm"
+    },
+    {
+     "date": "2026-09-21",
+     "form": "8-K",
+     "items": "8.01,9.01",
+     "classe": "A_LIRE",
+     "url": "https://www.sec.gov/Archives/edgar/data/1805521/000121390026101673/ea0306063-8k_faraday.htm"
+    }
+   ]
+  },
+  "CYAB": {
+   "cik": 2032341,
+   "formulaire_sec": null,
+   "depots": [],
+   "a_lire": []
+  },
+  "EVGN": {
+   "cik": 1574565,
+   "formulaire_sec": null,
+   "depots": [
+    {
+     "date": "2026-09-28",
+     "form": "6-K",
+     "items": "",
+     "classe": "A_LIRE",
+     "url": "https://www.sec.gov/Archives/edgar/data/1574565/000117891326004636/zk2636149.htm"
+    }
+   ],
+   "a_lire": [
+    {
+     "date": "2026-09-28",
+     "form": "6-K",
+     "items": "",
+     "classe": "A_LIRE",
+     "url": "https://www.sec.gov/Archives/edgar/data/1574565/000117891326004636/zk2636149.htm"
+    }
+   ]
+  }
+ }
+}

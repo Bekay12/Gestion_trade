@@ -1,91 +1,91 @@
 {
  "detection": "2026-09-24_premarket.json",
- "evalue_le": "2026-09-24T22:25:11.711778",
+ "evalue_le": "2026-09-28T22:39:07.907010",
  "fenetre_jours": 1,
  "notes": [
   {
    "ticker": "DCX",
    "classe": "PUMP_RISK",
    "resultat": "juste",
-   "motif": "retombe de -12.6 %, l'alerte etait fondee",
-   "variation_pct": -12.61
+   "motif": "retombe de -29.0 %, l'alerte etait fondee",
+   "variation_pct": -28.99
   },
   {
    "ticker": "RETO",
    "classe": "PUMP_RISK",
    "resultat": "juste",
-   "motif": "retombe de -1.5 %, l'alerte etait fondee",
-   "variation_pct": -1.48
+   "motif": "retombe de -9.5 %, l'alerte etait fondee",
+   "variation_pct": -9.47
   },
   {
    "ticker": "TWG",
    "classe": "PUMP_RISK",
    "resultat": "juste",
-   "motif": "retombe de -20.0 %, l'alerte etait fondee",
-   "variation_pct": -20.02
+   "motif": "retombe de -35.9 %, l'alerte etait fondee",
+   "variation_pct": -35.94
   },
   {
    "ticker": "CDT",
    "classe": "PUMP_RISK",
    "resultat": "juste",
-   "motif": "retombe de -0.1 %, l'alerte etait fondee",
-   "variation_pct": -0.08
+   "motif": "retombe de -33.9 %, l'alerte etait fondee",
+   "variation_pct": -33.88
   },
   {
    "ticker": "ZBAO",
    "classe": "PUMP_RISK",
    "resultat": "faux",
-   "motif": "a tenu (+11.1 %) : alerte trop severe",
-   "variation_pct": 11.06
+   "motif": "a tenu (+9.5 %) : alerte trop severe",
+   "variation_pct": 9.52
   },
   {
    "ticker": "SDEV",
    "classe": "PUMP_RISK",
    "resultat": "faux",
-   "motif": "a tenu (+5.7 %) : alerte trop severe",
-   "variation_pct": 5.74
+   "motif": "a tenu (+22.1 %) : alerte trop severe",
+   "variation_pct": 22.13
   },
   {
    "ticker": "NCPL",
    "classe": "PUMP_RISK",
    "resultat": "juste",
-   "motif": "retombe de -15.6 %, l'alerte etait fondee",
-   "variation_pct": -15.61
+   "motif": "retombe de -10.2 %, l'alerte etait fondee",
+   "variation_pct": -10.23
   },
   {
    "ticker": "GRML",
    "classe": "PUMP_RISK",
    "resultat": "faux",
-   "motif": "a tenu (+16.8 %) : alerte trop severe",
-   "variation_pct": 16.78
+   "motif": "a tenu (+15.0 %) : alerte trop severe",
+   "variation_pct": 14.98
   },
   {
    "ticker": "PFSA",
    "classe": "PUMP_RISK",
    "resultat": "juste",
-   "motif": "retombe de -14.0 %, l'alerte etait fondee",
-   "variation_pct": -14.04
+   "motif": "retombe de -37.9 %, l'alerte etait fondee",
+   "variation_pct": -37.89
   },
   {
    "ticker": "WETO",
    "classe": "PUMP_RISK",
    "resultat": "juste",
-   "motif": "retombe de -5.9 %, l'alerte etait fondee",
-   "variation_pct": -5.93
+   "motif": "retombe de -15.3 %, l'alerte etait fondee",
+   "variation_pct": -15.35
   },
   {
    "ticker": "VRME",
    "classe": "INSUFFISANT",
    "resultat": "non juge",
    "motif": "ecarte a la detection, aucune promesse",
-   "variation_pct": -10.06
+   "variation_pct": -26.44
   },
   {
    "ticker": "GCTK",
    "classe": "INSUFFISANT",
    "resultat": "non juge",
    "motif": "ecarte a la detection, aucune promesse",
-   "variation_pct": 6.17
+   "variation_pct": -25.1
   }
  ]
 }

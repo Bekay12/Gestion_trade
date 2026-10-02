@@ -1,0 +1,100 @@
+\section{Handlungsoptionen des Anlegers}
+\label{sec:optionen}
+
+Der Anleger, nicht das Unternehmen, entscheidet hier. Zur Wahl stehen drei Optionen, die
+sich gegenseitig ausschlie{\ss}en:
+
+\begin{description}
+\item[Option A] Kauf zum heutigen Kurs von \je{\OptionAKurs}{EUR}.
+\item[Option B] Kauf erst zum Schwellenkurs des Basisfalls auf zehn Jahre,
+  \je{\OptionBKurs}{EUR} (Teil~\ref{sec:flow}), mit dem Risiko, dass dieser Kurs nicht
+  erreicht wird.
+\item[Option C] Verzicht auf Neste, Anlage desselben Betrags in den Weltindex zur H\"urde von
+  \Pz{\Huerde}.
+\end{description}
+
+Die Szenarien des Zuflusses sind in Teil~\ref{sec:flow} erkl\"art; die Tabelle nimmt ihre
+Ergebnisse vorweg, damit die drei Raster vergleichbar sind.
+
+\optionentabelle
+
+\subsection{Option A: Kauf heute}
+
+\begin{table}[htbp]\centering\small
+\caption{Bewertungsraster Option A.}\label{tab:raster-a}
+\begin{tabularx}{\linewidth}{@{}lX@{}}\toprule
+Faktor & Einsch\"atzung\\\midrule
+Investitionsbedarf & Der volle Kurs von \je{\OptionAKurs}{EUR} je Aktie, sofort f\"allig.\\
+Kapitalbindung & Vollst\"andig und unbefristet. Der Buchwert je Aktie betr\"agt
+\je{\BuchwertJeAktie}{EUR}; der Kurs ist das \KBV-fache.\\
+Liquidit\"atsbedarf (j\"ahrlich) & Keiner. Die Dividende von \je{\DividendeVorschlag}{EUR}
+entspricht einer Rendite von \DivRenditeHeute.\\
+Zeithorizont bis Return & Auf keinem Horizont und in keinem Szenario erreicht der Kauf die
+H\"urde; im g\"unstigsten Szenario liegt der interne Zinsfu{\ss} auf zehn Jahre bei
+\OptionAIrrLTMO.\\
+Risiko & Hoch. Der Kurs steht auf einer Marge am oberen Ende ihrer Reihe, die das
+Unternehmen selbst einem au{\ss}ergew\"ohnlichen Marktumfeld zuschreibt.\\
+Potenzial & Voll beteiligt, wenn die Marge anh\"alt und Rotterdam die Menge um
+\KapazitaetPlusPz{} erh\"oht.\\
+\bottomrule\end{tabularx}\end{table}
+
+\bk{\emph{Dauer der Umsetzung:} sofort. \emph{Rentabilit\"at:} unter der H\"urde in jedem
+gerechneten Fall, \OptionAIrrMED{} auf zehn Jahre im Basisfall; die Rentabilit\"at h\"angt
+fast ganz am Endwert, also am Preis, den ein anderer Anleger sp\"ater zahlt.
+\emph{Liquidit\"at:} unproblematisch. \emph{Wirkung:} Wer heute kauft, kauft die
+Sondermarge zum Preis eines Dauerzustands.}
+
+\subsection{Option B: Kauf zum Schwellenkurs}
+
+\begin{table}[htbp]\centering\small
+\caption{Bewertungsraster Option B.}\label{tab:raster-b}
+\begin{tabularx}{\linewidth}{@{}lX@{}}\toprule
+Faktor & Einsch\"atzung\\\midrule
+Investitionsbedarf & \je{\OptionBKurs}{EUR} je Aktie, \OptionBAbschlag{} unter dem heutigen
+Kurs.\\
+Kapitalbindung & Bis zum Erreichen des Kurses keine, danach wie Option~A.\\
+Liquidit\"atsbedarf (j\"ahrlich) & Keiner; der Betrag bleibt bis dahin anlegbar.\\
+Zeithorizont bis Return & Unbestimmt. Der niedrigste Kurs der Reihe war \je{\KursMin}{EUR}
+im Jahr \KursMinJahr; ein Kurs dieser Gr\"o{\ss}enordnung ist also schon vorgekommen, sein
+Zeitpunkt aber nicht planbar.\\
+Risiko & Das Risiko ist das Ausbleiben, nicht der Verlust.\\
+Potenzial & Bei Zustandekommen \OptionBIrrMED{} auf zehn Jahre im Basisfall, also die
+H\"urde, und \OptionBIrrLTM{} auf LTM-Niveau.\\
+\bottomrule\end{tabularx}\end{table}
+
+\bk{\emph{Dauer:} offen. \emph{Rentabilit\"at:} per Konstruktion die H\"urde im Basisfall.
+\emph{Liquidit\"at:} der Betrag bleibt verf\"ugbar. \emph{Wirkung:} Option~B ist eine
+Kauforder, kein Verzicht; sie bewahrt die Beteiligung an einem Zyklus, der Neste schon einmal
+unter diesen Kurs gef\"uhrt hat.}
+
+\subsection{Option C: Indexanlage}
+
+\begin{table}[htbp]\centering\small
+\caption{Bewertungsraster Option C.}\label{tab:raster-c}
+\begin{tabularx}{\linewidth}{@{}lX@{}}\toprule
+Faktor & Einsch\"atzung\\\midrule
+Investitionsbedarf & Derselbe Betrag wie Option~A.\\
+Kapitalbindung & Jederzeit aufl\"osbar.\\
+Liquidit\"atsbedarf (j\"ahrlich) & Keiner.\\
+Zeithorizont bis Return & Sofort, im Mittel \Pz{\Huerde} p.\,a.\ nach der Vergangenheit.\\
+Risiko & Marktrisiko ohne Einzeltitelrisiko. Die H\"urde ist eine vergangene Rendite; die
+Sensitivit\"at von \Pz{\HuerdeLang} ist die vorsichtigere Lesart.\\
+Potenzial & Die H\"urde selbst, \OptionCIrr.\\
+\bottomrule\end{tabularx}\end{table}
+
+\subsection{\"Ubersicht und Empfehlung}
+
+\begin{table}[htbp]\centering\footnotesize
+\caption{\"Ubersicht der drei Optionen; Werte aus den Rastern und Tabelle~\ref{tab:optionen}.}\label{tab:optionen-uebersicht}
+\begin{tabularx}{\linewidth}{@{}lXXXXX@{}}\toprule
+Option & Investitionsbedarf & Kapitalbindung & Risiko & Zeithorizont & Chancen\\\midrule
+A & hoch (\je{\OptionAKurs}{EUR}) & hoch & hoch & keiner erreicht die H\"urde & Marge
+h\"alt, Rotterdam\\
+B & gering (\je{\OptionBKurs}{EUR}) & erst ab Kauf & Ausbleiben & offen & H\"urde im Basisfall\\
+C & wie A & gering & Markt & sofort & \Pz{\Huerde}\\
+\bottomrule\end{tabularx}\end{table}
+
+\bk{Die Rangfolge ist C vor B vor A f\"ur den Nichthalter. Sie h\"angt nicht am Szenario:
+Option~A bleibt in allen f\"unf Zuflussszenarien unter der Indexanlage. Empfohlen ist
+deshalb die Kombination C und B: den Betrag im Index halten und eine Kaufmarke setzen. Wo
+diese Marke je nach Horizont liegt, begr\"undet Teil~\ref{sec:votum}.}

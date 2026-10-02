@@ -3,7 +3,7 @@ name: gap-trading-germain
 description: Use for short-term trading of opening gaps AND of intraday breakouts without a gap (intraday and intraweek) following the Germain method - screens gappers and breakouts on Finviz, enriches them with fundamental and technical stock data, classifies each candidate as continuation / squeeze / fade / breakout / exhaustion / pump-risk, and returns the signals to validate before the order plus a temporal take-profit horizon. Trigger on gap scan, gappers, pre-market watchlist, gap and go, intraday setup, breakout scan, intraday runner.
 ---
 
-# Gap Trading — Méthode Germain
+# Gap Trading : méthode Germain
 
 Transforme une liste de gappers en décisions traçables. Le screener trouve les
 candidats ; ce skill fait le travail qui commence après : vérifier qu'un catalyseur
@@ -140,25 +140,36 @@ et sources dans `references/methode-germain.md`.
 
 Format fixe, trois blocs, décrit dans `references/rapport-template.md` :
 
-1. **Analyse du gap et du contexte** — ce qui s'est passé et sur quel titre
-2. **Signaux à valider avant l'ordre** — la check-list qui passe *avant* le clic
-3. **Horizon de réalisation** — jour / semaine / mois, avec le motif qui le fixe
+1. **Analyse du gap et du contexte** : ce qui s'est passé et sur quel titre
+2. **Signaux à valider avant l'ordre** : la check-list qui passe *avant* le clic
+3. **Horizon de réalisation** : jour, semaine ou mois, avec le motif qui le fixe
 
 ## Le stop, et pourquoi il n'est pas négociable
 
-Backtest du 26.09.2026, 226 verdicts, résultats dans
-`Trading_Agent/gaps/backtests/README.md`.
+Backtest du 26.09.2026 (226 verdicts), rejoué le 28.09.2026 sur le même univers avec la
+promesse FADE corrigée (234 verdicts). Résultats dans `Trading_Agent/gaps/backtests/README.md`.
 
 | Classe comme vente à découvert | Sans stop | Stop 20 % |
 |---|---|---|
-| `FADE` (95 % de justesse) | +4,75 % | +4,65 % |
-| `PUMP_RISK` (67 %) | **−9,57 %** | **+11,83 %** |
+| `FADE` (57 % de comblement réel, voir ci-dessous) | +2,27 % | non re-mesuré |
+| `PUMP_RISK` (69 %) | **−7,88 %** (hors artefact CTNT) | **+12,21 %** |
 
 Sur `PUMP_RISK`, 109 gagnants à +21,6 % contre 52 perdants à **−74,8 %**, pire cas
 **−1750 %**. Espérance négative malgré 68 % de réussite : la distribution est
 écrasée par quelques short squeezes. **Sans stop, ce signal ruine ; avec un stop
-à 20 %, il rapporte.** Sur `FADE` le stop ne change presque rien, ce qui en fait
-la configuration la plus stable du dispositif.
+à 20 %, il rapporte.** (Chiffres de cette phrase: mesure du 26.09.) Sur `FADE` la
+vente reste en moyenne gagnante, mais le gap ne se referme qu'une fois sur deux.
+
+**Correction du 28.09.2026 : FADE était noté trop large.** Le « 95 % » comptait
+juste tout FADE dont le plus bas passait 0,5 % sous l'ouverture. La promesse est le
+retour à la **clôture de la veille**; `evaluer_gaps.noter()` juge désormais sur cette
+référence. Rejeu sur le même univers (37 titres, deux ans, 234 verdicts,
+`gaps/backtests/2026-09-28_regle-fade-veille.json`) : comblement réel **36/63
+(57 %)**, vente ouverture→clôture +2,27 % en moyenne, médiane +3,33 %, 41 gagnants
+sur 63. Le gap ne se referme donc qu'une fois sur deux ; la vente reste en moyenne
+gagnante, mais nettement moins que ne le laissait croire 95 %. Le jour même,
+ARAY (+36 % sur la veille) et SRFM (clôture +5,3 % sur l'ouverture) auraient fait
+perdre une vente prise à l'ouverture.
 
 `STOP_VENDEUR_PCT = 20.0` porte cette mesure dans le code. La zone 20 à 30 % est
 plate, donc le réglage n'est pas ajusté au bruit.
@@ -225,7 +236,7 @@ possible qu'au cours acheteur. Une alerte le signale, seuil aligné sur `R7` dan
 
 | Fichier | À lire quand |
 |---|---|
-| `references/methode-germain.md` | Avant toute qualification — filtres, RVOL, squeeze vs pump |
+| `references/methode-germain.md` | Avant toute qualification : filtres, RVOL, squeeze vs pump |
 | `references/timing-et-sessions.md` | Pour choisir la fenêtre et comprendre pourquoi |
 | `references/rapport-template.md` | Avant d'écrire la sortie |
 | `docs/methode-gaps-et-cassures.md` | Pourquoi les filtres sont ce qu'ils sont, et ce qu'ils ont manqué |

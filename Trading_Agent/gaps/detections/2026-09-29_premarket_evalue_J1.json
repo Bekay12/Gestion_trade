@@ -1,0 +1,82 @@
+{
+ "detection": "2026-09-29_premarket.json",
+ "evalue_le": "2026-09-29T23:29:22.513370",
+ "fenetre_jours": 1,
+ "notes": [
+  {
+   "ticker": "CYAB",
+   "classe": "FADE",
+   "resultat": "juste",
+   "motif": "gap comble (bas 0.186 <= veille 0.19); vente ouverture->cloture -7.2 %",
+   "variation_pct": 7.15,
+   "vente_ouverture_cloture_pct": -7.15,
+   "executabilite": {
+    "executable": "oui",
+    "volume_post_ouverture_usd": 271630,
+    "barres_vides": 0,
+    "motif": "volume 09:35-10:00 272 k$, carnet continu (spread et borrow non mesures)"
+   }
+  },
+  {
+   "ticker": "IVVD",
+   "classe": "FADE",
+   "resultat": "juste",
+   "motif": "gap comble (bas 0.774 <= veille 0.95); vente ouverture->cloture +8.0 %",
+   "variation_pct": -8.0,
+   "vente_ouverture_cloture_pct": 8.0,
+   "executabilite": {
+    "executable": "oui",
+    "volume_post_ouverture_usd": 1088507,
+    "barres_vides": 0,
+    "motif": "volume 09:35-10:00 1089 k$, carnet continu (spread et borrow non mesures)"
+   }
+  },
+  {
+   "ticker": "FFAI",
+   "classe": "PUMP_RISK",
+   "resultat": "juste",
+   "motif": "retombe de -15.0 %, l'alerte etait fondee",
+   "variation_pct": -15.03,
+   "executabilite": {
+    "executable": "oui",
+    "volume_post_ouverture_usd": 2193863,
+    "barres_vides": 0,
+    "motif": "volume 09:35-10:00 2194 k$, carnet continu (spread et borrow non mesures)"
+   }
+  },
+  {
+   "ticker": "SLXN",
+   "classe": "PUMP_RISK",
+   "resultat": "juste",
+   "motif": "retombe de -0.5 %, l'alerte etait fondee",
+   "variation_pct": -0.5,
+   "executabilite": {
+    "executable": "oui",
+    "volume_post_ouverture_usd": 17480973,
+    "barres_vides": 0,
+    "motif": "volume 09:35-10:00 17481 k$, carnet continu (spread et borrow non mesures)"
+   }
+  },
+  {
+   "ticker": "MSGY",
+   "classe": "INSUFFISANT",
+   "resultat": "non juge",
+   "motif": "ecarte a la detection, aucune promesse",
+   "variation_pct": 12.69
+  },
+  {
+   "ticker": "EVGN",
+   "classe": "INSUFFISANT",
+   "resultat": "non juge",
+   "motif": "ecarte a la detection, aucune promesse",
+   "variation_pct": 11.53
+  },
+  {
+   "ticker": "YMT",
+   "classe": "INSUFFISANT",
+   "resultat": "non juge",
+   "motif": "ecarte a la detection, aucune promesse",
+   "variation_pct": -16.74
+  }
+ ]
+}

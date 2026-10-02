@@ -1,4 +1,4 @@
-# gaps/ — détections de gaps et leur notation
+# gaps/ : détections de gaps et leur notation
 
 Détections datées du skill `gap-trading-germain`, et le script qui les note
 après coup. Complémentaire de [`agent/scan_market.py`](../agent/scan_market.py) :
@@ -69,10 +69,18 @@ python3 $SKILL/cassure_scan.py --min-hausse 5 --limit 30
 # Contre-expertise : les revues de séance d'Academy Germain
 python3 $SKILL/germain_revues.py --depuis $(date +%F) --sortie germain/
 
-# Notation, le soir après la clôture US
-python3 gaps/evaluer_gaps.py --jours 1        # la détection du jour
+# Notation, le soir après la clôture US. --fichier est nécessaire : sans lui, le
+# script prend le dernier JSON par ordre alphabétique (ex. ticker_1150), pas le pré-marché.
+python3 gaps/evaluer_gaps.py --fichier detections/$(TZ=America/New_York date +%F)_premarket.json --jours 1
 python3 gaps/evaluer_gaps.py --jours 3        # rouvrir 3 séances plus tard
 ```
+
+**Chaque bilan du soir se termine par la contre-expertise Germain** : collecter la
+revue du jour (`germain_revues.py` ci-dessus), vérifier ses titres dans nos
+détections et dans les cours, puis écrire la section « Contre-expertise Academy
+Germain » du fichier `catalyseurs/` du jour : ce qu'il a traité, pourquoi nous
+l'avions ou non, où nos lectures concordent ou divergent, et ce qu'il faut en
+retenir.
 
 ## Règles de fonctionnement
 
@@ -103,12 +111,20 @@ Un verdict sans cours disponible ressort **incomplet** et n'est compté ni juste
 ni faux. La règle du dépôt vaut ici aussi : une donnée absente ne vaut pas feu
 vert, et elle ne vaut pas non plus succès.
 
+**Un short juste n'est gagnant que s'il était exécutable** (depuis le 29.09.2026,
+[`executabilite.py`](executabilite.py)). Chaque `FADE` et `PUMP_RISK` reçoit une mesure
+sur les barres de 5 min de 09:35 à 10:00 ET : au moins 200 k$ échangés et moins de
+deux barres sans échange. La barre de 09:30 est exclue, car yfinance y range l'enchère
+et le pré-marché. Le bilan affiche « Shorts justes ET exécutables » ; une mesure
+absente (au-delà de 60 jours) vaut « inconnu », jamais « oui ». Spread et borrow ne
+sont pas mesurés.
+
 ## Deux pièges déjà rencontrés
 
 **Le RVOL se calcule sur la médiane, pas la moyenne.** Mesuré le 22.09.2026 sur
 VEEA : deux séances à 14 M de volume juste avant la détection tiraient la
 moyenne à ~9 M et écrasaient le RVOL à 0,1 pour une séance ordinaire. La médiane
-(163 K) montre le volume réellement typique du titre — et le fait basculer en
+(163 K) montre le volume réellement typique du titre, et le fait basculer en
 `INSUFFISANT`, ce qui est le bon verdict pour une nano cap qui ne traite
 normalement pas 500 K titres par jour.
 
