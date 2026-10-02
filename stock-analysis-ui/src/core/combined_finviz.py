@@ -20,7 +20,7 @@ aussi chaque titre dans le store, ce qui rafraichit le catalogue au passage.
 from __future__ import annotations
 
 PRESET = "dual_star"
-HEADERS = ["Symbole", "Nom", "Pays", "Profil", "⭐", "Growth /5", "Safe /7",
+HEADERS = ["Symbole", "Nom", "Pays", "Profil", "Growth /5", "Safe /7",
            "G3 sous-val.", "G4 momentum %", "S4 dividende %"]
 ORDRE = {"💎 Dual Champion*": 0, "💎 Dual Champion": 1, "🛡️  Pure Safe": 2,
          "🚀 Pure Growth": 3, "⚖️  Balanced": 4, "⚪ Below": 5}
@@ -40,7 +40,6 @@ def lignes(resultats: list[dict]) -> list[list]:
     res = [r for r in resultats if r]
     res.sort(key=lambda r: (ORDRE.get(r["profil"], 9), -r["score_total"], r["ticker"]))
     return [[r["ticker"], r.get("nom") or "N/A", r.get("pays") or "N/A", r["profil"],
-             "⭐" if r["profil"] == "💎 Dual Champion*" else "",
              r["score_growth"], r["score_safe"],
              r.get("G3_Underval", "—"), _cellule(r.get("G4_Momentum_%")),
              _cellule(r.get("S4_DivYield_%"), 2)] for r in res]
@@ -81,7 +80,7 @@ def run_finviz_combined(limit: int = 500, progress=None) -> dict:
         resultats.append(cs.analyze_safe(t))
     rows = lignes(resultats)
     n_dual = sum(1 for r in rows if r[3].startswith("💎"))
-    n_star = sum(1 for r in rows if r[4] == "⭐")
+    n_star = sum(1 for r in rows if r[3] == "💎 Dual Champion*")
     titre = (f"Finviz + Combined — {len(tickers)} titres Finviz, {len(rows)} analysés : "
              f"{n_star} ⭐ Dual Champion*, {n_dual - n_star} Dual Champion"
              + (" (interrompu)" if interrompu else ""))

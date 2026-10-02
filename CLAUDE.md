@@ -73,14 +73,26 @@ analysis, charts). When touching analysis logic, prefer the `core/` submodule; k
 - [cache_db.py](stock-analysis-ui/src/cache_db.py) — a **compatibility shim** that forwards
   the old SQLite API to `market_store`. Don't add logic here; add it to `market_store`.
 
-**Two screener families** (this distinction matters — see the memory note):
-- [core/store_screeners.py](stock-analysis-ui/src/core/store_screeners.py) — reads the local
-  Parquet store, **0 yfinance requests**, but limited to the local catalogue. Kept only for
-  the 2 views Finviz can't reproduce (Combined profiles, Golden Cross).
-- [core/finviz_screeners.py](stock-analysis-ui/src/core/finviz_screeners.py) — queries the
+**Three screener forms** (this distinction matters, see the memory note):
+- [core/store_screeners.py](stock-analysis-ui/src/core/store_screeners.py) reads the local
+  Parquet store, **0 yfinance requests**, but is limited to the local catalogue. Kept only for
+  the views Finviz can't reproduce: Combined profiles (`combined`, `dual_star`) and Golden Cross.
+- [core/finviz_screeners.py](stock-analysis-ui/src/core/finviz_screeners.py) queries the
   **entire US market** via Finviz (1 request, 0 yfinance) to *discover* new tickers.
   Requires `lxml` (else finvizfinance crashes) and a `curl_cffi` impersonated session to
   bypass bot-blocking.
+- [core/combined_finviz.py](stock-analysis-ui/src/core/combined_finviz.py) is the **hybrid**:
+  Finviz discovers (preset `dual_star`, 1 request), then `Combined_scan.analyze_safe` scores
+  each ticker live. It is the one deliberate exception to the budget rule below: about 4
+  yfinance requests per ticker (about 50 tickers, about a minute), only on an explicit click,
+  cancellable, and it refreshes the store as a side effect.
+
+**Combined has two forms in the app, both flag the star.** "Combined pur" (store, 0 request)
+and "Finviz + Combined" (hybrid). The star `💎 Dual Champion*` is a *profile value* (column
+`Profil`) and is counted in the window title; there is no separate ⭐ column. The pure form
+reads the store, so it inherits the store's staleness and `market_store.py`'s own copy of the
+criteria (see [DECISIONS-EN-ATTENTE.md](DECISIONS-EN-ATTENTE.md)); the two forms can disagree
+on the same ticker, and the live Combined is the reference.
 
 **yfinance request budget is a hard constraint.** The user hits yfinance rate limits;
 screeners and features must minimize per-symbol yfinance calls and prefer the Parquet/DuckDB
@@ -88,9 +100,24 @@ store. Never add a per-symbol yfinance loop where a store read or a batched
 `yf.download(chunk, group_by="ticker")` would do.
 
 **Standalone CLI scan scripts** (`src/*_scan.py`: `Big_Growth_scan.py`,
-`Sichere_Unternehmen_scan.py`, `Combined_scan.py`) fetch yfinance per symbol *and* write into
-the Parquet store, producing CSVs. They are the batch counterpart to the in-app store
-screeners.
+`Sichere_Unternehmen_scan.py`, `Combined_scan.py`, `Valley_scan.py`) fetch yfinance per symbol
+*and* write into the Parquet store, producing CSVs. They are the batch counterpart to the
+in-app store screeners. The three fundamental scanners share **one** module,
+[core/scan_fondamentaux.py](stock-analysis-ui/src/core/scan_fondamentaux.py): yfinance
+throttle and retry, FX to EUR, annual statements, criteria G1-G5 and S1-S7, profiles
+(Dual Champion, Dual Champion*, Pure Growth, Pure Safe, Balanced). **Fix a criterion there,
+never in a script.** The only other copy is `market_store.py` (store columns `c1..c5`,
+`s1_ok..s7_ok`), known to be behind and pending a decision.
+
+**Backtests** live in `src/Combined_backtest.py` and `src/Valley_backtest.py`; outputs and
+method are in [stock-analysis-ui/src/backtests/README.md](stock-analysis-ui/src/backtests/README.md).
+They are point-in-time (publication delays, no look-ahead) and read the local store, so they
+cost 0 yfinance requests apart from one grouped index download. Read the limits there before
+quoting a result: survivor universe, retrospective PEG, only dates from 2025-04 reliable.
+
+**Screener results are archived.** Every table passed to `_present_screener_results` is also
+written as a timestamped CSV in `src/Results/Screeners/` (see `ui/mixins/screeners.py`),
+before the dialog opens, even if the user cancels. That folder is not gitignored.
 
 **Optional online layer:** [api.py](stock-analysis-ui/src/api.py) (Flask REST) and
 [background_worker.py](stock-analysis-ui/src/background_worker.py) (daily signal computation)

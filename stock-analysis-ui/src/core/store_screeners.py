@@ -61,6 +61,14 @@ def _cell(row, col, nd=2, is_int=False):
         return str(v)
 
 
+def _domain(row):
+    for column in ("sector", "domaine"):
+        value = row.get(column)
+        if value is not None and not pd.isna(value) and str(value).strip():
+            return str(value).strip()
+    return "N/A"
+
+
 def _result(title, headers, rows):
     return {"title": f"{title} — {len(rows)} résultat(s)", "headers": headers, "rows": rows}
 
@@ -111,13 +119,13 @@ def screen_combined(symbols=None):
     symboles = [r[0] for r in rows]
     cmap = get_country_map(symboles)
     nmap = _noms(symboles, df)
-    # Colonne ⭐ : meme signalement que la forme Finviz + Combined (core/combined_finviz).
-    rows = [[r[0], nmap.get(r[0]) or "N/A", cmap.get(r[0]) or "N/A", r[1],
-             "⭐" if r[1] == "Dual Champion*" else "", *r[2:]] for r in rows]
-    n_star = sum(1 for r in rows if r[4] == "⭐")
+    rows = [[r[0], nmap.get(r[0]) or "N/A", _domain(df.loc[df["symbol"] == r[0]].iloc[0]),
+             cmap.get(r[0]) or "N/A", *r[1:]]
+            for r in rows]
+    n_star = sum(1 for r in rows if r[4] == "Dual Champion*")
     return _result(
         f"Combined pur (catalogue) — {n_star} ⭐ Dual Champion* — profils Dual* / Dual / Pure Safe / Pure Growth / Balanced",
-        ["Symbole", "Nom", "Pays", "Profil", "⭐", "Growth /5", "Safe /7"],
+        ["Symbole", "Nom", "Domaine", "Pays", "Profil", "Growth /5", "Safe /7"],
         rows,
     )
 
@@ -148,11 +156,12 @@ def screen_dual_star(symbols=None):
     sel = sel.sort_values(["_bg", "_sec", "symbol"], ascending=[False, False, True]).head(MAX_ROWS)
     symboles = list(sel["symbol"])
     cmap, nmap = get_country_map(symboles), _noms(symboles, sel)
-    rows = [[r["symbol"], nmap.get(r["symbol"]) or "N/A", cmap.get(r["symbol"]) or "N/A",
+    rows = [[r["symbol"], nmap.get(r["symbol"]) or "N/A", _domain(r),
+             cmap.get(r["symbol"]) or "N/A",
              int(r["_bg"]), int(r["_sec"]), str(r.get("feature_date", ""))[:10]]
             for _, r in sel.iterrows()]
     return _result("Dual Champion* (catalogue) — Dual + sous-valorisé + momentum + dividende",
-                   ["Symbole", "Nom", "Pays", "Growth /5", "Safe /7", "Données du"], rows)
+                   ["Symbole", "Nom", "Domaine", "Pays", "Growth /5", "Safe /7", "Données du"], rows)
 
 
 def screen_golden_cross(max_gap_pct: float = 5.0, symbols=None):
@@ -177,13 +186,14 @@ def screen_golden_cross(max_gap_pct: float = 5.0, symbols=None):
     rows = []
     for _, r in sel.iterrows():
         rows.append([
-            r["symbol"], nmap.get(r["symbol"]) or "N/A", cmap.get(r["symbol"]) or "N/A",
+            r["symbol"], nmap.get(r["symbol"]) or "N/A", _domain(r),
+            cmap.get(r["symbol"]) or "N/A",
             _cell(r, "price", 2), _cell(r, "sma50", 2),
             _cell(r, "sma200", 2), _cell(r, "_g", 2),
         ])
     return _result(
         f"Golden Cross récent (SMA50 > SMA200, écart ≤ {max_gap_pct:.0f}%)",
-        ["Symbole", "Nom", "Pays", "Prix", "SMA50", "SMA200", "Écart %"],
+        ["Symbole", "Nom", "Domaine", "Pays", "Prix", "SMA50", "SMA200", "Écart %"],
         rows,
     )
 

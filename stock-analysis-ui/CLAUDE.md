@@ -11,6 +11,8 @@ from *this* directory.
 - [launch_stock_analysis.py](launch_stock_analysis.py) — GUI entry point. Adds `src/` to the
   path, `chdir`s into `src/`, opens `ui.main_window.MainWindow`.
 - [src/](src/) — all application code (see [src/CLAUDE.md](src/CLAUDE.md)).
+- [src/backtests/README.md](src/backtests/README.md): method, limits and results of the
+  Combined and Valley backtests. Read it before quoting any backtest figure.
 - [requirements.txt](requirements.txt) — pinned deps; installed into the root `.venv_new`.
 - [pytest.ini](pytest.ini) — `testpaths = src/tests`; defines the `integration` marker.
 - `data_cache/`, `cache_logs/` — runtime artifacts, not source.

@@ -31,6 +31,56 @@ A comprehensive stock analysis platform with both desktop (PyQt5) and web (Flask
 - **Desktop App** - PyQt5-based GUI for advanced users
 - **REST API** - Complete API for programmatic access
 
+### 💎 Screeners fondamentaux : Combined et Dual Champion*
+
+Le menu **Yahoo Screeners** de l'application contient plusieurs vues. Le Combined note chaque
+titre sur 12 critères : **Big Growth** (G1 à G5, croissance, marge, sous-valorisation, momentum,
+volume) et **Sichere Unternehmen** (S1 à S7, taille, dette, bêta, dividende, flux de trésorerie,
+croissance). Les profils en découlent :
+
+| Profil | Règle |
+|---|---|
+| 💎 Dual Champion* | Dual Champion qui remplit aussi G3 (sous-valorisation), G4 (momentum 3 mois) et S4 (dividende) |
+| 💎 Dual Champion | G >= 3 et S >= 5 |
+| 🛡️ Pure Safe | S >= 5 et G < 3 |
+| 🚀 Pure Growth | G >= 4 et S < 3 |
+| ⚖️ Balanced | G >= 3 et S >= 3 |
+
+Le Combined existe sous **deux formes**, et les deux signalent l'étoile (le profil
+`Dual Champion*` apparaît en tête de liste et le titre de la fenêtre compte les étoiles) :
+
+| Entrée du menu | Principe | Coût | Quand l'utiliser |
+|---|---|---|---|
+| 💎 Combined pur (catalogue, ⭐ signalée) | Profils calculés sur le store local | 0 requête | Vue rapide du catalogue ; les données du store peuvent être anciennes |
+| 🌍💎 Finviz + Combined (marché, ⭐ signalée) | Finviz découvre sur tout le marché US, puis le Combined note chaque titre en direct | 1 requête Finviz et environ 4 requêtes Yahoo par titre, environ une minute pour 50 titres | Chercher de nouveaux candidats ; bouton Annuler pour garder ce qui est déjà analysé |
+| 💎⭐ Dual Champion* seuls (catalogue) | Raccourci : seulement les étoilés du store | 0 requête | Voir les étoilés avec leur date de données |
+| 🌍 Dual* liste brute Finviz (non confirmée) | Liste Finviz sans passage par le Combined | 1 requête | Liste de découverte à confirmer, pas une sélection |
+
+Les deux formes peuvent se contredire sur un même titre : le store est ancien et garde une copie
+plus ancienne des critères. **Le Combined en direct fait foi.** La forme Finviz + Combined ajoute
+trois colonnes (G3, G4 en %, S4 en %) pour voir pourquoi un titre est étoilé.
+
+Chaque tableau affiché est aussi archivé en CSV horodaté dans `src/Results/Screeners/`.
+
+**En ligne de commande** (depuis `src/`) :
+
+```bash
+python Combined_scan.py --profile star --top 30            # étoilés seuls (dual inclut l'étoile)
+python Combined_scan.py --min-growth 3 --min-safe 4
+python Combined_scan.py --random 300 --workers 10 --seed 42
+python Big_Growth_scan.py --min-score 4
+python Sichere_Unternehmen_scan.py --min-score 6
+python Valley_scan.py --signal divergence --top 20          # détecteur de creux
+```
+
+Les trois scanners fondamentaux partagent un seul module, `src/core/scan_fondamentaux.py` : un
+critère se corrige là, pas dans un script.
+
+**Backtests** : `Combined_backtest.py` et `Valley_backtest.py` rejouent les scanners à des dates
+passées sans regard sur le futur. Méthode, limites et résultats dans
+[src/backtests/README.md](src/backtests/README.md). Mesure du 02.10.2026 : les Dual Champion*
+ont battu l'indice de façon nette, mais sur peu de dates indépendantes (voir les limites).
+
 ## 🚀 Quick Start
 
 ### Web Version (Recommended)
@@ -68,7 +118,12 @@ python api.py
 ```
 stock-analysis-ui/
 ├── src/
-│   ├── qsi.py                      # Core analysis engine
+│   ├── qsi.py                      # Core analysis engine (legacy façade over core/)
+│   ├── core/                       # Engine modules, screeners, scan_fondamentaux.py
+│   ├── Combined_scan.py            # Big Growth + Sichere scanner (Dual Champion*)
+│   ├── Valley_scan.py              # Valley (dip) detector
+│   ├── Combined_backtest.py        # Point-in-time backtests, outputs in backtests/
+│   ├── tests/                      # pytest suite (offline by default)
 │   ├── api.py                      # Flask web server
 │   ├── config.py                   # Configuration management
 │   ├── templates/

@@ -22,7 +22,8 @@ def test_etoile_signalee_et_en_tete(monkeypatch):
                             "CCC": _r("CCC", "💎 Dual Champion*", 8)})
     res = cf.run_finviz_combined()
     assert [r[0] for r in res["rows"]] == ["CCC", "BBB", "AAA"]
-    assert [r[4] for r in res["rows"]] == ["⭐", "", ""]
+    assert "⭐" not in res["headers"]
+    assert [r[3] for r in res["rows"]] == ["💎 Dual Champion*", "💎 Dual Champion", "⚪ Below"]
     assert "1 ⭐ Dual Champion*" in res["title"] and "1 Dual Champion" in res["title"]
 
 

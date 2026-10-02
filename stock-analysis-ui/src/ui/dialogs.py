@@ -6,6 +6,7 @@ from PyQt5.QtWidgets import (
     QPushButton, QLabel, QAbstractItemView, QHeaderView, QDialogButtonBox,
 )
 from PyQt5.QtCore import Qt
+from PyQt5.QtGui import QColor
 
 
 class ScreenerResultsDialog(QDialog):
@@ -21,7 +22,8 @@ class ScreenerResultsDialog(QDialog):
     # la colonne au point de pousser les colonnes chiffrées hors de la fenêtre.
     LONGUEUR_NOM_MAX = 32
 
-    def __init__(self, title, headers, rows, parent=None, symbol_col=0, preselect=True):
+    def __init__(self, title, headers, rows, parent=None, symbol_col=0, preselect=True,
+                 new_symbols=None):
         super().__init__(parent)
         self.setWindowTitle(title)
         self.setModal(True)
@@ -29,15 +31,19 @@ class ScreenerResultsDialog(QDialog):
         # Une colonne « # » (rang) est préfixée pour porter l'ordre du screener :
         # le symbole de l'appelant glisse donc d'une position vers la droite.
         self._symbol_col = symbol_col + 1
+        self._new_symbols = {str(symbol).strip().upper() for symbol in (new_symbols or set())}
         full_headers = ["#"] + list(headers)
         self._nom_col = full_headers.index("Nom") if "Nom" in full_headers else None
 
         layout = QVBoxLayout(self)
 
-        info = QLabel(
+        info_text = (
             f"{len(rows)} résultat(s) — cochez les symboles à injecter dans le champ d'analyse, "
             "puis « Injecter la sélection ». Cliquez un en-tête pour trier (« # » = ordre du screener)."
         )
+        if self._new_symbols:
+            info_text += f" {len(self._new_symbols)} nouvel(s) entrant(s) surligné(s) en vert."
+        info = QLabel(info_text)
         info.setWordWrap(True)
         layout.addWidget(info)
 
@@ -50,6 +56,8 @@ class ScreenerResultsDialog(QDialog):
 
         for r, row in enumerate(rows):
             full_row = (r + 1,) + tuple(row)   # rang 1-based = ordre du screener
+            symbol = str(full_row[self._symbol_col]).strip().upper() if self._symbol_col < len(full_row) else ""
+            is_new = symbol in self._new_symbols
             for c, val in enumerate(full_row):
                 item = QTableWidgetItem()
                 if val is None:
@@ -69,6 +77,8 @@ class ScreenerResultsDialog(QDialog):
                 if c == self._symbol_col:
                     item.setFlags(item.flags() | Qt.ItemIsUserCheckable)
                     item.setCheckState(Qt.Checked if preselect else Qt.Unchecked)
+                if is_new:
+                    item.setBackground(QColor(220, 255, 220))
                 self.table.setItem(r, c, item)
 
         self.table.setSortingEnabled(True)

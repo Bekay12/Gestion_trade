@@ -7,8 +7,133 @@ from PyQt5.QtWidgets import QApplication, QMessageBox, QProgressDialog
 from PyQt5.QtCore import Qt
 from concurrent.futures import ThreadPoolExecutor, TimeoutError as FuturesTimeoutError
 from datetime import datetime
+import csv
+from pathlib import Path
+import re
 import threading
 import yfinance as yf
+
+
+SCREENER_RESULTS_DIR = Path(__file__).resolve().parents[2] / "Results" / "Screeners"
+
+
+def _ensure_domain_column(headers: list[str], rows: list, domain_map: dict) -> tuple[list[str], list]:
+    """Ensure displayed screener rows expose one normalized Domaine column."""
+    headers = list(headers or [])
+    rows = list(rows or [])
+    if "Domaine" in headers:
+        domain_index = headers.index("Domaine")
+        has_domain_column = True
+    else:
+        sector_header = next((name for name in ("Secteur", "Sector") if name in headers), None)
+        if sector_header:
+            domain_index = headers.index(sector_header)
+            headers[domain_index] = "Domaine"
+            has_domain_column = True
+        else:
+            domain_index = headers.index("Nom") + 1 if "Nom" in headers else min(1, len(headers))
+            headers.insert(domain_index, "Domaine")
+            has_domain_column = False
+
+    symbol_index = headers.index("Symbole") if "Symbole" in headers else 0
+    normalized_rows = []
+    for row in rows:
+        values = list(row or [])
+        if (has_domain_column and domain_index < len(values)
+            and values[domain_index] not in (None, "", "N/A")):
+            normalized_rows.append(values)
+            continue
+        symbol = str(values[symbol_index]).strip().upper() if symbol_index < len(values) else ""
+        domain = domain_map.get(symbol) or "N/A"
+        if has_domain_column and domain_index < len(values):
+            values[domain_index] = domain
+        else:
+            values.insert(domain_index, domain)
+        normalized_rows.append(values)
+    return headers, normalized_rows
+
+
+def _screener_history_key(title: str) -> str:
+    """Normalize variable result counts so repeated runs match the same screener."""
+    key = re.sub(
+        r"\s+—\s+\d+\s+(?:résultat\(s\)|résultats?|symbole\(s\)|symboles?)$",
+        "",
+        title.strip(),
+        flags=re.IGNORECASE,
+    )
+    for prefix in ("Combined pur (catalogue)", "Finviz + Combined", "Événements 48h"):
+        if key.startswith(prefix):
+            return prefix
+    return key
+
+
+def _new_screener_symbols(title: str, headers: list[str], rows: list) -> set[str]:
+    """Return tickers absent from the latest archived day of this screener."""
+    symbol_index = headers.index("Symbole") if "Symbole" in headers else 0
+    current_symbols = {
+        str(row[symbol_index]).strip().upper()
+        for row in rows or []
+        if row and symbol_index < len(row) and row[symbol_index]
+    }
+    if not current_symbols:
+        return set()
+
+    history_key = _screener_history_key(title)
+    today = datetime.now().date()
+    for archive_path in sorted(SCREENER_RESULTS_DIR.glob("*.csv"), reverse=True):
+        try:
+            with archive_path.open(newline="", encoding="utf-8-sig") as csvfile:
+                reader = csv.DictReader(csvfile)
+                if not reader.fieldnames or "screener" not in reader.fieldnames:
+                    continue
+                previous_rows = list(reader)
+            previous_title = previous_rows[0].get("screener", "") if previous_rows else ""
+            if not previous_title or _screener_history_key(previous_title) != history_key:
+                continue
+            timestamp = previous_rows[0].get("run_at", "") if previous_rows else ""
+            try:
+                archive_date = datetime.fromisoformat(timestamp).date()
+            except ValueError:
+                match = re.match(r"(\d{8})", archive_path.name)
+                if not match:
+                    continue
+                archive_date = datetime.strptime(match.group(1), "%Y%m%d").date()
+            if archive_date >= today:
+                continue
+            symbol_header = next(
+                (header for header in ("Symbole", "Ticker") if header in reader.fieldnames),
+                None,
+            )
+            if not symbol_header:
+                continue
+            previous_symbols = {
+                row.get(symbol_header, "").strip().upper()
+                for row in previous_rows
+                if row.get(symbol_header, "").strip()
+            }
+            return current_symbols - previous_symbols
+        except (OSError, csv.Error, UnicodeError) as exc:
+            print(f"[SCREENER] archive historique illisible ({archive_path.name}: {exc})")
+    return current_symbols
+
+
+def _archive_screener_results(title: str, headers: list[str], rows: list) -> Path:
+    """Write one replaceable daily CSV snapshot for this screener."""
+    timestamp = datetime.now()
+    history_key = _screener_history_key(title)
+    slug = re.sub(r"[^A-Za-z0-9_-]+", "_", history_key).strip("_")[:80] or "screener"
+    filename = f"{timestamp.strftime('%Y%m%d')}_{slug}.csv"
+    SCREENER_RESULTS_DIR.mkdir(parents=True, exist_ok=True)
+    file_path = SCREENER_RESULTS_DIR / filename
+
+    with file_path.open("w", newline="", encoding="utf-8-sig") as csvfile:
+        writer = csv.writer(csvfile)
+        writer.writerow(["run_at", "screener", *headers])
+        for row in rows:
+            values = list(row or [])
+            values = (values + [""] * len(headers))[:len(headers)]
+            writer.writerow([timestamp.isoformat(timespec="seconds"), title, *values])
+    return file_path
 
 
 class ScreenersMixin:
@@ -31,6 +156,21 @@ class ScreenersMixin:
         try:
             from market_store import get_name_map
             return get_name_map(list(symbols)) or {}
+        except Exception:
+            return {}
+
+    def _domain_map(self, symbols):
+        """Best-effort {symbol: sector} lookup from local instrument profiles."""
+        try:
+            from market_store import read_instruments
+            profiles = read_instruments(list(symbols), columns=["symbol", "sector"])
+            if profiles.empty or not {"symbol", "sector"} <= set(profiles.columns):
+                return {}
+            return {
+                str(symbol).strip().upper(): str(domain).strip()
+                for symbol, domain in zip(profiles["symbol"], profiles["sector"])
+                if symbol and domain is not None and domain == domain and str(domain).strip()
+            }
         except Exception:
             return {}
 
@@ -73,17 +213,27 @@ class ScreenersMixin:
             print(f"[SCREENER] complétion des profils non lancée ({type(exc).__name__}: {exc})")
 
     def _present_screener_results(self, title, headers, rows):
-        """Ouvre un dialog interactif (table triable + cases à cocher) et injecte
-        les symboles cochés dans le champ d'analyse. Retourne la liste injectée
-        (vide si l'utilisateur annule)."""
+        """Archive les résultats, puis affiche le tableau triable et injecte
+        les symboles cochés. Retourne une liste vide si l'utilisateur annule."""
+        symbols = [str(row[0]).strip().upper() for row in (rows or []) if row and row[0]]
+        headers, rows = _ensure_domain_column(headers, rows, self._domain_map(symbols))
+        new_symbols = _new_screener_symbols(title, headers, rows)
+        try:
+            archive_path = _archive_screener_results(title, headers, rows)
+            if hasattr(self, "_status"):
+                relative_path = archive_path.relative_to(Path(__file__).resolve().parents[2])
+                self._status(f"Résultats archivés : {relative_path}", 8000)
+        except Exception as exc:
+            print(f"[SCREENER] archivage impossible ({type(exc).__name__}: {exc})")
         from ui.dialogs import ScreenerResultsDialog
-        dlg = ScreenerResultsDialog(title, headers, rows, parent=self)
+        dlg = ScreenerResultsDialog(title, headers, rows, parent=self,
+                        new_symbols=new_symbols)
         resultat = dlg.exec_()
         # Complétion lancée quoi qu'il arrive : même si l'utilisateur annule,
         # les symboles ont été affichés et méritent d'avoir leur pays et leur nom
         # la prochaine fois. Les deux colonnes viennent du même profil, donc la
         # présence de l'une ou l'autre justifie la complétion.
-        if {"Pays", "Nom"} & set(headers or []):
+        if {"Pays", "Nom", "Domaine"} & set(headers or []):
             self._completer_profils_en_arriere_plan(rows)
         if resultat != ScreenerResultsDialog.Accepted:
             return []

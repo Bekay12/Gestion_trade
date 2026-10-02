@@ -30,6 +30,10 @@ PyQt5 GUI layer.
   `valeur_cellule(item)`. Setting a number on `Qt.EditRole` does **not** work here:
   `QTableWidgetItem` folds `EditRole` into the display role, which is what made every numeric
   column sort lexicographically (`10.2` before `9.5`).
+- **Every displayed screener result is archived.** `_present_screener_results` first writes a
+  timestamped CSV (`Results/Screeners/AAAAMMJJ_HHMMSS_micro_titre.csv`, columns `run_at`,
+  `screener`, then the headers), best-effort, even if the dialog is then cancelled. Don't add a
+  second archiving path in a screener.
 - **`QProgressDialog.close()` sets `wasCanceled()` to True** — never branch on
   `wasCanceled()` after `close()`, or the handler always returns before displaying results.
   (This silently broke the Finviz gapper once.)

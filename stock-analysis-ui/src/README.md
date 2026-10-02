@@ -31,6 +31,12 @@ stock-analysis-ui/src/
     └── signaux/
         └── optimization_results.csv  ← Résultats d'optimisation
 
+===== SCANNERS FONDAMENTAUX ET BACKTESTS =====
+
+Combined_scan.py, Big_Growth_scan.py, Sichere_Unternehmen_scan.py, Valley_scan.py et leurs
+backtests (Combined_backtest.py, Valley_backtest.py) ne font pas partie de ce guide V2.0.
+Voir ../README.md (section Screeners fondamentaux) et backtests/README.md.
+
 ===== DÉMARRAGE RAPIDE =====
 
 1️⃣  Vérifier que les modules fonctionnent (5 minutes):

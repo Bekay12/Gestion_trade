@@ -31,6 +31,25 @@ quelle que soit la devise ; et sa G3 donnait 0 pour les 28 titres de Börse Onli
 La corriger change le schéma ou le coût du store (S5-S7 exigent les états annuels, donc des
 requêtes en plus) : c'est un arbitrage, pas un oubli.
 
+**Autres points ouverts du 02.10.2026, qui demandent ton avis :**
+
+- **Store ancien.** 67 % des lignes du store ont une `feature_date` antérieure à septembre, donc
+  « Combined pur » classe sur des données périmées. Options : rafraîchir régulièrement par
+  `Combined_scan.py` sur une liste restreinte (coût yfinance), ou laisser la forme
+  « Finviz + Combined » faire foi et n'utiliser le catalogue que pour une vue rapide.
+- **Archive des screeners.** `_present_screener_results` écrit un CSV par affichage dans
+  `src/Results/Screeners/`, dossier non ignoré par git (une partie de `Results/` est déjà
+  suivie). Décider : ignorer le dossier, ou le suivre volontairement comme journal.
+- **Évaluation des recommandations.** `Magasines/evaluer_recommandations.py` prend la date du
+  jour par défaut ; avant la clôture européenne les cours sont incomplets. Proposition : prendre
+  par défaut la dernière séance clôturée.
+- **Valley.** Le backtest du 02.10.2026 donne INFLEXION négatif et DIVERGENCE utile seulement sur
+  les grandes capitalisations. Options : restreindre DIVERGENCE aux grandes capitalisations,
+  réviser INFLEXION, ou garder tel quel en l'affichant comme indicatif.
+- **PEG Finviz contre Yahoo.** Le préréglage `dual_star` filtre sur le PEG Finviz (prévisions des
+  analystes) ; G3 en direct ne tient que pour environ 43 % des titres trouvés. C'est un défaut
+  de la découverte, pas du Combined, et le confirmer en direct le corrige.
+
 ---
 
 ## 1. Deux tests en échec dont je ne connais pas l'intention

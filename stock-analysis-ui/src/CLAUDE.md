@@ -16,11 +16,13 @@ here), so every relative path resolves from `src/`.
 | `cache_db.py` | Re-exports public API from `market_store`. No implementation. Zero DB connections opened on import. |
 | `config.py` | Central paths/constants — import cache dirs & globals from here, don't hardcode. |
 | `symbol_manager.py`, `fundamentals_cache.py`, `timeline_cache.py`, `sector_normalizer.py` | Symbol catalogue, fundamentals cache (TTL, evolutive quarters), timelines, sector name normalization |
-| `*_scan.py` (`Big_Growth_scan`, `Sichere_Unternehmen_scan`, `Combined_scan`) | Standalone CLI batch screeners: fetch yfinance per symbol → write Parquet store → CSV |
+| `*_scan.py` (`Big_Growth_scan`, `Sichere_Unternehmen_scan`, `Combined_scan`, `Valley_scan`) | Standalone CLI batch screeners: fetch yfinance per symbol → write Parquet store → CSV. The first three share `core/scan_fondamentaux.py` (criteria G1-G5 / S1-S7, FX, throttle): edit a criterion there, not in the script |
+| `Combined_backtest.py`, `Valley_backtest.py` | Point-in-time backtests of the Combined profiles (incl. Dual Champion*) and of the Valley signals. Read the local store (0 yfinance request except one grouped index download). Outputs in `backtests/`, see [backtests/README.md](backtests/README.md) |
 | `api.py`, `background_worker.py` | Optional Flask REST + daily-signal worker (online layer) |
 | `pdf_generator.py` | reportlab PDF report generation |
 | `trading_c_acceleration/` | Compiled C backtest module; bypassed with `QSI_DISABLE_C_ACCELERATION=1` |
-| `market_parquet/`, `cache*/`, `data_cache/`, `Results/`, `signaux/` | Data & output artifacts — **not source** |
+| `backtests/` | Backtest reports and CSVs (tracked, except `*.parquet` caches) |
+| `market_parquet/`, `cache*/`, `data_cache/`, `Results/`, `signaux/` | Data & output artifacts, **not source**; `Results/Screeners/` receives one timestamped CSV per displayed screener result |
 
 ## Rules that bite
 
@@ -40,3 +42,9 @@ here), so every relative path resolves from `src/`.
   profiles land in the store and count as *fresh*, so they are never refreshed.
 - `qsi.py` sets a non-interactive matplotlib backend only if none is set — don't force `Agg`
   after the Qt app has initialized a GUI backend.
+- **Do not copy a G or S criterion into a new script.** Import `core.scan_fondamentaux`.
+  `market_store.py` still carries an older copy for the store columns (S5-S7 quarterly, S1 at a
+  fixed 1.08 USD rate, G3 often 0): treat the store's `secure_score` and `c1..c5` as
+  indicative, and confirm with the live `Combined_scan.py`.
+- **A backtest result is only as good as its point-in-time discipline.** Never feed a statement
+  published after T, and cite the dates T it covers (see `backtests/README.md`).

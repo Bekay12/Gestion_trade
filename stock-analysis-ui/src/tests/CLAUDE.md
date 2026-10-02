@@ -29,3 +29,18 @@ network consensus calls during import. GUI-touching tests additionally need
 
 New tests default to **not** `integration`: patch yfinance and use a temp DB so the suite
 stays deterministic and offline.
+
+## Scanner and backtest tests (all offline)
+
+| File | Covers |
+|---|---|
+| `test_scanner_criteres.py` | Criteria G1-G5 / S1-S7, dividend suspension, compounded growth, the star, criteria shared by the three scanners |
+| `test_scanner_devises.py` | FX to EUR, retargeted at `core.scan_fondamentaux` and `news_monitor_combined` |
+| `test_combined_backtest.py` | Point-in-time bricks: no statement published after T, dividends recovered from adjusted prices, currency factor, refusal of an unreached horizon, split jumps |
+| `test_valley_scan.py`, `test_valley_backtest.py` | Valley signals and their point-in-time replay |
+| `test_valley_screener.py`, `test_valley_screener_ui.py` | Valley screener output contract, signal filtering, progress callback, and the combo dispatch |
+| `test_combined_finviz.py` | « Finviz + Combined »: star first, no extra ⭐ column, cancel keeps what was analysed, a ticker the Combined rejects is skipped |
+| `test_screener_archive.py` | CSV archive of displayed results, written even when the dialog is cancelled; « Combined pur » keeps no ⭐ column |
+
+Rule for these: patch `run_preset`, `Combined_scan.analyze_safe` and any yfinance call; a
+screener or backtest test must never reach Finviz or Yahoo.

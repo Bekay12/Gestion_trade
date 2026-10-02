@@ -49,3 +49,24 @@ def test_sans_colonne_nom_le_dialog_reste_fonctionnel(app) -> None:
     dlg = ScreenerResultsDialog("Test", ["Symbole", "Pays"], [("MSFT", "United States")])
 
     assert dlg.selected_symbols() == ["MSFT"]
+
+
+def test_nouvel_entrant_est_surligne_sur_toute_la_ligne(app) -> None:
+    dlg = ScreenerResultsDialog(
+        "Test", HEADERS, ROWS, new_symbols={"TSM"},
+    )
+    nouvelle_ligne = next(
+        row for row in range(dlg.table.rowCount())
+        if dlg.table.item(row, 1).text() == "TSM"
+    )
+    ancienne_ligne = next(
+        row for row in range(dlg.table.rowCount())
+        if dlg.table.item(row, 1).text() == "AAPL"
+    )
+
+    assert all(
+        dlg.table.item(nouvelle_ligne, column).background().color().getRgb()[:3]
+        == (220, 255, 220)
+        for column in range(dlg.table.columnCount())
+    )
+    assert dlg.table.item(ancienne_ligne, 0).background().color().getRgb()[:3] != (220, 255, 220)
