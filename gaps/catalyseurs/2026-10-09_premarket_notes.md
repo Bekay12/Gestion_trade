@@ -1,0 +1,1 @@
+Scan premarket non execute : le script Trading_Agent/skills/gap-trading-germain/scripts/gap_scan.py n'existe pas dans le depot Bekay12/Gestion_trade (repertoire Trading_Agent absent ; le depot ne contient que Figure000.png, qsi.py et signaux_achat.csv).
