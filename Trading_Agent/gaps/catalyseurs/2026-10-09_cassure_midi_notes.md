@@ -1,0 +1,1 @@
+Scan cassure echoue : cassure_scan.py importe core.finviz_screeners via le chemin absolu code en dur APP_SRC = "/home/berkam/Projets/Gestion_trade/stock-analysis-ui/src", qui n'existe pas dans cet environnement d'execution (ModuleNotFoundError: No module named 'core').
