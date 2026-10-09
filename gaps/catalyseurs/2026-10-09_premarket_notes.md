@@ -1,1 +1,1 @@
-Scan premarket non execute : le script Trading_Agent/skills/gap-trading-germain/scripts/gap_scan.py n'existe pas dans le depot Bekay12/Gestion_trade (repertoire Trading_Agent absent ; le depot ne contient que Figure000.png, qsi.py et signaux_achat.csv).
+Scan premarket echoue : l'appel reseau vers finviz.com (scanner_finviz dans gap_scan.py --mode premarket) a ete rejete par la politique reseau du conteneur cloud (CONNECT tunnel refuse, reponse 403 du proxy), empechant toute recuperation de donnees de gaps pour le 2026-10-09.
