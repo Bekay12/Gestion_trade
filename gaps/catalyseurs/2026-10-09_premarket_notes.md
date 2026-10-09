@@ -1,0 +1,1 @@
+Scan premarket echoue : l'acces reseau sortant vers finviz.com depuis cet environnement d'execution est bloque par la politique du proxy (CONNECT finviz.com:443 rejete avec HTTP 403), empechant core.finviz_screeners.run_screen de recuperer la liste des gappers.
