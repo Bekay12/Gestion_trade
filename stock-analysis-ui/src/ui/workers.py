@@ -239,6 +239,85 @@ class DownloadThread(QThread):
             self._process.terminate()
 
 
+class DualChampionThread(QThread):
+    """Run Combined's 12-criterion scoring in an isolated child process."""
+    result_ready = pyqtSignal(dict)
+    error = pyqtSignal(str)
+    progress = pyqtSignal(str)
+
+    def __init__(self, symbols, analysis_id=0):
+        super().__init__()
+        self.symbols = list(dict.fromkeys(symbols))
+        self.analysis_id = analysis_id
+        self._stop_requested = False
+        self._process = None
+
+    def run(self):
+        import pickle
+        import subprocess
+        import tempfile
+
+        args_file = result_file = None
+        try:
+            fd_args, args_file = tempfile.mkstemp(suffix="_args.pkl")
+            fd_result, result_file = tempfile.mkstemp(suffix="_result.pkl")
+            os.close(fd_args)
+            os.close(fd_result)
+            with open(args_file, "wb") as stream:
+                pickle.dump({"task": "dual_champion", "symbols": self.symbols}, stream)
+
+            worker_script = os.path.join(PROJECT_SRC, "_subprocess_worker.py")
+            self._process = subprocess.Popen(
+                [sys.executable, "-u", worker_script, args_file, result_file],
+                stdout=subprocess.PIPE,
+                stderr=subprocess.STDOUT,
+                text=True,
+                encoding="utf-8",
+                errors="replace",
+                bufsize=1,
+                cwd=PROJECT_SRC,
+            )
+            for line in self._process.stdout:
+                if self._stop_requested:
+                    self._process.terminate()
+                    break
+                text = line.rstrip()
+                if text.startswith("[DUAL_PROGRESS]"):
+                    self.progress.emit(text.removeprefix("[DUAL_PROGRESS] "))
+                elif text:
+                    print(text)
+            self._process.wait()
+
+            if self._stop_requested:
+                return
+            if self._process.returncode != 0:
+                self.error.emit(f"Dual Champion subprocess failed (code {self._process.returncode})")
+                return
+            with open(result_file, "rb") as stream:
+                payload = pickle.load(stream)
+            if not payload.get("success"):
+                self.error.emit(payload.get("error", "Échec du calcul Dual Champion"))
+                return
+            result = payload["result"]
+            result["_analysis_id"] = self.analysis_id
+            self.result_ready.emit(result)
+        except Exception as exc:
+            if not self._stop_requested:
+                self.error.emit(str(exc))
+        finally:
+            for path in (args_file, result_file):
+                if path:
+                    try:
+                        os.unlink(path)
+                    except OSError:
+                        pass
+
+    def stop(self):
+        self._stop_requested = True
+        if self._process and self._process.poll() is None:
+            self._process.terminate()
+
+
 class ParquetSyncThread(QThread):
     """Synchronise les symboles analysés dans le store Parquet en arrière-plan.
 

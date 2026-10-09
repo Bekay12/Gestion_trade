@@ -35,7 +35,7 @@ from core.indicators import calculate_rsi_scalar, calculate_macd_scalar, calcula
 from qsi import download_stock_data, plot_unified_chart, get_trading_signal
 import qsi
 from ui.workers import (
-    AnalysisThread, DownloadThread, ParquetSyncThread, LogCapture,
+    AnalysisThread, DownloadThread, DualChampionThread, ParquetSyncThread, LogCapture,
     SYMBOL_MANAGER_AVAILABLE, get_symbols_by_list_type, get_recent_symbols,
     _fetch_yf_info_with_timeout, _is_valid_ticker_info, _get_sector_cache_first,
 )
@@ -132,6 +132,50 @@ def formater_nombre(valeur) -> str:
         # Évite le « -0 » d'un arrondi de valeur négative infime.
         return '0'
     return f"{arrondi:.{DECIMALES_MAX}f}".rstrip('0').rstrip('.') or '0'
+
+
+def _dual_champion_rank(profile: str) -> int:
+    """Strict category priority for Dual Champions in comparison results."""
+    normalized = _dual_profile_label(profile)
+    if normalized == "Dual Champion*":
+        return 2
+    if normalized == "Dual Champion":
+        return 1
+    return 0
+
+
+def _dual_profile_label(profile: str) -> str:
+    """Remove decorative profile glyphs for fonts without emoji coverage."""
+    label = str(profile or "").strip()
+    for prefix in ("💎", "🚀", "🛡️", "🛡", "⚖️", "⚖", "⚪"):
+        if label.startswith(prefix):
+            label = label[len(prefix):].strip()
+            break
+    return label
+
+
+def _dual_comparison_sort_key(profile: str, score, relevance: float,
+                              score_threshold: float) -> tuple:
+    """Order Dual Champion classes above multicriteria relevance."""
+    priority = _dual_champion_rank(profile)
+    try:
+        dual_score = float(score) if priority else 0.0
+    except (TypeError, ValueError):
+        dual_score = 0.0
+    return (priority, dual_score, relevance, score_threshold, float(score or 0.0))
+
+
+def _dual_score_color(score) -> QColor:
+    """Pastel red-to-amber-to-green background for a score out of twelve."""
+    try:
+        ratio = max(0.0, min(1.0, float(score) / 12.0))
+    except (TypeError, ValueError):
+        ratio = 0.0
+    low = (255, 220, 220)
+    middle = (255, 246, 205)
+    high = (210, 241, 214)
+    start, end, blend = (low, middle, ratio * 2.0) if ratio <= 0.5 else (middle, high, (ratio - 0.5) * 2.0)
+    return QColor(*(round(a + (b - a) * blend) for a, b in zip(start, end)))
 
 
 class CelluleNumerique(QTableWidgetItem):
@@ -775,6 +819,14 @@ class MainWindow(QMainWindow, ScreenersMixin, ExportMixin):
         self.backtest_button.setToolTip("Analyser puis backtester (raccourci : Ctrl+Entrée)")
         top_controls.addWidget(self.backtest_button)
 
+        self.dual_champion_button = QPushButton("Dual Champion")
+        self.dual_champion_button.clicked.connect(self.analyze_dual_champion)
+        self.dual_champion_button.setStyleSheet(_primary_style % ("#558B2F", "#33691E"))
+        self.dual_champion_button.setToolTip(
+            "Calculer le score fondamental Dual Champion sur 12 critères pour les symboles saisis"
+        )
+        top_controls.addWidget(self.dual_champion_button)
+
         # Seuil minimum de fiabilité pour le backtest (à droite du bouton backtest)
         top_controls.addWidget(QLabel("Seuil fiabilité:"))
         self.fiab_threshold_spin = QSpinBox()
@@ -1197,6 +1249,7 @@ class MainWindow(QMainWindow, ScreenersMixin, ExportMixin):
         # Re-enable buttons
         self.analyze_button.setEnabled(True)
         self.backtest_button.setEnabled(True)
+        self.dual_champion_button.setEnabled(True)
 
         if self.progress:
             self.progress.close()
@@ -1512,10 +1565,12 @@ class MainWindow(QMainWindow, ScreenersMixin, ExportMixin):
         self._active_analysis_thread = None
         self.analyze_button.setEnabled(True)
         self.backtest_button.setEnabled(True)
+        self.dual_champion_button.setEnabled(True)
         if self.progress:
             self.progress.close()
         self.summary_text.append("\n⏹️ Analyse annulée par l'utilisateur")
         print("⏹️ Analyse annulée par l'utilisateur")
+        self._dual_champion_mode = False
         self._status("Analyse annulée")
 
     # ------------------------------------------------------------------
@@ -1533,6 +1588,7 @@ class MainWindow(QMainWindow, ScreenersMixin, ExportMixin):
         self._active_analysis_thread = None
         self.analyze_button.setEnabled(True)
         self.backtest_button.setEnabled(True)
+        self.dual_champion_button.setEnabled(True)
         if self.progress:
             self.progress.close()
         self.filtered_results = None
@@ -1684,9 +1740,11 @@ class MainWindow(QMainWindow, ScreenersMixin, ExportMixin):
         self._active_analysis_thread = None
         self.analyze_button.setEnabled(True)
         self.backtest_button.setEnabled(True)
+        self.dual_champion_button.setEnabled(True)
         if self.progress:
             self.progress.close()
 
+        self._dual_champion_mode = False
         self._status("Erreur pendant l'analyse")
         QMessageBox.critical(self, "Erreur", f"Erreur pendant l'analyse:\n{error_msg}")
 
@@ -1722,10 +1780,12 @@ class MainWindow(QMainWindow, ScreenersMixin, ExportMixin):
         self.current_results = []
         self.filtered_results = None
         self.backtest_map = {}
+        self._dual_champion_mode = False
 
         # Disable buttons during analysis
         self.analyze_button.setEnabled(False)
         self.backtest_button.setEnabled(False)
+        self.dual_champion_button.setEnabled(False)
 
         # Progress dialog
         self.progress = QProgressDialog(
@@ -1789,10 +1849,12 @@ class MainWindow(QMainWindow, ScreenersMixin, ExportMixin):
         self.current_results = []
         self.filtered_results = None
         self.backtest_map = {}
+        self._dual_champion_mode = False
 
         # Disable buttons during analysis
         self.analyze_button.setEnabled(False)
         self.backtest_button.setEnabled(False)
+        self.dual_champion_button.setEnabled(False)
 
         # Progress dialog
         self.progress = QProgressDialog(
@@ -1823,6 +1885,156 @@ class MainWindow(QMainWindow, ScreenersMixin, ExportMixin):
         self._active_analysis_thread = self.analysis_thread
         self.analysis_thread.start()
         print(f"📊 Analysis backtest thread démarré avec ID={current_id}")
+
+    def analyze_dual_champion(self):
+        """Run Combined's fundamental 12-point score for the requested symbols."""
+        if self._analysis_running:
+            QMessageBox.information(
+                self, "Analyse en cours",
+                "Attends la fin de l'analyse en cours avant de lancer le Dual Champion.",
+            )
+            return
+
+        symbols = [symbol.strip().upper()
+                   for symbol in self.symbol_input.text().split(",") if symbol.strip()]
+        if not symbols:
+            symbols = [str(row.get("Symbole", "")).strip().upper()
+                       for row in self.current_results if row.get("Symbole")]
+        if not symbols:
+            for list_name in ("popular_list", "mes_list", "coko_list"):
+                symbol_list = getattr(self, list_name, None)
+                if symbol_list is not None:
+                    symbols.extend(
+                        (item.data(Qt.UserRole) or item.text()).strip().upper()
+                        for item in symbol_list.selectedItems()
+                    )
+                if symbols:
+                    break
+        symbols = list(dict.fromkeys(symbols))
+        if not symbols:
+            QMessageBox.warning(self, "Dual Champion", "Entre ou sélectionne au moins un symbole.")
+            return
+
+        self._analysis_id += 1
+        current_id = self._analysis_id
+        self._dual_champion_mode = True
+        self._dual_champion_symbols = symbols
+        self.analyze_button.setEnabled(False)
+        self.backtest_button.setEnabled(False)
+        self.dual_champion_button.setEnabled(False)
+        self.progress = QProgressDialog(
+            f"Calcul des critères Dual Champion pour {len(symbols)} symbole(s)…",
+            "Annuler", 0, 0, self,
+        )
+        self.progress.setWindowTitle("Dual Champion")
+        self.progress.setWindowModality(Qt.WindowModal)
+        self.progress.setMinimumDuration(0)
+        self.progress.setAutoClose(False)
+        self.progress.setAutoReset(False)
+        self.progress.canceled.connect(self._cancel_running_analysis)
+        self._status(f"Calcul Dual Champion de {len(symbols)} symbole(s) en cours…", 0)
+
+        self.dual_champion_thread = DualChampionThread(symbols, analysis_id=current_id)
+        self.dual_champion_thread.result_ready.connect(self.on_dual_champion_complete)
+        self.dual_champion_thread.error.connect(self.on_analysis_error)
+        self.dual_champion_thread.progress.connect(self.on_analysis_progress)
+        self._analysis_running = True
+        self._active_analysis_thread = self.dual_champion_thread
+        self.dual_champion_thread.start()
+
+    def on_dual_champion_complete(self, result):
+        """Merge Combined scores into the same rows used by the analysis table."""
+        received_id = result.get("_analysis_id", 0) if isinstance(result, dict) else 0
+        if received_id != self._analysis_id:
+            print(f"⚠️ Résultat Dual Champion ignoré: ID={received_id}, ID actuel={self._analysis_id}")
+            return
+
+        self._analysis_running = False
+        self._active_analysis_thread = None
+        self.analyze_button.setEnabled(True)
+        self.backtest_button.setEnabled(True)
+        self.dual_champion_button.setEnabled(True)
+        if self.progress:
+            self.progress.close()
+
+        existing = {row.get("Symbole"): row for row in self.current_results if row.get("Symbole")}
+        dual_by_symbol = {
+            str(row.get("ticker", "")).strip().upper(): row
+            for row in result.get("dual_results", []) if row and row.get("ticker")
+        }
+        merged_results = []
+        for symbol in self._dual_champion_symbols:
+            row = dict(existing.get(symbol) or {"Symbole": symbol})
+            dual = dual_by_symbol.get(symbol)
+            if not dual:
+                row.setdefault("Signal", "ERREUR")
+                row.setdefault("Score", 0)
+                row["DualChampionProfil"] = "ERREUR"
+                row["DualChampionScore"] = 0
+                row["DualChampionDetails"] = "Aucun résultat fondamental disponible."
+                merged_results.append(row)
+                continue
+
+            profile = _dual_profile_label(dual.get("profil") or "Below")
+            score_growth = int(dual.get("score_growth") or 0)
+            score_safe = int(dual.get("score_safe") or 0)
+            score_total = int(dual.get("score_total") or score_growth + score_safe)
+            criteria = [
+                ("G1_CA_Growth_%", "G1 CA", "%"),
+                ("G2_Marge_%", "G2 marge", "%"),
+                ("G3_Underval", "G3 valorisation", ""),
+                ("G4_Momentum_%", "G4 momentum", "%"),
+                ("G5_VolRatio", "G5 volume", "x"),
+                ("S1_MCap_Mrd€", "S1 cap.", " Md€"),
+                ("S2_DE_%", "S2 dette/capitaux propres", "%"),
+                ("S3_Beta", "S3 bêta", ""),
+                ("S4_DivYield_%", "S4 dividende", "%"),
+                ("S5_FCF_Marge_%", "S5 marge FCF", "%"),
+                ("S6_FCF_Growth_%", "S6 croissance FCF", "%"),
+                ("S7_RevEPS_%", "S7 croissance CA/BPA", "%"),
+            ]
+            details = [
+                f"Growth {score_growth}/5 | Safe {score_safe}/7 | Total {score_total}/12"
+            ]
+            for index, (key, label, suffix) in enumerate(criteria):
+                prefix = "G" if index < 5 else "S"
+                criterion_index = index + 1 if index < 5 else index - 4
+                raw_value = dual.get(key)
+                value = "n/d" if raw_value is None else f"{raw_value}{suffix}"
+                status = "✓" if dual.get(f"{prefix}{criterion_index}_ok") else "✗"
+                details.append(f"{label}: {value} {status}")
+            details = (
+                "\n".join(details)
+            )
+            row.update({
+                "Nom": dual.get("nom") or row.get("Nom") or "N/A",
+                "Signal": profile,
+                "Score": score_total,
+                "Domaine": dual.get("secteur") or row.get("Domaine") or "Inconnu",
+                "DualChampionProfil": profile,
+                "DualChampionScore": score_total,
+                "DualChampionGrowthScore": score_growth,
+                "DualChampionSafeScore": score_safe,
+                "DualChampionDetails": details,
+                "Rev. Growth (%)": dual.get("G1_CA_Growth_%")
+                    if dual.get("G1_CA_Growth_%") is not None else row.get("Rev. Growth (%)", 0),
+                "Market Cap (B$)": dual.get("market_cap_B")
+                    if dual.get("market_cap_B") is not None else row.get("Market Cap (B$)", 0),
+            })
+            if not row.get("Prix") and dual.get("prix") is not None:
+                row["Prix"] = dual["prix"]
+            merged_results.append(row)
+
+        self.current_results = merged_results
+        self.filtered_results = None
+        self.update_results_table()
+        dual_count = sum(_dual_champion_rank(row.get("DualChampionProfil")) > 0
+                         for row in merged_results)
+        self.summary_text.append(
+            f"\nDual Champion: {len(dual_by_symbol)} résultat(s), "
+            f"dont {dual_count} Dual Champion (G≥3/5 et S≥5/7)."
+        )
+        self._status(f"Dual Champion terminé — {len(dual_by_symbol)} résultat(s)")
 
     def update_results_table(self):
         """Fill the merged table (`self.merged_table`) with current results plus backtest metrics."""
@@ -1940,6 +2152,8 @@ class MainWindow(QMainWindow, ScreenersMixin, ExportMixin):
 
                 bt = bt_map.get(sym, {})
                 score = _parse_numeric(signal.get('Score', 0.0), 0.0) or 0.0
+                dual_mode = bool(getattr(self, '_dual_champion_mode', False)
+                                 and signal.get('DualChampionProfil'))
                 seuil_achat = _parse_numeric(signal.get('Seuil_Achat', signal.get('seuil_achat', 4.2)), 4.2) or 4.2
                 seuil_vente = _parse_numeric(signal.get('Seuil_Vente', signal.get('seuil_vente', -0.5)), -0.5) or -0.5
 
@@ -1965,7 +2179,10 @@ class MainWindow(QMainWindow, ScreenersMixin, ExportMixin):
                     'volume_moyen': signal.get('Volume moyen', 0.0),
                     'domaine': signal.get('Domaine', 'Inconnu'),
                     'cap_range': signal.get('CapRange', 'Unknown'),
-                    'score_seuil': score / seuil_achat if score >= 0 and seuil_achat else (score / seuil_vente if score < 0 and seuil_vente else 0.0),
+                    'score_seuil': score / 12.0 if dual_mode else (
+                        score / seuil_achat if score >= 0 and seuil_achat
+                        else (score / seuil_vente if score < 0 and seuil_vente else 0.0)
+                    ),
                     'fiabilite': fiab,
                     'nb_trades': nb_trades,
                     'gagnants': gagnants,
@@ -1992,6 +2209,20 @@ class MainWindow(QMainWindow, ScreenersMixin, ExportMixin):
                 }
                 for cle, value in values.items():
                     _set_item(row, MERGED_COL[cle], value, numeric=cle in numeric_cols)
+
+                if dual_mode:
+                    score_item = self.merged_table.item(row, MERGED_COL['score'])
+                    if score_item is not None:
+                        score_item.setText(f"{int(round(score))}/12")
+                        score_item.setToolTip(signal.get('DualChampionDetails', 'Score Dual Champion sur 12'))
+                    profile_item = self.merged_table.item(row, MERGED_COL['signal'])
+                    if profile_item is not None:
+                        profile_item.setToolTip(signal.get('DualChampionDetails', ''))
+                    row_color = _dual_score_color(score)
+                    for column in range(self.merged_table.columnCount()):
+                        item = self.merged_table.item(row, column)
+                        if item is not None:
+                            item.setBackground(row_color)
 
                 # Nom complet en infobulle, la cellule étant tronquée.
                 item_nom = self.merged_table.item(row, MERGED_COL['nom'])
@@ -2978,7 +3209,12 @@ class MainWindow(QMainWindow, ScreenersMixin, ExportMixin):
                         continue
                     sym = sym_item.text()
                     if sym in symbols_to_compare:
-                        score = safe_float(table_text(row, MERGED_COL['score']))
+                        score_item = self.merged_table.item(row, MERGED_COL['score'])
+                        score = getattr(score_item, 'valeur', None)
+                        if score is None:
+                            score = safe_float(table_text(row, MERGED_COL['score']))
+                        dual_profile = table_text(row, MERGED_COL['signal'], '')
+                        dual_rank = _dual_champion_rank(dual_profile)
                         prix = safe_float(table_text(row, MERGED_COL['prix']))
                         rsi = safe_float(table_text(row, MERGED_COL['rsi']))
                         domaine = table_text(row, MERGED_COL['domaine'], 'N/A')
@@ -3002,6 +3238,9 @@ class MainWindow(QMainWindow, ScreenersMixin, ExportMixin):
                         
                         symbols_data[sym] = {
                             'Score': score,
+                            'Dual Champion /12': score if dual_rank else 0.0,
+                            'Profil Dual Champion': dual_profile,
+                            'Priorité Dual': dual_rank,
                             'Prix': prix,
                             'RSI': rsi,
                             'Domaine': domaine,
@@ -3081,7 +3320,14 @@ class MainWindow(QMainWindow, ScreenersMixin, ExportMixin):
             # Classer par pertinence (décroissant), puis garde-fous de tri secondaires
             sorted_symbols = sorted(
                 selected_symbols,
-                key=lambda x: (pertinence_scores[x], symbols_data[x]['Score/Seuil'], symbols_data[x]['Score']),
+                key=lambda x: (
+                    _dual_comparison_sort_key(
+                        symbols_data[x]['Profil Dual Champion'],
+                        symbols_data[x]['Dual Champion /12'],
+                        pertinence_scores[x],
+                        symbols_data[x]['Score/Seuil'],
+                    )
+                ),
                 reverse=True
             )
             
@@ -3141,6 +3387,7 @@ class MainWindow(QMainWindow, ScreenersMixin, ExportMixin):
             summary = QLabel(
                 f"📊 Comparaison de {len(sorted_symbols)} symbole(s) | "
                 f"🧮 Méthode: rang multicritère ({m_criteria} critères) | "
+                f"💎 Priorité: Dual Champion* puis Dual Champion | "
                 f"🥇 Meilleur: {sorted_symbols[0]} "
                 f"(Pertinence: {pertinence_scores[sorted_symbols[0]]:.1f}%)"
             )

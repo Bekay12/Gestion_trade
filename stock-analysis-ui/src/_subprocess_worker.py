@@ -47,6 +47,8 @@ def main():
             _run_analysis(args, result_file)
         elif task == "download":
             _run_download(args, result_file)
+        elif task == "dual_champion":
+            _run_dual_champion(args, result_file)
         else:
             raise ValueError(f"Unknown task: {task}")
     except Exception as e:
@@ -85,6 +87,31 @@ def _run_download(args, result_file):
 
     with open(result_file, "wb") as f:
         pickle.dump({"success": True, "result": result}, f, protocol=pickle.HIGHEST_PROTOCOL)
+
+
+def _run_dual_champion(args, result_file):
+    from concurrent.futures import ThreadPoolExecutor, as_completed
+
+    from Combined_scan import analyze_safe
+
+    symbols = list(dict.fromkeys(args["symbols"]))
+    results = []
+    with ThreadPoolExecutor(max_workers=min(4, max(1, len(symbols)))) as pool:
+        futures = {pool.submit(analyze_safe, symbol): symbol for symbol in symbols}
+        for done, future in enumerate(as_completed(futures), 1):
+            symbol = futures[future]
+            try:
+                result = future.result()
+                if result:
+                    results.append(result)
+            except Exception as exc:
+                print(f"[DUAL_PROGRESS] {done}/{len(symbols)} | {symbol}: échec ({exc})", flush=True)
+            else:
+                print(f"[DUAL_PROGRESS] {done}/{len(symbols)} | {symbol}", flush=True)
+
+    with open(result_file, "wb") as f:
+        pickle.dump({"success": True, "result": {"dual_results": results}},
+                    f, protocol=pickle.HIGHEST_PROTOCOL)
 
 
 if __name__ == "__main__":

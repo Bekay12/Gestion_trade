@@ -1,0 +1,26 @@
+{
+ "url": "https://academygermain.com/actualites/hkit-inlf-et-meds-trois-shorts-gagnants-trois-comportements-de-prix-differents-8-octobre-2026",
+ "titre": "HKIT, INLF et MEDS : trois shorts gagnants, trois comportements de prix différents — 8 octobre 2026",
+ "date": "2026-10-08",
+ "lignes": [
+  {
+   "ticker": "HKIT",
+   "societe": "Hitek Global · Chine (Xiamen) · non-ADR · services informatiques · nano-float (~0,8 M d’actions Class A après le reverse split de juillet, avant l’acquisition annoncée en août)",
+   "catalyseur": "🔴 Aucune news (dernière annonce le 3 août)",
+   "resultat": "Clôture veille ~2,41 $ → HOD ~4,62 $ (+92 %) → ~2,22 $"
+  },
+  {
+   "ticker": "INLF",
+   "societe": "INLIF Limited · Chine (Quanzhou) · non-ADR · équipements industriels (bras robotisés pour presses à injecter) · nano-float (~1 M d’actions)",
+   "catalyseur": "🔴 Pas de news fraîche — 🟢 bons résultats semestriels publiés le 24 sept.",
+   "resultat": "Clôture veille ~3,34 $ → HOD ~4,07 $ (+22 %) → ~3,13 $"
+  },
+  {
+   "ticker": "MEDS",
+   "societe": "DataMeds AI (ex-Wellgistics) · États-Unis (Tampa) · non-ADR · santé / pharmacie / IA · nano-float (~1,3 M selon StockTitan)",
+   "catalyseur": "🔴 Pas de news fraîche — 🟠 annonce « meme coin » le 5 oct., revenus Corexa le 1er oct.",
+   "resultat": "Clôture veille ~2,88 $ → HOD ~4,12 $ (+43 %) → ~3,91 $"
+  }
+ ],
+ "anomalies": []
+}

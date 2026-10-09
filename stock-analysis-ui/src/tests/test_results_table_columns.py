@@ -27,6 +27,10 @@ from ui.main_window import (
     MERGED_COLUMNS,
     MERGED_LABELS,
     MainWindow,
+    _dual_champion_rank,
+    _dual_comparison_sort_key,
+    _dual_profile_label,
+    _dual_score_color,
     formater_nombre,
 )
 
@@ -54,6 +58,7 @@ class _FenetreMinimale:
 
     update_results_table = MainWindow.update_results_table
     compute_domain_stats = MainWindow.compute_domain_stats
+    _dual_champion_mode: bool
 
     def __init__(self, resultats, noms, pays=None):
         self.current_results = resultats
@@ -228,6 +233,102 @@ def test_tri_numerique_et_non_lexicographique(app) -> None:
     ordre = [fenetre.cellule(ligne, "symbole").text()
              for ligne in range(fenetre.merged_table.rowCount())]
     assert ordre == ["DDD", "AAA", "BBB", "CCC"]
+
+
+def test_score_dual_est_affiche_sur_12_et_colore_progressivement(app) -> None:
+    signal = _signal("AAA")
+    signal.update({
+        "Signal": "💎 Dual Champion*",
+        "Score": 11,
+        "DualChampionProfil": "💎 Dual Champion*",
+        "DualChampionDetails": "Growth 5/5 | Safe 6/7 | Total 11/12",
+    })
+    fenetre = _FenetreMinimale([signal], {})
+    fenetre._dual_champion_mode = True
+
+    fenetre.update_results_table()
+
+    score_cell = fenetre.cellule(0, "score")
+    assert score_cell.text() == "11/12"
+    assert score_cell.valeur == pytest.approx(11)
+    assert score_cell.toolTip() == signal["DualChampionDetails"]
+    assert fenetre.cellule(0, "signal").text() == "💎 Dual Champion*"
+    assert fenetre.cellule(0, "signal").toolTip() == signal["DualChampionDetails"]
+    assert _dual_score_color(11).green() > _dual_score_color(2).green()
+
+
+def test_comparateur_priorise_les_categories_dual_champion() -> None:
+    below = _dual_comparison_sort_key("⚪ Below", 12, 100, 10)
+    dual = _dual_comparison_sort_key("💎 Dual Champion", 7, 10, 1)
+    starred = _dual_comparison_sort_key("💎 Dual Champion*", 6, 1, 0)
+
+    assert _dual_champion_rank("💎 Dual Champion*") == 2
+    assert _dual_champion_rank("💎 Dual Champion") == 1
+    assert _dual_champion_rank("🚀 Pure Growth") == 0
+    assert starred > dual > below
+    assert _dual_profile_label("💎 Dual Champion*") == "Dual Champion*"
+    assert _dual_profile_label("🚀 Pure Growth") == "Pure Growth"
+
+
+def test_reception_dual_fusionne_sans_perdre_les_donnees_deja_analysees() -> None:
+    class _Bouton:
+        def setEnabled(self, enabled):
+            self.enabled = enabled
+
+    class _Progress:
+        def close(self):
+            self.closed = True
+
+    class _Resume:
+        def append(self, text):
+            self.text = text
+
+    class _Fenetre:
+        on_dual_champion_complete = MainWindow.on_dual_champion_complete
+
+        def __init__(self):
+            self._analysis_id = 3
+            self._dual_champion_symbols = ["AAA"]
+            self.current_results = [{"Symbole": "AAA", "Prix": 42.5, "Tendance": "Hausse"}]
+            self.analyze_button = _Bouton()
+            self.backtest_button = _Bouton()
+            self.dual_champion_button = _Bouton()
+            self.progress = _Progress()
+            self.summary_text = _Resume()
+
+        def update_results_table(self):
+            self.updated = True
+
+        def _status(self, message):
+            self.status = message
+
+    window = _Fenetre()
+    window.on_dual_champion_complete({
+        "_analysis_id": 3,
+        "dual_results": [{
+            "ticker": "AAA",
+            "nom": "Acme",
+            "secteur": "Industrials",
+            "profil": "💎 Dual Champion*",
+            "score_growth": 5,
+            "score_safe": 6,
+            "score_total": 11,
+            "G3_ok": True,
+            "G4_ok": True,
+            "S4_ok": True,
+        }],
+    })
+
+    result = window.current_results[0]
+    assert result["Prix"] == 42.5
+    assert result["Tendance"] == "Hausse"
+    assert result["Signal"] == "Dual Champion*"
+    assert result["Score"] == result["DualChampionScore"] == 11
+    assert result["DualChampionGrowthScore"] == 5
+    assert result["DualChampionSafeScore"] == 6
+    assert "11/12" in result["DualChampionDetails"]
+    assert window.updated and window.progress.closed
+    assert "Dual Champion terminé" in window.status
 
 
 def test_statistiques_par_domaine_lisent_la_valeur_reelle(app) -> None:
