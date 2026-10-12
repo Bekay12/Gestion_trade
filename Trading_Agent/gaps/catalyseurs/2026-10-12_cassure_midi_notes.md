@@ -1,0 +1,1 @@
+Le scan a echoue : la politique reseau de l'environnement a refuse la connexion sortante vers finviz.com (CONNECT tunnel rejete, 403), empechant finvizfinance/run_screen de recuperer les donnees du screener.
