@@ -1,0 +1,1 @@
+Scan cassure midi du 2026-10-13 : echec -- la requete vers finviz.com (finvizfinance/run_screen) a ete refusee par le proxy reseau de l'environnement d'execution (403, politique d'egress bloquant finviz.com:443), aucun candidat n'a pu etre recupere.
