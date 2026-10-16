@@ -1,0 +1,250 @@
+{
+ "date": "2026-10-14T16:05:07.357399-04:00",
+ "mode": "cassure",
+ "fenetre_au_scan": "close",
+ "min_hausse": 5,
+ "renvoyees_vers_gap_scan": [
+  "GLND",
+  "AEHL",
+  "MXCT",
+  "NCPL",
+  "ICG"
+ ],
+ "verdicts": [
+  {
+   "ticker": "JDZG",
+   "classe": "A_SURVEILLER",
+   "horizon": "aucun a ce stade",
+   "sortie": "pas d'entree; le titre reste sur la liste d'observation",
+   "motifs": [
+    "pas de catalyseur haussier verifie",
+    "cloture a 98% du range"
+   ],
+   "alertes": [
+    "nano cap (35 M$), facile a manipuler",
+    "low float (0.4 M), mouvements violents"
+   ],
+   "inconnues": [
+    "catalyseur non verifie (EDGAR / news)",
+    "disponibilite et cout du borrow inconnus (a relever chez le courtier)"
+   ],
+   "position_cloture": 0.9818180147281936,
+   "direction": null,
+   "stop_pct": null
+  },
+  {
+   "ticker": "NAUT",
+   "classe": "PUMP_RISK",
+   "horizon": "aucun",
+   "sortie": "racheter sur stop a 20 % au-dessus de l'entree, ou en fin d'horizon. Sous reserve du borrow.",
+   "motifs": [
+    "1 signal(aux) de manipulation presents"
+   ],
+   "alertes": [
+    "montee rapide sans catalyseur identifie (RVOL eleve)"
+   ],
+   "inconnues": [
+    "catalyseur non verifie (EDGAR / news)",
+    "disponibilite et cout du borrow inconnus (a relever chez le courtier)"
+   ],
+   "position_cloture": 0.8931763978345564,
+   "direction": "vendeuse",
+   "stop_pct": 20.0
+  },
+  {
+   "ticker": "MWYN",
+   "classe": "INSUFFISANT",
+   "horizon": "aucun",
+   "sortie": "ne pas entrer",
+   "motifs": [
+    "volume moyen 63,050 < 100,000 (plancher structurel)"
+   ],
+   "alertes": [
+    "montee rapide sans catalyseur identifie (RVOL eleve)",
+    "nano cap (39 M$), facile a manipuler",
+    "low float (12.9 M), mouvements violents"
+   ],
+   "inconnues": [
+    "catalyseur non verifie (EDGAR / news)",
+    "disponibilite et cout du borrow inconnus (a relever chez le courtier)"
+   ],
+   "position_cloture": 1.0,
+   "direction": null,
+   "stop_pct": null
+  }
+ ],
+ "mesures": {
+  "MWYN": {
+   "ticker": "MWYN",
+   "gap_pct": 1.25,
+   "variation_seance_pct": 18.52,
+   "rvol": 12.64,
+   "rvol_pre_tendance": 7.26,
+   "prix": 1.92,
+   "vwap": 1.8376,
+   "haut_jour": 1.9199999570846558,
+   "bas_jour": 1.6100000143051147,
+   "cloture_veille": 1.600000023841858,
+   "volume_jour": 797234.0,
+   "volume_moyen": 63050.0,
+   "float_actions": 12936589,
+   "market_cap": 38774024,
+   "short_interest_pct": 0.63,
+   "catalyseur": null,
+   "formulaire_sec": null,
+   "seances_de_hausse": 3
+  },
+  "JDZG": {
+   "ticker": "JDZG",
+   "gap_pct": -1.17,
+   "variation_seance_pct": 8.31,
+   "rvol": 1.09,
+   "rvol_pre_tendance": 6.9,
+   "prix": 6.39,
+   "vwap": 6.1221,
+   "haut_jour": 6.400000095367432,
+   "bas_jour": 5.849999904632568,
+   "cloture_veille": 5.96999979019165,
+   "volume_jour": 1103320.0,
+   "volume_moyen": 996650.0,
+   "float_actions": 407717,
+   "market_cap": 34707360,
+   "short_interest_pct": 2.0,
+   "catalyseur": null,
+   "formulaire_sec": null,
+   "seances_de_hausse": 2
+  },
+  "NAUT": {
+   "ticker": "NAUT",
+   "gap_pct": -1.46,
+   "variation_seance_pct": 6.93,
+   "rvol": 1.15,
+   "rvol_pre_tendance": 10.02,
+   "prix": 2.16,
+   "vwap": 2.0902,
+   "haut_jour": 2.1898999214172363,
+   "bas_jour": 1.909999966621399,
+   "cloture_veille": 2.049999952316284,
+   "volume_jour": 8107929.0,
+   "volume_moyen": 7037650.0,
+   "float_actions": 67465629,
+   "market_cap": 274490336,
+   "short_interest_pct": 9.21,
+   "catalyseur": null,
+   "formulaire_sec": null,
+   "seances_de_hausse": 1
+  }
+ },
+ "depots_sec": {
+  "GLND": {
+   "cik": 2093507,
+   "formulaire_sec": null,
+   "depots": [],
+   "a_lire": []
+  },
+  "AEHL": {
+   "cik": 1470683,
+   "formulaire_sec": null,
+   "depots": [],
+   "a_lire": []
+  },
+  "MXCT": {
+   "cik": 1287098,
+   "formulaire_sec": null,
+   "depots": [
+    {
+     "date": "2026-10-14",
+     "form": "8-K",
+     "items": "2.02,9.01",
+     "classe": "A_LIRE",
+     "url": "https://www.sec.gov/Archives/edgar/data/1287098/000110465926115745/tm2627568d1_8k.htm"
+    }
+   ],
+   "a_lire": [
+    {
+     "date": "2026-10-14",
+     "form": "8-K",
+     "items": "2.02,9.01",
+     "classe": "A_LIRE",
+     "url": "https://www.sec.gov/Archives/edgar/data/1287098/000110465926115745/tm2627568d1_8k.htm"
+    }
+   ]
+  },
+  "MWYN": {
+   "cik": 2030522,
+   "formulaire_sec": null,
+   "depots": [
+    {
+     "date": "2026-10-13",
+     "form": "8-K/A",
+     "items": "5.03,9.01",
+     "classe": "A_LIRE",
+     "url": "https://www.sec.gov/Archives/edgar/data/2030522/000121390026109042/ea0308284-8ka1_marwynn.htm"
+    },
+    {
+     "date": "2026-10-09",
+     "form": "8-K",
+     "items": "8.01,9.01",
+     "classe": "A_LIRE",
+     "url": "https://www.sec.gov/Archives/edgar/data/2030522/000121390026108218/ea0308210-8k_marwynn.htm"
+    }
+   ],
+   "a_lire": [
+    {
+     "date": "2026-10-13",
+     "form": "8-K/A",
+     "items": "5.03,9.01",
+     "classe": "A_LIRE",
+     "url": "https://www.sec.gov/Archives/edgar/data/2030522/000121390026109042/ea0308284-8ka1_marwynn.htm"
+    },
+    {
+     "date": "2026-10-09",
+     "form": "8-K",
+     "items": "8.01,9.01",
+     "classe": "A_LIRE",
+     "url": "https://www.sec.gov/Archives/edgar/data/2030522/000121390026108218/ea0308210-8k_marwynn.htm"
+    }
+   ]
+  },
+  "NCPL": {
+   "cik": 1414767,
+   "formulaire_sec": null,
+   "depots": [
+    {
+     "date": "2026-10-14",
+     "form": "8-K",
+     "items": "3.01,4.01,9.01",
+     "classe": "A_LIRE",
+     "url": "https://www.sec.gov/Archives/edgar/data/1414767/000149315226047004/form8-k.htm"
+    }
+   ],
+   "a_lire": [
+    {
+     "date": "2026-10-14",
+     "form": "8-K",
+     "items": "3.01,4.01,9.01",
+     "classe": "A_LIRE",
+     "url": "https://www.sec.gov/Archives/edgar/data/1414767/000149315226047004/form8-k.htm"
+    }
+   ]
+  },
+  "ICG": {
+   "cik": 1895597,
+   "formulaire_sec": null,
+   "depots": [],
+   "a_lire": []
+  },
+  "JDZG": {
+   "cik": 1976908,
+   "formulaire_sec": null,
+   "depots": [],
+   "a_lire": []
+  },
+  "NAUT": {
+   "cik": 1808805,
+   "formulaire_sec": null,
+   "depots": [],
+   "a_lire": []
+  }
+ }
+}

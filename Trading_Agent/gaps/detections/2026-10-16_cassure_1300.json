@@ -1,0 +1,286 @@
+{
+ "date": "2026-10-16T13:00:09.136672-04:00",
+ "mode": "cassure",
+ "fenetre_au_scan": "seance",
+ "min_hausse": 5,
+ "renvoyees_vers_gap_scan": [
+  "SITC",
+  "NCPL",
+  "TCRT"
+ ],
+ "verdicts": [
+  {
+   "ticker": "ENGS",
+   "classe": "A_SURVEILLER",
+   "horizon": "aucun a ce stade",
+   "sortie": "pas d'entree; le titre reste sur la liste d'observation",
+   "motifs": [
+    "pas de catalyseur haussier verifie",
+    "cloture a 100% du range"
+   ],
+   "alertes": [
+    "low float (8.7 M), mouvements violents"
+   ],
+   "inconnues": [
+    "catalyseur non verifie (EDGAR / news)",
+    "disponibilite et cout du borrow inconnus (a relever chez le courtier)"
+   ],
+   "position_cloture": 1.0,
+   "direction": null,
+   "stop_pct": null
+  },
+  {
+   "ticker": "GRNT",
+   "classe": "A_SURVEILLER",
+   "horizon": "aucun a ce stade",
+   "sortie": "pas d'entree; le titre reste sur la liste d'observation",
+   "motifs": [
+    "pas de catalyseur haussier verifie",
+    "RVOL 0.8 < 2: seance ordinaire",
+    "cloture a 98% du range"
+   ],
+   "alertes": [],
+   "inconnues": [
+    "catalyseur non verifie (EDGAR / news)",
+    "disponibilite et cout du borrow inconnus (a relever chez le courtier)"
+   ],
+   "position_cloture": 0.979999160766603,
+   "direction": null,
+   "stop_pct": null
+  },
+  {
+   "ticker": "IAM",
+   "classe": "A_SURVEILLER",
+   "horizon": "indetermine tant que la mesure manque",
+   "sortie": "requalifier a la seance suivante avant toute entree",
+   "motifs": [
+    "une mesure decisive manque (RVOL, VWAP ou range)"
+   ],
+   "alertes": [
+    "low float (4.2 M), mouvements violents",
+    "depot 424B4 = dilution, catalyseur baissier deguise"
+   ],
+   "inconnues": [
+    "range de la seance inconnu: position de cloture non mesurable",
+    "RVOL non mesurable",
+    "cloture de la veille non mesuree",
+    "disponibilite et cout du borrow inconnus (a relever chez le courtier)",
+    "short interest inconnu"
+   ],
+   "position_cloture": null,
+   "direction": null,
+   "stop_pct": null
+  },
+  {
+   "ticker": "HUIZ",
+   "classe": "INSUFFISANT",
+   "horizon": "aucun",
+   "sortie": "ne pas entrer",
+   "motifs": [
+    "volume moyen 20,100 < 100,000 (plancher structurel)"
+   ],
+   "alertes": [
+    "montee rapide sans catalyseur identifie (RVOL eleve)",
+    "nano cap (17 M$), facile a manipuler",
+    "low float (4.5 M), mouvements violents",
+    "cours sous le VWAP (-2.0 %), pression vendeuse"
+   ],
+   "inconnues": [
+    "catalyseur non verifie (EDGAR / news)",
+    "disponibilite et cout du borrow inconnus (a relever chez le courtier)"
+   ],
+   "position_cloture": 0.4833333379692499,
+   "direction": null,
+   "stop_pct": null
+  }
+ ],
+ "mesures": {
+  "IAM": {
+   "ticker": "IAM",
+   "gap_pct": null,
+   "variation_seance_pct": null,
+   "rvol": null,
+   "rvol_pre_tendance": null,
+   "prix": 24.17,
+   "vwap": 22.5669,
+   "haut_jour": null,
+   "bas_jour": null,
+   "cloture_veille": null,
+   "volume_jour": 1896605.0,
+   "volume_moyen": null,
+   "float_actions": 4174188,
+   "market_cap": 1143885440,
+   "short_interest_pct": null,
+   "catalyseur": null,
+   "formulaire_sec": "424B4",
+   "seances_de_hausse": null
+  },
+  "HUIZ": {
+   "ticker": "HUIZ",
+   "gap_pct": 4.2,
+   "variation_seance_pct": 13.42,
+   "rvol": 272.27,
+   "rvol_pre_tendance": 98.08,
+   "prix": 1.68,
+   "vwap": 1.7146,
+   "haut_jour": 1.9900000095367432,
+   "bas_jour": 1.3899999856948853,
+   "cloture_veille": 1.4299999475479126,
+   "volume_jour": 5472533.0,
+   "volume_moyen": 20100.0,
+   "float_actions": 4458101,
+   "market_cap": 17028738,
+   "short_interest_pct": 11.78,
+   "catalyseur": null,
+   "formulaire_sec": null,
+   "seances_de_hausse": 1
+  },
+  "GRNT": {
+   "ticker": "GRNT",
+   "gap_pct": 1.38,
+   "variation_seance_pct": 4.75,
+   "rvol": 0.69,
+   "rvol_pre_tendance": 0.82,
+   "prix": 5.4,
+   "vwap": 5.3005,
+   "haut_jour": 5.40500020980835,
+   "bas_jour": 5.15500020980835,
+   "cloture_veille": 5.090000152587891,
+   "volume_jour": 789180.0,
+   "volume_moyen": 1147550.0,
+   "float_actions": 72740345,
+   "market_cap": 712920832,
+   "short_interest_pct": 9.75,
+   "catalyseur": null,
+   "formulaire_sec": null,
+   "seances_de_hausse": 2
+  },
+  "ENGS": {
+   "ticker": "ENGS",
+   "gap_pct": 2.76,
+   "variation_seance_pct": 2.42,
+   "rvol": 4.69,
+   "rvol_pre_tendance": 9.68,
+   "prix": 3.81,
+   "vwap": 3.7257,
+   "haut_jour": 3.809999942779541,
+   "bas_jour": 3.700000047683716,
+   "cloture_veille": 3.619999885559082,
+   "volume_jour": 10326760.0,
+   "volume_moyen": 2202100.0,
+   "float_actions": 8670445,
+   "market_cap": 119075512,
+   "short_interest_pct": 0.89,
+   "catalyseur": null,
+   "formulaire_sec": null,
+   "seances_de_hausse": 10
+  }
+ },
+ "depots_sec": {
+  "IAM": {
+   "cik": 1997038,
+   "formulaire_sec": "424B4",
+   "depots": [
+    {
+     "date": "2026-10-15",
+     "form": "424B4",
+     "items": "",
+     "classe": "DILUTION",
+     "url": "https://www.sec.gov/Archives/edgar/data/1997038/000119312526422865/iambic_inception_424b4.htm",
+     "form_qualifie": "424B4"
+    },
+    {
+     "date": "2026-10-08",
+     "form": "S-1/A",
+     "items": "",
+     "classe": "DILUTION",
+     "url": "https://www.sec.gov/Archives/edgar/data/1997038/000119312526417416/iam-20261008.htm",
+     "form_qualifie": "S-1/A"
+    }
+   ],
+   "a_lire": []
+  },
+  "HUIZ": {
+   "cik": 1778982,
+   "formulaire_sec": null,
+   "depots": [],
+   "a_lire": []
+  },
+  "SITC": {
+   "cik": 894315,
+   "formulaire_sec": null,
+   "depots": [],
+   "a_lire": []
+  },
+  "NCPL": {
+   "cik": 1414767,
+   "formulaire_sec": null,
+   "depots": [
+    {
+     "date": "2026-10-14",
+     "form": "8-K",
+     "items": "3.01,4.01,9.01",
+     "classe": "A_LIRE",
+     "url": "https://www.sec.gov/Archives/edgar/data/1414767/000149315226047004/form8-k.htm"
+    }
+   ],
+   "a_lire": [
+    {
+     "date": "2026-10-14",
+     "form": "8-K",
+     "items": "3.01,4.01,9.01",
+     "classe": "A_LIRE",
+     "url": "https://www.sec.gov/Archives/edgar/data/1414767/000149315226047004/form8-k.htm"
+    }
+   ]
+  },
+  "TCRT": {
+   "cik": 1107421,
+   "formulaire_sec": null,
+   "depots": [
+    {
+     "date": "2026-10-13",
+     "form": "8-K",
+     "items": "1.01,2.01,3.02,5.02,5.03,7.01,9.01",
+     "classe": "A_LIRE",
+     "url": "https://www.sec.gov/Archives/edgar/data/1107421/000119312526419829/tcrt-20261013.htm"
+    },
+    {
+     "date": "2026-10-09",
+     "form": "8-K",
+     "items": "3.01",
+     "classe": "A_LIRE",
+     "url": "https://www.sec.gov/Archives/edgar/data/1107421/000119312526419154/tcrt-20261005.htm"
+    }
+   ],
+   "a_lire": [
+    {
+     "date": "2026-10-13",
+     "form": "8-K",
+     "items": "1.01,2.01,3.02,5.02,5.03,7.01,9.01",
+     "classe": "A_LIRE",
+     "url": "https://www.sec.gov/Archives/edgar/data/1107421/000119312526419829/tcrt-20261013.htm"
+    },
+    {
+     "date": "2026-10-09",
+     "form": "8-K",
+     "items": "3.01",
+     "classe": "A_LIRE",
+     "url": "https://www.sec.gov/Archives/edgar/data/1107421/000119312526419154/tcrt-20261005.htm"
+    }
+   ]
+  },
+  "GRNT": {
+   "cik": 1928446,
+   "formulaire_sec": null,
+   "depots": [],
+   "a_lire": []
+  },
+  "ENGS": {
+   "cik": 1971828,
+   "formulaire_sec": null,
+   "depots": [],
+   "a_lire": []
+  }
+ }
+}

@@ -1,5 +1,6 @@
 """Forme « Finviz + Combined » : etoile signalee, ordre, interruption (hors reseau)."""
 import core.combined_finviz as cf
+import core.dual_champions_archive as dca
 import core.finviz_screeners as fs
 import core.scan_fondamentaux as sf
 import Combined_scan as cs
@@ -11,28 +12,48 @@ def _r(t, profil, total):
             "S4_DivYield_%": 1.5}
 
 
-def _brancher(monkeypatch, resultats):
+def _brancher(monkeypatch, resultats, tmp_path):
     monkeypatch.setattr(fs, "run_preset", lambda key, limit=500: {"rows": [[t] for t in resultats]})
     monkeypatch.setattr(sf, "EUR_RATES", {"EUR": 1.0, "USD": 1.15})   # pas de telechargement de taux
     monkeypatch.setattr(cs, "analyze_safe", lambda t: resultats[t])
+    # run_finviz_combined archive chaque Dual Champion(*) trouve via
+    # core.dual_champions_archive (protocole partage avec la veille cron) -
+    # sans ce monkeypatch, ces tests hors-reseau ecrivent pour de vrai dans
+    # Results/Screeners/DualChampions_Watch.csv, le meme fichier que la
+    # production. Meme convention que test_screener_archive.py.
+    monkeypatch.setattr(dca, "FICHIER", tmp_path / "DualChampions_Watch.csv")
 
 
-def test_etoile_signalee_et_en_tete(monkeypatch):
+def test_etoile_signalee_et_en_tete(monkeypatch, tmp_path):
     _brancher(monkeypatch, {"AAA": _r("AAA", "⚪ Below", 2), "BBB": _r("BBB", "💎 Dual Champion", 9),
-                            "CCC": _r("CCC", "💎 Dual Champion*", 8)})
+                            "CCC": _r("CCC", "💎 Dual Champion*", 8)}, tmp_path)
     res = cf.run_finviz_combined()
     assert [r[0] for r in res["rows"]] == ["CCC", "BBB", "AAA"]
     assert "⭐" not in res["headers"]
     assert [r[3] for r in res["rows"]] == ["💎 Dual Champion*", "💎 Dual Champion", "⚪ Below"]
     assert "1 ⭐ Dual Champion*" in res["title"] and "1 Dual Champion" in res["title"]
+    assert sorted(res["nouveaux"]) == ["BBB", "CCC"]
 
 
-def test_annuler_garde_ce_qui_est_analyse(monkeypatch):
-    _brancher(monkeypatch, {"AAA": _r("AAA", "💎 Dual Champion*", 9), "BBB": _r("BBB", "⚪ Below", 1)})
+def test_annuler_garde_ce_qui_est_analyse(monkeypatch, tmp_path):
+    _brancher(monkeypatch, {"AAA": _r("AAA", "💎 Dual Champion*", 9), "BBB": _r("BBB", "⚪ Below", 1)},
+             tmp_path)
     res = cf.run_finviz_combined(progress=lambda i, n, t: i == 2)   # annule avant le 2e titre
     assert [r[0] for r in res["rows"]] == ["AAA"] and "interrompu" in res["title"]
 
 
-def test_titre_ecarte_par_le_combined_ignore(monkeypatch):
-    _brancher(monkeypatch, {"AAA": None, "BBB": _r("BBB", "🛡️  Pure Safe", 6)})
+def test_titre_ecarte_par_le_combined_ignore(monkeypatch, tmp_path):
+    _brancher(monkeypatch, {"AAA": None, "BBB": _r("BBB", "🛡️  Pure Safe", 6)}, tmp_path)
     assert [r[0] for r in cf.run_finviz_combined()["rows"]] == ["BBB"]
+
+
+def test_deuxieme_scan_meme_jour_meme_score_ne_redit_pas(monkeypatch, tmp_path):
+    """Un ticker deja archive aujourd'hui, avec le meme score, n'est pas
+    re-signale comme nouveau - demande du 13.10.2026 (OXY/XOM presentes deux
+    fois le meme jour par deux outils qui ne se parlaient pas)."""
+    resultats = {"AAA": _r("AAA", "💎 Dual Champion*", 9)}
+    _brancher(monkeypatch, resultats, tmp_path)
+    premier = cf.run_finviz_combined()
+    second = cf.run_finviz_combined()
+    assert premier["nouveaux"] == ["AAA"]
+    assert second["nouveaux"] == []

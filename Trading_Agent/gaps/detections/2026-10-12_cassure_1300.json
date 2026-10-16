@@ -1,0 +1,357 @@
+{
+ "date": "2026-10-12T13:00:18.772132-04:00",
+ "mode": "cassure",
+ "fenetre_au_scan": "seance",
+ "min_hausse": 5,
+ "renvoyees_vers_gap_scan": [
+  "MNDR",
+  "LNKS",
+  "YMAT",
+  "NCPL",
+  "WBUY",
+  "SKYA",
+  "HAIN",
+  "GCL"
+ ],
+ "verdicts": [
+  {
+   "ticker": "CHA",
+   "classe": "A_SURVEILLER",
+   "horizon": "aucun a ce stade",
+   "sortie": "pas d'entree; le titre reste sur la liste d'observation",
+   "motifs": [
+    "pas de catalyseur haussier verifie",
+    "cloture a 99% du range"
+   ],
+   "alertes": [],
+   "inconnues": [
+    "catalyseur non verifie (EDGAR / news)",
+    "disponibilite et cout du borrow inconnus (a relever chez le courtier)"
+   ],
+   "position_cloture": 0.9894738828707003,
+   "direction": null,
+   "stop_pct": null
+  },
+  {
+   "ticker": "CRNC",
+   "classe": "A_SURVEILLER",
+   "horizon": "aucun a ce stade",
+   "sortie": "pas d'entree; le titre reste sur la liste d'observation",
+   "motifs": [
+    "pas de catalyseur haussier verifie",
+    "RVOL 1.1 < 2: seance ordinaire",
+    "cloture a 91% du range"
+   ],
+   "alertes": [],
+   "inconnues": [
+    "catalyseur non verifie (EDGAR / news)",
+    "disponibilite et cout du borrow inconnus (a relever chez le courtier)"
+   ],
+   "position_cloture": 0.9075633673237137,
+   "direction": null,
+   "stop_pct": null
+  },
+  {
+   "ticker": "ALLT",
+   "classe": "A_SURVEILLER",
+   "horizon": "aucun a ce stade",
+   "sortie": "pas d'entree; le titre reste sur la liste d'observation",
+   "motifs": [
+    "pas de catalyseur haussier verifie",
+    "cloture a 78% du range"
+   ],
+   "alertes": [],
+   "inconnues": [
+    "catalyseur non verifie (EDGAR / news)",
+    "disponibilite et cout du borrow inconnus (a relever chez le courtier)"
+   ],
+   "position_cloture": 0.7784671989329515,
+   "direction": null,
+   "stop_pct": null
+  },
+  {
+   "ticker": "BORR",
+   "classe": "A_SURVEILLER",
+   "horizon": "aucun a ce stade",
+   "sortie": "pas d'entree; le titre reste sur la liste d'observation",
+   "motifs": [
+    "pas de catalyseur haussier verifie",
+    "cloture a 52% du range"
+   ],
+   "alertes": [],
+   "inconnues": [
+    "catalyseur non verifie (EDGAR / news)",
+    "disponibilite et cout du borrow inconnus (a relever chez le courtier)"
+   ],
+   "position_cloture": 0.5230769366202358,
+   "direction": null,
+   "stop_pct": null
+  },
+  {
+   "ticker": "OLB",
+   "classe": "PUMP_RISK",
+   "horizon": "aucun",
+   "sortie": "racheter sur stop a 20 % au-dessus de l'entree, ou en fin d'horizon. Sous reserve du borrow.",
+   "motifs": [
+    "3 signal(aux) de manipulation presents"
+   ],
+   "alertes": [
+    "montee rapide sans catalyseur identifie (RVOL eleve)",
+    "nano cap (13 M$), facile a manipuler",
+    "low float (17.2 M), mouvements violents"
+   ],
+   "inconnues": [
+    "catalyseur non verifie (EDGAR / news)",
+    "disponibilite et cout du borrow inconnus (a relever chez le courtier)"
+   ],
+   "position_cloture": 0.6305732544046229,
+   "direction": "vendeuse",
+   "stop_pct": 20.0
+  },
+  {
+   "ticker": "ELOG",
+   "classe": "INSUFFISANT",
+   "horizon": "aucun",
+   "sortie": "ne pas entrer",
+   "motifs": [
+    "volume moyen 31,750 < 100,000 (plancher structurel)"
+   ],
+   "alertes": [
+    "montee rapide sans catalyseur identifie (RVOL eleve)",
+    "nano cap (14 M$), facile a manipuler",
+    "low float (4.1 M), mouvements violents"
+   ],
+   "inconnues": [
+    "catalyseur non verifie (EDGAR / news)",
+    "disponibilite et cout du borrow inconnus (a relever chez le courtier)"
+   ],
+   "position_cloture": 0.8128119133907877,
+   "direction": null,
+   "stop_pct": null
+  }
+ ],
+ "mesures": {
+  "ELOG": {
+   "ticker": "ELOG",
+   "gap_pct": -0.61,
+   "variation_seance_pct": 37.48,
+   "rvol": 180.33,
+   "rvol_pre_tendance": 1122.67,
+   "prix": 1.12,
+   "vwap": 1.0138,
+   "haut_jour": 1.2100000381469727,
+   "bas_jour": 0.729200005531311,
+   "cloture_veille": 0.8050000071525574,
+   "volume_jour": 5699407.0,
+   "volume_moyen": 31750.0,
+   "float_actions": 4124461,
+   "market_cap": 14051040,
+   "short_interest_pct": 5.98,
+   "catalyseur": null,
+   "formulaire_sec": null,
+   "seances_de_hausse": 6
+  },
+  "OLB": {
+   "ticker": "OLB",
+   "gap_pct": -4.1,
+   "variation_seance_pct": 15.0,
+   "rvol": 23.39,
+   "rvol_pre_tendance": 116.18,
+   "prix": 0.54,
+   "vwap": 0.532,
+   "haut_jour": 0.5979999899864197,
+   "bas_jour": 0.4410000145435333,
+   "cloture_veille": 0.4950000047683716,
+   "volume_jour": 23494634.0,
+   "volume_moyen": 1004750.0,
+   "float_actions": 17187014,
+   "market_cap": 13107885,
+   "short_interest_pct": 0.97,
+   "catalyseur": null,
+   "formulaire_sec": null,
+   "seances_de_hausse": 1
+  },
+  "ALLT": {
+   "ticker": "ALLT",
+   "gap_pct": 1.07,
+   "variation_seance_pct": 6.84,
+   "rvol": 2.53,
+   "rvol_pre_tendance": 3.55,
+   "prix": 9.06,
+   "vwap": 9.0027,
+   "haut_jour": 9.227899551391602,
+   "bas_jour": 8.470000267028809,
+   "cloture_veille": 8.390000343322754,
+   "volume_jour": 667741.0,
+   "volume_moyen": 263450.0,
+   "float_actions": 32041373,
+   "market_cap": 446686080,
+   "short_interest_pct": 4.16,
+   "catalyseur": null,
+   "formulaire_sec": null,
+   "seances_de_hausse": 2
+  },
+  "CHA": {
+   "ticker": "CHA",
+   "gap_pct": 2.84,
+   "variation_seance_pct": 3.2,
+   "rvol": 1.42,
+   "rvol_pre_tendance": 2.04,
+   "prix": 11.94,
+   "vwap": 11.5294,
+   "haut_jour": 11.949999809265137,
+   "bas_jour": 11.0,
+   "cloture_veille": 11.25,
+   "volume_jour": 1034413.0,
+   "volume_moyen": 728950.0,
+   "float_actions": 32920290,
+   "market_cap": 2277714176,
+   "short_interest_pct": 7.33,
+   "catalyseur": null,
+   "formulaire_sec": null,
+   "seances_de_hausse": 1
+  },
+  "BORR": {
+   "ticker": "BORR",
+   "gap_pct": 3.14,
+   "variation_seance_pct": 2.84,
+   "rvol": 1.38,
+   "rvol_pre_tendance": 2.22,
+   "prix": 5.07,
+   "vwap": 5.0668,
+   "haut_jour": 5.224999904632568,
+   "bas_jour": 4.900000095367432,
+   "cloture_veille": 4.78000020980835,
+   "volume_jour": 9515689.0,
+   "volume_moyen": 6889350.0,
+   "float_actions": 230190611,
+   "market_cap": 1565702016,
+   "short_interest_pct": 14.53,
+   "catalyseur": null,
+   "formulaire_sec": null,
+   "seances_de_hausse": 6
+  },
+  "CRNC": {
+   "ticker": "CRNC",
+   "gap_pct": 0.83,
+   "variation_seance_pct": 4.18,
+   "rvol": 1.07,
+   "rvol_pre_tendance": 0.82,
+   "prix": 8.85,
+   "vwap": 8.7145,
+   "haut_jour": 8.904999732971191,
+   "bas_jour": 8.3100004196167,
+   "cloture_veille": 8.430000305175781,
+   "volume_jour": 552680.0,
+   "volume_moyen": 516750.0,
+   "float_actions": 43456779,
+   "market_cap": 400513888,
+   "short_interest_pct": 14.02,
+   "catalyseur": null,
+   "formulaire_sec": null,
+   "seances_de_hausse": 5
+  }
+ },
+ "depots_sec": {
+  "MNDR": {
+   "cik": 1976695,
+   "formulaire_sec": null,
+   "depots": [],
+   "a_lire": []
+  },
+  "LNKS": {
+   "cik": 1972074,
+   "formulaire_sec": null,
+   "depots": [],
+   "a_lire": []
+  },
+  "YMAT": {
+   "cik": 1875016,
+   "formulaire_sec": null,
+   "depots": [
+    {
+     "date": "2026-10-09",
+     "form": "6-K",
+     "items": "",
+     "classe": "A_LIRE",
+     "url": "https://www.sec.gov/Archives/edgar/data/1875016/000149315226046580/form6-k.htm"
+    }
+   ],
+   "a_lire": [
+    {
+     "date": "2026-10-09",
+     "form": "6-K",
+     "items": "",
+     "classe": "A_LIRE",
+     "url": "https://www.sec.gov/Archives/edgar/data/1875016/000149315226046580/form6-k.htm"
+    }
+   ]
+  },
+  "NCPL": {
+   "cik": 1414767,
+   "formulaire_sec": null,
+   "depots": [],
+   "a_lire": []
+  },
+  "WBUY": {
+   "cik": 1946703,
+   "formulaire_sec": null,
+   "depots": [],
+   "a_lire": []
+  },
+  "SKYA": {
+   "cik": 1737995,
+   "formulaire_sec": null,
+   "depots": [],
+   "a_lire": []
+  },
+  "ELOG": {
+   "cik": 2013320,
+   "formulaire_sec": null,
+   "depots": [],
+   "a_lire": []
+  },
+  "HAIN": {
+   "cik": 910406,
+   "formulaire_sec": null,
+   "depots": [],
+   "a_lire": []
+  },
+  "OLB": {
+   "cik": 1314196,
+   "formulaire_sec": null,
+   "depots": [],
+   "a_lire": []
+  },
+  "ALLT": {
+   "cik": 1365767,
+   "formulaire_sec": null,
+   "depots": [],
+   "a_lire": []
+  },
+  "CHA": {
+   "cik": 2013649,
+   "formulaire_sec": null,
+   "depots": [],
+   "a_lire": []
+  },
+  "BORR": {
+   "cik": 1715497,
+   "formulaire_sec": null,
+   "depots": [],
+   "a_lire": []
+  },
+  "GCL": {
+   "cik": 2002045,
+   "formulaire_sec": null,
+   "depots": [],
+   "a_lire": []
+  },
+  "CRNC": {
+   "cik": 1768267,
+   "formulaire_sec": null,
+   "depots": [],
+   "a_lire": []
+  }
+ }
+}

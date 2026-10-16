@@ -1,0 +1,251 @@
+{
+ "date": "2026-10-14T13:00:09.266778-04:00",
+ "mode": "cassure",
+ "fenetre_au_scan": "seance",
+ "min_hausse": 5,
+ "renvoyees_vers_gap_scan": [
+  "AEHL",
+  "GLND",
+  "MXCT",
+  "NCPL",
+  "VSTM"
+ ],
+ "verdicts": [
+  {
+   "ticker": "CANG",
+   "classe": "PUMP_RISK",
+   "horizon": "aucun",
+   "sortie": "racheter sur stop a 20 % au-dessus de l'entree, ou en fin d'horizon. Sous reserve du borrow.",
+   "motifs": [
+    "1 signal(aux) de manipulation presents"
+   ],
+   "alertes": [
+    "montee rapide sans catalyseur identifie (RVOL eleve)"
+   ],
+   "inconnues": [
+    "catalyseur non verifie (EDGAR / news)",
+    "disponibilite et cout du borrow inconnus (a relever chez le courtier)"
+   ],
+   "position_cloture": 0.9532709998827963,
+   "direction": "vendeuse",
+   "stop_pct": 20.0
+  },
+  {
+   "ticker": "JZ",
+   "classe": "PUMP_RISK",
+   "horizon": "aucun",
+   "sortie": "racheter sur stop a 20 % au-dessus de l'entree, ou en fin d'horizon. Sous reserve du borrow.",
+   "motifs": [
+    "5 signal(aux) de manipulation presents"
+   ],
+   "alertes": [
+    "montee rapide sans catalyseur identifie (RVOL eleve)",
+    "nano cap (4 M$), facile a manipuler",
+    "low float (1.4 M), mouvements violents",
+    "cours sous le VWAP (-5.3 %), pression vendeuse",
+    "cloture a 32% du range: avance rendue en seance"
+   ],
+   "inconnues": [
+    "catalyseur non verifie (EDGAR / news)",
+    "disponibilite et cout du borrow inconnus (a relever chez le courtier)"
+   ],
+   "position_cloture": 0.32121211981094716,
+   "direction": "vendeuse",
+   "stop_pct": 20.0
+  },
+  {
+   "ticker": "MWYN",
+   "classe": "INSUFFISANT",
+   "horizon": "aucun",
+   "sortie": "ne pas entrer",
+   "motifs": [
+    "volume moyen 63,050 < 100,000 (plancher structurel)"
+   ],
+   "alertes": [
+    "nano cap (38 M$), facile a manipuler",
+    "low float (12.9 M), mouvements violents"
+   ],
+   "inconnues": [
+    "catalyseur non verifie (EDGAR / news)",
+    "disponibilite et cout du borrow inconnus (a relever chez le courtier)"
+   ],
+   "position_cloture": 0.9000000953674464,
+   "direction": null,
+   "stop_pct": null
+  }
+ ],
+ "mesures": {
+  "MWYN": {
+   "ticker": "MWYN",
+   "gap_pct": 1.25,
+   "variation_seance_pct": 16.05,
+   "rvol": 9.82,
+   "rvol_pre_tendance": 5.64,
+   "prix": 1.88,
+   "vwap": 1.8249,
+   "haut_jour": 1.909999966621399,
+   "bas_jour": 1.6100000143051147,
+   "cloture_veille": 1.600000023841858,
+   "volume_jour": 621023.0,
+   "volume_moyen": 63050.0,
+   "float_actions": 12936589,
+   "market_cap": 37966232,
+   "short_interest_pct": 0.63,
+   "catalyseur": null,
+   "formulaire_sec": null,
+   "seances_de_hausse": 3
+  },
+  "JZ": {
+   "ticker": "JZ",
+   "gap_pct": 0.72,
+   "variation_seance_pct": 12.14,
+   "rvol": 14.42,
+   "rvol_pre_tendance": 28.61,
+   "prix": 1.57,
+   "vwap": 1.6575,
+   "haut_jour": 2.130000114440918,
+   "bas_jour": 1.3049999475479126,
+   "cloture_veille": 1.3899999856948853,
+   "volume_jour": 4218198.0,
+   "volume_moyen": 292450.0,
+   "float_actions": 1403950,
+   "market_cap": 3781051,
+   "short_interest_pct": 9.73,
+   "catalyseur": null,
+   "formulaire_sec": null,
+   "seances_de_hausse": 2
+  },
+  "CANG": {
+   "ticker": "CANG",
+   "gap_pct": 1.71,
+   "variation_seance_pct": 7.58,
+   "rvol": 4.52,
+   "rvol_pre_tendance": 24.18,
+   "prix": 3.83,
+   "vwap": 3.6666,
+   "haut_jour": 3.8550000190734863,
+   "bas_jour": 3.319999933242798,
+   "cloture_veille": 3.5,
+   "volume_jour": 4455715.0,
+   "volume_moyen": 985900.0,
+   "float_actions": null,
+   "market_cap": 157114128,
+   "short_interest_pct": 2.77,
+   "catalyseur": null,
+   "formulaire_sec": null,
+   "seances_de_hausse": 2
+  }
+ },
+ "depots_sec": {
+  "AEHL": {
+   "cik": 1470683,
+   "formulaire_sec": null,
+   "depots": [],
+   "a_lire": []
+  },
+  "GLND": {
+   "cik": 2093507,
+   "formulaire_sec": null,
+   "depots": [],
+   "a_lire": []
+  },
+  "MXCT": {
+   "cik": 1287098,
+   "formulaire_sec": null,
+   "depots": [
+    {
+     "date": "2026-10-14",
+     "form": "8-K",
+     "items": "2.02,9.01",
+     "classe": "A_LIRE",
+     "url": "https://www.sec.gov/Archives/edgar/data/1287098/000110465926115745/tm2627568d1_8k.htm"
+    }
+   ],
+   "a_lire": [
+    {
+     "date": "2026-10-14",
+     "form": "8-K",
+     "items": "2.02,9.01",
+     "classe": "A_LIRE",
+     "url": "https://www.sec.gov/Archives/edgar/data/1287098/000110465926115745/tm2627568d1_8k.htm"
+    }
+   ]
+  },
+  "NCPL": {
+   "cik": 1414767,
+   "formulaire_sec": null,
+   "depots": [],
+   "a_lire": []
+  },
+  "MWYN": {
+   "cik": 2030522,
+   "formulaire_sec": null,
+   "depots": [
+    {
+     "date": "2026-10-13",
+     "form": "8-K/A",
+     "items": "5.03,9.01",
+     "classe": "A_LIRE",
+     "url": "https://www.sec.gov/Archives/edgar/data/2030522/000121390026109042/ea0308284-8ka1_marwynn.htm"
+    },
+    {
+     "date": "2026-10-09",
+     "form": "8-K",
+     "items": "8.01,9.01",
+     "classe": "A_LIRE",
+     "url": "https://www.sec.gov/Archives/edgar/data/2030522/000121390026108218/ea0308210-8k_marwynn.htm"
+    }
+   ],
+   "a_lire": [
+    {
+     "date": "2026-10-13",
+     "form": "8-K/A",
+     "items": "5.03,9.01",
+     "classe": "A_LIRE",
+     "url": "https://www.sec.gov/Archives/edgar/data/2030522/000121390026109042/ea0308284-8ka1_marwynn.htm"
+    },
+    {
+     "date": "2026-10-09",
+     "form": "8-K",
+     "items": "8.01,9.01",
+     "classe": "A_LIRE",
+     "url": "https://www.sec.gov/Archives/edgar/data/2030522/000121390026108218/ea0308210-8k_marwynn.htm"
+    }
+   ]
+  },
+  "JZ": {
+   "cik": 1852440,
+   "formulaire_sec": null,
+   "depots": [],
+   "a_lire": []
+  },
+  "CANG": {
+   "cik": 1725123,
+   "formulaire_sec": null,
+   "depots": [],
+   "a_lire": []
+  },
+  "VSTM": {
+   "cik": 1526119,
+   "formulaire_sec": null,
+   "depots": [
+    {
+     "date": "2026-10-14",
+     "form": "8-K",
+     "items": "2.02,5.02,7.01,8.01,9.01",
+     "classe": "A_LIRE",
+     "url": "https://www.sec.gov/Archives/edgar/data/1526119/000110465926115687/tm2627537d4_8k.htm"
+    }
+   ],
+   "a_lire": [
+    {
+     "date": "2026-10-14",
+     "form": "8-K",
+     "items": "2.02,5.02,7.01,8.01,9.01",
+     "classe": "A_LIRE",
+     "url": "https://www.sec.gov/Archives/edgar/data/1526119/000110465926115687/tm2627537d4_8k.htm"
+    }
+   ]
+  }
+ }
+}

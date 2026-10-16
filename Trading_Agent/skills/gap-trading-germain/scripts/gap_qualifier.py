@@ -14,6 +14,9 @@ Les quatre verdicts et ce qui les separe:
   CONTINUATION  catalyseur haussier + RVOL >= 3 + cours au-dessus du VWAP
   FADE          petit gap rapporte a l'ATR, RVOL faible, pas de catalyseur
   PUMP_RISK     signaux de manipulation presents -> ne pas jouer
+  GAP_INVALIDE  le gap mesure (yfinance) n'est plus haussier, alors que la
+                decouverte Finviz l'etait au moment du scan -> rien a jouer,
+                aucune des quatre classes ci-dessus ne peut s'appliquer
 
 Sources des seuils: Academy Germain P7 Ch.01 (echelle RVOL, VWAP), P7 Ch.03
 (discrimination squeeze/pump, sept signaux d'alarme), P12 Ch.01 (filtres de
@@ -97,7 +100,8 @@ DIRECTION_PAR_CLASSE = {
     "CONTINUATION": "acheteuse",
     "SQUEEZE":      "acheteuse",
     "A_CONFIRMER":  None,      # ne promet rien
-    "INSUFFISANT":  None,      # ecarte
+    "INSUFFISANT":  None,      # ecarte (liquidite)
+    "GAP_INVALIDE": None,      # ecarte (gap non confirme par le cours reel)
 }
 
 # Taille du gap en multiples d'ATR -> probabilite de comblement le jour meme.
@@ -429,6 +433,28 @@ def _classer(g: Gap) -> Verdict:
                        sortie="ne pas entrer",
                        motifs=[f"volume moyen {g.volume_moyen:,.0f} < {VOLUME_MOYEN_PLANCHER:,} "
                                f"(plancher structurel: sortie de position incertaine)"],
+                       alertes=alertes, inconnues=inconnues,
+                       comblement_attendu_pct=comblement)
+
+    # 1bis. Gap contredit: la decouverte Finviz filtre "Gap: Up X%", mais le
+    #    cours reellement mesure ensuite (yfinance) peut avoir deja retourne a
+    #    la baisse - vu le 15.10.2026 sur 5 titres (ADGM/WFF/SHFS/HCAI/VBIO):
+    #    Finviz montrait un gap haussier au moment de la decouverte, yfinance
+    #    mesurait -3,6 % a -29,3 % quelques secondes plus tard. Sur un nano/
+    #    micro float, les deux sources divergent facilement; FADE, SQUEEZE,
+    #    CONTINUATION et PUMP_RISK presupposent TOUS un gap encore haussier
+    #    (c'est leur direction "vendeuse"/"acheteuse" qui n'aurait plus de
+    #    sens sinon - un PUMP_RISK vendeur sur un titre deja a -20% revient a
+    #    shorter une chute déjà faite, et Rule 201 l'interdit de toute facon).
+    #    Gap absent (g.gap_pct is None) n'est PAS un gap contredit: c'est une
+    #    inconnue ordinaire, deja dans `inconnues`, qui ne bloque personne.
+    if g.gap_pct is not None and g.gap_pct <= 0:
+        return Verdict(g.ticker, "GAP_INVALIDE",
+                       horizon="aucun",
+                       sortie="ne pas entrer",
+                       motifs=[f"gap mesure {g.gap_pct:+.1f} % (non haussier): "
+                               f"la decouverte Finviz n'est plus confirmee par "
+                               f"le cours reel"],
                        alertes=alertes, inconnues=inconnues,
                        comblement_attendu_pct=comblement)
 

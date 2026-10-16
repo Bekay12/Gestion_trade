@@ -31,6 +31,7 @@ import argparse
 import glob
 import json
 import os
+import re
 import sys
 from datetime import datetime
 
@@ -48,12 +49,56 @@ PROMESSES = {
     "PUMP_RISK":    "le titre retombe, souvent sous son niveau d'avant-gap",
     "INSUFFISANT":  "aucune promesse : titre ecarte pour liquidite",
     "A_CONFIRMER":  "rien n'est promis : le verdict attend la regle des 30 min",
+    "GAP_INVALIDE": "aucune promesse : gap non confirme par le cours reel",
 }
 
 
+# Nom d'une vraie detection pleine seance ecrite par gap_scan.py / cassure_scan.py :
+# AAAA-MM-JJ_premarket.json, AAAA-MM-JJ_close.json, AAAA-MM-JJ_cassure_HHMM.json.
+# Exclut par construction les sous-produits qui vivent dans le meme dossier :
+# les sorties deja notees (_evalue_J*), les verifications ponctuelles sur un
+# ou deux titres (_ticker_*) et les versions remplacees (_avant-correctif,
+# _vor-korrektur, _provisoire_*, _abend_ergaenzung, _ticker_renvoyes).
+_DETECTION_PLEINE = re.compile(r"^\d{4}-\d{2}-\d{2}_(premarket|close|cassure_\d+)\.json$")
+
+
 def dernier_fichier() -> str | None:
-    fichiers = sorted(glob.glob(os.path.join(DETECTIONS, "*.json")))
-    return fichiers[-1] if fichiers else None
+    """
+    --------------------------------------------------------------------------
+    Purpose:
+        Trouve la plus recente detection pleine seance, pour l'evaluation du
+        soir lancee sans --fichier.
+
+        Un tri alphabetique sur *.json melangeait les detections avec leurs
+        propres sorties notees et avec des verifications ponctuelles sur un
+        seul ticker : "ticker" (t) trie apres "premarket" (p) et "cassure"
+        (c), donc une verification ad hoc lancee apres le scan du matin
+        redevenait "la derniere detection" et se faisait noter comme si elle
+        etait le bilan de la seance. Mesure du 29.09.2026 : le dossier
+        contenait "2026-09-29_premarket.json" (le vrai scan) et
+        "2026-09-29_ticker_1150.json" (verification sur 7 titres), et ce
+        dernier triait en dernier. Le filtre par nom ecarte ces fichiers; le
+        tri se fait ensuite sur la date ecrite DANS le JSON, pas sur le nom
+        de fichier, pour departager deux detections du meme jour (premarket
+        puis close, par exemple) par l'heure reelle du scan.
+
+    Outputs:
+        chemin (str | None): la detection la plus recente, ou None si le
+            dossier n'en contient aucune
+    --------------------------------------------------------------------------
+    """
+    candidats = [f for f in glob.glob(os.path.join(DETECTIONS, "*.json"))
+                 if _DETECTION_PLEINE.match(os.path.basename(f))]
+    if not candidats:
+        return None
+
+    def horodatage(chemin: str) -> str:
+        try:
+            return json.load(open(chemin)).get("date", "") or ""
+        except Exception:
+            return ""
+
+    return max(candidats, key=horodatage)
 
 
 def cours_depuis(tickers: list, depart: str, jours: int) -> dict:
@@ -122,7 +167,7 @@ def noter(verdict: dict, serie: dict | None) -> dict:
     var_j0 = (cloture_j0 / ouverture - 1) * 100 if ouverture else None
     var_totale = (dernier / ouverture - 1) * 100 if ouverture else None
 
-    if classe == "INSUFFISANT":
+    if classe in ("INSUFFISANT", "GAP_INVALIDE"):
         return {"ticker": ticker, "classe": classe, "resultat": "non juge",
                 "motif": "ecarte a la detection, aucune promesse",
                 "variation_pct": round(var_totale, 2) if var_totale else None}
