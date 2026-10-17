@@ -17,6 +17,8 @@ Moteur de décision et portefeuille papier. Implémente les règles R1 à R13 de
 | `scan_market.py` | Liste de pré-marché : découvrir → filtrer → qualifier | R6 |
 | `ibkr_doctor.py` | Preflight : ce que le compte sait réellement faire | — |
 | `eastern.py` | Heure de l'Est et état du marché — **définition unique** | R10 |
+| `autonomy.py` | Garde-fous de l'exécution autonome (bot eToro) : palier de levier, coupe-circuit, plafond de positions, sortie à l'horizon, interrupteur d'urgence | — (hors R1-R13, voir en-tête du module) |
+| `sources/etoro.py` | Client REST eToro (demo + réel), exception consciente à l'invariant « le moteur ne décide jamais d'entrer » — actée le 09.10.2026 pour eToro seul | — |
 
 L'état de couverture réel — quelles fonctions F1 à F8 sont automatisées, quelles
 couches de la spécification avancent — vit dans

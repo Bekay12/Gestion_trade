@@ -1,0 +1,80 @@
+{
+ "detection": "2026-09-29_ticker_1150.json",
+ "evalue_le": "2026-10-06T10:11:25.946922",
+ "fenetre_jours": 1,
+ "notes": [
+  {
+   "ticker": "IVVD",
+   "classe": "PUMP_RISK",
+   "resultat": "juste",
+   "motif": "retombe de -5.5 %, l'alerte etait fondee",
+   "variation_pct": -5.54,
+   "executabilite": {
+    "executable": "oui",
+    "volume_post_ouverture_usd": 1088507,
+    "barres_vides": 0,
+    "motif": "volume 09:35-10:00 1089 k$, carnet continu (spread et borrow non mesures)"
+   }
+  },
+  {
+   "ticker": "FFAI",
+   "classe": "PUMP_RISK",
+   "resultat": "juste",
+   "motif": "retombe de -20.9 %, l'alerte etait fondee",
+   "variation_pct": -20.92,
+   "executabilite": {
+    "executable": "oui",
+    "volume_post_ouverture_usd": 2193863,
+    "barres_vides": 0,
+    "motif": "volume 09:35-10:00 2194 k$, carnet continu (spread et borrow non mesures)"
+   }
+  },
+  {
+   "ticker": "SLXN",
+   "classe": "PUMP_RISK",
+   "resultat": "juste",
+   "motif": "retombe de -13.2 %, l'alerte etait fondee",
+   "variation_pct": -13.17,
+   "executabilite": {
+    "executable": "oui",
+    "volume_post_ouverture_usd": 17480973,
+    "barres_vides": 0,
+    "motif": "volume 09:35-10:00 17481 k$, carnet continu (spread et borrow non mesures)"
+   }
+  },
+  {
+   "ticker": "CYAB",
+   "classe": "PUMP_RISK",
+   "resultat": "faux",
+   "motif": "a tenu (+5.0 %) : alerte trop severe",
+   "variation_pct": 5.0,
+   "executabilite": {
+    "executable": "oui",
+    "volume_post_ouverture_usd": 271630,
+    "barres_vides": 0,
+    "motif": "volume 09:35-10:00 272 k$, carnet continu (spread et borrow non mesures)"
+   }
+  },
+  {
+   "ticker": "MSGY",
+   "classe": "INSUFFISANT",
+   "resultat": "non juge",
+   "motif": "ecarte a la detection, aucune promesse",
+   "variation_pct": 43.65
+  },
+  {
+   "ticker": "YMT",
+   "classe": "INSUFFISANT",
+   "resultat": "non juge",
+   "motif": "ecarte a la detection, aucune promesse",
+   "variation_pct": -42.13
+  },
+  {
+   "ticker": "EVGN",
+   "classe": "INSUFFISANT",
+   "resultat": "non juge",
+   "motif": "ecarte a la detection, aucune promesse",
+   "variation_pct": 8.11
+  }
+ ]
+}

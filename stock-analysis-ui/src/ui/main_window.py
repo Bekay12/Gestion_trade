@@ -39,7 +39,7 @@ from ui.workers import (
     SYMBOL_MANAGER_AVAILABLE, get_symbols_by_list_type, get_recent_symbols,
     _fetch_yf_info_with_timeout, _is_valid_ticker_info, _get_sector_cache_first,
 )
-from ui.mixins.screeners import ScreenersMixin
+from ui.mixins.screeners import ScreenersMixin, _archive_combined_results_by_profile
 from ui.pg_charts import build_symbol_chart, chart_backend, set_chart_backend
 from ui.mixins.export import ExportMixin
 try:
@@ -2027,12 +2027,14 @@ class MainWindow(QMainWindow, ScreenersMixin, ExportMixin):
 
         self.current_results = merged_results
         self.filtered_results = None
+        archived_profiles = _archive_combined_results_by_profile(list(dual_by_symbol.values()))
         self.update_results_table()
         dual_count = sum(_dual_champion_rank(row.get("DualChampionProfil")) > 0
                          for row in merged_results)
         self.summary_text.append(
             f"\nDual Champion: {len(dual_by_symbol)} résultat(s), "
-            f"dont {dual_count} Dual Champion (G≥3/5 et S≥5/7)."
+            f"dont {dual_count} Dual Champion (G≥3/5 et S≥5/7). "
+            f"Résultats répartis dans {len(archived_profiles)} CSV par profil."
         )
         self._status(f"Dual Champion terminé — {len(dual_by_symbol)} résultat(s)")
 

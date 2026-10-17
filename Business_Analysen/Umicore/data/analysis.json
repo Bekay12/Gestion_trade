@@ -1,0 +1,35 @@
+{
+  "currency": "EUR/Aktie",
+  "opening_liquidity": 0,
+  "horizon_start": 2026,
+  "horizon_end": 2041,
+  "schedule_years": [2026, 2027, 2028],
+  "sensitivity_horizons": [2031, 2036, 2041],
+  "revenue_base": 3.609,
+  "earnings_base": 0.847,
+  "hurdle": 12.68,
+  "hurdle_source": "Eigenkapitalrendite auf bereinigter Basis (bereinigtes Konzernergebnis / Eigenkapital zum Jahresende), 3-Jahres-Mittel GJ2023-GJ2025: 12,09% + 13,27% + 12,68% = 12,68%. IFRS-Nettoergebnis wird nicht verwendet, da GJ2024 durch die Wertminderung auf Battery Materials (-1.788 Mio. EUR, davon PPE 913 Mio./Vorraete 468 Mio., Annual Report 2024 S.89) eine ROE von -77% ergeben wuerde - ein Einmaleffekt, keine wiederkehrende Ertragskraft. Eigene Angabe des Unternehmens (ROCE) liegt mit 5-Jahres-Mittel 2021-2025 (22,2+19,2+13,5+12,3+15,7)/5=16,58% hoeher, da ROCE auch Fremdkapital im Nenner hat; als Sensitivitaet separat genannt, nicht als Hurdle verwendet. Quellen: Eigenkapital/Jahresueberschuss (bereinigt) GJ2023 Annual Report 2024 S.89 bereinigtes Ergebnis 447 Mio./Eigenkapital Bilanz S.61 3.697,43 Mio.; GJ2024 Annual Report 2025 S.2 bereinigtes Ergebnis 255 Mio./Bilanz S.64 1.921,76 Mio.; GJ2025 Annual Report 2025 S.2 bereinigtes Ergebnis 288 Mio./Bilanz S.64 2.271,55 Mio.",
+  "options": {
+    "pessimistic": {
+      "name": "Pessimistisch (FCF/Aktie GJ2022, schwaechstes der 4 verfuegbaren Jahre)",
+      "investment": {"2026": 20.98},
+      "earnings_uplift": 0.58,
+      "uplift_start": 2026,
+      "terminal_value": 9.31
+    },
+    "base": {
+      "name": "Basis (FCF/Aktie GJ2024, mittleres Jahr der Reihe)",
+      "investment": {"2026": 20.98},
+      "earnings_uplift": 1.19,
+      "uplift_start": 2026,
+      "terminal_value": 9.31
+    },
+    "optimistic": {
+      "name": "Optimistisch (FCF/Aktie GJ2025, bestes Jahr, aber durch aussergewoehnlich niedrigen Capex (-62% ggu. GJ2024) beguenstigt - CORE-2028-Planung sieht hoeheren Capex vor)",
+      "investment": {"2026": 20.98},
+      "earnings_uplift": 2.24,
+      "uplift_start": 2026,
+      "terminal_value": 9.31
+    }
+  }
+}

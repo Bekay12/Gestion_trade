@@ -270,7 +270,9 @@ def test_comparateur_priorise_les_categories_dual_champion() -> None:
     assert _dual_profile_label("🚀 Pure Growth") == "Pure Growth"
 
 
-def test_reception_dual_fusionne_sans_perdre_les_donnees_deja_analysees() -> None:
+def test_reception_dual_fusionne_sans_perdre_les_donnees_deja_analysees(monkeypatch) -> None:
+    monkeypatch.setattr("ui.main_window._archive_combined_results_by_profile", lambda results: {})
+
     class _Bouton:
         def setEnabled(self, enabled):
             self.enabled = enabled

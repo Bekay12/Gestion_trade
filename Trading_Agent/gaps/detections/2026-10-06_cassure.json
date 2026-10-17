@@ -1,0 +1,147 @@
+{
+ "date": "2026-10-06T08:04:46.473567-04:00",
+ "mode": "cassure",
+ "fenetre_au_scan": "premarket",
+ "min_hausse": 5,
+ "renvoyees_vers_gap_scan": [
+  "QTEX"
+ ],
+ "verdicts": [
+  {
+   "ticker": "ARAI",
+   "classe": "A_SURVEILLER",
+   "horizon": "aucun a ce stade",
+   "sortie": "pas d'entree; le titre reste sur la liste d'observation",
+   "motifs": [
+    "pas de catalyseur haussier verifie",
+    "RVOL 0.9 < 2: seance ordinaire",
+    "cloture a 100% du range"
+   ],
+   "alertes": [
+    "nano cap (11 M$), facile a manipuler"
+   ],
+   "inconnues": [
+    "catalyseur non verifie (EDGAR / news)",
+    "disponibilite et cout du borrow inconnus (a relever chez le courtier)"
+   ],
+   "position_cloture": 1.0,
+   "direction": null,
+   "stop_pct": null
+  },
+  {
+   "ticker": "BFRG",
+   "classe": "A_SURVEILLER",
+   "horizon": "aucun a ce stade",
+   "sortie": "pas d'entree; le titre reste sur la liste d'observation",
+   "motifs": [
+    "pas de catalyseur haussier verifie",
+    "cloture a 100% du range"
+   ],
+   "alertes": [
+    "nano cap (11 M$), facile a manipuler",
+    "low float (16.0 M), mouvements violents"
+   ],
+   "inconnues": [
+    "catalyseur non verifie (EDGAR / news)",
+    "disponibilite et cout du borrow inconnus (a relever chez le courtier)"
+   ],
+   "position_cloture": 1.0,
+   "direction": null,
+   "stop_pct": null
+  }
+ ],
+ "mesures": {
+  "ARAI": {
+   "ticker": "ARAI",
+   "gap_pct": 1.85,
+   "variation_seance_pct": -5.45,
+   "rvol": 0.83,
+   "rvol_pre_tendance": 0.87,
+   "prix": 0.29,
+   "vwap": 0.2107,
+   "haut_jour": 0.2199999988079071,
+   "bas_jour": 0.20499999821186066,
+   "cloture_veille": 0.2160000056028366,
+   "volume_jour": 99727424.0,
+   "volume_moyen": 404550.0,
+   "float_actions": 27186765,
+   "market_cap": 10764313,
+   "short_interest_pct": 1.85,
+   "catalyseur": null,
+   "formulaire_sec": null,
+   "seances_de_hausse": 0
+  },
+  "BFRG": {
+   "ticker": "BFRG",
+   "gap_pct": -2.1,
+   "variation_seance_pct": -1.82,
+   "rvol": 2.71,
+   "rvol_pre_tendance": 4.92,
+   "prix": 0.7,
+   "vwap": 0.6051,
+   "haut_jour": 0.6299999952316284,
+   "bas_jour": 0.5799999833106995,
+   "cloture_veille": 0.6179999709129333,
+   "volume_jour": 772895.0,
+   "volume_moyen": 196900.0,
+   "float_actions": 15971037,
+   "market_cap": 11013741,
+   "short_interest_pct": 0.63,
+   "catalyseur": null,
+   "formulaire_sec": null,
+   "seances_de_hausse": 0
+  }
+ },
+ "depots_sec": {
+  "ARAI": {
+   "cik": 1818274,
+   "formulaire_sec": null,
+   "depots": [
+    {
+     "date": "2026-09-29",
+     "form": "8-K",
+     "items": "5.02",
+     "classe": "A_LIRE",
+     "url": "https://www.sec.gov/Archives/edgar/data/1818274/000149315226044874/form8-k.htm"
+    }
+   ],
+   "a_lire": [
+    {
+     "date": "2026-09-29",
+     "form": "8-K",
+     "items": "5.02",
+     "classe": "A_LIRE",
+     "url": "https://www.sec.gov/Archives/edgar/data/1818274/000149315226044874/form8-k.htm"
+    }
+   ]
+  },
+  "QTEX": {
+   "cik": 1837493,
+   "formulaire_sec": null,
+   "depots": [
+    {
+     "date": "2026-10-01",
+     "form": "6-K",
+     "items": "",
+     "classe": "A_LIRE",
+     "url": "https://www.sec.gov/Archives/edgar/data/1837493/000118518526004479/qtrex6k100126.htm"
+    }
+   ],
+   "a_lire": [
+    {
+     "date": "2026-10-01",
+     "form": "6-K",
+     "items": "",
+     "classe": "A_LIRE",
+     "url": "https://www.sec.gov/Archives/edgar/data/1837493/000118518526004479/qtrex6k100126.htm"
+    }
+   ]
+  },
+  "BFRG": {
+   "cik": 1829247,
+   "formulaire_sec": null,
+   "depots": [],
+   "a_lire": []
+  }
+ }
+}

@@ -1,0 +1,133 @@
+{
+ "detection": "2026-10-07_premarket.json",
+ "evalue_le": "2026-10-07T21:58:30.514075",
+ "fenetre_jours": 1,
+ "notes": [
+  {
+   "ticker": "TOPP",
+   "classe": "FADE",
+   "resultat": "faux",
+   "motif": "gap non comble (bas 0.161 > veille 0.112); vente ouverture->cloture +28.4 %",
+   "variation_pct": -28.43,
+   "vente_ouverture_cloture_pct": 28.43,
+   "executabilite": {
+    "executable": "oui",
+    "volume_post_ouverture_usd": 10052470,
+    "barres_vides": 0,
+    "motif": "volume 09:35-10:00 10052 k$, carnet continu (spread et borrow non mesures)"
+   }
+  },
+  {
+   "ticker": "SDEV",
+   "classe": "PUMP_RISK",
+   "resultat": "juste",
+   "motif": "retombe de -17.0 %, l'alerte etait fondee",
+   "variation_pct": -16.97,
+   "executabilite": {
+    "executable": "oui",
+    "volume_post_ouverture_usd": 6703246,
+    "barres_vides": 0,
+    "motif": "volume 09:35-10:00 6703 k$, carnet continu (spread et borrow non mesures)"
+   }
+  },
+  {
+   "ticker": "NIVF",
+   "classe": "PUMP_RISK",
+   "resultat": "juste",
+   "motif": "retombe de -3.6 %, l'alerte etait fondee",
+   "variation_pct": -3.6,
+   "executabilite": {
+    "executable": "oui",
+    "volume_post_ouverture_usd": 260826,
+    "barres_vides": 0,
+    "motif": "volume 09:35-10:00 261 k$, carnet continu (spread et borrow non mesures)"
+   }
+  },
+  {
+   "ticker": "GIPR",
+   "classe": "PUMP_RISK",
+   "resultat": "juste",
+   "motif": "retombe de -5.9 %, l'alerte etait fondee",
+   "variation_pct": -5.94,
+   "executabilite": {
+    "executable": "oui",
+    "volume_post_ouverture_usd": 26408231,
+    "barres_vides": 0,
+    "motif": "volume 09:35-10:00 26408 k$, carnet continu (spread et borrow non mesures)"
+   }
+  },
+  {
+   "ticker": "FRGT",
+   "classe": "PUMP_RISK",
+   "resultat": "faux",
+   "motif": "a tenu (+6.6 %) : alerte trop severe",
+   "variation_pct": 6.55,
+   "executabilite": {
+    "executable": "oui",
+    "volume_post_ouverture_usd": 218858,
+    "barres_vides": 0,
+    "motif": "volume 09:35-10:00 219 k$, carnet continu (spread et borrow non mesures)"
+   }
+  },
+  {
+   "ticker": "SXTC",
+   "classe": "PUMP_RISK",
+   "resultat": "juste",
+   "motif": "retombe de -16.2 %, l'alerte etait fondee",
+   "variation_pct": -16.2,
+   "executabilite": {
+    "executable": "oui",
+    "volume_post_ouverture_usd": 20654461,
+    "barres_vides": 0,
+    "motif": "volume 09:35-10:00 20654 k$, carnet continu (spread et borrow non mesures)"
+   }
+  },
+  {
+   "ticker": "MTEN",
+   "classe": "PUMP_RISK",
+   "resultat": "juste",
+   "motif": "retombe de -10.8 %, l'alerte etait fondee",
+   "variation_pct": -10.78,
+   "executabilite": {
+    "executable": "oui",
+    "volume_post_ouverture_usd": 5348720,
+    "barres_vides": 0,
+    "motif": "volume 09:35-10:00 5349 k$, carnet continu (spread et borrow non mesures)"
+   }
+  },
+  {
+   "ticker": "BURU",
+   "classe": "PUMP_RISK",
+   "resultat": "faux",
+   "motif": "a tenu (+1.3 %) : alerte trop severe",
+   "variation_pct": 1.31,
+   "executabilite": {
+    "executable": "oui",
+    "volume_post_ouverture_usd": 528648,
+    "barres_vides": 0,
+    "motif": "volume 09:35-10:00 529 k$, carnet continu (spread et borrow non mesures)"
+   }
+  },
+  {
+   "ticker": "MI",
+   "classe": "INSUFFISANT",
+   "resultat": "non juge",
+   "motif": "ecarte a la detection, aucune promesse",
+   "variation_pct": -4.94
+  },
+  {
+   "ticker": "BYAH",
+   "classe": "INSUFFISANT",
+   "resultat": "non juge",
+   "motif": "ecarte a la detection, aucune promesse",
+   "variation_pct": 21.59
+  },
+  {
+   "ticker": "BIYA",
+   "classe": "INSUFFISANT",
+   "resultat": "non juge",
+   "motif": "ecarte a la detection, aucune promesse",
+   "variation_pct": 6.08
+  }
+ ]
+}

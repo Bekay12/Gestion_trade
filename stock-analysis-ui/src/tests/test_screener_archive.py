@@ -4,7 +4,7 @@ from datetime import datetime, timedelta
 
 import ui.mixins.screeners as screeners
 from core import store_screeners
-from ui.mixins.screeners import ScreenersMixin
+from ui.mixins.screeners import ScreenersMixin, _archive_combined_results_by_profile
 
 
 def test_archive_enregistre_entetes_metadonnees_et_resultats(tmp_path, monkeypatch) -> None:
@@ -80,6 +80,54 @@ def test_archive_remplace_le_fichier_du_meme_screener_dans_la_journee(
     with second_path.open(newline="", encoding="utf-8-sig") as csvfile:
         archived_rows = list(csv.DictReader(csvfile))
     assert [row["Symbole"] for row in archived_rows] == ["BBB"]
+
+
+def test_combined_archive_les_lignes_dans_un_csv_distinct_par_profil(
+    tmp_path, monkeypatch
+) -> None:
+    monkeypatch.setattr(screeners, "SCREENER_RESULTS_DIR", tmp_path)
+    resultats = [
+        {
+            "ticker": "AAA", "nom": "Acme", "secteur": "Industrials", "pays": "US",
+            "profil": "💎 Dual Champion*", "score_growth": 5, "score_safe": 6,
+            "score_total": 11, "G1_CA_Growth_%": 22.5, "G1_ok": True,
+            "G3_Underval": 2, "G3_ok": True, "G4_Momentum_%": 12.0,
+            "G4_ok": True, "S2_DE_%": 45, "S2_ok": True, "S4_DivYield_%": 1.2,
+            "S4_ok": True,
+        },
+        {
+            "ticker": "BBB", "nom": "Beta", "secteur": "Technology", "pays": "US",
+            "profil": "💎 Dual Champion", "score_growth": 4, "score_safe": 5,
+            "score_total": 9,
+        },
+        {
+            "ticker": "CCC", "nom": "Gamma", "secteur": "Energy", "pays": "CA",
+            "profil": "💎 Dual Champion", "score_growth": 3, "score_safe": 5,
+            "score_total": 8,
+        },
+        {
+            "ticker": "DDD", "nom": "Delta", "secteur": "Healthcare", "pays": "US",
+            "profil": "🚀 Pure Growth", "score_growth": 4, "score_safe": 2,
+            "score_total": 6,
+        },
+    ]
+
+    archives = _archive_combined_results_by_profile(resultats)
+
+    assert set(archives) == {"Dual Champion*", "Dual Champion", "Pure Growth"}
+    assert len(list(tmp_path.glob("*.csv"))) == 3
+    assert "Dual_Champion" in archives["Dual Champion"].name
+    with archives["Dual Champion"].open(newline="", encoding="utf-8-sig") as csvfile:
+        dual_rows = list(csv.DictReader(csvfile))
+    assert [row["Symbole"] for row in dual_rows] == ["BBB", "CCC"]
+    assert {row["Profil"] for row in dual_rows} == {"Dual Champion"}
+    assert dual_rows[0]["Score /12"] == "9"
+    assert dual_rows[0]["G1 CA (%)"] == ""
+    with archives["Dual Champion*"].open(newline="", encoding="utf-8-sig") as csvfile:
+        star_row = next(csv.DictReader(csvfile))
+    assert star_row["Profil"] == "Dual Champion*"
+    assert star_row["G1 CA (%)"] == "22.5"
+    assert star_row["G1 OK"] == "True"
 
 
 def test_premiere_ouverture_marque_les_tickers_comme_nouveaux(tmp_path, monkeypatch) -> None:

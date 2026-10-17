@@ -1,0 +1,166 @@
+{
+ "detection": "2026-10-06_premarket.json",
+ "evalue_le": "2026-10-07T06:53:03.011950",
+ "fenetre_jours": 1,
+ "notes": [
+  {
+   "ticker": "PBK",
+   "classe": "FADE",
+   "resultat": "juste",
+   "motif": "gap comble (bas 0.212 <= veille 0.225); vente ouverture->cloture -10.7 %",
+   "variation_pct": 10.71,
+   "vente_ouverture_cloture_pct": -10.71,
+   "executabilite": {
+    "executable": "non",
+    "volume_post_ouverture_usd": 79878,
+    "barres_vides": 0,
+    "motif": "volume 09:35-10:00 80 k$ < 200 k$"
+   }
+  },
+  {
+   "ticker": "CIRC",
+   "classe": "FADE",
+   "resultat": "juste",
+   "motif": "gap comble (bas 0.432 <= veille 0.538); vente ouverture->cloture +17.2 %",
+   "variation_pct": -17.2,
+   "vente_ouverture_cloture_pct": 17.2,
+   "executabilite": {
+    "executable": "oui",
+    "volume_post_ouverture_usd": 3681978,
+    "barres_vides": 0,
+    "motif": "volume 09:35-10:00 3682 k$, carnet continu (spread et borrow non mesures)"
+   }
+  },
+  {
+   "ticker": "JAGX",
+   "classe": "PUMP_RISK",
+   "resultat": "juste",
+   "motif": "retombe de -14.3 %, l'alerte etait fondee",
+   "variation_pct": -14.33,
+   "executabilite": {
+    "executable": "oui",
+    "volume_post_ouverture_usd": 20486588,
+    "barres_vides": 0,
+    "motif": "volume 09:35-10:00 20487 k$, carnet continu (spread et borrow non mesures)"
+   }
+  },
+  {
+   "ticker": "WHLR",
+   "classe": "PUMP_RISK",
+   "resultat": "juste",
+   "motif": "retombe de -21.6 %, l'alerte etait fondee",
+   "variation_pct": -21.55,
+   "executabilite": {
+    "executable": "oui",
+    "volume_post_ouverture_usd": 885182,
+    "barres_vides": 0,
+    "motif": "volume 09:35-10:00 885 k$, carnet continu (spread et borrow non mesures)"
+   }
+  },
+  {
+   "ticker": "AXG",
+   "classe": "PUMP_RISK",
+   "resultat": "juste",
+   "motif": "retombe de -8.2 %, l'alerte etait fondee",
+   "variation_pct": -8.2,
+   "executabilite": {
+    "executable": "oui",
+    "volume_post_ouverture_usd": 938853,
+    "barres_vides": 0,
+    "motif": "volume 09:35-10:00 939 k$, carnet continu (spread et borrow non mesures)"
+   }
+  },
+  {
+   "ticker": "RUBI",
+   "classe": "PUMP_RISK",
+   "resultat": "juste",
+   "motif": "retombe de -13.4 %, l'alerte etait fondee",
+   "variation_pct": -13.38,
+   "executabilite": {
+    "executable": "oui",
+    "volume_post_ouverture_usd": 932723,
+    "barres_vides": 0,
+    "motif": "volume 09:35-10:00 933 k$, carnet continu (spread et borrow non mesures)"
+   }
+  },
+  {
+   "ticker": "APUS",
+   "classe": "PUMP_RISK",
+   "resultat": "faux",
+   "motif": "a tenu (+45.2 %) : alerte trop severe",
+   "variation_pct": 45.21,
+   "executabilite": {
+    "executable": "oui",
+    "volume_post_ouverture_usd": 31043788,
+    "barres_vides": 0,
+    "motif": "volume 09:35-10:00 31044 k$, carnet continu (spread et borrow non mesures)"
+   }
+  },
+  {
+   "ticker": "FRGT",
+   "classe": "PUMP_RISK",
+   "resultat": "juste",
+   "motif": "retombe de -51.1 %, l'alerte etait fondee",
+   "variation_pct": -51.06,
+   "executabilite": {
+    "executable": "oui",
+    "volume_post_ouverture_usd": 26977089,
+    "barres_vides": 0,
+    "motif": "volume 09:35-10:00 26977 k$, carnet continu (spread et borrow non mesures)"
+   }
+  },
+  {
+   "ticker": "BEAT",
+   "classe": "PUMP_RISK",
+   "resultat": "juste",
+   "motif": "retombe de -6.3 %, l'alerte etait fondee",
+   "variation_pct": -6.26,
+   "executabilite": {
+    "executable": "oui",
+    "volume_post_ouverture_usd": 895157,
+    "barres_vides": 0,
+    "motif": "volume 09:35-10:00 895 k$, carnet continu (spread et borrow non mesures)"
+   }
+  },
+  {
+   "ticker": "OLOX",
+   "classe": "PUMP_RISK",
+   "resultat": "juste",
+   "motif": "retombe de -13.5 %, l'alerte etait fondee",
+   "variation_pct": -13.49,
+   "executabilite": {
+    "executable": "oui",
+    "volume_post_ouverture_usd": 11685812,
+    "barres_vides": 0,
+    "motif": "volume 09:35-10:00 11686 k$, carnet continu (spread et borrow non mesures)"
+   }
+  },
+  {
+   "ticker": "QTEX",
+   "classe": "PUMP_RISK",
+   "resultat": "juste",
+   "motif": "retombe de -6.7 %, l'alerte etait fondee",
+   "variation_pct": -6.74,
+   "executabilite": {
+    "executable": "oui",
+    "volume_post_ouverture_usd": 18251661,
+    "barres_vides": 0,
+    "motif": "volume 09:35-10:00 18252 k$, carnet continu (spread et borrow non mesures)"
+   }
+  },
+  {
+   "ticker": "KAPA",
+   "classe": "INSUFFISANT",
+   "resultat": "non juge",
+   "motif": "ecarte a la detection, aucune promesse",
+   "variation_pct": -27.67
+  },
+  {
+   "ticker": "NXAT",
+   "classe": "INSUFFISANT",
+   "resultat": "non juge",
+   "motif": "ecarte a la detection, aucune promesse",
+   "variation_pct": -3.87
+  }
+ ]
+}

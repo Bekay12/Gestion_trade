@@ -97,7 +97,10 @@ def _new_screener_symbols(title: str, headers: list[str], rows: list) -> set[str
                 match = re.match(r"(\d{8})", archive_path.name)
                 if not match:
                     continue
-                archive_date = datetime.strptime(match.group(1), "%Y%m%d").date()
+                try:
+                    archive_date = datetime.strptime(match.group(1), "%Y%m%d").date()
+                except ValueError:
+                    continue
             if archive_date >= today:
                 continue
             symbol_header = next(
@@ -121,7 +124,8 @@ def _archive_screener_results(title: str, headers: list[str], rows: list) -> Pat
     """Write one replaceable daily CSV snapshot for this screener."""
     timestamp = datetime.now()
     history_key = _screener_history_key(title)
-    slug = re.sub(r"[^A-Za-z0-9_-]+", "_", history_key).strip("_")[:80] or "screener"
+    slug_source = history_key.replace("*", "_star")
+    slug = re.sub(r"[^A-Za-z0-9_-]+", "_", slug_source).strip("_")[:80] or "screener"
     filename = f"{timestamp.strftime('%Y%m%d')}_{slug}.csv"
     SCREENER_RESULTS_DIR.mkdir(parents=True, exist_ok=True)
     file_path = SCREENER_RESULTS_DIR / filename
@@ -134,6 +138,58 @@ def _archive_screener_results(title: str, headers: list[str], rows: list) -> Pat
             values = (values + [""] * len(headers))[:len(headers)]
             writer.writerow([timestamp.isoformat(timespec="seconds"), title, *values])
     return file_path
+
+
+def _archive_combined_results_by_profile(results: list[dict]) -> dict[str, Path]:
+    """Archive Combined scan rows into separate daily CSV snapshots per profile."""
+    headers = [
+        "Symbole", "Nom", "Domaine", "Pays", "Prix", "Market Cap (B$)",
+        "Profil", "Growth /5", "Safe /7", "Score /12",
+        "G1 CA (%)", "G1 OK", "G2 Marge (%)", "G2 OK", "G3 Valorisation", "G3 OK",
+        "G4 Momentum (%)", "G4 OK", "G5 Volume (x)", "G5 OK",
+        "S1 Capitalisation (Md EUR)", "S1 OK", "S2 Dette/Capitaux (%)", "S2 OK",
+        "S3 Beta", "S3 OK", "S4 Dividende (%)", "S4 OK",
+        "S5 Marge FCF (%)", "S5 OK", "S6 Croissance FCF (%)", "S6 OK",
+        "S7 Croissance CA/BPA (%)", "S7 OK",
+    ]
+    grouped: dict[str, list[list]] = {}
+    for result in results or []:
+        if not isinstance(result, dict) or not result.get("ticker"):
+            continue
+        profile = str(result.get("profil") or "Below")
+        for glyph in ("💎", "🚀", "🛡️", "🛡", "⚖️", "⚖", "⚪"):
+            if profile.startswith(glyph):
+                profile = profile[len(glyph):].strip()
+                break
+        if not profile or profile == "ERREUR":
+            continue
+        row = [
+            result.get("ticker"), result.get("nom"), result.get("secteur"), result.get("pays"),
+            result.get("prix"), result.get("market_cap_B"), profile,
+            result.get("score_growth"), result.get("score_safe"), result.get("score_total"),
+        ]
+        for index in range(1, 6):
+            row.extend((result.get(f"G{index}_CA_Growth_%") if index == 1 else
+                        result.get(f"G{index}_Marge_%") if index == 2 else
+                        result.get("G3_Underval") if index == 3 else
+                        result.get("G4_Momentum_%") if index == 4 else
+                        result.get("G5_VolRatio"), result.get(f"G{index}_ok")))
+        for index, metric in (
+            (1, "S1_MCap_Mrd€"), (2, "S2_DE_%"), (3, "S3_Beta"),
+            (4, "S4_DivYield_%"), (5, "S5_FCF_Marge_%"),
+            (6, "S6_FCF_Growth_%"), (7, "S7_RevEPS_%"),
+        ):
+            row.extend((result.get(metric), result.get(f"S{index}_ok")))
+        grouped.setdefault(profile, []).append(row)
+
+    archives = {}
+    for profile, rows in grouped.items():
+        title = f"Combined scan — {profile}"
+        try:
+            archives[profile] = _archive_screener_results(title, headers, rows)
+        except Exception as exc:
+            print(f"[SCREENER] archivage Combined {profile} impossible ({type(exc).__name__}: {exc})")
+    return archives
 
 
 class ScreenersMixin:

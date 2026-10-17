@@ -1,0 +1,234 @@
+{
+ "detection": "2026-10-13_close.json",
+ "evalue_le": "2026-10-13T23:00:02.963897",
+ "fenetre_jours": 1,
+ "notes": [
+  {
+   "ticker": "FRMI",
+   "classe": "FADE",
+   "resultat": "faux",
+   "motif": "gap non comble (bas 3.48 > veille 3.25); vente ouverture->cloture -2.2 %",
+   "variation_pct": 2.2,
+   "vente_ouverture_cloture_pct": -2.2,
+   "executabilite": {
+    "executable": "oui",
+    "volume_post_ouverture_usd": 68383067,
+    "barres_vides": 0,
+    "motif": "volume 09:35-10:00 68383 k$, carnet continu (spread et borrow non mesures)"
+   }
+  },
+  {
+   "ticker": "EFXT",
+   "classe": "FADE",
+   "resultat": "faux",
+   "motif": "gap non comble (bas 25.8 > veille 24.1); vente ouverture->cloture -7.0 %",
+   "variation_pct": 7.03,
+   "vente_ouverture_cloture_pct": -7.03,
+   "executabilite": {
+    "executable": "oui",
+    "volume_post_ouverture_usd": 4324280,
+    "barres_vides": 0,
+    "motif": "volume 09:35-10:00 4324 k$, carnet continu (spread et borrow non mesures)"
+   }
+  },
+  {
+   "ticker": "API",
+   "classe": "FADE",
+   "resultat": "juste",
+   "motif": "gap comble (bas 4.1 <= veille 4.11); vente ouverture->cloture -6.3 %",
+   "variation_pct": 6.25,
+   "vente_ouverture_cloture_pct": -6.25,
+   "executabilite": {
+    "executable": "oui",
+    "volume_post_ouverture_usd": 505080,
+    "barres_vides": 0,
+    "motif": "volume 09:35-10:00 505 k$, carnet continu (spread et borrow non mesures)"
+   }
+  },
+  {
+   "ticker": "DCX",
+   "classe": "PUMP_RISK",
+   "resultat": "juste",
+   "motif": "retombe de -12.4 %, l'alerte etait fondee",
+   "variation_pct": -12.39,
+   "executabilite": {
+    "executable": "oui",
+    "volume_post_ouverture_usd": 797513,
+    "barres_vides": 0,
+    "motif": "volume 09:35-10:00 798 k$, carnet continu (spread et borrow non mesures)"
+   }
+  },
+  {
+   "ticker": "RYDE",
+   "classe": "PUMP_RISK",
+   "resultat": "juste",
+   "motif": "retombe de -5.5 %, l'alerte etait fondee",
+   "variation_pct": -5.48,
+   "executabilite": {
+    "executable": "oui",
+    "volume_post_ouverture_usd": 820161,
+    "barres_vides": 0,
+    "motif": "volume 09:35-10:00 820 k$, carnet continu (spread et borrow non mesures)"
+   }
+  },
+  {
+   "ticker": "BDRX",
+   "classe": "PUMP_RISK",
+   "resultat": "juste",
+   "motif": "retombe de -16.0 %, l'alerte etait fondee",
+   "variation_pct": -16.0,
+   "executabilite": {
+    "executable": "oui",
+    "volume_post_ouverture_usd": 224678,
+    "barres_vides": 0,
+    "motif": "volume 09:35-10:00 225 k$, carnet continu (spread et borrow non mesures)"
+   }
+  },
+  {
+   "ticker": "AIXI",
+   "classe": "PUMP_RISK",
+   "resultat": "juste",
+   "motif": "retombe de -6.5 %, l'alerte etait fondee",
+   "variation_pct": -6.52,
+   "executabilite": {
+    "executable": "oui",
+    "volume_post_ouverture_usd": 14937219,
+    "barres_vides": 0,
+    "motif": "volume 09:35-10:00 14937 k$, carnet continu (spread et borrow non mesures)"
+   }
+  },
+  {
+   "ticker": "SUGP",
+   "classe": "PUMP_RISK",
+   "resultat": "faux",
+   "motif": "a tenu (+11.2 %) : alerte trop severe",
+   "variation_pct": 11.22,
+   "executabilite": {
+    "executable": "oui",
+    "volume_post_ouverture_usd": 782745,
+    "barres_vides": 0,
+    "motif": "volume 09:35-10:00 783 k$, carnet continu (spread et borrow non mesures)"
+   }
+  },
+  {
+   "ticker": "WBUY",
+   "classe": "PUMP_RISK",
+   "resultat": "juste",
+   "motif": "retombe de -5.7 %, l'alerte etait fondee",
+   "variation_pct": -5.68,
+   "executabilite": {
+    "executable": "oui",
+    "volume_post_ouverture_usd": 1809535,
+    "barres_vides": 0,
+    "motif": "volume 09:35-10:00 1810 k$, carnet continu (spread et borrow non mesures)"
+   }
+  },
+  {
+   "ticker": "CGTX",
+   "classe": "PUMP_RISK",
+   "resultat": "juste",
+   "motif": "retombe de -11.4 %, l'alerte etait fondee",
+   "variation_pct": -11.42,
+   "executabilite": {
+    "executable": "non",
+    "volume_post_ouverture_usd": 82969,
+    "barres_vides": 0,
+    "motif": "volume 09:35-10:00 83 k$ < 200 k$"
+   }
+  },
+  {
+   "ticker": "BMEA",
+   "classe": "PUMP_RISK",
+   "resultat": "juste",
+   "motif": "retombe de -12.2 %, l'alerte etait fondee",
+   "variation_pct": -12.2,
+   "executabilite": {
+    "executable": "oui",
+    "volume_post_ouverture_usd": 517118,
+    "barres_vides": 0,
+    "motif": "volume 09:35-10:00 517 k$, carnet continu (spread et borrow non mesures)"
+   }
+  },
+  {
+   "ticker": "TCRT",
+   "classe": "PUMP_RISK",
+   "resultat": "faux",
+   "motif": "a tenu (+75.1 %) : alerte trop severe",
+   "variation_pct": 75.14,
+   "executabilite": {
+    "executable": "oui",
+    "volume_post_ouverture_usd": 23344096,
+    "barres_vides": 0,
+    "motif": "volume 09:35-10:00 23344 k$, carnet continu (spread et borrow non mesures)"
+   }
+  },
+  {
+   "ticker": "BKYI",
+   "classe": "PUMP_RISK",
+   "resultat": "juste",
+   "motif": "retombe de -31.1 %, l'alerte etait fondee",
+   "variation_pct": -31.06,
+   "executabilite": {
+    "executable": "oui",
+    "volume_post_ouverture_usd": 24932316,
+    "barres_vides": 0,
+    "motif": "volume 09:35-10:00 24932 k$, carnet continu (spread et borrow non mesures)"
+   }
+  },
+  {
+   "ticker": "BMBL",
+   "classe": "PUMP_RISK",
+   "resultat": "juste",
+   "motif": "retombe de -0.5 %, l'alerte etait fondee",
+   "variation_pct": -0.5,
+   "executabilite": {
+    "executable": "oui",
+    "volume_post_ouverture_usd": 103590528,
+    "barres_vides": 0,
+    "motif": "volume 09:35-10:00 103591 k$, carnet continu (spread et borrow non mesures)"
+   }
+  },
+  {
+   "ticker": "FCHL",
+   "classe": "INSUFFISANT",
+   "resultat": "non juge",
+   "motif": "ecarte a la detection, aucune promesse",
+   "variation_pct": -21.9
+  },
+  {
+   "ticker": "SCNI",
+   "classe": "INSUFFISANT",
+   "resultat": "non juge",
+   "motif": "ecarte a la detection, aucune promesse",
+   "variation_pct": -21.15
+  },
+  {
+   "ticker": "VRXA",
+   "classe": "INSUFFISANT",
+   "resultat": "non juge",
+   "motif": "ecarte a la detection, aucune promesse",
+   "variation_pct": null
+  },
+  {
+   "ticker": "YJ",
+   "classe": "INSUFFISANT",
+   "resultat": "non juge",
+   "motif": "ecarte a la detection, aucune promesse",
+   "variation_pct": -19.46
+  },
+  {
+   "ticker": "PFAI",
+   "classe": "INSUFFISANT",
+   "resultat": "non juge",
+   "motif": "ecarte a la detection, aucune promesse",
+   "variation_pct": -21.67
+  },
+  {
+   "ticker": "FLYE",
+   "classe": "INSUFFISANT",
+   "resultat": "non juge",
+   "motif": "ecarte a la detection, aucune promesse",
+   "variation_pct": 64.73
+  }
+ ]
+}

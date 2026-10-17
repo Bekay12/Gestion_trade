@@ -1,0 +1,161 @@
+{
+ "detection": "2026-10-09_close.json",
+ "evalue_le": "2026-10-09T23:00:02.249184",
+ "fenetre_jours": 1,
+ "notes": [
+  {
+   "ticker": "CLOV",
+   "classe": "FADE",
+   "resultat": "faux",
+   "motif": "gap non comble (bas 4.64 > veille 4.58); vente ouverture->cloture +7.4 %",
+   "variation_pct": -7.35,
+   "vente_ouverture_cloture_pct": 7.35,
+   "executabilite": {
+    "executable": "oui",
+    "volume_post_ouverture_usd": 7113818,
+    "barres_vides": 0,
+    "motif": "volume 09:35-10:00 7114 k$, carnet continu (spread et borrow non mesures)"
+   }
+  },
+  {
+   "ticker": "FSLY",
+   "classe": "FADE",
+   "resultat": "faux",
+   "motif": "gap non comble (bas 26.5 > veille 25.3); vente ouverture->cloture -8.9 %",
+   "variation_pct": 8.92,
+   "vente_ouverture_cloture_pct": -8.92,
+   "executabilite": {
+    "executable": "oui",
+    "volume_post_ouverture_usd": 23014065,
+    "barres_vides": 0,
+    "motif": "volume 09:35-10:00 23014 k$, carnet continu (spread et borrow non mesures)"
+   }
+  },
+  {
+   "ticker": "EMAT",
+   "classe": "PUMP_RISK",
+   "resultat": "juste",
+   "motif": "retombe de -8.9 %, l'alerte etait fondee",
+   "variation_pct": -8.89,
+   "executabilite": {
+    "executable": "oui",
+    "volume_post_ouverture_usd": 291372,
+    "barres_vides": 0,
+    "motif": "volume 09:35-10:00 291 k$, carnet continu (spread et borrow non mesures)"
+   }
+  },
+  {
+   "ticker": "FRGT",
+   "classe": "PUMP_RISK",
+   "resultat": "juste",
+   "motif": "retombe de -5.3 %, l'alerte etait fondee",
+   "variation_pct": -5.26,
+   "executabilite": {
+    "executable": "oui",
+    "volume_post_ouverture_usd": 4241540,
+    "barres_vides": 0,
+    "motif": "volume 09:35-10:00 4242 k$, carnet continu (spread et borrow non mesures)"
+   }
+  },
+  {
+   "ticker": "OLB",
+   "classe": "PUMP_RISK",
+   "resultat": "juste",
+   "motif": "retombe de -21.4 %, l'alerte etait fondee",
+   "variation_pct": -21.43,
+   "executabilite": {
+    "executable": "oui",
+    "volume_post_ouverture_usd": 8181874,
+    "barres_vides": 0,
+    "motif": "volume 09:35-10:00 8182 k$, carnet continu (spread et borrow non mesures)"
+   }
+  },
+  {
+   "ticker": "SMJF",
+   "classe": "PUMP_RISK",
+   "resultat": "faux",
+   "motif": "a tenu (+20.5 %) : alerte trop severe",
+   "variation_pct": 20.47,
+   "executabilite": {
+    "executable": "oui",
+    "volume_post_ouverture_usd": 259501,
+    "barres_vides": 0,
+    "motif": "volume 09:35-10:00 260 k$, carnet continu (spread et borrow non mesures)"
+   }
+  },
+  {
+   "ticker": "VEEA",
+   "classe": "PUMP_RISK",
+   "resultat": "faux",
+   "motif": "a tenu (+2.9 %) : alerte trop severe",
+   "variation_pct": 2.89,
+   "executabilite": {
+    "executable": "oui",
+    "volume_post_ouverture_usd": 62176570,
+    "barres_vides": 0,
+    "motif": "volume 09:35-10:00 62177 k$, carnet continu (spread et borrow non mesures)"
+   }
+  },
+  {
+   "ticker": "OFAL",
+   "classe": "PUMP_RISK",
+   "resultat": "faux",
+   "motif": "a tenu (+14.6 %) : alerte trop severe",
+   "variation_pct": 14.58,
+   "executabilite": {
+    "executable": "oui",
+    "volume_post_ouverture_usd": 32658030,
+    "barres_vides": 0,
+    "motif": "volume 09:35-10:00 32658 k$, carnet continu (spread et borrow non mesures)"
+   }
+  },
+  {
+   "ticker": "NAUT",
+   "classe": "PUMP_RISK",
+   "resultat": "faux",
+   "motif": "a tenu (+16.6 %) : alerte trop severe",
+   "variation_pct": 16.58,
+   "executabilite": {
+    "executable": "oui",
+    "volume_post_ouverture_usd": 1087951,
+    "barres_vides": 0,
+    "motif": "volume 09:35-10:00 1088 k$, carnet continu (spread et borrow non mesures)"
+   }
+  },
+  {
+   "ticker": "MI",
+   "classe": "INSUFFISANT",
+   "resultat": "non juge",
+   "motif": "ecarte a la detection, aucune promesse",
+   "variation_pct": -18.5
+  },
+  {
+   "ticker": "VIVK",
+   "classe": "INSUFFISANT",
+   "resultat": "non juge",
+   "motif": "ecarte a la detection, aucune promesse",
+   "variation_pct": -45.79
+  },
+  {
+   "ticker": "SAIQ",
+   "classe": "INSUFFISANT",
+   "resultat": "non juge",
+   "motif": "ecarte a la detection, aucune promesse",
+   "variation_pct": -23.53
+  },
+  {
+   "ticker": "BDAI",
+   "classe": "INSUFFISANT",
+   "resultat": "non juge",
+   "motif": "ecarte a la detection, aucune promesse",
+   "variation_pct": -11.11
+  },
+  {
+   "ticker": "XRTX",
+   "classe": "INSUFFISANT",
+   "resultat": "non juge",
+   "motif": "ecarte a la detection, aucune promesse",
+   "variation_pct": -31.22
+  }
+ ]
+}

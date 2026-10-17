@@ -1,0 +1,38 @@
+{
+  "currency": "USD/share",
+  "opening_liquidity": 0,
+  "horizon_start": 2026,
+  "horizon_end": 2041,
+  "schedule_years": [2026, 2027, 2028, 2029, 2030],
+  "sensitivity_horizons": [2031, 2036, 2041],
+  "revenue_base": 74.2,
+  "earnings_base": 11.42,
+  "hurdle": 26.7,
+  "hurdle_source": "Accenture plc Eigenkapitalrendite GJ2026: Nettogewinn Accenture plc 8.367.056 Tsd. USD (8-K Q4/FY2026-Ergebnismitteilung, 01.10.2026) / Durchschnitt des Eigenkapitals Accenture plc GJ2025-GJ2026 (31.195.446 + 31.567.256 Tsd. USD)/2, 10-K FY2025 Item 8 Bilanz + 8-K 01.10.2026",
+  "options": {
+    "pessimistic": {
+      "name": "Pessimistisch (schwaechstes Jahr FCF/Aktie der letzten 4 GJ, GJ2024)",
+      "investment": {"2026": 195.05},
+      "earnings_uplift": 13.55,
+      "uplift_start": 2026,
+      "terminal_value": 51.59,
+      "remarks": {"2026": "Kauf zum Schlusskurs 05.10.2026; Ausschuettung ab Jahr 1"}
+    },
+    "base": {
+      "name": "Basis (letztes volles GJ2026, FCF/Aktie tatsaechlich)",
+      "investment": {"2026": 195.05},
+      "earnings_uplift": 18.81,
+      "uplift_start": 2026,
+      "terminal_value": 51.59,
+      "remarks": {"2026": "Kauf zum Schlusskurs 05.10.2026; Ausschuettung ab Jahr 1"}
+    },
+    "optimistic": {
+      "name": "Optimistisch (FCF/Aktie GJ2026 x Konzern-EPS-Ausblick-Obergrenze GJ2027, +9%)",
+      "investment": {"2026": 195.05},
+      "earnings_uplift": 20.50,
+      "uplift_start": 2026,
+      "terminal_value": 51.59,
+      "remarks": {"2026": "Kauf zum Schlusskurs 05.10.2026; Ausschuettung ab Jahr 1"}
+    }
+  }
+}

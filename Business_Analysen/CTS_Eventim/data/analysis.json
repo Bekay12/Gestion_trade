@@ -1,0 +1,28 @@
+{
+  "currency": "EUR/Aktie",
+  "opening_liquidity": 0,
+  "horizon_start": 2026,
+  "horizon_end": 2041,
+  "schedule_years": [2026, 2027, 2028],
+  "sensitivity_horizons": [2031, 2036, 2041],
+  "revenue_base": 1,
+  "earnings_base": 1,
+  "hurdle": 22.3,
+  "hurdle_source": "Eigenkapitalrentabilitaet (Jahresueberschuss/Eigenkapital) GJ2025, Geschaeftsbericht 2025, Seite 40",
+  "options": {
+    "pessimistic": {
+      "name": "Pessimistisch/Basis (FCF/Aktie GJ2025, zugleich schwaechstes Jahr der 3-Jahres-Reihe)",
+      "investment": {"2026": 55.80},
+      "earnings_uplift": 0.894,
+      "uplift_start": 2026,
+      "terminal_value": 11.26
+    },
+    "optimistic": {
+      "name": "Optimistisch (FCF/Aktie GJ2023, bestes der 3 verfuegbaren Jahre)",
+      "investment": {"2026": 55.80},
+      "earnings_uplift": 4.783,
+      "uplift_start": 2026,
+      "terminal_value": 11.26
+    }
+  }
+}

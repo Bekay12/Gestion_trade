@@ -1,0 +1,269 @@
+{
+ "date": "2026-10-07T07:48:34.950656-04:00",
+ "mode": "cassure",
+ "fenetre_au_scan": "premarket",
+ "min_hausse": 5,
+ "renvoyees_vers_gap_scan": [
+  "APUS",
+  "SDEV"
+ ],
+ "verdicts": [
+  {
+   "ticker": "MTEN",
+   "classe": "PUMP_RISK",
+   "horizon": "aucun",
+   "sortie": "racheter sur stop a 20 % au-dessus de l'entree, ou en fin d'horizon. Sous reserve du borrow.",
+   "motifs": [
+    "3 signal(aux) de manipulation presents"
+   ],
+   "alertes": [
+    "montee rapide sans catalyseur identifie (RVOL eleve)",
+    "nano cap (7 M$), facile a manipuler",
+    "low float (4.0 M), mouvements violents"
+   ],
+   "inconnues": [
+    "catalyseur non verifie (EDGAR / news)",
+    "disponibilite et cout du borrow inconnus (a relever chez le courtier)"
+   ],
+   "position_cloture": 1.0,
+   "direction": "vendeuse",
+   "stop_pct": 20.0
+  },
+  {
+   "ticker": "BFRG",
+   "classe": "PUMP_RISK",
+   "horizon": "aucun",
+   "sortie": "racheter sur stop a 20 % au-dessus de l'entree, ou en fin d'horizon. Sous reserve du borrow.",
+   "motifs": [
+    "3 signal(aux) de manipulation presents"
+   ],
+   "alertes": [
+    "montee rapide sans catalyseur identifie (RVOL eleve)",
+    "nano cap (13 M$), facile a manipuler",
+    "low float (16.0 M), mouvements violents"
+   ],
+   "inconnues": [
+    "catalyseur non verifie (EDGAR / news)",
+    "disponibilite et cout du borrow inconnus (a relever chez le courtier)"
+   ],
+   "position_cloture": 1.0,
+   "direction": "vendeuse",
+   "stop_pct": 20.0
+  },
+  {
+   "ticker": "BIYA",
+   "classe": "INSUFFISANT",
+   "horizon": "aucun",
+   "sortie": "ne pas entrer",
+   "motifs": [
+    "volume moyen 39,850 < 100,000 (plancher structurel)"
+   ],
+   "alertes": [
+    "montee rapide sans catalyseur identifie (RVOL eleve)",
+    "nano cap (9 M$), facile a manipuler",
+    "low float (3.0 M), mouvements violents"
+   ],
+   "inconnues": [
+    "catalyseur non verifie (EDGAR / news)",
+    "disponibilite et cout du borrow inconnus (a relever chez le courtier)"
+   ],
+   "position_cloture": 1.0,
+   "direction": null,
+   "stop_pct": null
+  }
+ ],
+ "mesures": {
+  "BIYA": {
+   "ticker": "BIYA",
+   "gap_pct": -2.86,
+   "variation_seance_pct": 0.37,
+   "rvol": 249.1,
+   "rvol_pre_tendance": 58.03,
+   "prix": 2.43,
+   "vwap": 1.3377,
+   "haut_jour": 1.3799999952316284,
+   "bas_jour": 1.2999999523162842,
+   "cloture_veille": 1.399999976158142,
+   "volume_jour": 41278211.0,
+   "volume_moyen": 39850.0,
+   "float_actions": 2998775,
+   "market_cap": 9322764,
+   "short_interest_pct": 1.94,
+   "catalyseur": null,
+   "formulaire_sec": null,
+   "seances_de_hausse": 0
+  },
+  "MTEN": {
+   "ticker": "MTEN",
+   "gap_pct": -0.21,
+   "variation_seance_pct": -0.1,
+   "rvol": 68.12,
+   "rvol_pre_tendance": 35.35,
+   "prix": 1.18,
+   "vwap": 0.9628,
+   "haut_jour": 0.9869999885559082,
+   "bas_jour": 0.9509999752044678,
+   "cloture_veille": 0.9620000123977661,
+   "volume_jour": 20745267.0,
+   "volume_moyen": 147800.0,
+   "float_actions": 4024135,
+   "market_cap": 7323902,
+   "short_interest_pct": 1.77,
+   "catalyseur": null,
+   "formulaire_sec": null,
+   "seances_de_hausse": 0
+  },
+  "BFRG": {
+   "ticker": "BFRG",
+   "gap_pct": -1.35,
+   "variation_seance_pct": 17.58,
+   "rvol": 142.5,
+   "rvol_pre_tendance": 344.9,
+   "prix": 0.79,
+   "vwap": 0.5913,
+   "haut_jour": 0.7139999866485596,
+   "bas_jour": 0.5440000295639038,
+   "cloture_veille": 0.593999981880188,
+   "volume_jour": 4297331.0,
+   "volume_moyen": 262600.0,
+   "float_actions": 15971037,
+   "market_cap": 12775198,
+   "short_interest_pct": 0.63,
+   "catalyseur": null,
+   "formulaire_sec": null,
+   "seances_de_hausse": 1
+  }
+ },
+ "depots_sec": {
+  "BIYA": {
+   "cik": 1944712,
+   "formulaire_sec": null,
+   "depots": [
+    {
+     "date": "2026-09-29",
+     "form": "6-K",
+     "items": "",
+     "classe": "A_LIRE",
+     "url": "https://www.sec.gov/Archives/edgar/data/1944712/000121390026104687/ea0306763-6k_baiya.htm"
+    }
+   ],
+   "a_lire": [
+    {
+     "date": "2026-09-29",
+     "form": "6-K",
+     "items": "",
+     "classe": "A_LIRE",
+     "url": "https://www.sec.gov/Archives/edgar/data/1944712/000121390026104687/ea0306763-6k_baiya.htm"
+    }
+   ]
+  },
+  "MTEN": {
+   "cik": 1948099,
+   "formulaire_sec": null,
+   "depots": [
+    {
+     "date": "2026-10-06",
+     "form": "6-K",
+     "items": "",
+     "classe": "A_LIRE",
+     "url": "https://www.sec.gov/Archives/edgar/data/1948099/000121390026107243/ea0307735-6k_mingteng.htm"
+    }
+   ],
+   "a_lire": [
+    {
+     "date": "2026-10-06",
+     "form": "6-K",
+     "items": "",
+     "classe": "A_LIRE",
+     "url": "https://www.sec.gov/Archives/edgar/data/1948099/000121390026107243/ea0307735-6k_mingteng.htm"
+    }
+   ]
+  },
+  "BFRG": {
+   "cik": 1829247,
+   "formulaire_sec": null,
+   "depots": [],
+   "a_lire": []
+  },
+  "APUS": {
+   "cik": 1894525,
+   "formulaire_sec": null,
+   "depots": [
+    {
+     "date": "2026-10-01",
+     "form": "8-K",
+     "items": "5.02,9.01",
+     "classe": "A_LIRE",
+     "url": "https://www.sec.gov/Archives/edgar/data/1894525/000121390026105484/ea0307269-8k_apimeds.htm"
+    },
+    {
+     "date": "2026-09-29",
+     "form": "8-K",
+     "items": "8.01,9.01",
+     "classe": "A_LIRE",
+     "url": "https://www.sec.gov/Archives/edgar/data/1894525/000121390026104668/ea0306924-8k_apimeds.htm"
+    }
+   ],
+   "a_lire": [
+    {
+     "date": "2026-10-01",
+     "form": "8-K",
+     "items": "5.02,9.01",
+     "classe": "A_LIRE",
+     "url": "https://www.sec.gov/Archives/edgar/data/1894525/000121390026105484/ea0307269-8k_apimeds.htm"
+    },
+    {
+     "date": "2026-09-29",
+     "form": "8-K",
+     "items": "8.01,9.01",
+     "classe": "A_LIRE",
+     "url": "https://www.sec.gov/Archives/edgar/data/1894525/000121390026104668/ea0306924-8k_apimeds.htm"
+    }
+   ]
+  },
+  "SDEV": {
+   "cik": 1389545,
+   "formulaire_sec": "S-3/A",
+   "depots": [
+    {
+     "date": "2026-10-06",
+     "form": "S-3/A",
+     "items": "",
+     "classe": "DILUTION",
+     "url": "https://www.sec.gov/Archives/edgar/data/1389545/000143774926032232/sdev20261004_s3a.htm",
+     "form_qualifie": "S-3/A"
+    },
+    {
+     "date": "2026-10-05",
+     "form": "8-K",
+     "items": "2.02,8.01,9.01",
+     "classe": "A_LIRE",
+     "url": "https://www.sec.gov/Archives/edgar/data/1389545/000143774926031972/sdev20260914_8k.htm"
+    },
+    {
+     "date": "2026-09-29",
+     "form": "8-K",
+     "items": "8.01,9.01",
+     "classe": "A_LIRE",
+     "url": "https://www.sec.gov/Archives/edgar/data/1389545/000143774926031464/sdev20260929_8k.htm"
+    }
+   ],
+   "a_lire": [
+    {
+     "date": "2026-10-05",
+     "form": "8-K",
+     "items": "2.02,8.01,9.01",
+     "classe": "A_LIRE",
+     "url": "https://www.sec.gov/Archives/edgar/data/1389545/000143774926031972/sdev20260914_8k.htm"
+    },
+    {
+     "date": "2026-09-29",
+     "form": "8-K",
+     "items": "8.01,9.01",
+     "classe": "A_LIRE",
+     "url": "https://www.sec.gov/Archives/edgar/data/1389545/000143774926031464/sdev20260929_8k.htm"
+    }
+   ]
+  }
+ }
+}

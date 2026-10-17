@@ -1,0 +1,172 @@
+{
+ "detection": "2026-10-14_close.json",
+ "evalue_le": "2026-10-14T23:00:02.601892",
+ "fenetre_jours": 1,
+ "notes": [
+  {
+   "ticker": "NMRA",
+   "classe": "FADE",
+   "resultat": "juste",
+   "motif": "gap comble (bas 0.315 <= veille 0.37); vente ouverture->cloture +9.1 %",
+   "variation_pct": -9.1,
+   "vente_ouverture_cloture_pct": 9.1,
+   "executabilite": {
+    "executable": "non",
+    "volume_post_ouverture_usd": 34308,
+    "barres_vides": 0,
+    "motif": "volume 09:35-10:00 34 k$ < 200 k$"
+   }
+  },
+  {
+   "ticker": "FFAI",
+   "classe": "PUMP_RISK",
+   "resultat": "juste",
+   "motif": "retombe de -16.0 %, l'alerte etait fondee",
+   "variation_pct": -15.95,
+   "executabilite": {
+    "executable": "oui",
+    "volume_post_ouverture_usd": 5792135,
+    "barres_vides": 0,
+    "motif": "volume 09:35-10:00 5792 k$, carnet continu (spread et borrow non mesures)"
+   }
+  },
+  {
+   "ticker": "NIVF",
+   "classe": "PUMP_RISK",
+   "resultat": "faux",
+   "motif": "a tenu (+11.0 %) : alerte trop severe",
+   "variation_pct": 11.01,
+   "executabilite": {
+    "executable": "oui",
+    "volume_post_ouverture_usd": 3565245,
+    "barres_vides": 0,
+    "motif": "volume 09:35-10:00 3565 k$, carnet continu (spread et borrow non mesures)"
+   }
+  },
+  {
+   "ticker": "GRML",
+   "classe": "PUMP_RISK",
+   "resultat": "juste",
+   "motif": "retombe de -13.6 %, l'alerte etait fondee",
+   "variation_pct": -13.64,
+   "executabilite": {
+    "executable": "oui",
+    "volume_post_ouverture_usd": 28025114,
+    "barres_vides": 0,
+    "motif": "volume 09:35-10:00 28025 k$, carnet continu (spread et borrow non mesures)"
+   }
+  },
+  {
+   "ticker": "VSTM",
+   "classe": "PUMP_RISK",
+   "resultat": "juste",
+   "motif": "retombe de -3.6 %, l'alerte etait fondee",
+   "variation_pct": -3.62,
+   "executabilite": {
+    "executable": "oui",
+    "volume_post_ouverture_usd": 51256276,
+    "barres_vides": 0,
+    "motif": "volume 09:35-10:00 51256 k$, carnet continu (spread et borrow non mesures)"
+   }
+  },
+  {
+   "ticker": "TGL",
+   "classe": "PUMP_RISK",
+   "resultat": "juste",
+   "motif": "retombe de -30.8 %, l'alerte etait fondee",
+   "variation_pct": -30.77,
+   "executabilite": {
+    "executable": "oui",
+    "volume_post_ouverture_usd": 32208893,
+    "barres_vides": 0,
+    "motif": "volume 09:35-10:00 32209 k$, carnet continu (spread et borrow non mesures)"
+   }
+  },
+  {
+   "ticker": "GLND",
+   "classe": "PUMP_RISK",
+   "resultat": "juste",
+   "motif": "retombe de -5.7 %, l'alerte etait fondee",
+   "variation_pct": -5.68,
+   "executabilite": {
+    "executable": "oui",
+    "volume_post_ouverture_usd": 99060394,
+    "barres_vides": 0,
+    "motif": "volume 09:35-10:00 99060 k$, carnet continu (spread et borrow non mesures)"
+   }
+  },
+  {
+   "ticker": "BDRX",
+   "classe": "PUMP_RISK",
+   "resultat": "juste",
+   "motif": "retombe de -2.6 %, l'alerte etait fondee",
+   "variation_pct": -2.59,
+   "executabilite": {
+    "executable": "oui",
+    "volume_post_ouverture_usd": 2622864,
+    "barres_vides": 0,
+    "motif": "volume 09:35-10:00 2623 k$, carnet continu (spread et borrow non mesures)"
+   }
+  },
+  {
+   "ticker": "MXCT",
+   "classe": "PUMP_RISK",
+   "resultat": "faux",
+   "motif": "a tenu (+2.0 %) : alerte trop severe",
+   "variation_pct": 2.04,
+   "executabilite": {
+    "executable": "oui",
+    "volume_post_ouverture_usd": 3291384,
+    "barres_vides": 0,
+    "motif": "volume 09:35-10:00 3291 k$, carnet continu (spread et borrow non mesures)"
+   }
+  },
+  {
+   "ticker": "LQDA",
+   "classe": "PUMP_RISK",
+   "resultat": "juste",
+   "motif": "retombe de -4.9 %, l'alerte etait fondee",
+   "variation_pct": -4.93,
+   "executabilite": {
+    "executable": "oui",
+    "volume_post_ouverture_usd": 117879504,
+    "barres_vides": 0,
+    "motif": "volume 09:35-10:00 117880 k$, carnet continu (spread et borrow non mesures)"
+   }
+  },
+  {
+   "ticker": "TCRT",
+   "classe": "PUMP_RISK",
+   "resultat": "juste",
+   "motif": "retombe de -43.8 %, l'alerte etait fondee",
+   "variation_pct": -43.75,
+   "executabilite": {
+    "executable": "oui",
+    "volume_post_ouverture_usd": 50108715,
+    "barres_vides": 0,
+    "motif": "volume 09:35-10:00 50109 k$, carnet continu (spread et borrow non mesures)"
+   }
+  },
+  {
+   "ticker": "TC",
+   "classe": "INSUFFISANT",
+   "resultat": "non juge",
+   "motif": "ecarte a la detection, aucune promesse",
+   "variation_pct": -15.48
+  },
+  {
+   "ticker": "AEHL",
+   "classe": "INSUFFISANT",
+   "resultat": "non juge",
+   "motif": "ecarte a la detection, aucune promesse",
+   "variation_pct": -52.52
+  },
+  {
+   "ticker": "GENK",
+   "classe": "INSUFFISANT",
+   "resultat": "non juge",
+   "motif": "ecarte a la detection, aucune promesse",
+   "variation_pct": -31.58
+  }
+ ]
+}

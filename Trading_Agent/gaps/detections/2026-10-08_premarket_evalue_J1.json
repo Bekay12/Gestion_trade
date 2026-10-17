@@ -1,0 +1,166 @@
+{
+ "detection": "2026-10-08_premarket.json",
+ "evalue_le": "2026-10-08T23:07:56.634013",
+ "fenetre_jours": 1,
+ "notes": [
+  {
+   "ticker": "PROF",
+   "classe": "FADE",
+   "resultat": "faux",
+   "motif": "gap non comble (bas 6.04 > veille 5.68); vente ouverture->cloture -6.3 %",
+   "variation_pct": 6.31,
+   "vente_ouverture_cloture_pct": -6.31,
+   "executabilite": {
+    "executable": "oui",
+    "volume_post_ouverture_usd": 1294656,
+    "barres_vides": 0,
+    "motif": "volume 09:35-10:00 1295 k$, carnet continu (spread et borrow non mesures)"
+   }
+  },
+  {
+   "ticker": "WOLF",
+   "classe": "FADE",
+   "resultat": "juste",
+   "motif": "gap comble (bas 29.5 <= veille 31.4); vente ouverture->cloture +11.4 %",
+   "variation_pct": -11.42,
+   "vente_ouverture_cloture_pct": 11.42,
+   "executabilite": {
+    "executable": "oui",
+    "volume_post_ouverture_usd": 135979882,
+    "barres_vides": 0,
+    "motif": "volume 09:35-10:00 135980 k$, carnet continu (spread et borrow non mesures)"
+   }
+  },
+  {
+   "ticker": "FRGT",
+   "classe": "PUMP_RISK",
+   "resultat": "juste",
+   "motif": "retombe de -1.4 %, l'alerte etait fondee",
+   "variation_pct": -1.38,
+   "executabilite": {
+    "executable": "non",
+    "volume_post_ouverture_usd": 78762,
+    "barres_vides": 0,
+    "motif": "volume 09:35-10:00 79 k$ < 200 k$"
+   }
+  },
+  {
+   "ticker": "ENLV",
+   "classe": "PUMP_RISK",
+   "resultat": "juste",
+   "motif": "retombe de -16.6 %, l'alerte etait fondee",
+   "variation_pct": -16.57,
+   "executabilite": {
+    "executable": "non",
+    "volume_post_ouverture_usd": 104233,
+    "barres_vides": 0,
+    "motif": "volume 09:35-10:00 104 k$ < 200 k$"
+   }
+  },
+  {
+   "ticker": "ARAI",
+   "classe": "PUMP_RISK",
+   "resultat": "juste",
+   "motif": "retombe de -8.1 %, l'alerte etait fondee",
+   "variation_pct": -8.08,
+   "executabilite": {
+    "executable": "non",
+    "volume_post_ouverture_usd": 123240,
+    "barres_vides": 0,
+    "motif": "volume 09:35-10:00 123 k$ < 200 k$"
+   }
+  },
+  {
+   "ticker": "SDST",
+   "classe": "PUMP_RISK",
+   "resultat": "juste",
+   "motif": "retombe de -11.4 %, l'alerte etait fondee",
+   "variation_pct": -11.38,
+   "executabilite": {
+    "executable": "oui",
+    "volume_post_ouverture_usd": 723855,
+    "barres_vides": 0,
+    "motif": "volume 09:35-10:00 724 k$, carnet continu (spread et borrow non mesures)"
+   }
+  },
+  {
+   "ticker": "AIXI",
+   "classe": "PUMP_RISK",
+   "resultat": "juste",
+   "motif": "retombe de -8.5 %, l'alerte etait fondee",
+   "variation_pct": -8.53,
+   "executabilite": {
+    "executable": "oui",
+    "volume_post_ouverture_usd": 9893711,
+    "barres_vides": 0,
+    "motif": "volume 09:35-10:00 9894 k$, carnet continu (spread et borrow non mesures)"
+   }
+  },
+  {
+   "ticker": "MRNO",
+   "classe": "PUMP_RISK",
+   "resultat": "juste",
+   "motif": "retombe de -23.0 %, l'alerte etait fondee",
+   "variation_pct": -23.01,
+   "executabilite": {
+    "executable": "oui",
+    "volume_post_ouverture_usd": 1924208,
+    "barres_vides": 0,
+    "motif": "volume 09:35-10:00 1924 k$, carnet continu (spread et borrow non mesures)"
+   }
+  },
+  {
+   "ticker": "IPW",
+   "classe": "PUMP_RISK",
+   "resultat": "juste",
+   "motif": "retombe de -29.5 %, l'alerte etait fondee",
+   "variation_pct": -29.49,
+   "executabilite": {
+    "executable": "oui",
+    "volume_post_ouverture_usd": 14785523,
+    "barres_vides": 0,
+    "motif": "volume 09:35-10:00 14786 k$, carnet continu (spread et borrow non mesures)"
+   }
+  },
+  {
+   "ticker": "OLB",
+   "classe": "PUMP_RISK",
+   "resultat": "faux",
+   "motif": "a tenu (+7.7 %) : alerte trop severe",
+   "variation_pct": 7.69,
+   "executabilite": {
+    "executable": "oui",
+    "volume_post_ouverture_usd": 54939969,
+    "barres_vides": 0,
+    "motif": "volume 09:35-10:00 54940 k$, carnet continu (spread et borrow non mesures)"
+   }
+  },
+  {
+   "ticker": "SBFM",
+   "classe": "PUMP_RISK",
+   "resultat": "juste",
+   "motif": "retombe de -8.7 %, l'alerte etait fondee",
+   "variation_pct": -8.67,
+   "executabilite": {
+    "executable": "oui",
+    "volume_post_ouverture_usd": 1676473,
+    "barres_vides": 0,
+    "motif": "volume 09:35-10:00 1676 k$, carnet continu (spread et borrow non mesures)"
+   }
+  },
+  {
+   "ticker": "LRHC",
+   "classe": "INSUFFISANT",
+   "resultat": "non juge",
+   "motif": "ecarte a la detection, aucune promesse",
+   "variation_pct": -7.97
+  },
+  {
+   "ticker": "DKI",
+   "classe": "INSUFFISANT",
+   "resultat": "non juge",
+   "motif": "ecarte a la detection, aucune promesse",
+   "variation_pct": -45.17
+  }
+ ]
+}

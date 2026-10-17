@@ -1,0 +1,213 @@
+{
+ "detection": "2026-10-12_close.json",
+ "evalue_le": "2026-10-12T23:00:03.644950",
+ "fenetre_jours": 1,
+ "notes": [
+  {
+   "ticker": "AI",
+   "classe": "FADE",
+   "resultat": "juste",
+   "motif": "gap comble (bas 11.5 <= veille 11.5); vente ouverture->cloture +5.6 %",
+   "variation_pct": -5.61,
+   "vente_ouverture_cloture_pct": 5.61,
+   "executabilite": {
+    "executable": "oui",
+    "volume_post_ouverture_usd": 28657197,
+    "barres_vides": 0,
+    "motif": "volume 09:35-10:00 28657 k$, carnet continu (spread et borrow non mesures)"
+   }
+  },
+  {
+   "ticker": "GCL",
+   "classe": "FADE",
+   "resultat": "faux",
+   "motif": "gap non comble (bas 0.805 > veille 0.791); vente ouverture->cloture +1.7 %",
+   "variation_pct": -1.73,
+   "vente_ouverture_cloture_pct": 1.73,
+   "executabilite": {
+    "executable": "non",
+    "volume_post_ouverture_usd": 38526,
+    "barres_vides": 1,
+    "motif": "volume 09:35-10:00 39 k$ < 200 k$"
+   }
+  },
+  {
+   "ticker": "CCC",
+   "classe": "FADE",
+   "resultat": "faux",
+   "motif": "gap non comble (bas 7.52 > veille 7.02); vente ouverture->cloture +1.2 %",
+   "variation_pct": -1.17,
+   "vente_ouverture_cloture_pct": 1.17,
+   "executabilite": {
+    "executable": "oui",
+    "volume_post_ouverture_usd": 13656102,
+    "barres_vides": 0,
+    "motif": "volume 09:35-10:00 13656 k$, carnet continu (spread et borrow non mesures)"
+   }
+  },
+  {
+   "ticker": "MEDS",
+   "classe": "PUMP_RISK",
+   "resultat": "juste",
+   "motif": "retombe de -7.3 %, l'alerte etait fondee",
+   "variation_pct": -7.25,
+   "executabilite": {
+    "executable": "oui",
+    "volume_post_ouverture_usd": 2079425,
+    "barres_vides": 0,
+    "motif": "volume 09:35-10:00 2079 k$, carnet continu (spread et borrow non mesures)"
+   }
+  },
+  {
+   "ticker": "FRGT",
+   "classe": "PUMP_RISK",
+   "resultat": "faux",
+   "motif": "a tenu (+13.1 %) : alerte trop severe",
+   "variation_pct": 13.09,
+   "executabilite": {
+    "executable": "oui",
+    "volume_post_ouverture_usd": 13232277,
+    "barres_vides": 0,
+    "motif": "volume 09:35-10:00 13232 k$, carnet continu (spread et borrow non mesures)"
+   }
+  },
+  {
+   "ticker": "LOBO",
+   "classe": "PUMP_RISK",
+   "resultat": "juste",
+   "motif": "retombe de -21.1 %, l'alerte etait fondee",
+   "variation_pct": -21.15,
+   "executabilite": {
+    "executable": "oui",
+    "volume_post_ouverture_usd": 693280,
+    "barres_vides": 0,
+    "motif": "volume 09:35-10:00 693 k$, carnet continu (spread et borrow non mesures)"
+   }
+  },
+  {
+   "ticker": "IPW",
+   "classe": "PUMP_RISK",
+   "resultat": "juste",
+   "motif": "retombe de -29.0 %, l'alerte etait fondee",
+   "variation_pct": -29.03,
+   "executabilite": {
+    "executable": "oui",
+    "volume_post_ouverture_usd": 1638507,
+    "barres_vides": 0,
+    "motif": "volume 09:35-10:00 1639 k$, carnet continu (spread et borrow non mesures)"
+   }
+  },
+  {
+   "ticker": "NCPL",
+   "classe": "PUMP_RISK",
+   "resultat": "faux",
+   "motif": "a tenu (+3.4 %) : alerte trop severe",
+   "variation_pct": 3.36,
+   "executabilite": {
+    "executable": "oui",
+    "volume_post_ouverture_usd": 2827829,
+    "barres_vides": 0,
+    "motif": "volume 09:35-10:00 2828 k$, carnet continu (spread et borrow non mesures)"
+   }
+  },
+  {
+   "ticker": "AIXI",
+   "classe": "PUMP_RISK",
+   "resultat": "faux",
+   "motif": "a tenu (+16.5 %) : alerte trop severe",
+   "variation_pct": 16.5,
+   "executabilite": {
+    "executable": "oui",
+    "volume_post_ouverture_usd": 2466383,
+    "barres_vides": 0,
+    "motif": "volume 09:35-10:00 2466 k$, carnet continu (spread et borrow non mesures)"
+   }
+  },
+  {
+   "ticker": "WBUY",
+   "classe": "PUMP_RISK",
+   "resultat": "faux",
+   "motif": "a tenu (+4.1 %) : alerte trop severe",
+   "variation_pct": 4.12,
+   "executabilite": {
+    "executable": "oui",
+    "volume_post_ouverture_usd": 1450581,
+    "barres_vides": 0,
+    "motif": "volume 09:35-10:00 1451 k$, carnet continu (spread et borrow non mesures)"
+   }
+  },
+  {
+   "ticker": "TRAX",
+   "classe": "PUMP_RISK",
+   "resultat": "juste",
+   "motif": "retombe de -13.7 %, l'alerte etait fondee",
+   "variation_pct": -13.69,
+   "executabilite": {
+    "executable": "oui",
+    "volume_post_ouverture_usd": 25124509,
+    "barres_vides": 0,
+    "motif": "volume 09:35-10:00 25125 k$, carnet continu (spread et borrow non mesures)"
+   }
+  },
+  {
+   "ticker": "DAIC",
+   "classe": "PUMP_RISK",
+   "resultat": "juste",
+   "motif": "retombe de -40.1 %, l'alerte etait fondee",
+   "variation_pct": -40.14,
+   "executabilite": {
+    "executable": "oui",
+    "volume_post_ouverture_usd": 5507941,
+    "barres_vides": 0,
+    "motif": "volume 09:35-10:00 5508 k$, carnet continu (spread et borrow non mesures)"
+   }
+  },
+  {
+   "ticker": "SKYA",
+   "classe": "PUMP_RISK",
+   "resultat": "faux",
+   "motif": "a tenu (+11.3 %) : alerte trop severe",
+   "variation_pct": 11.35,
+   "executabilite": {
+    "executable": "oui",
+    "volume_post_ouverture_usd": 18089921,
+    "barres_vides": 0,
+    "motif": "volume 09:35-10:00 18090 k$, carnet continu (spread et borrow non mesures)"
+   }
+  },
+  {
+   "ticker": "WFF",
+   "classe": "PUMP_RISK",
+   "resultat": "faux",
+   "motif": "a tenu (+17.2 %) : alerte trop severe",
+   "variation_pct": 17.15,
+   "executabilite": {
+    "executable": "non",
+    "volume_post_ouverture_usd": 33268059,
+    "barres_vides": 2,
+    "motif": "2 barres de 5 min sans echange"
+   }
+  },
+  {
+   "ticker": "MNDR",
+   "classe": "INSUFFISANT",
+   "resultat": "non juge",
+   "motif": "ecarte a la detection, aucune promesse",
+   "variation_pct": 17.37
+  },
+  {
+   "ticker": "LNKS",
+   "classe": "INSUFFISANT",
+   "resultat": "non juge",
+   "motif": "ecarte a la detection, aucune promesse",
+   "variation_pct": 77.34
+  },
+  {
+   "ticker": "YMAT",
+   "classe": "INSUFFISANT",
+   "resultat": "non juge",
+   "motif": "ecarte a la detection, aucune promesse",
+   "variation_pct": 11.49
+  }
+ ]
+}

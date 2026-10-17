@@ -1,0 +1,121 @@
+{
+ "detection": "2026-10-15_close.json",
+ "evalue_le": "2026-10-15T23:00:02.008264",
+ "fenetre_jours": 1,
+ "notes": [
+  {
+   "ticker": "DFH",
+   "classe": "FADE",
+   "resultat": "faux",
+   "motif": "gap non comble (bas 7.84 > veille 7.42); vente ouverture->cloture -7.9 %",
+   "variation_pct": 7.93,
+   "vente_ouverture_cloture_pct": -7.93,
+   "executabilite": {
+    "executable": "oui",
+    "volume_post_ouverture_usd": 2072214,
+    "barres_vides": 0,
+    "motif": "volume 09:35-10:00 2072 k$, carnet continu (spread et borrow non mesures)"
+   }
+  },
+  {
+   "ticker": "NCPL",
+   "classe": "PUMP_RISK",
+   "resultat": "juste",
+   "motif": "retombe de -1.7 %, l'alerte etait fondee",
+   "variation_pct": -1.74,
+   "executabilite": {
+    "executable": "oui",
+    "volume_post_ouverture_usd": 19562071,
+    "barres_vides": 0,
+    "motif": "volume 09:35-10:00 19562 k$, carnet continu (spread et borrow non mesures)"
+   }
+  },
+  {
+   "ticker": "SDST",
+   "classe": "PUMP_RISK",
+   "resultat": "juste",
+   "motif": "retombe de -19.4 %, l'alerte etait fondee",
+   "variation_pct": -19.36,
+   "executabilite": {
+    "executable": "oui",
+    "volume_post_ouverture_usd": 5400783,
+    "barres_vides": 0,
+    "motif": "volume 09:35-10:00 5401 k$, carnet continu (spread et borrow non mesures)"
+   }
+  },
+  {
+   "ticker": "WETO",
+   "classe": "PUMP_RISK",
+   "resultat": "juste",
+   "motif": "retombe de -9.0 %, l'alerte etait fondee",
+   "variation_pct": -8.96,
+   "executabilite": {
+    "executable": "oui",
+    "volume_post_ouverture_usd": 28019115,
+    "barres_vides": 0,
+    "motif": "volume 09:35-10:00 28019 k$, carnet continu (spread et borrow non mesures)"
+   }
+  },
+  {
+   "ticker": "GP",
+   "classe": "PUMP_RISK",
+   "resultat": "faux",
+   "motif": "a tenu (+4.0 %) : alerte trop severe",
+   "variation_pct": 4.03,
+   "executabilite": {
+    "executable": "oui",
+    "volume_post_ouverture_usd": 1537822,
+    "barres_vides": 0,
+    "motif": "volume 09:35-10:00 1538 k$, carnet continu (spread et borrow non mesures)"
+   }
+  },
+  {
+   "ticker": "OPK",
+   "classe": "PUMP_RISK",
+   "resultat": "juste",
+   "motif": "retombe de -2.4 %, l'alerte etait fondee",
+   "variation_pct": -2.42,
+   "executabilite": {
+    "executable": "oui",
+    "volume_post_ouverture_usd": 10945972,
+    "barres_vides": 0,
+    "motif": "volume 09:35-10:00 10946 k$, carnet continu (spread et borrow non mesures)"
+   }
+  },
+  {
+   "ticker": "TC",
+   "classe": "INSUFFISANT",
+   "resultat": "non juge",
+   "motif": "ecarte a la detection, aucune promesse",
+   "variation_pct": -6.08
+  },
+  {
+   "ticker": "DRMA",
+   "classe": "INSUFFISANT",
+   "resultat": "non juge",
+   "motif": "ecarte a la detection, aucune promesse",
+   "variation_pct": 18.41
+  },
+  {
+   "ticker": "NRXS",
+   "classe": "INSUFFISANT",
+   "resultat": "non juge",
+   "motif": "ecarte a la detection, aucune promesse",
+   "variation_pct": 12.66
+  },
+  {
+   "ticker": "SPRC",
+   "classe": "INSUFFISANT",
+   "resultat": "non juge",
+   "motif": "ecarte a la detection, aucune promesse",
+   "variation_pct": -52.38
+  },
+  {
+   "ticker": "BGL",
+   "classe": "GAP_INVALIDE",
+   "resultat": "non juge",
+   "motif": "ecarte a la detection, aucune promesse",
+   "variation_pct": -32.13
+  }
+ ]
+}

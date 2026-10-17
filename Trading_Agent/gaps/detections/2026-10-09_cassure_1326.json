@@ -1,0 +1,205 @@
+{
+ "date": "2026-10-09T09:26:05.659712-04:00",
+ "mode": "cassure",
+ "fenetre_au_scan": "premarket",
+ "min_hausse": 5,
+ "renvoyees_vers_gap_scan": [
+  "OLB"
+ ],
+ "verdicts": [
+  {
+   "ticker": "BDAI",
+   "classe": "A_SURVEILLER",
+   "horizon": "aucun a ce stade",
+   "sortie": "pas d'entree; le titre reste sur la liste d'observation",
+   "motifs": [
+    "pas de catalyseur haussier verifie"
+   ],
+   "alertes": [
+    "nano cap (28 M$), facile a manipuler"
+   ],
+   "inconnues": [
+    "catalyseur non verifie (EDGAR / news)",
+    "VWAP non mesure",
+    "range de la seance inconnu: position de cloture non mesurable",
+    "RVOL non mesurable",
+    "cloture de la veille non mesuree",
+    "disponibilite et cout du borrow inconnus (a relever chez le courtier)",
+    "short interest inconnu"
+   ],
+   "position_cloture": null,
+   "direction": null,
+   "stop_pct": null
+  },
+  {
+   "ticker": "VEEA",
+   "classe": "PUMP_RISK",
+   "horizon": "aucun",
+   "sortie": "racheter sur stop a 20 % au-dessus de l'entree, ou en fin d'horizon. Sous reserve du borrow.",
+   "motifs": [
+    "3 signal(aux) de manipulation presents"
+   ],
+   "alertes": [
+    "montee rapide sans catalyseur identifie (RVOL eleve)",
+    "low float (1.6 M), mouvements violents",
+    "depot 8-K/2.03 = dilution, catalyseur baissier deguise"
+   ],
+   "inconnues": [
+    "disponibilite et cout du borrow inconnus (a relever chez le courtier)"
+   ],
+   "position_cloture": 1.0,
+   "direction": "vendeuse",
+   "stop_pct": 20.0
+  },
+  {
+   "ticker": "XRTX",
+   "classe": "INSUFFISANT",
+   "horizon": "aucun",
+   "sortie": "ne pas entrer",
+   "motifs": [
+    "volume moyen 55,050 < 100,000 (plancher structurel)"
+   ],
+   "alertes": [
+    "montee rapide sans catalyseur identifie (RVOL eleve)",
+    "nano cap (3 M$), facile a manipuler",
+    "low float (1.8 M), mouvements violents"
+   ],
+   "inconnues": [
+    "catalyseur non verifie (EDGAR / news)",
+    "disponibilite et cout du borrow inconnus (a relever chez le courtier)"
+   ],
+   "position_cloture": 1.0,
+   "direction": null,
+   "stop_pct": null
+  }
+ ],
+ "mesures": {
+  "VEEA": {
+   "ticker": "VEEA",
+   "gap_pct": -4.67,
+   "variation_seance_pct": -13.81,
+   "rvol": 1.31,
+   "rvol_pre_tendance": 54.99,
+   "prix": 5.71,
+   "vwap": 3.9197,
+   "haut_jour": 4.489999771118164,
+   "bas_jour": 3.609999895095825,
+   "cloture_veille": 4.710000038146973,
+   "volume_jour": 24181248.0,
+   "volume_moyen": 1395950.0,
+   "float_actions": 1576258,
+   "market_cap": 240768784,
+   "short_interest_pct": 64.77,
+   "catalyseur": null,
+   "formulaire_sec": "8-K/2.03",
+   "seances_de_hausse": 0
+  },
+  "BDAI": {
+   "ticker": "BDAI",
+   "gap_pct": null,
+   "variation_seance_pct": null,
+   "rvol": null,
+   "rvol_pre_tendance": null,
+   "prix": 3.14,
+   "vwap": null,
+   "haut_jour": null,
+   "bas_jour": null,
+   "cloture_veille": null,
+   "volume_jour": 4985047.0,
+   "volume_moyen": null,
+   "float_actions": null,
+   "market_cap": 28240000.0,
+   "short_interest_pct": null,
+   "catalyseur": null,
+   "formulaire_sec": null,
+   "seances_de_hausse": null
+  },
+  "XRTX": {
+   "ticker": "XRTX",
+   "gap_pct": 0.29,
+   "variation_seance_pct": 5.71,
+   "rvol": 175.1,
+   "rvol_pre_tendance": 1204.91,
+   "prix": 2.03,
+   "vwap": 1.7843,
+   "haut_jour": 1.899999976158142,
+   "bas_jour": 1.7200000286102295,
+   "cloture_veille": 1.7450000047683716,
+   "volume_jour": 12239346.0,
+   "volume_moyen": 55050.0,
+   "float_actions": 1791278,
+   "market_cap": 3360645,
+   "short_interest_pct": 4.29,
+   "catalyseur": null,
+   "formulaire_sec": null,
+   "seances_de_hausse": 3
+  }
+ },
+ "depots_sec": {
+  "VEEA": {
+   "cik": 1840317,
+   "formulaire_sec": "8-K/2.03",
+   "depots": [
+    {
+     "date": "2026-10-06",
+     "form": "8-K",
+     "items": "8.01",
+     "classe": "A_LIRE",
+     "url": "https://www.sec.gov/Archives/edgar/data/1840317/000121390026107305/ea0307897-8k_veea.htm"
+    },
+    {
+     "date": "2026-10-02",
+     "form": "8-K",
+     "items": "1.01,2.03,9.01",
+     "classe": "DILUTION",
+     "url": "https://www.sec.gov/Archives/edgar/data/1840317/000121390026106421/ea0307544-8k_veea.htm",
+     "form_qualifie": "8-K/2.03"
+    }
+   ],
+   "a_lire": [
+    {
+     "date": "2026-10-06",
+     "form": "8-K",
+     "items": "8.01",
+     "classe": "A_LIRE",
+     "url": "https://www.sec.gov/Archives/edgar/data/1840317/000121390026107305/ea0307897-8k_veea.htm"
+    }
+   ]
+  },
+  "BDAI": {
+   "formulaire_sec": null,
+   "depots": [],
+   "a_lire": [],
+   "cik": null,
+   "note": "non deposant SEC ou ticker inconnu"
+  },
+  "OLB": {
+   "cik": 1314196,
+   "formulaire_sec": null,
+   "depots": [],
+   "a_lire": []
+  },
+  "XRTX": {
+   "cik": 1729214,
+   "formulaire_sec": null,
+   "depots": [
+    {
+     "date": "2026-10-08",
+     "form": "6-K",
+     "items": "",
+     "classe": "A_LIRE",
+     "url": "https://www.sec.gov/Archives/edgar/data/1729214/000117184326006540/f6k_100826.htm"
+    }
+   ],
+   "a_lire": [
+    {
+     "date": "2026-10-08",
+     "form": "6-K",
+     "items": "",
+     "classe": "A_LIRE",
+     "url": "https://www.sec.gov/Archives/edgar/data/1729214/000117184326006540/f6k_100826.htm"
+    }
+   ]
+  }
+ }
+}

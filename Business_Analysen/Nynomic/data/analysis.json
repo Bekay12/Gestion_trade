@@ -1,0 +1,35 @@
+{
+  "currency": "EUR/Aktie",
+  "opening_liquidity": 0,
+  "horizon_start": 2026,
+  "horizon_end": 2041,
+  "schedule_years": [2026, 2027, 2028],
+  "sensitivity_horizons": [2031, 2036, 2041],
+  "revenue_base": 92.569,
+  "earnings_base": 7.937,
+  "hurdle": 4.32,
+  "hurdle_source": "Durchschnittliche Eigenkapitalrendite (Jahresueberschuss Muttergesellschaft / Eigenkapital zum Jahresende) GJ2022-GJ2025: 9,67% + 8,95% - 0,63% - 0,70%, gemittelt = 4,32%. Nynomic weist selbst keine ROE-Kennzahl aus (nur Eigenkapitalquote, S.4/14). Einzeljahre: Geschaeftsbericht 2022 S.27f/28 (Eigenkapital 77.027 TEUR, Jahresueberschuss 7.454 TEUR), 2023 S.24f/26 (103.934 TEUR, 9.305 TEUR), 2024 S.30f/32 (102.977 TEUR, -643 TEUR), 2025 S.30f/32 (100.668 TEUR, -704 TEUR).",
+  "options": {
+    "pessimistic": {
+      "name": "Pessimistisch (FCF/Aktie GJ2023, schwaechstes der 4 verfuegbaren Jahre, negativ wegen M&A-naher Finanzanlagen-Investition)",
+      "investment": {"2026": 26.00},
+      "earnings_uplift": -0.879,
+      "uplift_start": 2026,
+      "terminal_value": 14.90
+    },
+    "base": {
+      "name": "Basis (FCF/Aktie GJ2025, letztes abgeschlossenes Geschaeftsjahr, Krisenjahr mit positivem FCF trotz EBIT-Einbruch)",
+      "investment": {"2026": 26.00},
+      "earnings_uplift": 0.690,
+      "uplift_start": 2026,
+      "terminal_value": 14.90
+    },
+    "optimistic": {
+      "name": "Optimistisch (FCF/Aktie GJ2022, bestes der 4 verfuegbaren Jahre)",
+      "investment": {"2026": 26.00},
+      "earnings_uplift": 1.203,
+      "uplift_start": 2026,
+      "terminal_value": 14.90
+    }
+  }
+}

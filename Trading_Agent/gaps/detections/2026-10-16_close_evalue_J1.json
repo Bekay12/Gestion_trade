@@ -1,0 +1,167 @@
+{
+ "detection": "2026-10-16_close.json",
+ "evalue_le": "2026-10-16T23:00:03.088867",
+ "fenetre_jours": 1,
+ "notes": [
+  {
+   "ticker": "RGC",
+   "classe": "FADE",
+   "resultat": "juste",
+   "motif": "gap comble (bas 8.83 <= veille 9.52); vente ouverture->cloture +6.9 %",
+   "variation_pct": -6.94,
+   "vente_ouverture_cloture_pct": 6.94,
+   "executabilite": {
+    "executable": "oui",
+    "volume_post_ouverture_usd": 867361,
+    "barres_vides": 0,
+    "motif": "volume 09:35-10:00 867 k$, carnet continu (spread et borrow non mesures)"
+   }
+  },
+  {
+   "ticker": "LADR",
+   "classe": "FADE",
+   "resultat": "faux",
+   "motif": "gap non comble (bas 9.03 > veille 8.82); vente ouverture->cloture +2.4 %",
+   "variation_pct": -2.36,
+   "vente_ouverture_cloture_pct": 2.36,
+   "executabilite": {
+    "executable": "oui",
+    "volume_post_ouverture_usd": 1750918,
+    "barres_vides": 0,
+    "motif": "volume 09:35-10:00 1751 k$, carnet continu (spread et borrow non mesures)"
+   }
+  },
+  {
+   "ticker": "NIVF",
+   "classe": "PUMP_RISK",
+   "resultat": "faux",
+   "motif": "a tenu (+2.1 %) : alerte trop severe",
+   "variation_pct": 2.09,
+   "executabilite": {
+    "executable": "non",
+    "volume_post_ouverture_usd": 173944,
+    "barres_vides": 0,
+    "motif": "volume 09:35-10:00 174 k$ < 200 k$"
+   }
+  },
+  {
+   "ticker": "TGL",
+   "classe": "PUMP_RISK",
+   "resultat": "juste",
+   "motif": "retombe de -2.6 %, l'alerte etait fondee",
+   "variation_pct": -2.55,
+   "executabilite": {
+    "executable": "oui",
+    "volume_post_ouverture_usd": 497852,
+    "barres_vides": 0,
+    "motif": "volume 09:35-10:00 498 k$, carnet continu (spread et borrow non mesures)"
+   }
+  },
+  {
+   "ticker": "SGRX",
+   "classe": "PUMP_RISK",
+   "resultat": "juste",
+   "motif": "retombe de -16.1 %, l'alerte etait fondee",
+   "variation_pct": -16.08,
+   "executabilite": {
+    "executable": "oui",
+    "volume_post_ouverture_usd": 32355768,
+    "barres_vides": 0,
+    "motif": "volume 09:35-10:00 32356 k$, carnet continu (spread et borrow non mesures)"
+   }
+  },
+  {
+   "ticker": "RUBI",
+   "classe": "PUMP_RISK",
+   "resultat": "juste",
+   "motif": "retombe de -4.6 %, l'alerte etait fondee",
+   "variation_pct": -4.59,
+   "executabilite": {
+    "executable": "oui",
+    "volume_post_ouverture_usd": 3341200,
+    "barres_vides": 0,
+    "motif": "volume 09:35-10:00 3341 k$, carnet continu (spread et borrow non mesures)"
+   }
+  },
+  {
+   "ticker": "TCRT",
+   "classe": "PUMP_RISK",
+   "resultat": "juste",
+   "motif": "retombe de -6.4 %, l'alerte etait fondee",
+   "variation_pct": -6.41,
+   "executabilite": {
+    "executable": "oui",
+    "volume_post_ouverture_usd": 13079401,
+    "barres_vides": 0,
+    "motif": "volume 09:35-10:00 13079 k$, carnet continu (spread et borrow non mesures)"
+   }
+  },
+  {
+   "ticker": "BLNE",
+   "classe": "PUMP_RISK",
+   "resultat": "faux",
+   "motif": "a tenu (+6.0 %) : alerte trop severe",
+   "variation_pct": 6.0,
+   "executabilite": {
+    "executable": "non",
+    "volume_post_ouverture_usd": 111780,
+    "barres_vides": 0,
+    "motif": "volume 09:35-10:00 112 k$ < 200 k$"
+   }
+  },
+  {
+   "ticker": "HODO",
+   "classe": "PUMP_RISK",
+   "resultat": "faux",
+   "motif": "a tenu (+3.1 %) : alerte trop severe",
+   "variation_pct": 3.11,
+   "executabilite": {
+    "executable": "oui",
+    "volume_post_ouverture_usd": 1013898,
+    "barres_vides": 0,
+    "motif": "volume 09:35-10:00 1014 k$, carnet continu (spread et borrow non mesures)"
+   }
+  },
+  {
+   "ticker": "SITC",
+   "classe": "PUMP_RISK",
+   "resultat": "juste",
+   "motif": "retombe de -4.5 %, l'alerte etait fondee",
+   "variation_pct": -4.46,
+   "executabilite": {
+    "executable": "oui",
+    "volume_post_ouverture_usd": 2471576,
+    "barres_vides": 0,
+    "motif": "volume 09:35-10:00 2472 k$, carnet continu (spread et borrow non mesures)"
+   }
+  },
+  {
+   "ticker": "XLAB",
+   "classe": "INSUFFISANT",
+   "resultat": "non juge",
+   "motif": "ecarte a la detection, aucune promesse",
+   "variation_pct": 27.37
+  },
+  {
+   "ticker": "XXII",
+   "classe": "INSUFFISANT",
+   "resultat": "non juge",
+   "motif": "ecarte a la detection, aucune promesse",
+   "variation_pct": -50.0
+  },
+  {
+   "ticker": "SXTC",
+   "classe": "GAP_INVALIDE",
+   "resultat": "non juge",
+   "motif": "ecarte a la detection, aucune promesse",
+   "variation_pct": -20.54
+  },
+  {
+   "ticker": "OPK",
+   "classe": "GAP_INVALIDE",
+   "resultat": "non juge",
+   "motif": "ecarte a la detection, aucune promesse",
+   "variation_pct": -11.56
+  }
+ ]
+}
